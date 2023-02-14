@@ -1,6 +1,6 @@
 --- 
 title: "A Minimal Book Example"
-author: "John Doe"
+author: "Benoît Lepage"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: book
