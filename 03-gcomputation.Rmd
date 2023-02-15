@@ -1,0 +1,342 @@
+# G-computation {#chap_gcomp}
+
+If we make the assumption that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the `df2_int.csv` data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an $A \star M$ interaction effect on the outcome.
+
+G-computation can be used for the estimation of the total effect and two-way decomposition (CDE, marginal and conditional randomized direct and indirect effects).
+
+
+## Estimation of the Average Total Effect (ATE)
+
+The following steps describe the implementation of the g-computation estimator of the average total effect $\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})$:
+                                          
+1. Fit a logistic or a linear regression to estimate $\overline{Q} = \mathbb{E}(Y \mid A, L(0))$
+                                            
+2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}(A=0)_i$ and $\hat{\overline{Q}}(A=1)_i$, by evaluating the regression fit $\overline{Q}$ at $A=0$ and $A=1$ respectively
+                                          
+3. Plug the predicted outcomes in the g-formula and use the sample mean to estimate $\Psi_{ATE}$
+\begin{equation}
+\hat{\Psi}^{\text{ATE}}_{\text{gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}(A=1)_i - \hat{\overline{Q}}(A=0)_i \right]
+\end{equation}
+
+For continuous outcomes, $\overline{Q}(A=a)$ functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.
+
+```{r gcomp_ATE, echo=TRUE, eval = FALSE}
+# 1. Estimate Qbar  
+Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv, 
+                   family = "binomial", data = df2_int)
+Q.tot.qol <- glm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv, 
+                 family = "gaussian", data = df2_int)
+
+# 2. Predict an outcome for each subject, setting A=0 and A=1
+# prepare data sets used to predict the outcome under the counterfactual 
+# scenarios setting A=0 and A=1
+data.A1 <- data.A0 <- df2_int
+data.A1$A0_ace <- 1
+data.A0$A0_ace <- 0
+
+# predict values
+Y1.death.pred <- predict(Q.tot.death, newdata = data.A1, type = "response")
+Y0.death.pred <- predict(Q.tot.death, newdata = data.A0, type = "response")
+
+Y1.qol.pred <- predict(Q.tot.qol, newdata = data.A1, type = "response")
+Y0.qol.pred <- predict(Q.tot.qol, newdata = data.A0, type = "response")
+
+# 3. Plug the predicted outcome in the gformula and use the sample mean 
+#    to estimate the ATE
+ATE.death.gcomp <- mean(Y1.death.pred - Y0.death.pred)
+ATE.death.gcomp
+# [1] 0.08270821
+
+ATE.qol.gcomp <- mean(Y1.qol.pred - Y0.qol.pred)
+ATE.qol.gcomp
+# [1] -8.360691
+```
+
+
+A 95% confidence interval can be estimated applying a bootstrap procedure. An example is given in the following code.
+```{r gcomp_ATE_ic95, echo=TRUE, eval = FALSE}
+set.seed(1234)
+B <- 2000
+bootstrap.estimates <- data.frame(matrix(NA, nrow = B, ncol = 2))
+colnames(bootstrap.estimates) <- c("boot.death.est", "boot.qol.est")
+for (b in 1:B){
+  # sample the indices 1 to n with replacement
+  bootIndices <- sample(1:nrow(df2_int), replace=T)
+  bootData <- df2_int[bootIndices,]
+
+  if ( round(b/100, 0) == b/100 ) print(paste0("bootstrap number ",b))
+
+  Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv, 
+                     family = "binomial", data = bootData)
+  Q.tot.qol <- glm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv, 
+                   family = "gaussian", data = bootData)
+
+  boot.A.1 <- boot.A.0 <- bootData
+  boot.A.1$A0_ace <- 1
+  boot.A.0$A0_ace <- 0
+
+  Y1.death.boot <- predict(Q.tot.death, newdata = boot.A.1, type = "response")
+  Y0.death.boot <- predict(Q.tot.death, newdata = boot.A.0, type = "response")
+
+  Y1.qol.boot <- predict(Q.tot.qol, newdata = boot.A.1, type = "response")
+  Y0.qol.boot <- predict(Q.tot.qol, newdata = boot.A.0, type = "response")
+
+  bootstrap.estimates[b,"boot.death.est"] <- mean(Y1.death.boot - Y0.death.boot)
+  bootstrap.estimates[b,"boot.qol.est"] <- mean(Y1.qol.boot - Y0.qol.boot)
+}
+
+IC95.ATE.death <- c(ATE.death.gcomp - 
+                      qnorm(0.975)*sd(bootstrap.estimates[,"boot.death.est"]),
+                    ATE.death.gcomp + 
+                      qnorm(0.975)*sd(bootstrap.estimates[,"boot.death.est"]) )
+IC95.ATE.death
+# [1] 0.05571017 0.10970624
+
+IC95.ATE.qol <- c(ATE.qol.gcomp - 
+                    qnorm(0.975)*sd(bootstrap.estimates[,"boot.qol.est"]),
+                  ATE.qol.gcomp + 
+                    qnorm(0.975)*sd(bootstrap.estimates[,"boot.qol.est"]) )
+IC95.ATE.qol
+# [1] -9.156051 -7.565331
+```
+
+
+## Estimation of Controlled Direct Effects (CDE)
+
+The controlled direct effect $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$ is the difference between the mean outcome had the whole population been exposed to ACE (setting $A=1$), compared to the mean outcome had the whole population been unexposed (setting $A=0$), while keeping the mediator equal to a constant given value ($M=m$) in both scenarios.
+
+The g-formula of the components of a CDE ($\mathbb{E}(Y_{A=a^\prime,M=m})$) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
+
+$\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\right( L(1)=l(1) | a^\prime,l(0) \left) \right] \times P\left( L(0)=l(0) \right)$
+
+Several g-computation procedures have been described to estimate CDE:
+
+- parametric g-computation, using Monte Carlo simulations
+- g-computation by iterative conditional expectation
+- sequential g-estimator
+
+
+### Parametric g-computation
+
+```{r param_gcomp_CDE, echo=TRUE, eval = FALSE}
+# 1. Fit parametric models to estimate the density of intermediate confounders, 
+#    conditional on the parents of the intermediate confounders
+L1.model <- glm(L1 ~ L0_male + L0_parent_low_educ_lv + A0_ace, 
+                family = "binomial", data = df2_int)
+
+# 2. Fit parametric models for the outcome conditional on past
+Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 + 
+                                  M_smoking + A0_ace:M_smoking, 
+                      family = "binomial", data = df2_int)
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 + 
+                              M_smoking + A0_ace:M_smoking, 
+                    family = "gaussian", data = df2_int)
+
+# 3. Simulate L1 values under the counterfactual scenarios setting A0=0 or A0=1
+set.seed(54321)
+data.A0  <- data.A1 <- df2_int
+data.A0$A0_ace <- 0
+data.A1$A0_ace <- 1
+p.L1.A0 <- predict(L1.model, newdata = data.A0, type="response")
+p.L1.A1 <- predict(L1.model, newdata = data.A1, type="response")
+sim.L1.A0 <- rbinom(n = nrow(df2_int), size = 1, prob = p.L1.A0)
+sim.L1.A1 <- rbinom(n = nrow(df2_int), size = 1, prob = p.L1.A1)
+
+# 4. Estimate mean outcomes under the counterfactual scenarios setting different 
+#    levels of exposures for A and M:
+#    {A=0, M=0} or {A=1, M=0} or {A=0, M=1} or {A=1, M=1}
+
+data.A0.M0 <- data.A0.M1 <- data.A0
+data.A1.M0 <- data.A1.M1 <- data.A1
+
+# L1 variable is replaced by the simulated values in step 3)
+data.A0.M0$L1 <- sim.L1.A0
+data.A0.M1$L1 <- sim.L1.A0
+data.A1.M0$L1 <- sim.L1.A1
+data.A1.M1$L1 <- sim.L1.A1
+
+# set M to 0 or 1
+data.A0.M0$M_smoking <- 0
+data.A0.M1$M_smoking <- 1
+data.A1.M0$M_smoking <- 0
+data.A1.M1$M_smoking <- 1
+
+# predict the probability of death
+p.death.A0.M0 <- predict(Y.death.model, newdata = data.A0.M0, type="response")
+p.death.A1.M0 <- predict(Y.death.model, newdata = data.A1.M0, type="response")
+p.death.A0.M1 <- predict(Y.death.model, newdata = data.A0.M1, type="response")
+p.death.A1.M1 <- predict(Y.death.model, newdata = data.A1.M1, type="response")
+
+# predict the mean value of QoL
+m.qol.A0.M0 <- predict(Y.qol.model, newdata = data.A0.M0, type="response")
+m.qol.A1.M0 <- predict(Y.qol.model, newdata = data.A1.M0, type="response")
+m.qol.A0.M1 <- predict(Y.qol.model, newdata = data.A0.M1, type="response")
+m.qol.A1.M1 <- predict(Y.qol.model, newdata = data.A1.M1, type="response")
+
+# 5. Estimate the CDE
+# CDE setting M=0
+CDE.death.m0.gcomp.param <- mean(p.death.A1.M0) - mean(p.death.A0.M0)
+CDE.death.m0.gcomp.param
+# [1] 0.06289087
+
+CDE.qol.m0.gcomp.param <- mean(m.qol.A1.M0) - mean(m.qol.A0.M0)
+CDE.qol.m0.gcomp.param
+# [1] -4.838654
+
+# CDE setting M=1
+CDE.death.m1.gcomp.param <- mean(p.death.A1.M1) - mean(p.death.A0.M1)
+CDE.death.m1.gcomp.param
+# [1] 0.08751016
+
+CDE.qol.m1.gcomp.param <- mean(m.qol.A1.M1) - mean(m.qol.A0.M1)
+CDE.qol.m1.gcomp.param
+# [1] -10.35059
+```
+
+
+
+### G-computation by iterative conditional expectation
+The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component $\mathbb{E}(Y_{A=a^\prime,M=m})$ used in the definition of CDE $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$.
+                                          
+1. Fit a logistic or a linear regression of the final outcome, conditional on the exposure $A$, the mediator $M$ and all the parents of $Y$ preceeding $M$, to estimate $\overline{Q}_{L(2)} = \mathbb{E}(Y \mid L(0),A,L(1),M)$;
+                                            
+2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}_{L(2)}(M=m)_i$, by evaluating the regression fit $\overline{Q}_{L(2)}$ at the chosen value for the mediator $M=m$;
+
+3. Fit a quasibinomial or a linear regression of the predicted values $\hat{\overline{Q}}_{L(2)}(M=m)_i$ conditional on the exposure $A$ and baseline confounders $L(0)$ to estimate $\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{L(2)}(M=m) \middle| L(0),A\right)$;
+
+4. Use this estimate to predict the outcome $\hat{\overline{Q}}_{L(1)}(A=a^\prime)_i$ for each subject, by evaluating the regression fit $\overline{Q}_{L(1)}$ at $A=a^\prime$;
+                                          
+5. Use the sample mean to estimate $\Psi^{\text{CDE}_m}_{\text{gcomp}}$
+\begin{equation}
+\hat{\Psi}^{\text{CDE}_m}_{\text{gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}_{L(1)}(A=1)_i - \hat{\overline{Q}}_{L(1)}(A=0)_i \right]
+\end{equation}
+
+
+```{r gcomp_ice_CDE, echo=TRUE, eval = FALSE}
+# 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
+Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                                  M_smoking + A0_ace:M_smoking,
+                        family = "binomial", data = df2_int)
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                              M_smoking + A0_ace:M_smoking,
+                    family = "gaussian", data = df2_int)
+
+# 2) Generate predicted values by evaluating the regression setting the mediator
+#    value to M=0 or to M=1
+#    (Note: it is also possible to set A=0 or A=1 to evaluate the regression at
+#     exposure history of interest: {A0=1,M=0},{A0=0,M=0},{A0=1,M=1},{A0=0,M=1})
+data.Mis0 <- data.Mis1 <- df2_int
+data.Mis0$M_smoking <- 0
+data.Mis1$M_smoking <- 1
+
+Q.L2.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
+Q.L2.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
+
+Q.L2.qol.Mis0 <- predict(Y.qol.model, newdata = data.Mis0, type="response")
+Q.L2.qol.Mis1 <- predict(Y.qol.model, newdata = data.Mis1, type="response")
+
+
+# 3) Regress the predicted values conditional on the exposure A
+#    and baseline confounders L(0)
+L1.death.Mis0.model <- glm(Q.L2.death.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "quasibinomial", data = df2_int)
+L1.death.Mis1.model <- glm(Q.L2.death.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "quasibinomial", data = df2_int)
+
+L1.qol.Mis0.model <- glm(Q.L2.qol.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "gaussian", data = df2_int)
+L1.qol.Mis1.model <- glm(Q.L2.qol.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "gaussian", data = df2_int)
+
+# 4) generate predicted values by evaluating the regression at exposure 
+#    of interest: {A=1} & {A=0}
+data.Ais0 <- data.Ais1 <- df2_int
+data.Ais0$A0_ace <- 0
+data.Ais1$A0_ace <- 1
+
+Q.L1.death.Ais0.Mis0 <- predict(L1.death.Mis0.model, newdata = data.Ais0, type="response")
+Q.L1.death.Ais1.Mis0 <- predict(L1.death.Mis0.model, newdata = data.Ais1, type="response")
+Q.L1.death.Ais0.Mis1 <- predict(L1.death.Mis1.model, newdata = data.Ais0, type="response")
+Q.L1.death.Ais1.Mis1 <- predict(L1.death.Mis1.model, newdata = data.Ais1, type="response")
+
+Q.L1.qol.Ais0.Mis0 <- predict(L1.qol.Mis0.model, newdata = data.Ais0, type="response")
+Q.L1.qol.Ais1.Mis0 <- predict(L1.qol.Mis0.model, newdata = data.Ais1, type="response")
+Q.L1.qol.Ais0.Mis1 <- predict(L1.qol.Mis1.model, newdata = data.Ais0, type="response")
+Q.L1.qol.Ais1.Mis1 <- predict(L1.qol.Mis1.model, newdata = data.Ais1, type="response")
+
+# 5) Take empirical mean of final predicted outcomes to estimate CDE
+# CDE setting M=0
+CDE.death.m0.gcomp.ice <- mean(Q.L1.death.Ais1.Mis0) - mean(Q.L1.death.Ais0.Mis0)
+CDE.death.m0.gcomp.ice
+# [1] 0.06341297
+
+CDE.qol.m0.gcomp.ice <- mean(Q.L1.qol.Ais1.Mis0) - mean(Q.L1.qol.Ais0.Mis0)
+CDE.qol.m0.gcomp.ice
+# [1] -4.869509
+
+# CDE setting M=1
+CDE.death.m1.gcomp.ice <- mean(Q.L1.death.Ais1.Mis1) - mean(Q.L1.death.Ais0.Mis1)
+CDE.death.m1.gcomp.ice
+# [1] 0.08810508
+
+CDE.qol.m1.gcomp.ice <- mean(Q.L1.qol.Ais1.Mis1) - mean(Q.L1.qol.Ais0.Mis1)
+CDE.qol.m1.gcomp.ice
+# [1] -10.38144
+```
+
+
+
+### Sequential g-estimator
+For quantitative outcomes, Vansteelandt et al. (Epidemiology 20(6);2009) described a sequential g-estimator for CDE. An extension for binary outcomes in case-control studies is also described using OR. 
+
+The following 2 steps are applied:
+
+1. Fit a regression model for the outcome conditional on the exposure $A$, the mediator $M$, baseline and intermediate confounders $L(0)$ and $L(1)$, in order to estimate the regression coefficients $\hat{\gamma}_{M}$ and $\hat{\gamma}_{A \ast M}$ (in case of $(A \ast M)$ interaction effect).
+\begin{equation}
+\mathbb{E}(Y\mid L(0),A,L(1),M) = \gamma_0 + \gamma_A A + \gamma_M M + \psi_{A \ast M} (A \ast M) + \gamma_{L(0)} L(0) + \gamma_{L(1)} L(1)
+\end{equation}
+
+2. Remove the effect of mediator on the outcome, by evaluating the residual outcome:
+\begin{equation}
+Y_{res} = Y - \hat{\gamma}_M M - \hat{\psi}_{A \ast M} \times A \times M
+\end{equation}
+
+and regress the residual outcome on the exposure $A$ and baseline confounders $L(0)$: 
+\begin{equation}
+\mathbb{E}(Y_{res}\mid A, L(0)) = \alpha_0 + \psi_A A + \beta_{L(0)} L(0)
+\end{equation}
+
+The controlled direct effect $\text{CDE}_m$ can then be estimated by:
+\begin{equation}
+\hat{\Psi}^{\text{CDE}_m}_{\text{seq.g.est}} = \hat{\psi}_A + \hat{\psi}_{A \ast M} \times m
+\end{equation}
+
+
+```{r seq_g_estimator_CDE, echo=TRUE, eval = FALSE}
+# 1) Regress the outcome on past
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 + 
+                              M_smoking + A0_ace:M_smoking, 
+                   family = "gaussian", data = df2_int)
+
+# 2) Calculate a residual outcome Y - (coef.M * M_smoking) - (coef.A0:M * A0:M)
+Y.res <- (df2_int$Y_qol - 
+            (Y2.qol.model$coefficients["M_smoking"] *  df2_int$M_smoking) - 
+            (Y2.qol.model$coefficients["A0_ace:M_smoking"] * df2_int$A0_ace 
+              * data.inter1$M_smoking) )
+
+# 3) Regress the residual outcome on the exposure A and baseline confounders L(0)
+Y.res.model <- glm(Y.res ~ L0_male + L0_parent_low_educ_lv + A0_ace, 
+                   family = "gaussian", data = df2_int)
+
+# 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:
+CDE.qol.m0.seq <- (Y.res.model$coefficients["A0_ace"] + 
+                     0*Y.qol.model$coefficients["A0_ace:M_smoking"])
+CDE.qol.m0.seq
+# -4.869509
+
+CDE.qol.m1.seq <- (Y.res.model$coefficients["A0_ace"] + 
+                     1*Y.qol.model$coefficients["A0_ace:M_smoking"])
+CDE.qol.m1.seq
+# -10.38144
+```
+

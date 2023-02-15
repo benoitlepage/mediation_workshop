@@ -1,13 +1,7 @@
 Welcome! 
 
-This is a minimal example of a book based on R Markdown and **bookdown** (https://github.com/rstudio/bookdown). 
+The objective of this document is to provide practical examples for the Expanse report _"Mediation Analysis: a Starting Guide for Epidemiologists"_ with R scripts corresponding to the different estimation methods presented in the report.
 
-This template provides a skeleton file structure that you can edit to create your book. 
+The workshop is available as a book created by bookdown, at https://benoitlepage.github.io/mediation_workshop/
 
-The contents inside the .Rmd files provide some pointers to help you get started, but feel free to also delete the content in each file and start fresh.
 
-Additional resources:
-
-The **bookdown** book: https://bookdown.org/yihui/bookdown/
-
-The **bookdown** package reference site: https://pkgs.rstudio.com/bookdown

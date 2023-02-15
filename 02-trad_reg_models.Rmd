@@ -1,0 +1,852 @@
+# Traditional regression models {#chap_trad_reg_models}
+
+Traditional regression models can be applied in the absence of an intermediate confounder $L(1)$ of the $M-Y$ relationship affected by the exposure $A$ (Causal model 1). They can be used for two-way, three-way and four-way decomposition of the average total effect.
+
+In the following examples, we use the `df1_int.csv` data set with a $A \star M$ interaction effect on the outcome. 
+
+```{r trad_reg_load_dataset, echo=TRUE, eval = FALSE}
+df1_int <- read.csv(file = "df1_int.csv")
+```
+
+If we assumed that there was no $A \star M$ interaction, then the `A0_ace:M_smoking` interaction terms should be removed from the models below (applicable if we use the `df1.csv` data set).
+
+## Estimation of the Average Total Effect (ATE)
+
+The average total effect is the difference between the mean outcome had the whole population been exposed to adverse childhood experience (ACE), compared to the mean outcome had the whole population been unexposed to ACE:
+$\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})$.
+
+For the quantitative outcome, the ATE of the adverse childhood experience $A$ on the quality of life score $Y$ can be estimated using a traditional linear regression of `Y_qol` on `A0_ace`, adjusted for the baseline confounders `L0_male` and `L0_parent_low_educ_lv`.
+
+For the binary outcome (death), we can estimate a risk difference applying a Generalized Linear Model with a Gaussian distribution and identity link, as suggested by Naimi _et al_ [@naimi2020].
+
+The regression coefficient of the exposure variable $A$ is used to estimate the risk difference or the average difference.
+\begin{equation} 
+  \mathbb{E}(Y \mid A, L(0)) = \alpha_0 + \alpha_A A + \alpha_{L(0)} L(0) 
+  (\#eq:regtotaleffect)
+\end{equation}
+
+
+$$ \hat{\Psi}_{\text{trad}}^{\text{ATE}} = \hat{\alpha}_A$$
+
+```{r trad_reg_ATE, echo=TRUE, eval = FALSE}
+# For quantitative outcomes, apply a linear regression of Y on A (A0_ace), 
+# adjusted for the baseline confounders L(0):
+trad_ATE_qol <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+                   data = df1_int)
+
+# For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and
+# identity link, adjusted for the baseline confounders:
+trad_ATE_death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+                      family = gaussian("identity"),
+                      data = df1_int)
+
+# Use the regression coefficient of the exposure (A0_ace) to estimate the ATE
+ATE_trad_qol <- coefficients(trad_ATE_qol)["A0_ace"]
+# -7.210089
+
+ATE_trad_death <- coefficients(trad_ATE_death)["A0_ace"]
+# 0.07720726
+```
+
+The estimation of 95\% confidence intervals could be obtained directly from the linear regression with quantitative outcomes (equation \@ref(eq:regtotaleffect)). However, using a robust (sandwich) variance estimator or applying a bootstrap procedure is recommended [@naimi2020].
+
+```{r trad_reg_ATE_ic95, echo=TRUE, eval = FALSE}
+library(sandwich)
+
+# for the Quality of Life outcome
+ATE_trad_qol <- list(ATE = coef(trad_ATE_qol)["A0_ace"],
+                     lo = coef(trad_ATE_qol)["A0_ace"] - qnorm(0.975) *
+                       sqrt(sandwich(trad_ATE_qol)["A0_ace","A0_ace"]),
+                     hi = coef(trad_ATE_qol)["A0_ace"] + qnorm(0.975) *
+                       sqrt(sandwich(trad_ATE_qol)["A0_ace","A0_ace"]))
+
+ATE_trad_qol
+# ATE = -7.210089 , IC95% = [-7.978234 ; -6.441944]
+
+# for death outcome
+ATE_trad_death <- list(ATE = coef(trad_ATE_death)["A0_ace"],
+                       lo = coef(trad_ATE_death)["A0_ace"] - qnorm(0.975) *
+                         sqrt(sandwich(trad_ATE_death)["A0_ace","A0_ace"]),
+                       hi = coef(trad_ATE_death)["A0_ace"] + qnorm(0.975) *
+                         sqrt(sandwich(trad_ATE_death)["A0_ace","A0_ace"]))
+ATE_trad_death
+# ATE = 0.07720726 , IC95% = [0.04945859 ; 0.1049559]
+
+# 95% CI calculation applying a bootstrap procedure
+library(boot)
+bootfunc <- function(data,index){
+  boot_dat <- data[index,]
+  mod.qol <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+                data = boot_dat)
+  mod.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+                   family = gaussian("identity"),
+                   data = boot_dat)
+  est <- c(coef(mod.qol)["A0_ace"],
+           coef(mod.death)["A0_ace"])
+  return(est)
+}
+
+set.seed(1234)
+boot_est <- boot(df1_int,bootfunc,R=2000)
+
+# the 95% CI for the estimation of the ATE of ACE on QoL is:
+boot.ci(boot_est, index = 1, type = "norm")
+# (-7.978, -6.444 )
+
+# the 95% CI for the estimation of the ATE of ACE on death is:
+boot.ci(boot_est, index = 2, type = "norm")
+# ( 0.0502,  0.1040 )  
+```
+
+
+Alternatively for binary outcomes, the total effect conditional on baseline confounders can be expressed on an Odds Ratio scale $\text{OR}^{\text{TE}}$, using the logistic regression \@ref(eq:logittotaleffect).
+
+
+\begin{equation} 
+  \text{logit} P(Y = 1 \mid A, L(0)) = \alpha_0 + \alpha_A A + \alpha_{L(0)}^\prime L(0) 
+  (\#eq:logittotaleffect)
+\end{equation}
+
+$$ \text{OR}^{\text{TE}} \mid L(0) = \exp \hat{\alpha}_A $$
+
+```{r trad_reg_ATE_logit, echo=TRUE, eval = FALSE}
+TE_death_model <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+                      family = "binomial",
+                      data = df1_int)
+res_TE_death <- summary(TE_death_model)
+tot.effect.death.OR <- list(OR = exp(coef(res_TE_death)["A0_ace","Estimate"]),
+                            lo = exp(coef(res_TE_death)["A0_ace","Estimate"] -
+                                       qnorm(0.975) *
+                                       coef(res_TE_death)["A0_ace","Std. Error"]),
+                            hi = exp(coef(res_TE_death)["A0_ace","Estimate"] +
+                                       qnorm(0.975) *
+                                       coef(res_TE_death)["A0_ace","Std. Error"]))
+tot.effect.death.OR
+# OR = 1.523254 , 95% CI = [ 1.323317 ; 1.753398]
+```
+
+
+## Two-way decomposition {#trad2way}
+
+In order to carry-out two-way decomposition mediation analyses, with a binary mediator and a continuous outcome, Valeri and VanderWeele suggest using the following linear regression of the outcome and logistic regression of the mediator:[@valeri2013]
+\begin{equation}
+\mathbb{E}(Y \mid A, M,L(0),L(1)) = \gamma_0 + \gamma_A A + \gamma_M M + \gamma_{A \ast M} (A \ast M) + \gamma_{L(0)}^\prime L(0) + \gamma_{L(1)}^\prime L(1) 
+(\#eq:contoutcomereg)
+\end{equation}
+
+\begin{equation} 
+\text{logit}P(M=1 \mid A,L(0),L(1)) = \beta_0 + \beta_A A + \beta_{L(0)}^\prime L(0) + \beta_{L(1)}^\prime L(1)
+(\#eq:medreg)
+\end{equation}
+
+If the outcome is binary, they suggest using the following logistic regression of the outcome instead of the previous linear regression:
+\begin{equation}
+\small
+\text{logit}P(Y \mid A, M,L(0),L(1)) = \gamma_0 + \gamma_A A + \gamma_M M + \gamma_{A \ast M} (A \ast M) + \gamma_{L(0)}^\prime L(0) + \gamma_{L(1)}^\prime L(1) 
+(\#eq:binoutcomereg)
+\end{equation}
+
+```{r trad_two_way_models, echo=TRUE, eval = FALSE}
+trad_qol_am <- lm(Y_qol ~ A0_ace + M_smoking + A0_ace:M_smoking +
+                    L0_male + L0_parent_low_educ_lv + L1,
+                  data = df1_int)
+gamma.A.q <- coef(trad_qol_am)["A0_ace"]
+gamma.M.q <- coef(trad_qol_am)["M_smoking"]
+gamma.AM.q <- coef(trad_qol_am)["A0_ace:M_smoking"]
+
+trad_m <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv + L1, 
+              family = "binomial",
+              data = df1_int)
+beta.0 <- coef(trad_m)["(Intercept)"]
+beta.A <- coef(trad_m)["A0_ace"]
+
+trad_death_am <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking +
+                       L0_male + L0_parent_low_educ_lv + L1,
+                     family = "binomial",
+                     data = df1_int)
+gamma.A.d <- coef(trad_death_am)["A0_ace"]
+gamma.M.d <- coef(trad_death_am)["M_smoking"]
+gamma.AM.d <- coef(trad_death_am)["A0_ace:M_smoking"]
+```
+
+
+### Controlled Direct Effect {#trad2waycde}
+The Controlled Direct Effect is defined as $\text{CDE}_m = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$:
+
+For continuous outcome, using parameters from equation \@ref(eq:contoutcomereg), it can be estimated  by:
+$$\text{CDE}_m = \hat{\gamma}_A + \hat{\gamma}_{A \ast M} \times m$$
+
+```{r trad_CDE_continuous, echo=TRUE, eval = FALSE}
+### For a continuous outcome
+# setting the mediator to M=0
+trad_CDE_qol_m0 <- gamma.A.q + gamma.AM.q * 0
+trad_CDE_qol_m0
+# -3.715265
+# setting the mediator to M=1
+trad_CDE_qol_m1 <- gamma.A.q + gamma.AM.q * 1
+trad_CDE_qol_m1
+# -9.330657
+```
+
+For binary outcomes, using parameters from equation \@ref(eq:binoutcomereg), it can be estimated on the OR scale by:
+$$OR^{\text{CDE}_m} = \text{exp}\left(\hat{\gamma}_A + \hat{\gamma}_{A \ast M} \times m\right)$$
+
+```{r trad_CDE_binary, echo=TRUE, eval = FALSE}
+### For a binary outcome
+## setting the mediator to M=0
+trad_OD_CDE_death_m0 <- exp(gamma.A.d + gamma.AM.d * 0)
+trad_OD_CDE_death_m0
+# OR_CDE_{M=0} = 1.442942 
+
+## setting the mediator to M=1
+trad_OD_CDE_death_m1 <- exp(gamma.A.d + gamma.AM.d * 1)
+trad_OD_CDE_death_m1
+# OR_CDE_{M=1} = 1.461464 
+```
+
+### Natural Direct and Indirect effects {#trad2waynatural}
+The Pure Natural Direct Effect (PNDE) and the Total Natural Indirect Effect (TNIE) are defined as:
+
+- $\text{PNDE} = \mathbb{E}\left(Y_{A=1,M_{A=0}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)$,
+- $\text{TNIE} = \mathbb{E}\left(Y_{A=1,M_{A=1}}) - \mathbb{E}(Y_{A=1,M_{A=0}}\right)$.
+
+Alternatively, one can use the Total Natural Direct Effect (TNDE) and the Pure Natural Indirect Effect (PNIE): 
+
+- $\text{TNDE} = \mathbb{E}\left(Y_{A=1,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=1}}\right)$,
+- $\text{PNIE} = \mathbb{E}\left(Y_{A=0,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)$.
+
+With a continuous outcome and a binary mediator, the PNDE and TNDE can be estimated using the linear regression of the outcome (equation \@ref(eq:contoutcomereg)) and the logistic regression of the mediator (equation \@ref(eq:medreg)):
+$$\text{PNDE} \mid L(0), L(1) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M} \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}$$
+
+$$\scriptsize
+\text{TNIE} \mid L(0), L(1) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]$$
+The alternative TNDE ad PNIE can be estimated by:
+$$\text{TNDE} \mid L(0), L(1) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M}\frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}$$
+$$\scriptsize \text{PNIE} \mid L(0), L(1) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]$$
+Conditional on participants for which $L(0)=0$ and $L(1)=0$, these expressions are simplified:
+$$\text{PNDE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M}\frac{exp(\hat{\beta}_0)}{1 + exp(\hat{\beta}_0)}$$
+$$\text{TNIE} \Big| (L(0)=0, L(1)=0) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A )}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A )} - \frac{exp(\hat{\beta}_0 )}{1 + exp(\hat{\beta}_0)}\right]$$
+and 
+$$\text{TNDE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M}\frac{exp(\hat{\beta}_0 + \hat{\beta}_A)}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A)}$$
+$$\text{PNIE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_M \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A )}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A )} - \frac{exp(\hat{\beta}_0 )}{1 + exp(\hat{\beta}_0)}\right]$$
+
+```{r trad_NDE_NIE_continuous, echo=TRUE, eval = FALSE}
+### For a continuous outcome, in the subgroup with L(0)=0 and L(1)=0
+## The PNDE and TNIE are:
+trad_PNDE_qol <- gamma.A.q + gamma.AM.q * (exp(beta.0)) / (1 + exp(beta.0))
+trad_PNDE_qol
+# -4.845089
+
+trad_TNIE_qol <- (gamma.M.q + gamma.AM.q) *
+  (exp(beta.0 + beta.A) / (1 + exp(beta.0 + beta.A)) -
+     exp(beta.0) / (1 + exp(beta.0)))
+trad_TNIE_qol
+# -1.50119
+
+## The TNDE and PNIE are:
+trad_TNDE_qol <- gamma.A.q +
+  gamma.AM.q * exp(beta.0 + beta.A) / (1 + exp(beta.0 + beta.A))
+trad_TNDE_qol
+# -5.436773
+
+trad_PNIE_qol <- gamma.M.q *
+  (exp(beta.0 + beta.A) /
+     (1 + exp(beta.0 + beta.A)) - exp(beta.0) / (1 + exp(beta.0)))
+trad_PNIE_qol
+# -0.9095061
+```
+
+**For binary outcomes**, total, direct and indirect effects can be expressed on relative risk or odds ratio scales:
+
+The total effect risk ratio is equal to :
+$$\text{RR}^\text{TE}=\frac{\mathbb{E}(Y_1)}{\mathbb{E}(Y_0)}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_0})}$$
+
+The total effect risk ratio can be decomposed as the product of the PNDE risk ratio and the TNIE risk ratio:
+$$\text{RR}^\text{TE}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_0})}=\frac{\mathbb{E}(Y_{1,M_0})}{\mathbb{E}(Y_{0,M_0})} \times \frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{1,M_0})}=\text{RR}^\text{PNDE} \times \text{RR}^\text{TNIE}$$
+
+Similarly, the total effect risk ratio can be decomposed as the product of the TNDE risk ratio and the PNIE risk ratio:
+$$\text{RR}^\text{TE}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_0})}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_1})} \times \frac{\mathbb{E}(Y_{0,M_1})}{\mathbb{E}(Y_{0,M_0})}=\text{RR}^\text{TNDE} \times \text{RR}^\text{PNIE}$$
+
+PNDE, TNIE, TNDE and PNIE can also be given on the OR scale, 
+$$\text{OR}^\text{PNDE} = \frac{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}{\frac{P\left(Y_{A=0,M_{A=0}}=1\right)}{1 - P\left(Y_{A=0,M_{A=0}}=1\right)}} \quad \text{,} \quad \text{OR}^\text{TNIE} = \frac{\frac{P\left(Y_{A=1,M_{A=1}}=1\right)}{1 - P\left(Y_{A=1,M_{A=1}}=1\right)}}{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}$$
+and
+$$\text{OR}^\text{TNDE} = \frac{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}{\frac{P\left(Y_{A=0,M_{A=0}}=1\right)}{1 - P\left(Y_{A=0,M_{A=0}}=1\right)}} \quad \text{and} \quad \text{OR}^\text{PNIE} = \frac{\frac{P\left(Y_{A=1,M_{A=1}}=1\right)}{1 - P\left(Y_{A=1,M_{A=1}}=1\right)}}{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}.$$
+If the outcome is rare, we have $P(Y=1) \approx \frac{P(Y=1)}{1-P(Y=1)}$ so that, $\text{OR}^{\text{PNDE}}$ AND $\text{OR}^{\text{TNIE}}$ can be estimated using the logistic model of the outcome (equation \@ref(eq:binoutcomereg)) and the logistic model of the mediator (equation \@ref(eq:medreg)):
+$$\small \text{OR}^\text{PNDE} \mid L(0), L(1) \approx \frac{\text{exp}(\hat{\gamma}_A \times 1) \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0  + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]}{ \text{exp}(\hat{\gamma}_A \times 0) \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0 + \hat{\beta}_A \times 0  + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]} $$
+
+
+and 
+
+$$ \scriptsize \text{OR}^\text{TNIE} \mid L(0), L(1) \approx \frac{\left[1 + \text{exp}(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)) \right]  \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]}{ \left[1 + \text{exp}(\hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)) \right]  \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]} $$
+Similarly, if the outcome is rare, $\text{OR}^{\text{TNDE}}$ AND $\text{OR}^{\text{PNIE}}$ can be estimated using the logistic regression models for the outcome and the mediator (equations \@ref(eq:binoutcomereg) and \@ref(eq:medreg)):
+$$\small \text{OR}^\text{TNDE} \mid L(0), L(1) \approx \frac{\text{exp}\left(\hat{\gamma}_A \times 1 \right)  \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]}{ \text{exp}\left(\hat{\gamma}_A \times 0 \right) \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]}$$
+
+
+and 
+$$\scriptsize \text{OR}^\text{PNIE} \mid L(0), L(1) \approx \frac{\left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right] \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]}{ \left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right] \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]} $$
+Conditional on participants for which $L(0)=0$ and $L(1)=0$, these expressions are simplified:
+$$\text{OR}^\text{PNDE} \Bigg| \left(L(0) = 0, L(1) = 0\right) \approx \frac{\text{exp}\left(\hat{\gamma}_A\right) \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0\right)\right]}{ \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\beta}_0 \right)\right]}$$
+and 
+$$\text{OR}^\text{TNIE} \Bigg| \left(L(0)=0, L(1)=0\right) \approx \frac{\left[1 + \text{exp}\left(\hat{\beta}_0\right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0  + \hat{\beta}_A\right)\right]}{ \left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0 \right)\right]} $$
+Similarly, conditional on $L(0)=0$ and $L(1)=0$, 
+$$\text{OR}^\text{TNDE} \Bigg| \left(L(0)=0, L(1)=0\right) \approx \frac{\text{exp}\left(\hat{\gamma}_A\right) \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0 + \hat{\beta}_A \right)\right]}{ \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\beta}_0 + \hat{\beta}_A \right)\right]}$$
+$$\text{OR}^\text{PNIE} \Bigg| \left(L(0)=0, L(1)=0\right) \approx \frac{\left[1 + \text{exp}\left(\hat{\beta}_0 \right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\beta}_0  + \hat{\beta}_A \right)\right]}{ \left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M +  \hat{\beta}_0 \right)\right]} $$
+
+```{r trad_NDE_NIE_binary, echo=TRUE, eval = FALSE}
+### For a binary outcome, in the subgroup with L(0)=0 and L(1)=0
+## The PNDE and TNIE are (on the OR scale):
+trad_OR_PNDE_death <- exp(gamma.A.d) *
+  (1 + exp(gamma.M.d + gamma.AM.d + beta.0 )) /
+  (1 + exp(gamma.M.d + beta.0))
+trad_OR_PNDE_death
+# 1.448035
+
+trad_OR_TNIE_death <- (1 + exp(beta.0)) *
+  (1 + exp(gamma.M.d + gamma.AM.d + beta.0 + beta.A)) /
+  ((1 + exp(beta.0 + beta.A)) * (1 + exp(gamma.M.d + gamma.AM.d + beta.0)))
+trad_OR_TNIE_death
+# 1.050029
+
+## The TNDE and PNIE are (on the OR scale):
+trad_OR_TNDE_death <- exp(gamma.A.d) *
+  (1 + exp(gamma.M.d + gamma.AM.d + beta.0 + beta.A)) /
+  (1 + exp(gamma.M.d + beta.0 + beta.A))
+trad_OR_TNDE_death
+# 1.450344
+
+trad_OR_PNIE_death <- (1 + exp(beta.0)) *
+  (1 + exp(gamma.M.d + beta.0 + beta.A)) /
+  ((1 + exp(beta.0 + beta.A)) * (1 + exp(gamma.M.d + beta.0)))
+trad_OR_PNIE_death
+# 1.048358
+```
+
+
+The `regmedint` [package](https://cran.r-project.org/web/packages/regmedint/index.html) (Regression-Based Causal Mediation Analysis with Interaction and Effect Modification Terms) can be used for two-way decomposition. Estimations of the CDE, PNDE, TNIE, TNDE and PNIE presented above can be obtained as we show in the following example.
+
+For continuous outcomes:
+```{r `regmedint_continuous, echo=TRUE, eval = FALSE}
+library(regmedint)
+regmedint_cont <- regmedint(data = df1_int,
+                            ## Variables
+                            yvar = "Y_qol",                   # outcome variable
+                            avar = "A0_ace",                  # exposure
+                            mvar = "M_smoking",               # mediator
+                            cvar = c("L0_male",               # confounders
+                                     "L0_parent_low_educ_lv",
+                                     "L1"),
+                            #eventvar = "event",     # only for survival outcome
+                            ## Values at which effects are evaluated
+                            a0 = 0,
+                            a1 = 1,
+                            m_cde = 0,              # mediator level for the CDE
+                            c_cond = c(0,0,0),                 # covariate level
+                            ## Model types
+                            mreg = "logistic",
+                            yreg = "linear",
+                            ## Additional specification
+                            interaction = TRUE,
+                            casecontrol = FALSE)
+summary(regmedint_cont)
+#### Mediation analysis
+#             est         se          Z            p      lower      upper
+# cde  -3.7152652 0.41600219  -8.930879 0.000000e+00 -4.5306145 -2.8999159
+# pnde -4.8450888 0.35052810 -13.822255 0.000000e+00 -5.5321113 -4.1580663
+# tnie -1.5011902 0.20821830  -7.209694 5.608847e-13 -1.9092905 -1.0930898
+# tnde -5.4367728 0.34049175 -15.967414 0.000000e+00 -6.1041244 -4.7694213
+# pnie -0.9095061 0.12266064  -7.414817 1.219025e-13 -1.1499166 -0.6690957
+# te   -6.3462790 0.38788368 -16.361294 0.000000e+00 -7.1065170 -5.5860409
+# pm    0.2365465 0.02947624   8.024991 1.110223e-15  0.1787742  0.2943189
+
+# note: te = total effect = (pnde + tnie) = (tnde + pnie)
+#       pm = proportion mediated = tnie / te
+```
+
+
+For binary outcomes:
+```{r `regmedint_binary, echo=TRUE, eval = FALSE}
+regmedint_bin <- regmedint(data = df1_int,
+                            ## Variables
+                            yvar = "Y_death",                 # outcome variable
+                            avar = "A0_ace",                  # exposure
+                            mvar = "M_smoking",               # mediator
+                            cvar = c("L0_male",               # confounders
+                                     "L0_parent_low_educ_lv",
+                                     "L1"),
+                            #eventvar = "event",     # only for survival outcome
+                            ## Values at which effects are evaluated
+                            a0 = 0,
+                            a1 = 1,
+                            m_cde = 0,              # mediator level for the CDE
+                            c_cond = c(0,0,0),                 # covariate level
+                            ## Model types
+                            mreg = "logistic",
+                            yreg = "logistic",
+                            ## Additional specification
+                            interaction = TRUE,
+                            casecontrol = FALSE)
+results.binary <- summary(regmedint_bin)
+
+# taking the exponential of the estimations
+exp(results.binary$summary_myreg[c("cde","pnde","tnie","tnde","pnie","te"),
+                                 c("est","lower","upper")])
+#### Mediation analysis
+#           est    lower    upper
+# cde  1.442942 1.191195 1.747893
+# pnde 1.448035 1.245470 1.683545
+# tnie 1.050029 1.013842 1.087509
+# tnde 1.450344 1.257042 1.673371
+# pnie 1.048358 1.029285 1.067783
+# te   1.520479 1.316954 1.755457
+```
+
+
+
+## Three-way decomposition {#trad3way}
+
+In order to carry-out a three-way decomposition with standard regressions, we will use the same models as for the two-way decomposition (equations \@ref(eq:contoutcomereg), \@ref(eq:binoutcomereg) and \@ref(eq:medreg)).
+
+[@vanderweele2013] defines:
+
+- the $\text{PNDE} = \mathbb{E}\left(Y_{A=1,M_{A=0}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)$,
+- the $\text{PNIE} = \mathbb{E}\left(Y_{A=0,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)$,
+- and the mediated interactive effect $\text{MIE} = \mathbb{E}\left( \left[ Y_{1,1} - Y_{1,0} - Y_{0,1} - Y_{0,0}\right] \times \left[M_1 - M_0 \right]\right)$.
+
+The sum of these 3 components is equal to the Average total effect (ATE).
+
+**With a continuous outcome and a binary mediator**, the PNDE and PNIE can be estimated as for the two-way decomposition (section \@ref(trad2waynatural)) using the linear regression of the outcome (equation \@ref(eq:contoutcomereg)) and the logistic regression of the mediator (equation \@ref(eq:medreg)).
+
+The mediated interactive effect can be estimated using the same equations \@ref(eq:contoutcomereg) and \@ref(eq:medreg), by:
+$$ \scriptsize \text{MIE} \mid (L(0), L(1)) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]$$
+
+Conditional on participants for which $L(0)=0$ and $L(1)=0$, the expression is simplified:
+$$\text{MIE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A )}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A )} - \frac{\exp (\hat{\beta}_0)}{1 + \exp (\hat{\beta}_0)}\right]$$
+
+```{r trad_threeway_continuous, echo=TRUE, eval = FALSE}
+### For a continuous outcome, in the subgroup with L(0)=0 and L(1)=0
+## The PNDE is:
+trad_PNDE_qol <- gamma.A.q + gamma.AM.q * (exp(beta.0)) / (1 + exp(beta.0))
+trad_PNDE_qol
+# -4.845089
+
+## The PNIE is:
+trad_PNIE_qol <- gamma.M.q *
+  (exp(beta.0 + beta.A) /
+     (1 + exp(beta.0 + beta.A)) - exp(beta.0) / (1 + exp(beta.0)))
+trad_PNIE_qol
+# -0.9095061
+
+## The MIE is:
+trad_MIE_qol <- gamma.AM.q *
+  (exp(beta.0 + beta.A) / (1 + exp(beta.0 + beta.A)) -
+     exp(beta.0) / (1 + exp(beta.0)))
+trad_MIE_qol
+# -0.591684
+```
+
+
+**With a binary outcome**, the total effect, the direct and indirect effects can be expressed using risk ratios or odds ratios. In order to express the mediated interactive effect, [@vanderweele2013] suggested decomposing the *excess relative risk of the total effect* $(\text{RR}^{\text{TE}}-1)$, which enables the expression of the mediated interactive effect on an additive scale. 
+
+On the difference scale, the total effect can be decomposed as the sum of the PNDE, the PNIE and the MIE:
+$$\begin{array}{rl}
+\mathbb{E}(Y_1) - \mathbb{E}(Y_0) = & \left[ \mathbb{E}\left(Y_{1M_0}\right) - \mathbb{E}\left(Y_{0M_0}\right) \right] + \left[ \mathbb{E}\left(Y_{0M_1}\right) - \mathbb{E}\left(Y_{0M_0}\right) \right] \\ 
+                                    & + \left[ \left[ \mathbb{E}\left(Y_{1M_1}\right) - \mathbb{E}\left(Y_{1M_0}\right) \right] - \left[ \mathbb{E}\left(Y_{0M_1}\right) - \mathbb{E}\left(Y_{0M_0}\right) \right] \right] \\
+                                  = & \text{PNDE + PNIE} \\
+                                    & \text{ + MIE}
+\end{array}$$
+
+Dividing by $\mathbb{E}(Y_0) = \mathbb{E}\left(Y_{0M_0}\right)$, we obtain the excess relative risk of the total effect decomposition:
+$$\begin{array}{rl}
+ \frac{\mathbb{E}(Y_1)}{\mathbb{E}(Y_0)}-1 = & \left[ \frac{\mathbb{E}\left( Y_{1M_0}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - 1 \right]  + \left[ \frac{\mathbb{E}\left( Y_{0M_1}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - 1 \right] \\
+                                            & + \left[ \frac{\mathbb{E}\left( Y_{1M_1}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - \frac{\mathbb{E}\left( Y_{1M_0}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - \frac{\mathbb{E}\left( Y_{0M_1}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} + 1 \right]
+\end{array}$$
+where the first component is the *excess relative risk due to the PNDE*, the second component is the *excess relative risk due to the PNIE* and the third component is the *mediated excess relative risk due to interaction*.
+
+
+If the outcome is rare, relative risks are approximately equal to odds ratios, and the 3 components of the excess relative risk can be estimated using the logistic regression of the outcome (equation \@ref(eq:binoutcomereg)) and the logistic regression of the mediator (equation \@ref(eq:medreg)).
+
+The component of the excess relative risk due to the PNDE is approximately equal to:
+$$\scriptsize
+\text{RR}^\text{PNDE} - 1 \approx \frac{ \exp \left[ \hat{\gamma}_A (1 - 0) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \right]}{ \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right] } - 1 $$
+
+
+The component of the excess relative risk due to the PNIE is approximately equal to:
+$$\scriptsize
+\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right] } - 1 $$
+
+The component of the excess relative risk due to the mediated interactive effect is approximately equal to:
+$$\small
+\begin{array}{rl}
+\text{RERI}_{mediated} \approx  & \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]} \\
+                                & - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)  \right) \right]} \\
+                                & - \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right]} + 1
+\end{array}$$
+
+Conditional on participants for which $L(0)=0$ and $L(1)=0$, these expressions are simplified:
+$$\text{RR}^\text{PNDE} - 1 \approx \frac{ \exp \left( \hat{\gamma}_A \right) \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{ \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right) \right] } - 1 $$
+
+$$\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right) \right] } - 1 $$
+
+and
+$$\begin{array}{rl}
+\text{RERI}_\text{mediated} \approx  & \frac{ \exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \right) \right]}  - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \right) \right]} \\
+                                & - \frac{ \exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right]} + 1
+\end{array}$$
+
+
+```{r trad_threeway_binary, echo=TRUE, eval = FALSE}
+### For a binary outcome, in the subgroup with L(0)=0 and L(1)=0
+## The excess relative risk is 52.3% (calculated from the OR of the total effect)
+1.523254 - 1
+# 0.523254
+
+## The excess relative risk is decomposed into 3 components:
+## The component of the excess relative risk due to PNDE is:
+comp_PNDE_death <- exp(gamma.A.d) * (1 + exp(beta.0 + gamma.M.d + gamma.AM.d)) /
+  (1 + exp(beta.0 + gamma.M.d)) - 1
+comp_PNDE_death
+# 0.4480347 
+
+## The component of the excess relative risk due to PNIE is:
+comp_PNIE_death <- (1 + exp(beta.0)) * (1 + exp(beta.0 + beta.A + gamma.M.d)) /
+  ((1 + exp(beta.0 + beta.A)) * (1 + exp(beta.0 + gamma.M.d))) - 1
+comp_PNIE_death
+# 0.04835753
+
+## The component of the excess relative risk due to the mediated interactive
+## effect is:
+comp_MIE_qol <- exp(gamma.A.d) *
+  (1 + exp(beta.0 + beta.A + gamma.M.d + gamma.AM.d)) * (1 + exp(beta.0)) /
+  ((1 + exp(beta.0 + gamma.M.d)) * (1 + exp(beta.0 + beta.A))) -
+  (1 + exp(beta.0 + beta.A + gamma.M.d)) * (1 + exp(beta.0)) /
+  ((1 + exp(beta.0 + gamma.M.d)) * (1 + exp(beta.0 + beta.A))) -
+  exp(gamma.A.d) * (1 + exp(beta.0 + gamma.M.d + gamma.AM.d)) /
+  (1 + exp(beta.0 + gamma.M.d)) + 1
+comp_MIE_qol
+# 0.02408674
+```
+
+In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is $\approx 52.3\%$, and of this excess relative risk...:
+
+- $\approx 44.8\%$ is attributable to the PNDE of ACE,
+- $\approx 4.8\%$ is attributable to the PNIE of ACE through smoking,
+- $\approx 2.4\%$ is attributable to the mediated interactive effect between ACE and smoking. 
+
+Note: in this simulated data, the probability of death is around $20\%$, so that the requirement of a rare outcome is not really fulfilled (usually, we would consider $< 10\%$ to be acceptable).
+
+
+
+## Four-way decomposition
+
+The same models as for the two-way and three-way decomposition (equations \@ref(eq:contoutcomereg), \@ref(eq:binoutcomereg) and \@ref(eq:medreg)) will be used in order to apply the four-way decomposition.
+
+[@vanderweele2014] defines:
+
+- the $\text{CDE}_{M=0} = \mathbb{E}\left( Y_{1,0}\right) - \mathbb{E}\left(Y_{0,0} \right)$,
+- the mediated interaction effect $\text{MIE} = \mathbb{E}\left( \left[ Y_{1,1} - Y_{1,0} - Y_{0,1} - Y_{0,0}\right] \times \left[M_1 - M_0 \right]\right)$,
+- the reference interaction effect $\text{RIE} = \mathbb{E}\left( \left[Y_{1,1} - Y_{1,0} - Y_{0,1} - Y_{0,0}\right] \times M_0 \right)$,
+- and the $\text{PNIE} = \mathbb{E}\left(Y_{A=0,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=0}} \right)$.
+
+The sum of these 4 components is equal to the Average total effect (ATE), and if the exposure affects the outcome, then at least one of these 4 components should be non-null.
+
+
+**With a continuous outcome and a binary mediator**, the $\text{CDE}_{M=0}$ and $\text{PNIE}$ can be estimated as for the two-way decomposition (sections \@ref(trad2waycde) and \@ref(trad2waynatural)), and the $\text{MIE}$ can be estimated as for the three-way decomposition (section \@ref(trad3way)), using the linear regression of the outcome (equation \@ref(eq:contoutcomereg)) and the logistic regression of the mediator (equation \@ref(eq:medreg)).
+
+$$\text{CDE}_{M=0} \mid \left(L(0),L(1) \right) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M} \times 0$$
+
+$$\scriptsize \text{PNIE} \mid L(0), L(1) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]$$
+
+and 
+
+$$ \scriptsize \text{MIE} \mid (L(0), L(1)) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]$$
+The RIE can be estimated by:
+$$\scriptsize
+\text{RIE} \mid (L(0), L(1)) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - 0 \right]$$
+
+```{r trad_fourway_continuous, echo=TRUE, eval = FALSE}
+### For a continuous outcome, in the subgroup with L(0)=0 and L(1)=0
+## The CDE_(M=0) is:
+trad_CDE_qol_m0 <- gamma.A.q + gamma.AM.q * 0
+trad_CDE_qol_m0
+# -3.715265
+
+## The PNIE is:
+trad_PNIE_qol <- gamma.M.q *
+  (exp(beta.0 + beta.A) /
+     (1 + exp(beta.0 + beta.A)) - exp(beta.0) / (1 + exp(beta.0)))
+trad_PNIE_qol
+# -0.9095061
+
+## The MIE is:
+trad_MIE_qol <- gamma.AM.q *
+  (exp(beta.0 + beta.A) / (1 + exp(beta.0 + beta.A)) -
+     exp(beta.0) / (1 + exp(beta.0)))
+trad_MIE_qol
+# -0.591684
+
+## The RIE is:
+trad_RIE_qol <- gamma.AM.q * (exp(beta.0)) / (1 + exp(beta.0))
+trad_RIE_qol
+# -1.129824
+```
+
+
+**With a binary outcome and a binary mediator**, [@vanderweele2014] suggested decomposing the *excess relative risk of the total effect* $(\text{RR}^{\text{TE}}-1)$ (as for the 3-way decomposition), which enables the expression of the MIE and the RIE on an additive scale. 
+
+If the outcome is rare, 
+
+The component of the excess relative risk due to the CDE is approximately equal to:
+
+$$\small
+\begin{array}{rl}
+\frac{\mathbb{E}\left( Y_{0,0} \mid L(0), L(1) \right)}{\mathbb{E}\left( Y_0 \mid L(0), L(1) \right)} \left(\frac{\mathbb{E}\left(Y_{1,0} \mid L(0),L(1) \right)}{\mathbb{E}\left(Y_{0,0} \mid L(0),L(1)\right)} - 1\right) \approx & \frac{\exp \left( \hat{\gamma}_A(1-0) + \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} \times 1 \times 0 \right) \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)} \\
+& - \frac{\exp \left( \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} \times 0 \times 0\right) \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)} 
+\end{array}$$
+
+The component of the excess relative risk due to the PNIE is approximately equal to:
+$$\scriptsize
+\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right] } - 1 $$
+
+
+The component of the excess relative risk due to the mediated interactive effect is approximately equal to:
+$$\small
+\begin{array}{rl}
+\text{RERI}_{mediated} \approx  & \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]} \\
+                                & - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)  \right) \right]} \\
+                                & - \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right]} + 1
+\end{array}$$
+
+and the component of the excess relative risk due to the reference interaction effect is approximately equal to:
+$$
+\begin{array}{rl}
+\text{RERI}_\text{ref} \approx  & \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1\right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)\right] } - 1 \\
+                                & - \frac{\exp \left[ \hat{\gamma}_A (1 - 0) + \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} 1 \times 0 \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)} \\
+                                & + \frac{\exp \left( \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} \times 0 \times 0 \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) } 
+\end{array}$$
+
+
+Conditional on participants for which $L(0)=0$ and $L(1)=0$, these expressions are simplified:
+
+The component of the excess relative risk due to the CDE is approximately equal to:
+$$ \approx \frac{\exp \left( \hat{\gamma}_A \right) \left[ 1 + \exp \left( \hat{\beta}_0 \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right)} - \frac{ \left[ 1 + \exp \left( \hat{\beta}_0 \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right)}$$
+
+The component of the excess relative risk due to the PNIE is approximately equal to:
+$$\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right) \right] } - 1 $$
+
+
+The component of the excess relative risk due to the mediated interactive effect is approximately equal to:
+$$
+\begin{array}{rl}
+\text{RERI}_{mediated} \approx & \frac{\exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A  \right) \right]}  - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \right) \right]} \\
+ & - \frac{\exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right]} + 1
+\end{array}
+$$
+
+and the component of the excess relative risk due to the reference interaction effect is approximately equal to:
+$$\small
+\text{RERI}_\text{ref} \approx \frac{\exp \left( \hat{\gamma}_A\right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] } - 1  - \frac{\exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)} + \frac{ \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right) } 
+$$
+
+```{r trad_fourway_binary, echo=TRUE, eval = FALSE}
+### For a binary outcome, in the subgroup with L(0)=0 and L(1)=0
+## The excess relative risk is 52.3% (calculated from the OR of the total effect)
+1.523254 - 1
+# 0.523254
+
+## The excess relative risk is decomposed into 4 components:
+## The component of the excess relative risk due to the CDE(M=0) is:
+comp_CDE_death_m0 <- exp(gamma.A.d) * (1 + exp(beta.0)) /
+  (1 + exp(beta.0 + gamma.M.d)) -
+  (1 + exp(beta.0)) / (1 + exp(beta.0 + gamma.M.d))
+comp_CDE_death_m0
+# 0.402041
+
+## The component of the excess relative risk due to the PNIE is:
+comp_PNIE_death <- (1 + exp(beta.0)) * (1 + exp(beta.0 + beta.A + gamma.M.d)) /
+  ((1 + exp(beta.0 + beta.A)) * (1 + exp(beta.0 + gamma.M.d))) - 1
+comp_PNIE_death
+# 0.04835753
+
+## The component of the excess relative risk due to the MIE is:
+comp_MIE_death <- exp(gamma.A.d) * (1 + exp(beta.0 + beta.A + gamma.M.d +
+                                              gamma.AM.d)) * (1 + exp(beta.0)) /
+  ((1 + exp(beta.0 + gamma.M.d)) * (1 + exp(beta.0 + beta.A))) -
+  (1 + exp(beta.0 + beta.A + gamma.M.d)) * (1 + exp(beta.0)) /
+  ((1 + exp(beta.0 + gamma.M.d)) * (1 + exp(beta.0 + beta.A))) -
+  exp(gamma.A.d) * (1 + exp(beta.0 + gamma.M.d + gamma.AM.d)) /
+  (1 + exp(beta.0 + gamma.M.d)) + 1
+comp_MIE_death
+# 0.02408674
+
+## The component of the excess relative risk due to the RIE is:
+comp_RIE_death <- exp(gamma.A.d) * (1 + exp(beta.0 + gamma.M.d + gamma.AM.d)) /
+  (1 + exp(beta.0 + gamma.M.d)) - 1 -
+  exp(gamma.A.d) * (1 + exp(beta.0)) / (1 + exp(beta.0 + gamma.M.d)) +
+  (1 + exp(beta.0)) / (1 + exp(beta.0 + gamma.M.d))
+comp_RIE_death
+# 0.04599376
+```
+
+In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is $\approx 52.3\%$, and of this excess relative risk...:
+
+- $\approx 40.2\%$ is attributable to the CDE of ACE,
+- $\approx 4.8\%$ is attributable to the PNIE of ACE through smoking,
+- $\approx 2.4\%$ is attributable to the mediated interactive effect between ACE and smoking. 
+- and $\approx 4.6\%$ is attributable to the (ACE $\ast$ smoking) reference interactive effect. 
+
+Note: in this simulated data, the probability of death is around $20\%$, so that the requirement of a rare outcome is not really fulfilled (usually, we would consider $< 10\%$ to be acceptable).
+
+
+**R package for 3-way and 4-way decomposition**
+
+The `CMAverse` R [package](https://bs1125.github.io/CMAverse/index.html) (a suite of functions for causal mediation analysis) can be used for 3-way and 4-way decomposition. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.
+
+For continuous outcomes:
+```{r `cmavers_continuous, echo=TRUE, eval = FALSE}
+library(CMAverse)
+
+### For the continuous outcome
+## Closed-form parameter function estimation and delta method inferece
+res_rb_param_delta <- cmest(data = df1_int,
+                            model = "rb", # for "regression based" (rb) approach
+                            outcome = "Y_qol",        # outcome variable
+                            exposure = "A0_ace",      # exposure variable
+                            mediator = "M_smoking",   # mediator
+                            basec = c("L0_male",      # confounders
+                                      "L0_parent_low_educ_lv",
+                                      "L1"),
+                            EMint = TRUE, # exposures*mediator interaction
+                            mreg = list("logistic"), # model of the mediator
+                            yreg = "linear",       # model of the outcome
+                            astar = 0,
+                            a = 1,
+                            mval = list(0),
+                            basecval = list(0,0,0),      # covariate level
+                            estimation = "paramfunc", #  closed-form parameter
+                                                      # function estimation
+                            inference = "delta") # IC95% : delta method
+summary(res_rb_param_delta)
+# Closed-form parameter function estimation with
+# delta method standard errors, confidence intervals and p-values
+#
+#                Estimate Std.error  95% CIL 95% CIU    P.val
+#   cde          -3.71527   0.41600 -4.53061  -2.900  < 2e-16 ***   CDE(M=0)
+#   pnde         -4.84509   0.35053 -5.53211  -4.158  < 2e-16 ***
+#   tnde         -5.43677   0.34049 -6.10412  -4.769  < 2e-16 ***
+#   pnie         -0.90951   0.12266 -1.14992  -0.669 1.22e-13 ***   PNIE
+#   tnie         -1.50119   0.20822 -1.90929  -1.093 5.61e-13 ***
+#   te           -6.34628   0.38788 -7.10652  -5.586  < 2e-16 ***
+#   intref       -1.12982   0.13824 -1.40076  -0.859 2.22e-16 ***   INTref
+#   intmed       -0.59168   0.10398 -0.79547  -0.388 1.27e-08 ***   MIE
+#   cde(prop)     0.58542   0.04505  0.49712   0.674  < 2e-16 ***
+#   intref(prop)  0.17803   0.02560  0.12786   0.228 3.51e-12 ***
+#   intmed(prop)  0.09323   0.01586  0.06216   0.124 4.11e-09 ***
+#   pnie(prop)    0.14331   0.01655  0.11087   0.176  < 2e-16 ***
+#   pm            0.23655   0.02948  0.17877   0.294 1.11e-15 ***
+#   int           0.27126   0.03780  0.19717   0.345 7.20e-13 ***
+#   pe            0.41458   0.04505  0.32627   0.503  < 2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# for the 3-way decomposition, the PNDE, PNIE, and MIE are given by:
+data.frame("Estimate" = res_rb_param_delta$effect.pe,
+           "lower95CI" = res_rb_param_delta$effect.ci.low,
+           "upper95CI" = res_rb_param_delta$effect.ci.high,
+           "P.value" = res_rb_param_delta$effect.pval)[c("pnde","pnie", "intmed"),]
+#          Estimate  lower95CI  upper95CI      P.value
+# pnde   -4.8450888 -5.5321113 -4.1580663 0.000000e+00
+# pnie   -0.9095061 -1.1499166 -0.6690957 1.219025e-13
+# intmed -0.5916840 -0.7954739 -0.3878941 1.266206e-08
+
+# for the 4-way decomposition, the CDE(M=0), Intref, MIE and PNIE are given by:
+data.frame("Estimate" = res_rb_param_delta$effect.pe,
+           "lower95CI" = res_rb_param_delta$effect.ci.low,
+           "upper95CI" = res_rb_param_delta$effect.ci.high,
+           "P.value" = res_rb_param_delta$effect.pval)[c("cde","intref","intmed","pnie"),]
+#          Estimate  lower95CI  upper95CI      P.value
+# cde    -3.7152652 -4.5306145 -2.8999159 0.000000e+00
+# intref -1.1298236 -1.4007600 -0.8588871 2.220446e-16
+# intmed -0.5916840 -0.7954739 -0.3878941 1.266206e-08
+# pnie   -0.9095061 -1.1499166 -0.6690957 1.219025e-13
+```
+
+For binary outcomes:
+```{r `cmavers_binary, echo=TRUE, eval = FALSE}
+### For the binary outcome
+## Closed-form parameter function estimation and delta method inferece
+res_rb_param_delta <- cmest(data = df1_int,
+                            model = "rb", # for "regression based" (rb) approach
+                            outcome = "Y_death",        # outcome variable
+                            exposure = "A0_ace",      # exposure variable
+                            mediator = "M_smoking",   # mediator
+                            basec = c("L0_male",      # confounders
+                                      "L0_parent_low_educ_lv",
+                                      "L1"),
+                            EMint = TRUE, # exposures*mediator interaction
+                            mreg = list("logistic"), # model of the mediator
+                            yreg = "logistic",       # model of the outcome
+                            astar = 0,
+                            a = 1,
+                            mval = list(0),
+                            basecval = list(0,0,0),      # covariate level
+                            estimation = "paramfunc", #  closed-form parameter
+                            # function estimation
+                            inference = "delta") # IC95% : delta method
+summary(res_rb_param_delta)
+# Closed-form parameter function estimation with
+# delta method standard errors, confidence intervals and p-values
+#
+# Estimate Std.error  95% CIL 95% CIU    P.val
+#   Rcde            1.44294   0.14115  1.19120   1.748 0.000178 ***
+#   Rpnde           1.44803   0.11133  1.24547   1.684 1.47e-06 ***
+#   Rtnde           1.45034   0.10585  1.25704   1.673 3.50e-07 ***
+#   Rpnie           1.04836   0.00982  1.02929   1.068 4.62e-07 ***
+#   Rtnie           1.05003   0.01879  1.01384   1.088 0.006368 **
+#   Rte             1.52048   0.11148  1.31695   1.755 1.10e-08 ***
+#   ERcde           0.40204   0.12699  0.15315   0.651 0.001546 **  CDE(M=0)
+#   ERintref        0.04599   0.04821 -0.04850   0.140 0.340093     INTref
+#   ERintmed        0.02409   0.02543 -0.02576   0.074 0.343607     MIE
+#   ERpnie          0.04836   0.00982  0.02911   0.068 8.47e-07 *** PNIE
+#   ERcde(prop)     0.77244   0.14282  0.49252   1.052 6.36e-08 ***
+#   ERintref(prop)  0.08837   0.09311 -0.09413   0.271 0.342600
+#   ERintmed(prop)  0.04628   0.04901 -0.04978   0.142 0.345058
+#   ERpnie(prop)    0.09291   0.02602  0.04192   0.144 0.000356 ***
+#   pm              0.13919   0.05498  0.03142   0.247 0.011359 *
+#   int             0.13465   0.14186 -0.14340   0.413 0.342562
+#   pe              0.22756   0.14282 -0.05237   0.507 0.111092
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+# for the 3-way decomposition, the excess relative risk due to
+# the PNDE, PNIE and MIE are given by:
+data.frame("Estimate" = res_rb_param_delta$effect.pe - 1,
+           "lower95CI" = res_rb_param_delta$effect.ci.low - 1,
+           "upper95CI" = res_rb_param_delta$effect.ci.high - 1)[c("Rpnde"),]
+#        Estimate lower95CI upper95CI
+# Rpnde 0.4480347 0.2454699 0.6835449
+# and
+data.frame("Estimate" = res_rb_param_delta$effect.pe,
+           "lower95CI" = res_rb_param_delta$effect.ci.low,
+           "upper95CI" = res_rb_param_delta$effect.ci.high,
+           "P.value" = res_rb_param_delta$effect.pval)[c("ERpnie", "ERintmed"),]
+#            Estimate   lower95CI  upper95CI      P.value
+# ERpnie   0.04835753  0.02910970 0.06760535 8.473169e-07
+# ERintmed 0.02408674 -0.02576124 0.07393472 3.436070e-01
+
+
+
+
+# for the 4-way decomposition, the CDE(M=0), the excess relative risk due to
+# CDE(M=0), Intref, MIE and PNIE are given by:
+data.frame("Estimate" = res_rb_param_delta$effect.pe,
+           "lower95CI" = res_rb_param_delta$effect.ci.low,
+           "upper95CI" = res_rb_param_delta$effect.ci.high,
+           "P.value" = res_rb_param_delta$effect.pval)[c("ERcde","ERintref","ERintmed","ERpnie"),]
+#            Estimate   lower95CI  upper95CI      P.value
+# ERcde    0.40204098  0.15315072 0.65093124 1.545523e-03
+# ERintref 0.04599376 -0.04850084 0.14048835 3.400930e-01
+# ERintmed 0.02408674 -0.02576124 0.07393472 3.436070e-01
+# ERpnie   0.04835753  0.02910970 0.06760535 8.473169e-07
+```
+

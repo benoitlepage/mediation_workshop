@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 9 Appendix A: Data generating mechanisms | Mediation Workshop</title>
+  <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
+  <meta name="generator" content="bookdown 0.32 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 9 Appendix A: Data generating mechanisms | Mediation Workshop" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
+  <meta name="github-repo" content="mediation_workshop" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 9 Appendix A: Data generating mechanisms | Mediation Workshop" />
+  
+  <meta name="twitter:description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
+  
+
+<meta name="author" content="Benoît Lepage" />
+
+
+<meta name="date" content="2023-02-15" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="chap_tmle.html"/>
+<link rel="next" href="appendix_b.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Mediation workshop</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>2</b> Software</a></li>
+<li class="chapter" data-level="3" data-path="data-sets.html"><a href="data-sets.html"><i class="fa fa-check"></i><b>3</b> Data sets</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="data-sets.html"><a href="data-sets.html#general-presentation-of-the-data-used-in-our-examples"><i class="fa fa-check"></i><b>3.1</b> General presentation of the data used in our examples</a></li>
+<li class="chapter" data-level="3.2" data-path="data-sets.html"><a href="data-sets.html#data-generating-mechanisms"><i class="fa fa-check"></i><b>3.2</b> Data generating mechanisms</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="chap_baron_kenny_sem.html"><a href="chap_baron_kenny_sem.html"><i class="fa fa-check"></i><b>4</b> Baron and Kenny, structural equation models</a></li>
+<li class="chapter" data-level="5" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html"><i class="fa fa-check"></i><b>5</b> Traditional regression models</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#estimation-of-the-average-total-effect-ate"><i class="fa fa-check"></i><b>5.1</b> Estimation of the Average Total Effect (ATE)</a></li>
+<li class="chapter" data-level="5.2" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad2way"><i class="fa fa-check"></i><b>5.2</b> Two-way decomposition</a>
+<ul>
+<li class="chapter" data-level="5.2.1" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad2waycde"><i class="fa fa-check"></i><b>5.2.1</b> Controlled Direct Effect</a></li>
+<li class="chapter" data-level="5.2.2" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad2waynatural"><i class="fa fa-check"></i><b>5.2.2</b> Natural Direct and Indirect effects</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad3way"><i class="fa fa-check"></i><b>5.3</b> Three-way decomposition</a></li>
+<li class="chapter" data-level="5.4" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#four-way-decomposition"><i class="fa fa-check"></i><b>5.4</b> Four-way decomposition</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="chap_gcomp.html"><a href="chap_gcomp.html"><i class="fa fa-check"></i><b>6</b> G-computation</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="chap_gcomp.html"><a href="chap_gcomp.html#estimation-of-the-average-total-effect-ate-1"><i class="fa fa-check"></i><b>6.1</b> Estimation of the Average Total Effect (ATE)</a></li>
+<li class="chapter" data-level="6.2" data-path="chap_gcomp.html"><a href="chap_gcomp.html#estimation-of-controlled-direct-effects-cde"><i class="fa fa-check"></i><b>6.2</b> Estimation of Controlled Direct Effects (CDE)</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="chap_gcomp.html"><a href="chap_gcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.2.1</b> Parametric g-computation</a></li>
+<li class="chapter" data-level="6.2.2" data-path="chap_gcomp.html"><a href="chap_gcomp.html#g-computation-by-iterative-conditional-expectation"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
+<li class="chapter" data-level="6.2.3" data-path="chap_gcomp.html"><a href="chap_gcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="chap_iptw.html"><a href="chap_iptw.html"><i class="fa fa-check"></i><b>7</b> Inverse Probability of Treatment Weighting (IPTW)</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="chap_iptw.html"><a href="chap_iptw.html#estimation-of-the-average-total-effect"><i class="fa fa-check"></i><b>7.1</b> Estimation of the Average total effect</a>
+<ul>
+<li class="chapter" data-level="7.1.1" data-path="chap_iptw.html"><a href="chap_iptw.html#iptw-for-the-ate"><i class="fa fa-check"></i><b>7.1.1</b> IPTW for the ATE</a></li>
+<li class="chapter" data-level="7.1.2" data-path="chap_iptw.html"><a href="chap_iptw.html#stabilized-iptw-for-the-ate"><i class="fa fa-check"></i><b>7.1.2</b> Stabilized IPTW for the ATE</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>8</b> Targeted Maximum Likelihood Estimation (TMLE)</a></li>
+<li class="chapter" data-level="9" data-path="appendix_a.html"><a href="appendix_a.html"><i class="fa fa-check"></i><b>9</b> Appendix A: Data generating mechanisms</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="appendix_a.html"><a href="appendix_a.html#first-causal-model-data-generating-mechanism-without-mediator-outcome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>9.1</b> First causal model: Data generating mechanism without mediator-outcome confounder affected by the exposure</a></li>
+<li class="chapter" data-level="9.2" data-path="appendix_a.html"><a href="appendix_a.html#second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>9.2</b> Second causal model: Data generating mechanism with mediator-outcome confounder affected by the exposure</a></li>
+<li class="chapter" data-level="9.3" data-path="appendix_a.html"><a href="appendix_a.html#simulation-of-the-four-data-sets-used-in-examples"><i class="fa fa-check"></i><b>9.3</b> Simulation of the four data sets used in examples</a>
+<ul>
+<li class="chapter" data-level="9.3.1" data-path="appendix_a.html"><a href="appendix_a.html#data-sets-generated-from-the-causal-model-1"><i class="fa fa-check"></i><b>9.3.1</b> Data sets generated from the causal model 1</a></li>
+<li class="chapter" data-level="9.3.2" data-path="appendix_a.html"><a href="appendix_a.html#data-sets-generated-from-the-causal-model-2"><i class="fa fa-check"></i><b>9.3.2</b> Data sets generated from the causal model 2</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="appendix_b.html"><a href="appendix_b.html"><i class="fa fa-check"></i><b>10</b> Appendix B: Calculation of the true causal quantities</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="appendix_b.html"><a href="appendix_b.html#true-causal-quantities-without-mediator-ouctome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>10.1</b> True causal quantities without mediator-ouctome confounder affected by the exposure</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="appendix_b.html"><a href="appendix_b.html#average-total-effects-ate"><i class="fa fa-check"></i><b>10.1.1</b> Average total effects (ATE)</a></li>
+<li class="chapter" data-level="10.1.2" data-path="appendix_b.html"><a href="appendix_b.html#controlled-direct-effects-cde"><i class="fa fa-check"></i><b>10.1.2</b> Controlled direct effects (CDE)</a></li>
+<li class="chapter" data-level="10.1.3" data-path="appendix_b.html"><a href="appendix_b.html#pure-natural-direct-effect-and-total-natural-indirect-effect"><i class="fa fa-check"></i><b>10.1.3</b> Pure natural direct effect and Total natural indirect effect</a></li>
+<li class="chapter" data-level="10.1.4" data-path="appendix_b.html"><a href="appendix_b.html#total-natural-direct-effect-and-pure-natural-indirect-effect"><i class="fa fa-check"></i><b>10.1.4</b> Total natural direct effect and Pure natural indirect effect</a></li>
+<li class="chapter" data-level="10.1.5" data-path="appendix_b.html"><a href="appendix_b.html#vanderweeles-3-way-decomposition"><i class="fa fa-check"></i><b>10.1.5</b> Vanderweele’s 3-way decomposition</a></li>
+<li class="chapter" data-level="10.1.6" data-path="appendix_b.html"><a href="appendix_b.html#vanderweeles-4-way-decomposition"><i class="fa fa-check"></i><b>10.1.6</b> Vanderweele’s 4-way decomposition</a></li>
+<li class="chapter" data-level="10.1.7" data-path="appendix_b.html"><a href="appendix_b.html#marginal-randomized-direct-and-indirect-effects"><i class="fa fa-check"></i><b>10.1.7</b> Marginal randomized direct and indirect effects</a></li>
+<li class="chapter" data-level="10.1.8" data-path="appendix_b.html"><a href="appendix_b.html#conditional-randomized-direct-and-indirect-effects"><i class="fa fa-check"></i><b>10.1.8</b> Conditional randomized direct and indirect effects</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="appendix_b.html"><a href="appendix_b.html#true-causal-quantities-with-mediator-ouctome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>10.2</b> True causal quantities with mediator-ouctome confounder affected by the exposure</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="appendix_b.html"><a href="appendix_b.html#average-total-effects-ate-1"><i class="fa fa-check"></i><b>10.2.1</b> Average total effects (ATE)</a></li>
+<li class="chapter" data-level="10.2.2" data-path="appendix_b.html"><a href="appendix_b.html#controlled-direct-effects-cde-1"><i class="fa fa-check"></i><b>10.2.2</b> Controlled direct effects (CDE)</a></li>
+<li class="chapter" data-level="10.2.3" data-path="appendix_b.html"><a href="appendix_b.html#marginal-randomized-direct-and-indirect-effects-1"><i class="fa fa-check"></i><b>10.2.3</b> Marginal randomized direct and indirect effects</a></li>
+<li class="chapter" data-level="10.2.4" data-path="appendix_b.html"><a href="appendix_b.html#conditional-randomized-direct-and-indirect-effects-1"><i class="fa fa-check"></i><b>10.2.4</b> Conditional randomized direct and indirect effects</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Mediation Workshop</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="appendix_a" class="section level1 hasAnchor" number="9">
+<h1><span class="header-section-number">Chapter 9</span> Appendix A: Data generating mechanisms<a href="appendix_a.html#appendix_a" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>The data generating mechanisms are characterized by a causal model and a statistical model that generate data given in example.</p>
+<p>In the first causal model, the mediator-outcome confounder <span class="math inline">\(L(1)\)</span> is not affected by the exposure. In the second causal model, the mediator-outcome confounder <span class="math inline">\(L(1)\)</span> is affected by the exposure.</p>
+<div id="first-causal-model-data-generating-mechanism-without-mediator-outcome-confounder-affected-by-the-exposure" class="section level2 hasAnchor" number="9.1">
+<h2><span class="header-section-number">9.1</span> First causal model: Data generating mechanism without mediator-outcome confounder affected by the exposure<a href="appendix_a.html#first-causal-model-data-generating-mechanism-without-mediator-outcome-confounder-affected-by-the-exposure" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This data generating mechanism is defined by the following set of structural equations:
+<span class="math display">\[\begin{array}{lll}
+P(L(0)_{male} = 1) &amp;=&amp; p_{L(0)_{male}}\\
+P(L(0)_{parent} = 1) &amp;=&amp; p_{L(0)_{parent}}\\
+P(A_{ACE} = 1) &amp;=&amp; \beta_{A} + \beta_{male}^A \times L(0)_{male} + \beta_{parent}^A \times L(0)_{parent}\\
+P(L(1) = 1) &amp;=&amp; p_{L(1)}\\
+P(M_{smoking} = 1) &amp;=&amp; \beta_{M} + \beta_{male}^M \times L(0)_{male} + \beta_{parent}^M \times L(0)_{parent} + \beta_{L(1)}^M \times L(1) + \beta_{A}^M \times A_{ACE}\\
+P(Y_{death} = 1) &amp;=&amp; \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \beta_{parent}^Y \times L(0)_{parent} + \beta_{L(1)}^Y \times L(1)\\
+                 &amp; &amp; + \beta_{A}^Y \times A_{ACE} + \beta_{M}^Y \times M_{smoking} + \beta_{A \ast M }^Y \times A_{ACE} \times M_{smoking}\\
+\mathbb{E}(Y_{Qol} = 1) &amp;=&amp; \gamma_{Y} + \gamma_{male}^Y \times L(0)_{male} + \gamma_{parent}^Y \times L(0)_{parent} + \gamma_{L(1)}^Y \times L(1)\\
+                        &amp; &amp;+ \gamma_{A}^Y \times A_{ACE} + \gamma_{M}^Y \times M_{smoking} + \gamma_{A \ast M }^Y \times A_{ACE} \times M_{smoking} + \varepsilon_Y
+\end{array}\]</span>
+where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10)\)</span>.</p>
+<p>One can set the parameters of these structural equations using the following function <code>param.causal.model.1()</code>:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="appendix_a.html#cb25-1" aria-hidden="true" tabindex="-1"></a>param.causal.model<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">A.M.interaction =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb25-2"><a href="appendix_a.html#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># L0</span></span>
+<span id="cb25-3"><a href="appendix_a.html#cb25-3" aria-hidden="true" tabindex="-1"></a>p_L0_male <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb25-4"><a href="appendix_a.html#cb25-4" aria-hidden="true" tabindex="-1"></a>p_L0_parent_low_educ_lv <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
+<span id="cb25-5"><a href="appendix_a.html#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="appendix_a.html#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># A: A0_ace &lt;- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_parent_low_educ_lv ) </span></span>
+<span id="cb25-7"><a href="appendix_a.html#cb25-7" aria-hidden="true" tabindex="-1"></a>b_A <span class="ot">&lt;-</span> <span class="fl">0.05</span>   <span class="co"># reference prevalence is 5%</span></span>
+<span id="cb25-8"><a href="appendix_a.html#cb25-8" aria-hidden="true" tabindex="-1"></a>b_male_A <span class="ot">&lt;-</span> <span class="fl">0.04</span>  <span class="co"># + 0.04 for the effect of L0_male -&gt; A0_ace</span></span>
+<span id="cb25-9"><a href="appendix_a.html#cb25-9" aria-hidden="true" tabindex="-1"></a>b_parent_educ_A <span class="ot">&lt;-</span> <span class="fl">0.06</span>  <span class="co"># +0.06 for the effect of L0_parent_low_educ_lv -&gt; A0_ace</span></span>
+<span id="cb25-10"><a href="appendix_a.html#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="appendix_a.html#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co"># L1: intermediate confounder between M and Y, not influenced by A</span></span>
+<span id="cb25-12"><a href="appendix_a.html#cb25-12" aria-hidden="true" tabindex="-1"></a>p_L1 <span class="ot">&lt;-</span> <span class="fl">0.3</span></span>
+<span id="cb25-13"><a href="appendix_a.html#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="appendix_a.html#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="co"># M: M_smoking &lt;- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_parent_low_educ_lv + 0.07 * L1 +</span></span>
+<span id="cb25-15"><a href="appendix_a.html#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="co">#                         0.1 * A0_ace ) </span></span>
+<span id="cb25-16"><a href="appendix_a.html#cb25-16" aria-hidden="true" tabindex="-1"></a>b_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># reference prevalence is 20%</span></span>
+<span id="cb25-17"><a href="appendix_a.html#cb25-17" aria-hidden="true" tabindex="-1"></a>b_male_M <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># +0.05 for the effect of L0_male -&gt; M_smoking</span></span>
+<span id="cb25-18"><a href="appendix_a.html#cb25-18" aria-hidden="true" tabindex="-1"></a>b_parent_educ_M <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_parent_low_educ_lv -&gt; M_smoking</span></span>
+<span id="cb25-19"><a href="appendix_a.html#cb25-19" aria-hidden="true" tabindex="-1"></a>b_L1_M <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; M_smoking</span></span>
+<span id="cb25-20"><a href="appendix_a.html#cb25-20" aria-hidden="true" tabindex="-1"></a>b_A_M <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># +0.10 for the effect of A0_ace -&gt; M_smoking</span></span>
+<span id="cb25-21"><a href="appendix_a.html#cb25-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-22"><a href="appendix_a.html#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_parent_low_educ_lv + 0.05 * A0_ace +</span></span>
+<span id="cb25-23"><a href="appendix_a.html#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="co">#                   0.07 * L1 + 0.08 * M_smoking +</span></span>
+<span id="cb25-24"><a href="appendix_a.html#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="co">#                   0.03 * A0_ace * M_smoking * A.M.inter ) </span></span>
+<span id="cb25-25"><a href="appendix_a.html#cb25-25" aria-hidden="true" tabindex="-1"></a>b_Y <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># reference prevalence is 10%</span></span>
+<span id="cb25-26"><a href="appendix_a.html#cb25-26" aria-hidden="true" tabindex="-1"></a>b_male_Y <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb25-27"><a href="appendix_a.html#cb25-27" aria-hidden="true" tabindex="-1"></a>b_parent_educ_Y <span class="ot">&lt;-</span> <span class="fl">0.04</span> <span class="co"># +0.04 for the effect of L0_parent_low_educ_lv -&gt; Y</span></span>
+<span id="cb25-28"><a href="appendix_a.html#cb25-28" aria-hidden="true" tabindex="-1"></a>b_A_Y <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># 0.05 for the effect of A0_ace -&gt; Y</span></span>
+<span id="cb25-29"><a href="appendix_a.html#cb25-29" aria-hidden="true" tabindex="-1"></a>b_L1_Y <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; Y</span></span>
+<span id="cb25-30"><a href="appendix_a.html#cb25-30" aria-hidden="true" tabindex="-1"></a>b_M_Y <span class="ot">&lt;-</span> <span class="fl">0.08</span> <span class="co"># 0.08 for the effect of M_smoking -&gt; Y</span></span>
+<span id="cb25-31"><a href="appendix_a.html#cb25-31" aria-hidden="true" tabindex="-1"></a>b_AM_Y <span class="ot">&lt;-</span> <span class="fl">0.03</span> <span class="co"># 0.03 for the interaction effect A0_ace * M_smoking -&gt; Y</span></span>
+<span id="cb25-32"><a href="appendix_a.html#cb25-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-33"><a href="appendix_a.html#cb25-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Y continuous: (75 - 1 * L0_male - 3 * L0_parent_low_educ_lv - 4 * A0_ace -3.5 * L1 - </span></span>
+<span id="cb25-34"><a href="appendix_a.html#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="co">#                9 * M_smoking -5 * A0_ace * M_smoking * A.M.inter ) + </span></span>
+<span id="cb25-35"><a href="appendix_a.html#cb25-35" aria-hidden="true" tabindex="-1"></a><span class="co">#                rnorm(N, mean = 0, sd = 10)</span></span>
+<span id="cb25-36"><a href="appendix_a.html#cb25-36" aria-hidden="true" tabindex="-1"></a>mu_Y <span class="ot">&lt;-</span> <span class="dv">75</span> <span class="co"># reference mean for QoL</span></span>
+<span id="cb25-37"><a href="appendix_a.html#cb25-37" aria-hidden="true" tabindex="-1"></a>c_male_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="co"># -1 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb25-38"><a href="appendix_a.html#cb25-38" aria-hidden="true" tabindex="-1"></a>c_parent_educ_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span> <span class="co"># -3 for the effect of L0_parent_low_educ_lv -&gt; Y</span></span>
+<span id="cb25-39"><a href="appendix_a.html#cb25-39" aria-hidden="true" tabindex="-1"></a>c_A_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span> <span class="co"># -4 for the effect of A0_ace -&gt; Y</span></span>
+<span id="cb25-40"><a href="appendix_a.html#cb25-40" aria-hidden="true" tabindex="-1"></a>c_L1_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">3.5</span> <span class="co"># -3.5 for the effect of L1 -&gt; Y</span></span>
+<span id="cb25-41"><a href="appendix_a.html#cb25-41" aria-hidden="true" tabindex="-1"></a>c_M_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">9</span> <span class="co"># -9 for the effect of M_smoking -&gt; Y</span></span>
+<span id="cb25-42"><a href="appendix_a.html#cb25-42" aria-hidden="true" tabindex="-1"></a>c_AM_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span>  <span class="co"># - 5 for the interaction effect A0_ace * M_smoking  -&gt; Y</span></span>
+<span id="cb25-43"><a href="appendix_a.html#cb25-43" aria-hidden="true" tabindex="-1"></a>sd_Y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co"># standard deviation of the residuals</span></span>
+<span id="cb25-44"><a href="appendix_a.html#cb25-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-45"><a href="appendix_a.html#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="co"># A*M interaction ?</span></span>
+<span id="cb25-46"><a href="appendix_a.html#cb25-46" aria-hidden="true" tabindex="-1"></a>A.M.inter <span class="ot">&lt;-</span> A.M.interaction</span>
+<span id="cb25-47"><a href="appendix_a.html#cb25-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-48"><a href="appendix_a.html#cb25-48" aria-hidden="true" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="at">p_L0_male =</span> p_L0_male, <span class="at">p_L0_parent_low_educ_lv =</span> p_L0_parent_low_educ_lv, </span>
+<span id="cb25-49"><a href="appendix_a.html#cb25-49" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_A =</span> b_A, <span class="at">b_male_A =</span> b_male_A, <span class="at">b_parent_educ_A =</span> b_parent_educ_A, </span>
+<span id="cb25-50"><a href="appendix_a.html#cb25-50" aria-hidden="true" tabindex="-1"></a>           <span class="at">p_L1 =</span> p_L1,</span>
+<span id="cb25-51"><a href="appendix_a.html#cb25-51" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_M =</span> b_M, <span class="at">b_male_M =</span> b_male_M, <span class="at">b_parent_educ_M =</span> b_parent_educ_M, </span>
+<span id="cb25-52"><a href="appendix_a.html#cb25-52" aria-hidden="true" tabindex="-1"></a>            <span class="at">b_L1_M =</span> b_L1_M, <span class="at">b_A_M =</span> b_A_M,</span>
+<span id="cb25-53"><a href="appendix_a.html#cb25-53" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_Y =</span> b_Y, <span class="at">b_male_Y =</span> b_male_Y, <span class="at">b_parent_educ_Y =</span> b_parent_educ_Y, </span>
+<span id="cb25-54"><a href="appendix_a.html#cb25-54" aria-hidden="true" tabindex="-1"></a>            <span class="at">b_A_Y =</span> b_A_Y, <span class="at">b_L1_Y =</span> b_L1_Y, <span class="at">b_M_Y =</span> b_M_Y, <span class="at">b_AM_Y =</span> b_AM_Y,</span>
+<span id="cb25-55"><a href="appendix_a.html#cb25-55" aria-hidden="true" tabindex="-1"></a>           <span class="at">mu_Y =</span> mu_Y, <span class="at">c_male_Y =</span> c_male_Y, <span class="at">c_parent_educ_Y =</span> c_parent_educ_Y, </span>
+<span id="cb25-56"><a href="appendix_a.html#cb25-56" aria-hidden="true" tabindex="-1"></a>            <span class="at">c_A_Y =</span> c_A_Y, <span class="at">c_L1_Y =</span> c_L1_Y, <span class="at">c_M_Y =</span> c_M_Y, <span class="at">c_AM_Y =</span> c_AM_Y, </span>
+<span id="cb25-57"><a href="appendix_a.html#cb25-57" aria-hidden="true" tabindex="-1"></a>           <span class="at">sd_Y =</span> sd_Y, <span class="at">A.M.inter =</span> A.M.inter)</span>
+<span id="cb25-58"><a href="appendix_a.html#cb25-58" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-59"><a href="appendix_a.html#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="fu">return</span>(coef)</span>
+<span id="cb25-60"><a href="appendix_a.html#cb25-60" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure" class="section level2 hasAnchor" number="9.2">
+<h2><span class="header-section-number">9.2</span> Second causal model: Data generating mechanism with mediator-outcome confounder affected by the exposure<a href="appendix_a.html#second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This data generating mechanism is defined by the following set of structural equations:
+<span class="math display">\[\begin{array}{lll}
+P(L(0)_{male} = 1) &amp;=&amp; p_{L(0)_{male}}\\
+P(L(0)_{parent} = 1) &amp;=&amp; p_{L(0)_{parent}}\\
+P(A_{ACE} = 1) &amp;=&amp; \beta_{A} + \beta_{male}^A \times L(0)_{male} + \beta_{parent}^A \times L(0)_{parent}\\
+P(L(1) = 1) &amp;=&amp; \beta_{L(1)} + \beta_{male}^{L(1)} \times L(0)_{male} + \beta_{parent}^{L(1)} \times L(0)_{parent} + \beta_{A}^{L(1)} \times A_{ACE}\\
+P(M_{smoking} = 1) &amp;=&amp; \beta_{M} + \beta_{male}^M \times L(0)_{male} + \beta_{parent}^M \times L(0)_{parent} + \beta_{L(1)}^M \times L(1) + \beta_{A}^M \times A_{ACE}\\
+P(Y_{death} = 1) &amp;=&amp; \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \beta_{parent}^Y \times L(0)_{parent} + \beta_{L(1)}^Y \times L(1)\\
+                 &amp; &amp; + \beta_{A}^Y \times A_{ACE} + \beta_{M}^Y \times M_{smoking} + \beta_{A \ast M }^Y \times A_{ACE} \times M_{smoking}\\
+\mathbb{E}(Y_{Qol} = 1) &amp;=&amp; \gamma_{Y} + \gamma_{male}^Y \times L(0)_{male} + \gamma_{parent}^Y \times L(0)_{parent} + \gamma_{L(1)}^Y \times L(1)\\
+                        &amp; &amp;+ \gamma_{A}^Y \times A_{ACE} + \gamma_{M}^Y \times M_{smoking} + \gamma_{A \ast M }^Y \times A_{ACE} \times M_{smoking} + \varepsilon_Y
+\end{array}\]</span>
+where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10)\)</span>.</p>
+<p>One can set the parameters of these structural equations using the following function <code>param.causal.model.2()</code>:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="appendix_a.html#cb26-1" aria-hidden="true" tabindex="-1"></a>param.causal.model<span class="fl">.2</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">A.M.interaction =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb26-2"><a href="appendix_a.html#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># L0</span></span>
+<span id="cb26-3"><a href="appendix_a.html#cb26-3" aria-hidden="true" tabindex="-1"></a>p_L0_male <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb26-4"><a href="appendix_a.html#cb26-4" aria-hidden="true" tabindex="-1"></a>p_L0_parent_low_educ_lv <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
+<span id="cb26-5"><a href="appendix_a.html#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="appendix_a.html#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="co"># A: A0_ace &lt;- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_parent_low_educ_lv ) </span></span>
+<span id="cb26-7"><a href="appendix_a.html#cb26-7" aria-hidden="true" tabindex="-1"></a>b_A <span class="ot">&lt;-</span> <span class="fl">0.05</span>   <span class="co"># reference prevalence is 5%</span></span>
+<span id="cb26-8"><a href="appendix_a.html#cb26-8" aria-hidden="true" tabindex="-1"></a>b_male_A <span class="ot">&lt;-</span> <span class="fl">0.04</span>  <span class="co"># + 0.04 for the effect of L0_male -&gt; A0_ace</span></span>
+<span id="cb26-9"><a href="appendix_a.html#cb26-9" aria-hidden="true" tabindex="-1"></a>b_parent_educ_A <span class="ot">&lt;-</span> <span class="fl">0.06</span>  <span class="co"># +0.06 for the effect of L0_parent_low_educ_lv -&gt; A0_ace</span></span>
+<span id="cb26-10"><a href="appendix_a.html#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="appendix_a.html#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="co"># L1: L1 &lt;- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_parent_low_educ_lv + </span></span>
+<span id="cb26-12"><a href="appendix_a.html#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co">#                   0.2 * A0_ace ) </span></span>
+<span id="cb26-13"><a href="appendix_a.html#cb26-13" aria-hidden="true" tabindex="-1"></a>b_L1 <span class="ot">&lt;-</span> <span class="fl">0.30</span>   <span class="co"># reference prevalence is 30%</span></span>
+<span id="cb26-14"><a href="appendix_a.html#cb26-14" aria-hidden="true" tabindex="-1"></a>b_male_L1 <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.05</span>  <span class="co"># - 0.05 for the effect of L0_male -&gt; L1</span></span>
+<span id="cb26-15"><a href="appendix_a.html#cb26-15" aria-hidden="true" tabindex="-1"></a>b_parent_L1 <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">0.08</span> <span class="co"># + 0.08 for the effect of L0_parent_low_educ_lv -&gt; L1</span></span>
+<span id="cb26-16"><a href="appendix_a.html#cb26-16" aria-hidden="true" tabindex="-1"></a>b_A_L1 <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">0.2</span> <span class="co"># +0.2 for the effect of A0_ace -&gt; L1</span></span>
+<span id="cb26-17"><a href="appendix_a.html#cb26-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-18"><a href="appendix_a.html#cb26-18" aria-hidden="true" tabindex="-1"></a><span class="co"># M: M_smoking &lt;- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_parent_low_educ_lv + </span></span>
+<span id="cb26-19"><a href="appendix_a.html#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="co">#                         0.2 * L1 + 0.1 * A0_ace ) </span></span>
+<span id="cb26-20"><a href="appendix_a.html#cb26-20" aria-hidden="true" tabindex="-1"></a>b_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># reference prevalence is 20%</span></span>
+<span id="cb26-21"><a href="appendix_a.html#cb26-21" aria-hidden="true" tabindex="-1"></a>b_male_M <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># +0.05 for the effect of L0_male -&gt; M_smoking</span></span>
+<span id="cb26-22"><a href="appendix_a.html#cb26-22" aria-hidden="true" tabindex="-1"></a>b_parent_educ_M <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_parent_low_educ_lv -&gt; M_smoking</span></span>
+<span id="cb26-23"><a href="appendix_a.html#cb26-23" aria-hidden="true" tabindex="-1"></a>b_A_M <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># +0.10 for the effect of A0_ace -&gt; M_smoking</span></span>
+<span id="cb26-24"><a href="appendix_a.html#cb26-24" aria-hidden="true" tabindex="-1"></a>b_L1_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># +0.2 for the effect of L1 -&gt; M_smoking</span></span>
+<span id="cb26-25"><a href="appendix_a.html#cb26-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-26"><a href="appendix_a.html#cb26-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_parent_low_educ_lv + </span></span>
+<span id="cb26-27"><a href="appendix_a.html#cb26-27" aria-hidden="true" tabindex="-1"></a><span class="co">#                   0.05 * A0_ace + 0.07 * L1 + 0.08 * M_smoking +</span></span>
+<span id="cb26-28"><a href="appendix_a.html#cb26-28" aria-hidden="true" tabindex="-1"></a><span class="co">#                   0.03 * A0_ace * M_smoking * A.M.inter ) </span></span>
+<span id="cb26-29"><a href="appendix_a.html#cb26-29" aria-hidden="true" tabindex="-1"></a>b_Y <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># reference prevalence is 10%</span></span>
+<span id="cb26-30"><a href="appendix_a.html#cb26-30" aria-hidden="true" tabindex="-1"></a>b_male_Y <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb26-31"><a href="appendix_a.html#cb26-31" aria-hidden="true" tabindex="-1"></a>b_parent_educ_Y <span class="ot">&lt;-</span> <span class="fl">0.04</span> <span class="co"># +0.04 for the effect of L0_parent_low_educ_lv -&gt; Y</span></span>
+<span id="cb26-32"><a href="appendix_a.html#cb26-32" aria-hidden="true" tabindex="-1"></a>b_A_Y <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># 0.05 for the effect of A0_ace -&gt; Y</span></span>
+<span id="cb26-33"><a href="appendix_a.html#cb26-33" aria-hidden="true" tabindex="-1"></a>b_L1_Y <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; Y</span></span>
+<span id="cb26-34"><a href="appendix_a.html#cb26-34" aria-hidden="true" tabindex="-1"></a>b_M_Y <span class="ot">&lt;-</span> <span class="fl">0.08</span> <span class="co"># 0.08 for the effect of M_smoking -&gt; Y</span></span>
+<span id="cb26-35"><a href="appendix_a.html#cb26-35" aria-hidden="true" tabindex="-1"></a>b_AM_Y <span class="ot">&lt;-</span> <span class="fl">0.03</span> <span class="co"># 0.03 for the interaction effect A0_ace * M_smoking -&gt; Y</span></span>
+<span id="cb26-36"><a href="appendix_a.html#cb26-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-37"><a href="appendix_a.html#cb26-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Y continuous: (75 - 1 * L0_male - 3 * L0_parent_low_educ_lv - 4 * A0_ace +</span></span>
+<span id="cb26-38"><a href="appendix_a.html#cb26-38" aria-hidden="true" tabindex="-1"></a><span class="co">#                -3.5 * L1 - 9 * M_smoking + </span></span>
+<span id="cb26-39"><a href="appendix_a.html#cb26-39" aria-hidden="true" tabindex="-1"></a><span class="co">#                -5 * A0_ace * M_smoking * A.M.inter ) + rnorm(N, mean = 0, sd = 10)</span></span>
+<span id="cb26-40"><a href="appendix_a.html#cb26-40" aria-hidden="true" tabindex="-1"></a>mu_Y <span class="ot">&lt;-</span> <span class="dv">75</span> <span class="co"># reference mean for QoL</span></span>
+<span id="cb26-41"><a href="appendix_a.html#cb26-41" aria-hidden="true" tabindex="-1"></a>c_male_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="co"># -1 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb26-42"><a href="appendix_a.html#cb26-42" aria-hidden="true" tabindex="-1"></a>c_parent_educ_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span> <span class="co"># -3 for the effect of L0_parent_low_educ_lv -&gt; Y</span></span>
+<span id="cb26-43"><a href="appendix_a.html#cb26-43" aria-hidden="true" tabindex="-1"></a>c_A_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span> <span class="co"># -4 for the effect of A0_ace -&gt; Y</span></span>
+<span id="cb26-44"><a href="appendix_a.html#cb26-44" aria-hidden="true" tabindex="-1"></a>c_L1_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span> <span class="co"># -5 for the effect of L1 -&gt; Y</span></span>
+<span id="cb26-45"><a href="appendix_a.html#cb26-45" aria-hidden="true" tabindex="-1"></a>c_M_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">9</span> <span class="co"># -9 for the effect of M_smoking -&gt; Y</span></span>
+<span id="cb26-46"><a href="appendix_a.html#cb26-46" aria-hidden="true" tabindex="-1"></a>c_AM_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span>  <span class="co"># - 5 for the interaction effect A0_ace * M_smoking  -&gt; Y</span></span>
+<span id="cb26-47"><a href="appendix_a.html#cb26-47" aria-hidden="true" tabindex="-1"></a>sd_Y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co"># standard deviation of the residuals</span></span>
+<span id="cb26-48"><a href="appendix_a.html#cb26-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-49"><a href="appendix_a.html#cb26-49" aria-hidden="true" tabindex="-1"></a><span class="co"># A*M interaction ?</span></span>
+<span id="cb26-50"><a href="appendix_a.html#cb26-50" aria-hidden="true" tabindex="-1"></a>A.M.inter <span class="ot">&lt;-</span> A.M.interaction</span>
+<span id="cb26-51"><a href="appendix_a.html#cb26-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-52"><a href="appendix_a.html#cb26-52" aria-hidden="true" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="at">p_L0_male =</span> p_L0_male, <span class="at">p_L0_parent_low_educ_lv =</span> p_L0_parent_low_educ_lv, </span>
+<span id="cb26-53"><a href="appendix_a.html#cb26-53" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_A =</span> b_A, <span class="at">b_male_A =</span> b_male_A, <span class="at">b_parent_educ_A =</span> b_parent_educ_A, </span>
+<span id="cb26-54"><a href="appendix_a.html#cb26-54" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_L1 =</span> b_L1, <span class="at">b_male_L1 =</span> b_male_L1, <span class="at">b_parent_L1 =</span> b_parent_L1, </span>
+<span id="cb26-55"><a href="appendix_a.html#cb26-55" aria-hidden="true" tabindex="-1"></a>            <span class="at">b_A_L1 =</span> b_A_L1,</span>
+<span id="cb26-56"><a href="appendix_a.html#cb26-56" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_M =</span> b_M, <span class="at">b_male_M =</span> b_male_M, <span class="at">b_parent_educ_M =</span> b_parent_educ_M, </span>
+<span id="cb26-57"><a href="appendix_a.html#cb26-57" aria-hidden="true" tabindex="-1"></a>            <span class="at">b_L1_M =</span> b_L1_M, <span class="at">b_A_M =</span> b_A_M,</span>
+<span id="cb26-58"><a href="appendix_a.html#cb26-58" aria-hidden="true" tabindex="-1"></a>           <span class="at">b_Y =</span> b_Y, <span class="at">b_male_Y =</span> b_male_Y, <span class="at">b_parent_educ_Y =</span> b_parent_educ_Y, </span>
+<span id="cb26-59"><a href="appendix_a.html#cb26-59" aria-hidden="true" tabindex="-1"></a>            <span class="at">b_A_Y =</span> b_A_Y, <span class="at">b_L1_Y =</span> b_L1_Y, <span class="at">b_M_Y =</span> b_M_Y, <span class="at">b_AM_Y =</span> b_AM_Y,</span>
+<span id="cb26-60"><a href="appendix_a.html#cb26-60" aria-hidden="true" tabindex="-1"></a>           <span class="at">mu_Y =</span> mu_Y, <span class="at">c_male_Y =</span> c_male_Y, <span class="at">c_parent_educ_Y =</span> c_parent_educ_Y, </span>
+<span id="cb26-61"><a href="appendix_a.html#cb26-61" aria-hidden="true" tabindex="-1"></a>            <span class="at">c_A_Y =</span> c_A_Y, <span class="at">c_L1_Y =</span> c_L1_Y, <span class="at">c_M_Y =</span> c_M_Y, <span class="at">c_AM_Y =</span> c_AM_Y, </span>
+<span id="cb26-62"><a href="appendix_a.html#cb26-62" aria-hidden="true" tabindex="-1"></a>              <span class="at">sd_Y =</span> sd_Y, <span class="at">A.M.inter =</span> A.M.inter)</span>
+<span id="cb26-63"><a href="appendix_a.html#cb26-63" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-64"><a href="appendix_a.html#cb26-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(coef)</span>
+<span id="cb26-65"><a href="appendix_a.html#cb26-65" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="simulation-of-the-four-data-sets-used-in-examples" class="section level2 hasAnchor" number="9.3">
+<h2><span class="header-section-number">9.3</span> Simulation of the four data sets used in examples<a href="appendix_a.html#simulation-of-the-four-data-sets-used-in-examples" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="data-sets-generated-from-the-causal-model-1" class="section level3 hasAnchor" number="9.3.1">
+<h3><span class="header-section-number">9.3.1</span> Data sets generated from the causal model 1<a href="appendix_a.html#data-sets-generated-from-the-causal-model-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The following function <code>gen.data.causal.model.1</code> can be used to simulate data sets using the parameters defined previously in the <code>param.causal.model.1</code> function.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="appendix_a.html#cb27-1" aria-hidden="true" tabindex="-1"></a>gen.data.causal.model<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(N, A.M.inter) { <span class="co"># input parameters are the </span></span>
+<span id="cb27-2"><a href="appendix_a.html#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1</span></span>
+<span id="cb27-3"><a href="appendix_a.html#cb27-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-4"><a href="appendix_a.html#cb27-4" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">param.causal.model.1</span>(<span class="at">A.M.interaction =</span> A.M.inter)</span>
+<span id="cb27-5"><a href="appendix_a.html#cb27-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-6"><a href="appendix_a.html#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># baseline confounders: parent&#39;s educational level=L0_parent_low_educ_lv &amp; sex=L0_male</span></span>
+<span id="cb27-7"><a href="appendix_a.html#cb27-7" aria-hidden="true" tabindex="-1"></a>  L0_male <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_male&quot;</span>]) </span>
+<span id="cb27-8"><a href="appendix_a.html#cb27-8" aria-hidden="true" tabindex="-1"></a>  L0_parent_low_educ_lv <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_parent_low_educ_lv&quot;</span>])  </span>
+<span id="cb27-9"><a href="appendix_a.html#cb27-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-10"><a href="appendix_a.html#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># exposure: A0_ace</span></span>
+<span id="cb27-11"><a href="appendix_a.html#cb27-11" aria-hidden="true" tabindex="-1"></a>  A0_ace <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span>  b[<span class="st">&quot;b_A&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb27-12"><a href="appendix_a.html#cb27-12" aria-hidden="true" tabindex="-1"></a>                     b[<span class="st">&quot;b_male_A&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb27-13"><a href="appendix_a.html#cb27-13" aria-hidden="true" tabindex="-1"></a>                     b[<span class="st">&quot;b_parent_educ_A&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv ) </span>
+<span id="cb27-14"><a href="appendix_a.html#cb27-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-15"><a href="appendix_a.html#cb27-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># intermediate confounder between M_smoking and Y, not affected by A0 L1</span></span>
+<span id="cb27-16"><a href="appendix_a.html#cb27-16" aria-hidden="true" tabindex="-1"></a>  L1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L1&quot;</span>])</span>
+<span id="cb27-17"><a href="appendix_a.html#cb27-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-18"><a href="appendix_a.html#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mediator: M_smoking</span></span>
+<span id="cb27-19"><a href="appendix_a.html#cb27-19" aria-hidden="true" tabindex="-1"></a>  M_smoking <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_M&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb27-20"><a href="appendix_a.html#cb27-20" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_male_M&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb27-21"><a href="appendix_a.html#cb27-21" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_parent_educ_M&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span> </span>
+<span id="cb27-22"><a href="appendix_a.html#cb27-22" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_A_M&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">+</span></span>
+<span id="cb27-23"><a href="appendix_a.html#cb27-23" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_L1_M&quot;</span>] <span class="sc">*</span> L1) </span>
+<span id="cb27-24"><a href="appendix_a.html#cb27-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-25"><a href="appendix_a.html#cb27-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Y_death </span></span>
+<span id="cb27-26"><a href="appendix_a.html#cb27-26" aria-hidden="true" tabindex="-1"></a>  Y_death <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb27-27"><a href="appendix_a.html#cb27-27" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb27-28"><a href="appendix_a.html#cb27-28" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_parent_educ_Y&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span> </span>
+<span id="cb27-29"><a href="appendix_a.html#cb27-29" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_A_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">+</span> </span>
+<span id="cb27-30"><a href="appendix_a.html#cb27-30" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb27-31"><a href="appendix_a.html#cb27-31" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_M_Y&quot;</span>] <span class="sc">*</span> M_smoking <span class="sc">+</span></span>
+<span id="cb27-32"><a href="appendix_a.html#cb27-32" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_AM_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">*</span> M_smoking <span class="sc">*</span> A.M.inter ) </span>
+<span id="cb27-33"><a href="appendix_a.html#cb27-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-34"><a href="appendix_a.html#cb27-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Y_qol </span></span>
+<span id="cb27-35"><a href="appendix_a.html#cb27-35" aria-hidden="true" tabindex="-1"></a>  Y_qol <span class="ot">&lt;-</span> ( b[<span class="st">&quot;mu_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb27-36"><a href="appendix_a.html#cb27-36" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb27-37"><a href="appendix_a.html#cb27-37" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_parent_educ_Y&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span></span>
+<span id="cb27-38"><a href="appendix_a.html#cb27-38" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_A_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">+</span></span>
+<span id="cb27-39"><a href="appendix_a.html#cb27-39" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb27-40"><a href="appendix_a.html#cb27-40" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_M_Y&quot;</span>] <span class="sc">*</span> M_smoking <span class="sc">+</span> </span>
+<span id="cb27-41"><a href="appendix_a.html#cb27-41" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_AM_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">*</span> M_smoking <span class="sc">*</span> A.M.inter ) <span class="sc">+</span> </span>
+<span id="cb27-42"><a href="appendix_a.html#cb27-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> b[<span class="st">&quot;sd_Y&quot;</span>])</span>
+<span id="cb27-43"><a href="appendix_a.html#cb27-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-44"><a href="appendix_a.html#cb27-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># data.frame</span></span>
+<span id="cb27-45"><a href="appendix_a.html#cb27-45" aria-hidden="true" tabindex="-1"></a>  data.sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(L0_male, L0_parent_low_educ_lv, A0_ace, L1, M_smoking, </span>
+<span id="cb27-46"><a href="appendix_a.html#cb27-46" aria-hidden="true" tabindex="-1"></a>                         Y_death, Y_qol)</span>
+<span id="cb27-47"><a href="appendix_a.html#cb27-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-48"><a href="appendix_a.html#cb27-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>( data.sim )</span>
+<span id="cb27-49"><a href="appendix_a.html#cb27-49" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Applying a sample size N=10000, we generate the <code>df1.csv</code> and <code>df1_int.csv</code> data sets.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="appendix_a.html#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb28-2"><a href="appendix_a.html#cb28-2" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
+<span id="cb28-3"><a href="appendix_a.html#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df1, <span class="at">file =</span> <span class="st">&quot;df1.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb28-4"><a href="appendix_a.html#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="appendix_a.html#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb28-6"><a href="appendix_a.html#cb28-6" aria-hidden="true" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
+<span id="cb28-7"><a href="appendix_a.html#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df1_int, <span class="at">file =</span> <span class="st">&quot;df1_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="appendix_a.html#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df1)</span></code></pre></div>
+<pre><code>##   L0_male L0_parent_low_educ_lv A0_ace L1 M_smoking Y_death    Y_qol
+## 1       0                     1      0  1         0       0 93.41819
+## 2       1                     1      1  1         0       1 64.03221
+## 3       1                     1      0  0         0       0 75.56249
+## 4       1                     0      0  0         0       0 89.77055
+## 5       1                     1      0  0         0       0 77.22353
+## 6       1                     1      0  0         1       0 73.87975</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="appendix_a.html#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df1_int)</span></code></pre></div>
+<pre><code>##   L0_male L0_parent_low_educ_lv A0_ace L1 M_smoking Y_death    Y_qol
+## 1       0                     1      0  1         0       0 93.41819
+## 2       1                     1      1  1         0       1 64.03221
+## 3       1                     1      0  0         0       0 75.56249
+## 4       1                     0      0  0         0       0 89.77055
+## 5       1                     1      0  0         0       0 77.22353
+## 6       1                     1      0  0         1       0 73.87975</code></pre>
+</div>
+<div id="data-sets-generated-from-the-causal-model-2" class="section level3 hasAnchor" number="9.3.2">
+<h3><span class="header-section-number">9.3.2</span> Data sets generated from the causal model 2<a href="appendix_a.html#data-sets-generated-from-the-causal-model-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The following function <code>gen.data.causal.model.2</code> can be used to simulate data sets using the parameters defined previously in the <code>param.causal.model.2</code> function.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="appendix_a.html#cb33-1" aria-hidden="true" tabindex="-1"></a>gen.data.causal.model<span class="fl">.2</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(N, A.M.inter) { <span class="co"># input parameters are the </span></span>
+<span id="cb33-2"><a href="appendix_a.html#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1</span></span>
+<span id="cb33-3"><a href="appendix_a.html#cb33-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-4"><a href="appendix_a.html#cb33-4" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">param.causal.model.2</span>(<span class="at">A.M.interaction =</span> A.M.inter)</span>
+<span id="cb33-5"><a href="appendix_a.html#cb33-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb33-6"><a href="appendix_a.html#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># baseline confounders: parent&#39;s educational level=L0_parent_low_educ_lv &amp; sex=L0_male</span></span>
+<span id="cb33-7"><a href="appendix_a.html#cb33-7" aria-hidden="true" tabindex="-1"></a>  L0_male <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_male&quot;</span>]) </span>
+<span id="cb33-8"><a href="appendix_a.html#cb33-8" aria-hidden="true" tabindex="-1"></a>  L0_parent_low_educ_lv <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_parent_low_educ_lv&quot;</span>])  </span>
+<span id="cb33-9"><a href="appendix_a.html#cb33-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-10"><a href="appendix_a.html#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># exposure: A0_ace</span></span>
+<span id="cb33-11"><a href="appendix_a.html#cb33-11" aria-hidden="true" tabindex="-1"></a>  A0_ace <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span>  b[<span class="st">&quot;b_A&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb33-12"><a href="appendix_a.html#cb33-12" aria-hidden="true" tabindex="-1"></a>                     b[<span class="st">&quot;b_male_A&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb33-13"><a href="appendix_a.html#cb33-13" aria-hidden="true" tabindex="-1"></a>                     b[<span class="st">&quot;b_parent_educ_A&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv ) </span>
+<span id="cb33-14"><a href="appendix_a.html#cb33-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-15"><a href="appendix_a.html#cb33-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># intermediate confounder between M_smoking and Y, </span></span>
+<span id="cb33-16"><a href="appendix_a.html#cb33-16" aria-hidden="true" tabindex="-1"></a>  L1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_L1&quot;</span>] <span class="sc">+</span></span>
+<span id="cb33-17"><a href="appendix_a.html#cb33-17" aria-hidden="true" tabindex="-1"></a>                 b[<span class="st">&quot;b_male_L1&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span></span>
+<span id="cb33-18"><a href="appendix_a.html#cb33-18" aria-hidden="true" tabindex="-1"></a>                 b[<span class="st">&quot;b_parent_L1&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span> </span>
+<span id="cb33-19"><a href="appendix_a.html#cb33-19" aria-hidden="true" tabindex="-1"></a>                 b[<span class="st">&quot;b_A_L1&quot;</span>]<span class="sc">*</span> A0_ace)</span>
+<span id="cb33-20"><a href="appendix_a.html#cb33-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-21"><a href="appendix_a.html#cb33-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mediator: M_smoking</span></span>
+<span id="cb33-22"><a href="appendix_a.html#cb33-22" aria-hidden="true" tabindex="-1"></a>  M_smoking <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_M&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb33-23"><a href="appendix_a.html#cb33-23" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_male_M&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb33-24"><a href="appendix_a.html#cb33-24" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_parent_educ_M&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span> </span>
+<span id="cb33-25"><a href="appendix_a.html#cb33-25" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_A_M&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">+</span></span>
+<span id="cb33-26"><a href="appendix_a.html#cb33-26" aria-hidden="true" tabindex="-1"></a>                        b[<span class="st">&quot;b_L1_M&quot;</span>] <span class="sc">*</span> L1) </span>
+<span id="cb33-27"><a href="appendix_a.html#cb33-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-28"><a href="appendix_a.html#cb33-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Y_death </span></span>
+<span id="cb33-29"><a href="appendix_a.html#cb33-29" aria-hidden="true" tabindex="-1"></a>  Y_death <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb33-30"><a href="appendix_a.html#cb33-30" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb33-31"><a href="appendix_a.html#cb33-31" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_parent_educ_Y&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span> </span>
+<span id="cb33-32"><a href="appendix_a.html#cb33-32" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_A_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">+</span> </span>
+<span id="cb33-33"><a href="appendix_a.html#cb33-33" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb33-34"><a href="appendix_a.html#cb33-34" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_M_Y&quot;</span>] <span class="sc">*</span> M_smoking <span class="sc">+</span></span>
+<span id="cb33-35"><a href="appendix_a.html#cb33-35" aria-hidden="true" tabindex="-1"></a>                      b[<span class="st">&quot;b_AM_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">*</span> M_smoking <span class="sc">*</span> A.M.inter ) </span>
+<span id="cb33-36"><a href="appendix_a.html#cb33-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-37"><a href="appendix_a.html#cb33-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Y_qol </span></span>
+<span id="cb33-38"><a href="appendix_a.html#cb33-38" aria-hidden="true" tabindex="-1"></a>  Y_qol <span class="ot">&lt;-</span> ( b[<span class="st">&quot;mu_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb33-39"><a href="appendix_a.html#cb33-39" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb33-40"><a href="appendix_a.html#cb33-40" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_parent_educ_Y&quot;</span>] <span class="sc">*</span> L0_parent_low_educ_lv <span class="sc">+</span></span>
+<span id="cb33-41"><a href="appendix_a.html#cb33-41" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_A_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">+</span></span>
+<span id="cb33-42"><a href="appendix_a.html#cb33-42" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb33-43"><a href="appendix_a.html#cb33-43" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_M_Y&quot;</span>] <span class="sc">*</span> M_smoking <span class="sc">+</span> </span>
+<span id="cb33-44"><a href="appendix_a.html#cb33-44" aria-hidden="true" tabindex="-1"></a>               b[<span class="st">&quot;c_AM_Y&quot;</span>] <span class="sc">*</span> A0_ace <span class="sc">*</span> M_smoking <span class="sc">*</span> A.M.inter ) <span class="sc">+</span> </span>
+<span id="cb33-45"><a href="appendix_a.html#cb33-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> b[<span class="st">&quot;sd_Y&quot;</span>])</span>
+<span id="cb33-46"><a href="appendix_a.html#cb33-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-47"><a href="appendix_a.html#cb33-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># data.frame</span></span>
+<span id="cb33-48"><a href="appendix_a.html#cb33-48" aria-hidden="true" tabindex="-1"></a>  data.sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(L0_male, L0_parent_low_educ_lv, A0_ace, L1, M_smoking, </span>
+<span id="cb33-49"><a href="appendix_a.html#cb33-49" aria-hidden="true" tabindex="-1"></a>                         Y_death, Y_qol)</span>
+<span id="cb33-50"><a href="appendix_a.html#cb33-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-51"><a href="appendix_a.html#cb33-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>( data.sim )</span>
+<span id="cb33-52"><a href="appendix_a.html#cb33-52" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Applying a sample size N=10000, we generate the <code>df2.csv</code> and <code>df2_int.csv</code> data sets.</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="appendix_a.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb34-2"><a href="appendix_a.html#cb34-2" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
+<span id="cb34-3"><a href="appendix_a.html#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df2, <span class="at">file =</span> <span class="st">&quot;df2.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb34-4"><a href="appendix_a.html#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="appendix_a.html#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb34-6"><a href="appendix_a.html#cb34-6" aria-hidden="true" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
+<span id="cb34-7"><a href="appendix_a.html#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df2_int, <span class="at">file =</span> <span class="st">&quot;df2_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="appendix_a.html#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(df2)</span></code></pre></div>
+<pre><code>##       L0_male L0_parent_low_educ_lv A0_ace L1 M_smoking Y_death    Y_qol
+## 9995        0                     1      0  1         1       0 53.25115
+## 9996        0                     1      0  0         1       0 66.36484
+## 9997        0                     1      1  1         1       0 74.20579
+## 9998        1                     1      0  0         1       0 41.30248
+## 9999        0                     0      0  1         0       0 85.60169
+## 10000       1                     1      0  0         0       0 61.56969</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="appendix_a.html#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(df2_int)</span></code></pre></div>
+<pre><code>##       L0_male L0_parent_low_educ_lv A0_ace L1 M_smoking Y_death    Y_qol
+## 9995        0                     1      0  1         1       0 53.25115
+## 9996        0                     1      0  0         1       0 66.36484
+## 9997        0                     1      1  1         1       0 69.20579
+## 9998        1                     1      0  0         1       0 41.30248
+## 9999        0                     0      0  1         0       0 85.60169
+## 10000       1                     1      0  0         0       0 61.56969</code></pre>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="chap_tmle.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="appendix_b.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/benoitlepage/mediation_workshop/06-appendixA.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf", "_main.epub"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

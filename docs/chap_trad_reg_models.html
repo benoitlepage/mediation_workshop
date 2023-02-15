@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 5 Traditional regression models | Mediation Workshop</title>
+  <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
+  <meta name="generator" content="bookdown 0.32 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 5 Traditional regression models | Mediation Workshop" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
+  <meta name="github-repo" content="mediation_workshop" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 5 Traditional regression models | Mediation Workshop" />
+  
+  <meta name="twitter:description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
+  
+
+<meta name="author" content="Benoît Lepage" />
+
+
+<meta name="date" content="2023-02-15" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="chap_baron_kenny_sem.html"/>
+<link rel="next" href="chap_gcomp.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Mediation workshop</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
+<li class="chapter" data-level="2" data-path="software.html"><a href="software.html"><i class="fa fa-check"></i><b>2</b> Software</a></li>
+<li class="chapter" data-level="3" data-path="data-sets.html"><a href="data-sets.html"><i class="fa fa-check"></i><b>3</b> Data sets</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="data-sets.html"><a href="data-sets.html#general-presentation-of-the-data-used-in-our-examples"><i class="fa fa-check"></i><b>3.1</b> General presentation of the data used in our examples</a></li>
+<li class="chapter" data-level="3.2" data-path="data-sets.html"><a href="data-sets.html#data-generating-mechanisms"><i class="fa fa-check"></i><b>3.2</b> Data generating mechanisms</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="chap_baron_kenny_sem.html"><a href="chap_baron_kenny_sem.html"><i class="fa fa-check"></i><b>4</b> Baron and Kenny, structural equation models</a></li>
+<li class="chapter" data-level="5" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html"><i class="fa fa-check"></i><b>5</b> Traditional regression models</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#estimation-of-the-average-total-effect-ate"><i class="fa fa-check"></i><b>5.1</b> Estimation of the Average Total Effect (ATE)</a></li>
+<li class="chapter" data-level="5.2" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad2way"><i class="fa fa-check"></i><b>5.2</b> Two-way decomposition</a>
+<ul>
+<li class="chapter" data-level="5.2.1" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad2waycde"><i class="fa fa-check"></i><b>5.2.1</b> Controlled Direct Effect</a></li>
+<li class="chapter" data-level="5.2.2" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad2waynatural"><i class="fa fa-check"></i><b>5.2.2</b> Natural Direct and Indirect effects</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#trad3way"><i class="fa fa-check"></i><b>5.3</b> Three-way decomposition</a></li>
+<li class="chapter" data-level="5.4" data-path="chap_trad_reg_models.html"><a href="chap_trad_reg_models.html#four-way-decomposition"><i class="fa fa-check"></i><b>5.4</b> Four-way decomposition</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="chap_gcomp.html"><a href="chap_gcomp.html"><i class="fa fa-check"></i><b>6</b> G-computation</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="chap_gcomp.html"><a href="chap_gcomp.html#estimation-of-the-average-total-effect-ate-1"><i class="fa fa-check"></i><b>6.1</b> Estimation of the Average Total Effect (ATE)</a></li>
+<li class="chapter" data-level="6.2" data-path="chap_gcomp.html"><a href="chap_gcomp.html#estimation-of-controlled-direct-effects-cde"><i class="fa fa-check"></i><b>6.2</b> Estimation of Controlled Direct Effects (CDE)</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="chap_gcomp.html"><a href="chap_gcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.2.1</b> Parametric g-computation</a></li>
+<li class="chapter" data-level="6.2.2" data-path="chap_gcomp.html"><a href="chap_gcomp.html#g-computation-by-iterative-conditional-expectation"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
+<li class="chapter" data-level="6.2.3" data-path="chap_gcomp.html"><a href="chap_gcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="chap_iptw.html"><a href="chap_iptw.html"><i class="fa fa-check"></i><b>7</b> Inverse Probability of Treatment Weighting (IPTW)</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="chap_iptw.html"><a href="chap_iptw.html#estimation-of-the-average-total-effect"><i class="fa fa-check"></i><b>7.1</b> Estimation of the Average total effect</a>
+<ul>
+<li class="chapter" data-level="7.1.1" data-path="chap_iptw.html"><a href="chap_iptw.html#iptw-for-the-ate"><i class="fa fa-check"></i><b>7.1.1</b> IPTW for the ATE</a></li>
+<li class="chapter" data-level="7.1.2" data-path="chap_iptw.html"><a href="chap_iptw.html#stabilized-iptw-for-the-ate"><i class="fa fa-check"></i><b>7.1.2</b> Stabilized IPTW for the ATE</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>8</b> Targeted Maximum Likelihood Estimation (TMLE)</a></li>
+<li class="chapter" data-level="9" data-path="appendix_a.html"><a href="appendix_a.html"><i class="fa fa-check"></i><b>9</b> Appendix A: Data generating mechanisms</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="appendix_a.html"><a href="appendix_a.html#first-causal-model-data-generating-mechanism-without-mediator-outcome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>9.1</b> First causal model: Data generating mechanism without mediator-outcome confounder affected by the exposure</a></li>
+<li class="chapter" data-level="9.2" data-path="appendix_a.html"><a href="appendix_a.html#second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>9.2</b> Second causal model: Data generating mechanism with mediator-outcome confounder affected by the exposure</a></li>
+<li class="chapter" data-level="9.3" data-path="appendix_a.html"><a href="appendix_a.html#simulation-of-the-four-data-sets-used-in-examples"><i class="fa fa-check"></i><b>9.3</b> Simulation of the four data sets used in examples</a>
+<ul>
+<li class="chapter" data-level="9.3.1" data-path="appendix_a.html"><a href="appendix_a.html#data-sets-generated-from-the-causal-model-1"><i class="fa fa-check"></i><b>9.3.1</b> Data sets generated from the causal model 1</a></li>
+<li class="chapter" data-level="9.3.2" data-path="appendix_a.html"><a href="appendix_a.html#data-sets-generated-from-the-causal-model-2"><i class="fa fa-check"></i><b>9.3.2</b> Data sets generated from the causal model 2</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="appendix_b.html"><a href="appendix_b.html"><i class="fa fa-check"></i><b>10</b> Appendix B: Calculation of the true causal quantities</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="appendix_b.html"><a href="appendix_b.html#true-causal-quantities-without-mediator-ouctome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>10.1</b> True causal quantities without mediator-ouctome confounder affected by the exposure</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="appendix_b.html"><a href="appendix_b.html#average-total-effects-ate"><i class="fa fa-check"></i><b>10.1.1</b> Average total effects (ATE)</a></li>
+<li class="chapter" data-level="10.1.2" data-path="appendix_b.html"><a href="appendix_b.html#controlled-direct-effects-cde"><i class="fa fa-check"></i><b>10.1.2</b> Controlled direct effects (CDE)</a></li>
+<li class="chapter" data-level="10.1.3" data-path="appendix_b.html"><a href="appendix_b.html#pure-natural-direct-effect-and-total-natural-indirect-effect"><i class="fa fa-check"></i><b>10.1.3</b> Pure natural direct effect and Total natural indirect effect</a></li>
+<li class="chapter" data-level="10.1.4" data-path="appendix_b.html"><a href="appendix_b.html#total-natural-direct-effect-and-pure-natural-indirect-effect"><i class="fa fa-check"></i><b>10.1.4</b> Total natural direct effect and Pure natural indirect effect</a></li>
+<li class="chapter" data-level="10.1.5" data-path="appendix_b.html"><a href="appendix_b.html#vanderweeles-3-way-decomposition"><i class="fa fa-check"></i><b>10.1.5</b> Vanderweele’s 3-way decomposition</a></li>
+<li class="chapter" data-level="10.1.6" data-path="appendix_b.html"><a href="appendix_b.html#vanderweeles-4-way-decomposition"><i class="fa fa-check"></i><b>10.1.6</b> Vanderweele’s 4-way decomposition</a></li>
+<li class="chapter" data-level="10.1.7" data-path="appendix_b.html"><a href="appendix_b.html#marginal-randomized-direct-and-indirect-effects"><i class="fa fa-check"></i><b>10.1.7</b> Marginal randomized direct and indirect effects</a></li>
+<li class="chapter" data-level="10.1.8" data-path="appendix_b.html"><a href="appendix_b.html#conditional-randomized-direct-and-indirect-effects"><i class="fa fa-check"></i><b>10.1.8</b> Conditional randomized direct and indirect effects</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="appendix_b.html"><a href="appendix_b.html#true-causal-quantities-with-mediator-ouctome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>10.2</b> True causal quantities with mediator-ouctome confounder affected by the exposure</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="appendix_b.html"><a href="appendix_b.html#average-total-effects-ate-1"><i class="fa fa-check"></i><b>10.2.1</b> Average total effects (ATE)</a></li>
+<li class="chapter" data-level="10.2.2" data-path="appendix_b.html"><a href="appendix_b.html#controlled-direct-effects-cde-1"><i class="fa fa-check"></i><b>10.2.2</b> Controlled direct effects (CDE)</a></li>
+<li class="chapter" data-level="10.2.3" data-path="appendix_b.html"><a href="appendix_b.html#marginal-randomized-direct-and-indirect-effects-1"><i class="fa fa-check"></i><b>10.2.3</b> Marginal randomized direct and indirect effects</a></li>
+<li class="chapter" data-level="10.2.4" data-path="appendix_b.html"><a href="appendix_b.html#conditional-randomized-direct-and-indirect-effects-1"><i class="fa fa-check"></i><b>10.2.4</b> Conditional randomized direct and indirect effects</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Mediation Workshop</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="chap_trad_reg_models" class="section level1 hasAnchor" number="5">
+<h1><span class="header-section-number">Chapter 5</span> Traditional regression models<a href="chap_trad_reg_models.html#chap_trad_reg_models" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Traditional regression models can be applied in the absence of an intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship affected by the exposure <span class="math inline">\(A\)</span> (Causal model 1). They can be used for two-way, three-way and four-way decomposition of the average total effect.</p>
+<p>In the following examples, we use the <code>df1_int.csv</code> data set with a <span class="math inline">\(A \star M\)</span> interaction effect on the outcome.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="chap_trad_reg_models.html#cb1-1" aria-hidden="true" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;df1_int.csv&quot;</span>)</span></code></pre></div>
+<p>If we assumed that there was no <span class="math inline">\(A \star M\)</span> interaction, then the <code>A0_ace:M_smoking</code> interaction terms should be removed from the models below (applicable if we use the <code>df1.csv</code> data set).</p>
+<div id="estimation-of-the-average-total-effect-ate" class="section level2 hasAnchor" number="5.1">
+<h2><span class="header-section-number">5.1</span> Estimation of the Average Total Effect (ATE)<a href="chap_trad_reg_models.html#estimation-of-the-average-total-effect-ate" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The average total effect is the difference between the mean outcome had the whole population been exposed to adverse childhood experience (ACE), compared to the mean outcome had the whole population been unexposed to ACE:
+<span class="math inline">\(\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})\)</span>.</p>
+<p>For the quantitative outcome, the ATE of the adverse childhood experience <span class="math inline">\(A\)</span> on the quality of life score <span class="math inline">\(Y\)</span> can be estimated using a traditional linear regression of <code>Y_qol</code> on <code>A0_ace</code>, adjusted for the baseline confounders <code>L0_male</code> and <code>L0_parent_low_educ_lv</code>.</p>
+<p>For the binary outcome (death), we can estimate a risk difference applying a Generalized Linear Model with a Gaussian distribution and identity link, as suggested by Naimi <em>et al</em> <span class="citation">(<a href="#ref-naimi2020" role="doc-biblioref">Naimi and Whitcomb 2020</a>)</span>.</p>
+<p>The regression coefficient of the exposure variable <span class="math inline">\(A\)</span> is used to estimate the risk difference or the average difference.
+<span class="math display" id="eq:regtotaleffect">\[\begin{equation}
+  \mathbb{E}(Y \mid A, L(0)) = \alpha_0 + \alpha_A A + \alpha_{L(0)} L(0)
+  \tag{5.1}
+\end{equation}\]</span></p>
+<p><span class="math display">\[ \hat{\Psi}_{\text{trad}}^{\text{ATE}} = \hat{\alpha}_A\]</span></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="chap_trad_reg_models.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For quantitative outcomes, apply a linear regression of Y on A (A0_ace), </span></span>
+<span id="cb2-2"><a href="chap_trad_reg_models.html#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># adjusted for the baseline confounders L(0):</span></span>
+<span id="cb2-3"><a href="chap_trad_reg_models.html#cb2-3" aria-hidden="true" tabindex="-1"></a>trad_ATE_qol <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb2-4"><a href="chap_trad_reg_models.html#cb2-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data =</span> df1_int)</span>
+<span id="cb2-5"><a href="chap_trad_reg_models.html#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="chap_trad_reg_models.html#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and</span></span>
+<span id="cb2-7"><a href="chap_trad_reg_models.html#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># identity link, adjusted for the baseline confounders:</span></span>
+<span id="cb2-8"><a href="chap_trad_reg_models.html#cb2-8" aria-hidden="true" tabindex="-1"></a>trad_ATE_death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb2-9"><a href="chap_trad_reg_models.html#cb2-9" aria-hidden="true" tabindex="-1"></a>                      <span class="at">family =</span> <span class="fu">gaussian</span>(<span class="st">&quot;identity&quot;</span>),</span>
+<span id="cb2-10"><a href="chap_trad_reg_models.html#cb2-10" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> df1_int)</span>
+<span id="cb2-11"><a href="chap_trad_reg_models.html#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="chap_trad_reg_models.html#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the regression coefficient of the exposure (A0_ace) to estimate the ATE</span></span>
+<span id="cb2-13"><a href="chap_trad_reg_models.html#cb2-13" aria-hidden="true" tabindex="-1"></a>ATE_trad_qol <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(trad_ATE_qol)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb2-14"><a href="chap_trad_reg_models.html#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># -7.210089</span></span>
+<span id="cb2-15"><a href="chap_trad_reg_models.html#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="chap_trad_reg_models.html#cb2-16" aria-hidden="true" tabindex="-1"></a>ATE_trad_death <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(trad_ATE_death)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb2-17"><a href="chap_trad_reg_models.html#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.07720726</span></span></code></pre></div>
+<p>The estimation of 95% confidence intervals could be obtained directly from the linear regression with quantitative outcomes (equation <a href="chap_trad_reg_models.html#eq:regtotaleffect">(5.1)</a>). However, using a robust (sandwich) variance estimator or applying a bootstrap procedure is recommended <span class="citation">(<a href="#ref-naimi2020" role="doc-biblioref">Naimi and Whitcomb 2020</a>)</span>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="chap_trad_reg_models.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb3-2"><a href="chap_trad_reg_models.html#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="chap_trad_reg_models.html#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># for the Quality of Life outcome</span></span>
+<span id="cb3-4"><a href="chap_trad_reg_models.html#cb3-4" aria-hidden="true" tabindex="-1"></a>ATE_trad_qol <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">ATE =</span> <span class="fu">coef</span>(trad_ATE_qol)[<span class="st">&quot;A0_ace&quot;</span>],</span>
+<span id="cb3-5"><a href="chap_trad_reg_models.html#cb3-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">lo =</span> <span class="fu">coef</span>(trad_ATE_qol)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">-</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
+<span id="cb3-6"><a href="chap_trad_reg_models.html#cb3-6" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">sqrt</span>(<span class="fu">sandwich</span>(trad_ATE_qol)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;A0_ace&quot;</span>]),</span>
+<span id="cb3-7"><a href="chap_trad_reg_models.html#cb3-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">hi =</span> <span class="fu">coef</span>(trad_ATE_qol)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
+<span id="cb3-8"><a href="chap_trad_reg_models.html#cb3-8" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">sqrt</span>(<span class="fu">sandwich</span>(trad_ATE_qol)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;A0_ace&quot;</span>]))</span>
+<span id="cb3-9"><a href="chap_trad_reg_models.html#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="chap_trad_reg_models.html#cb3-10" aria-hidden="true" tabindex="-1"></a>ATE_trad_qol</span>
+<span id="cb3-11"><a href="chap_trad_reg_models.html#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE = -7.210089 , IC95% = [-7.978234 ; -6.441944]</span></span>
+<span id="cb3-12"><a href="chap_trad_reg_models.html#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="chap_trad_reg_models.html#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># for death outcome</span></span>
+<span id="cb3-14"><a href="chap_trad_reg_models.html#cb3-14" aria-hidden="true" tabindex="-1"></a>ATE_trad_death <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">ATE =</span> <span class="fu">coef</span>(trad_ATE_death)[<span class="st">&quot;A0_ace&quot;</span>],</span>
+<span id="cb3-15"><a href="chap_trad_reg_models.html#cb3-15" aria-hidden="true" tabindex="-1"></a>                       <span class="at">lo =</span> <span class="fu">coef</span>(trad_ATE_death)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">-</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
+<span id="cb3-16"><a href="chap_trad_reg_models.html#cb3-16" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">sqrt</span>(<span class="fu">sandwich</span>(trad_ATE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;A0_ace&quot;</span>]),</span>
+<span id="cb3-17"><a href="chap_trad_reg_models.html#cb3-17" aria-hidden="true" tabindex="-1"></a>                       <span class="at">hi =</span> <span class="fu">coef</span>(trad_ATE_death)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
+<span id="cb3-18"><a href="chap_trad_reg_models.html#cb3-18" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">sqrt</span>(<span class="fu">sandwich</span>(trad_ATE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;A0_ace&quot;</span>]))</span>
+<span id="cb3-19"><a href="chap_trad_reg_models.html#cb3-19" aria-hidden="true" tabindex="-1"></a>ATE_trad_death</span>
+<span id="cb3-20"><a href="chap_trad_reg_models.html#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ATE = 0.07720726 , IC95% = [0.04945859 ; 0.1049559]</span></span>
+<span id="cb3-21"><a href="chap_trad_reg_models.html#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="chap_trad_reg_models.html#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 95% CI calculation applying a bootstrap procedure</span></span>
+<span id="cb3-23"><a href="chap_trad_reg_models.html#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span>
+<span id="cb3-24"><a href="chap_trad_reg_models.html#cb3-24" aria-hidden="true" tabindex="-1"></a>bootfunc <span class="ot">&lt;-</span> <span class="cf">function</span>(data,index){</span>
+<span id="cb3-25"><a href="chap_trad_reg_models.html#cb3-25" aria-hidden="true" tabindex="-1"></a>  boot_dat <span class="ot">&lt;-</span> data[index,]</span>
+<span id="cb3-26"><a href="chap_trad_reg_models.html#cb3-26" aria-hidden="true" tabindex="-1"></a>  mod.qol <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb3-27"><a href="chap_trad_reg_models.html#cb3-27" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> boot_dat)</span>
+<span id="cb3-28"><a href="chap_trad_reg_models.html#cb3-28" aria-hidden="true" tabindex="-1"></a>  mod.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb3-29"><a href="chap_trad_reg_models.html#cb3-29" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="fu">gaussian</span>(<span class="st">&quot;identity&quot;</span>),</span>
+<span id="cb3-30"><a href="chap_trad_reg_models.html#cb3-30" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data =</span> boot_dat)</span>
+<span id="cb3-31"><a href="chap_trad_reg_models.html#cb3-31" aria-hidden="true" tabindex="-1"></a>  est <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">coef</span>(mod.qol)[<span class="st">&quot;A0_ace&quot;</span>],</span>
+<span id="cb3-32"><a href="chap_trad_reg_models.html#cb3-32" aria-hidden="true" tabindex="-1"></a>           <span class="fu">coef</span>(mod.death)[<span class="st">&quot;A0_ace&quot;</span>])</span>
+<span id="cb3-33"><a href="chap_trad_reg_models.html#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(est)</span>
+<span id="cb3-34"><a href="chap_trad_reg_models.html#cb3-34" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-35"><a href="chap_trad_reg_models.html#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="chap_trad_reg_models.html#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb3-37"><a href="chap_trad_reg_models.html#cb3-37" aria-hidden="true" tabindex="-1"></a>boot_est <span class="ot">&lt;-</span> <span class="fu">boot</span>(df1_int,bootfunc,<span class="at">R=</span><span class="dv">2000</span>)</span>
+<span id="cb3-38"><a href="chap_trad_reg_models.html#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="chap_trad_reg_models.html#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co"># the 95% CI for the estimation of the ATE of ACE on QoL is:</span></span>
+<span id="cb3-40"><a href="chap_trad_reg_models.html#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="fu">boot.ci</span>(boot_est, <span class="at">index =</span> <span class="dv">1</span>, <span class="at">type =</span> <span class="st">&quot;norm&quot;</span>)</span>
+<span id="cb3-41"><a href="chap_trad_reg_models.html#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co"># (-7.978, -6.444 )</span></span>
+<span id="cb3-42"><a href="chap_trad_reg_models.html#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="chap_trad_reg_models.html#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co"># the 95% CI for the estimation of the ATE of ACE on death is:</span></span>
+<span id="cb3-44"><a href="chap_trad_reg_models.html#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="fu">boot.ci</span>(boot_est, <span class="at">index =</span> <span class="dv">2</span>, <span class="at">type =</span> <span class="st">&quot;norm&quot;</span>)</span>
+<span id="cb3-45"><a href="chap_trad_reg_models.html#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="co"># ( 0.0502,  0.1040 )  </span></span></code></pre></div>
+<p>Alternatively for binary outcomes, the total effect conditional on baseline confounders can be expressed on an Odds Ratio scale <span class="math inline">\(\text{OR}^{\text{TE}}\)</span>, using the logistic regression <a href="chap_trad_reg_models.html#eq:logittotaleffect">(5.2)</a>.</p>
+<p><span class="math display" id="eq:logittotaleffect">\[\begin{equation}
+  \text{logit} P(Y = 1 \mid A, L(0)) = \alpha_0 + \alpha_A A + \alpha_{L(0)}^\prime L(0)
+  \tag{5.2}
+\end{equation}\]</span></p>
+<p><span class="math display">\[ \text{OR}^{\text{TE}} \mid L(0) = \exp \hat{\alpha}_A \]</span></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="chap_trad_reg_models.html#cb4-1" aria-hidden="true" tabindex="-1"></a>TE_death_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb4-2"><a href="chap_trad_reg_models.html#cb4-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>,</span>
+<span id="cb4-3"><a href="chap_trad_reg_models.html#cb4-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> df1_int)</span>
+<span id="cb4-4"><a href="chap_trad_reg_models.html#cb4-4" aria-hidden="true" tabindex="-1"></a>res_TE_death <span class="ot">&lt;-</span> <span class="fu">summary</span>(TE_death_model)</span>
+<span id="cb4-5"><a href="chap_trad_reg_models.html#cb4-5" aria-hidden="true" tabindex="-1"></a>tot.effect.death.OR <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">OR =</span> <span class="fu">exp</span>(<span class="fu">coef</span>(res_TE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;Estimate&quot;</span>]),</span>
+<span id="cb4-6"><a href="chap_trad_reg_models.html#cb4-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">lo =</span> <span class="fu">exp</span>(<span class="fu">coef</span>(res_TE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;Estimate&quot;</span>] <span class="sc">-</span></span>
+<span id="cb4-7"><a href="chap_trad_reg_models.html#cb4-7" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
+<span id="cb4-8"><a href="chap_trad_reg_models.html#cb4-8" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">coef</span>(res_TE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;Std. Error&quot;</span>]),</span>
+<span id="cb4-9"><a href="chap_trad_reg_models.html#cb4-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">hi =</span> <span class="fu">exp</span>(<span class="fu">coef</span>(res_TE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;Estimate&quot;</span>] <span class="sc">+</span></span>
+<span id="cb4-10"><a href="chap_trad_reg_models.html#cb4-10" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
+<span id="cb4-11"><a href="chap_trad_reg_models.html#cb4-11" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">coef</span>(res_TE_death)[<span class="st">&quot;A0_ace&quot;</span>,<span class="st">&quot;Std. Error&quot;</span>]))</span>
+<span id="cb4-12"><a href="chap_trad_reg_models.html#cb4-12" aria-hidden="true" tabindex="-1"></a>tot.effect.death.OR</span>
+<span id="cb4-13"><a href="chap_trad_reg_models.html#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># OR = 1.523254 , 95% CI = [ 1.323317 ; 1.753398]</span></span></code></pre></div>
+</div>
+<div id="trad2way" class="section level2 hasAnchor" number="5.2">
+<h2><span class="header-section-number">5.2</span> Two-way decomposition<a href="chap_trad_reg_models.html#trad2way" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In order to carry-out two-way decomposition mediation analyses, with a binary mediator and a continuous outcome, Valeri and VanderWeele suggest using the following linear regression of the outcome and logistic regression of the mediator:<span class="citation">(<a href="#ref-valeri2013" role="doc-biblioref">Valeri and VanderWeele 2013</a>)</span>
+<span class="math display" id="eq:contoutcomereg">\[\begin{equation}
+\mathbb{E}(Y \mid A, M,L(0),L(1)) = \gamma_0 + \gamma_A A + \gamma_M M + \gamma_{A \ast M} (A \ast M) + \gamma_{L(0)}^\prime L(0) + \gamma_{L(1)}^\prime L(1)
+\tag{5.3}
+\end{equation}\]</span></p>
+<p><span class="math display" id="eq:medreg">\[\begin{equation}
+\text{logit}P(M=1 \mid A,L(0),L(1)) = \beta_0 + \beta_A A + \beta_{L(0)}^\prime L(0) + \beta_{L(1)}^\prime L(1)
+\tag{5.4}
+\end{equation}\]</span></p>
+<p>If the outcome is binary, they suggest using the following logistic regression of the outcome instead of the previous linear regression:
+<span class="math display" id="eq:binoutcomereg">\[\begin{equation}
+\small
+\text{logit}P(Y \mid A, M,L(0),L(1)) = \gamma_0 + \gamma_A A + \gamma_M M + \gamma_{A \ast M} (A \ast M) + \gamma_{L(0)}^\prime L(0) + \gamma_{L(1)}^\prime L(1)
+\tag{5.5}
+\end{equation}\]</span></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="chap_trad_reg_models.html#cb5-1" aria-hidden="true" tabindex="-1"></a>trad_qol_am <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking <span class="sc">+</span></span>
+<span id="cb5-2"><a href="chap_trad_reg_models.html#cb5-2" aria-hidden="true" tabindex="-1"></a>                    L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> L1,</span>
+<span id="cb5-3"><a href="chap_trad_reg_models.html#cb5-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> df1_int)</span>
+<span id="cb5-4"><a href="chap_trad_reg_models.html#cb5-4" aria-hidden="true" tabindex="-1"></a>gamma.A.q <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_qol_am)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb5-5"><a href="chap_trad_reg_models.html#cb5-5" aria-hidden="true" tabindex="-1"></a>gamma.M.q <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_qol_am)[<span class="st">&quot;M_smoking&quot;</span>]</span>
+<span id="cb5-6"><a href="chap_trad_reg_models.html#cb5-6" aria-hidden="true" tabindex="-1"></a>gamma.AM.q <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_qol_am)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>]</span>
+<span id="cb5-7"><a href="chap_trad_reg_models.html#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="chap_trad_reg_models.html#cb5-8" aria-hidden="true" tabindex="-1"></a>trad_m <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> L1, </span>
+<span id="cb5-9"><a href="chap_trad_reg_models.html#cb5-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>,</span>
+<span id="cb5-10"><a href="chap_trad_reg_models.html#cb5-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> df1_int)</span>
+<span id="cb5-11"><a href="chap_trad_reg_models.html#cb5-11" aria-hidden="true" tabindex="-1"></a>beta<span class="fl">.0</span> <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_m)[<span class="st">&quot;(Intercept)&quot;</span>]</span>
+<span id="cb5-12"><a href="chap_trad_reg_models.html#cb5-12" aria-hidden="true" tabindex="-1"></a>beta.A <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_m)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb5-13"><a href="chap_trad_reg_models.html#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="chap_trad_reg_models.html#cb5-14" aria-hidden="true" tabindex="-1"></a>trad_death_am <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking <span class="sc">+</span></span>
+<span id="cb5-15"><a href="chap_trad_reg_models.html#cb5-15" aria-hidden="true" tabindex="-1"></a>                       L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> L1,</span>
+<span id="cb5-16"><a href="chap_trad_reg_models.html#cb5-16" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>,</span>
+<span id="cb5-17"><a href="chap_trad_reg_models.html#cb5-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> df1_int)</span>
+<span id="cb5-18"><a href="chap_trad_reg_models.html#cb5-18" aria-hidden="true" tabindex="-1"></a>gamma.A.d <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_death_am)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb5-19"><a href="chap_trad_reg_models.html#cb5-19" aria-hidden="true" tabindex="-1"></a>gamma.M.d <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_death_am)[<span class="st">&quot;M_smoking&quot;</span>]</span>
+<span id="cb5-20"><a href="chap_trad_reg_models.html#cb5-20" aria-hidden="true" tabindex="-1"></a>gamma.AM.d <span class="ot">&lt;-</span> <span class="fu">coef</span>(trad_death_am)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>]</span></code></pre></div>
+<div id="trad2waycde" class="section level3 hasAnchor" number="5.2.1">
+<h3><span class="header-section-number">5.2.1</span> Controlled Direct Effect<a href="chap_trad_reg_models.html#trad2waycde" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The Controlled Direct Effect is defined as <span class="math inline">\(\text{CDE}_m = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span>:</p>
+<p>For continuous outcome, using parameters from equation <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a>, it can be estimated by:
+<span class="math display">\[\text{CDE}_m = \hat{\gamma}_A + \hat{\gamma}_{A \ast M} \times m\]</span></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="chap_trad_reg_models.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a continuous outcome</span></span>
+<span id="cb6-2"><a href="chap_trad_reg_models.html#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># setting the mediator to M=0</span></span>
+<span id="cb6-3"><a href="chap_trad_reg_models.html#cb6-3" aria-hidden="true" tabindex="-1"></a>trad_CDE_qol_m0 <span class="ot">&lt;-</span> gamma.A.q <span class="sc">+</span> gamma.AM.q <span class="sc">*</span> <span class="dv">0</span></span>
+<span id="cb6-4"><a href="chap_trad_reg_models.html#cb6-4" aria-hidden="true" tabindex="-1"></a>trad_CDE_qol_m0</span>
+<span id="cb6-5"><a href="chap_trad_reg_models.html#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># -3.715265</span></span>
+<span id="cb6-6"><a href="chap_trad_reg_models.html#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># setting the mediator to M=1</span></span>
+<span id="cb6-7"><a href="chap_trad_reg_models.html#cb6-7" aria-hidden="true" tabindex="-1"></a>trad_CDE_qol_m1 <span class="ot">&lt;-</span> gamma.A.q <span class="sc">+</span> gamma.AM.q <span class="sc">*</span> <span class="dv">1</span></span>
+<span id="cb6-8"><a href="chap_trad_reg_models.html#cb6-8" aria-hidden="true" tabindex="-1"></a>trad_CDE_qol_m1</span>
+<span id="cb6-9"><a href="chap_trad_reg_models.html#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># -9.330657</span></span></code></pre></div>
+<p>For binary outcomes, using parameters from equation <a href="chap_trad_reg_models.html#eq:binoutcomereg">(5.5)</a>, it can be estimated on the OR scale by:
+<span class="math display">\[OR^{\text{CDE}_m} = \text{exp}\left(\hat{\gamma}_A + \hat{\gamma}_{A \ast M} \times m\right)\]</span></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="chap_trad_reg_models.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a binary outcome</span></span>
+<span id="cb7-2"><a href="chap_trad_reg_models.html#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">## setting the mediator to M=0</span></span>
+<span id="cb7-3"><a href="chap_trad_reg_models.html#cb7-3" aria-hidden="true" tabindex="-1"></a>trad_OD_CDE_death_m0 <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d <span class="sc">+</span> gamma.AM.d <span class="sc">*</span> <span class="dv">0</span>)</span>
+<span id="cb7-4"><a href="chap_trad_reg_models.html#cb7-4" aria-hidden="true" tabindex="-1"></a>trad_OD_CDE_death_m0</span>
+<span id="cb7-5"><a href="chap_trad_reg_models.html#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># OR_CDE_{M=0} = 1.442942 </span></span>
+<span id="cb7-6"><a href="chap_trad_reg_models.html#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="chap_trad_reg_models.html#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="do">## setting the mediator to M=1</span></span>
+<span id="cb7-8"><a href="chap_trad_reg_models.html#cb7-8" aria-hidden="true" tabindex="-1"></a>trad_OD_CDE_death_m1 <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d <span class="sc">+</span> gamma.AM.d <span class="sc">*</span> <span class="dv">1</span>)</span>
+<span id="cb7-9"><a href="chap_trad_reg_models.html#cb7-9" aria-hidden="true" tabindex="-1"></a>trad_OD_CDE_death_m1</span>
+<span id="cb7-10"><a href="chap_trad_reg_models.html#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># OR_CDE_{M=1} = 1.461464 </span></span></code></pre></div>
+</div>
+<div id="trad2waynatural" class="section level3 hasAnchor" number="5.2.2">
+<h3><span class="header-section-number">5.2.2</span> Natural Direct and Indirect effects<a href="chap_trad_reg_models.html#trad2waynatural" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The Pure Natural Direct Effect (PNDE) and the Total Natural Indirect Effect (TNIE) are defined as:</p>
+<ul>
+<li><span class="math inline">\(\text{PNDE} = \mathbb{E}\left(Y_{A=1,M_{A=0}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)\)</span>,</li>
+<li><span class="math inline">\(\text{TNIE} = \mathbb{E}\left(Y_{A=1,M_{A=1}}) - \mathbb{E}(Y_{A=1,M_{A=0}}\right)\)</span>.</li>
+</ul>
+<p>Alternatively, one can use the Total Natural Direct Effect (TNDE) and the Pure Natural Indirect Effect (PNIE):</p>
+<ul>
+<li><span class="math inline">\(\text{TNDE} = \mathbb{E}\left(Y_{A=1,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=1}}\right)\)</span>,</li>
+<li><span class="math inline">\(\text{PNIE} = \mathbb{E}\left(Y_{A=0,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)\)</span>.</li>
+</ul>
+<p>With a continuous outcome and a binary mediator, the PNDE and TNDE can be estimated using the linear regression of the outcome (equation <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a>) and the logistic regression of the mediator (equation <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>):
+<span class="math display">\[\text{PNDE} \mid L(0), L(1) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M} \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\]</span></p>
+<p><span class="math display">\[\scriptsize
+\text{TNIE} \mid L(0), L(1) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]\]</span>
+The alternative TNDE ad PNIE can be estimated by:
+<span class="math display">\[\text{TNDE} \mid L(0), L(1) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M}\frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\]</span>
+<span class="math display">\[\scriptsize \text{PNIE} \mid L(0), L(1) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]\]</span>
+Conditional on participants for which <span class="math inline">\(L(0)=0\)</span> and <span class="math inline">\(L(1)=0\)</span>, these expressions are simplified:
+<span class="math display">\[\text{PNDE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M}\frac{exp(\hat{\beta}_0)}{1 + exp(\hat{\beta}_0)}\]</span>
+<span class="math display">\[\text{TNIE} \Big| (L(0)=0, L(1)=0) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A )}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A )} - \frac{exp(\hat{\beta}_0 )}{1 + exp(\hat{\beta}_0)}\right]\]</span>
+and
+<span class="math display">\[\text{TNDE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M}\frac{exp(\hat{\beta}_0 + \hat{\beta}_A)}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A)}\]</span>
+<span class="math display">\[\text{PNIE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_M \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A )}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A )} - \frac{exp(\hat{\beta}_0 )}{1 + exp(\hat{\beta}_0)}\right]\]</span></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="chap_trad_reg_models.html#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a continuous outcome, in the subgroup with L(0)=0 and L(1)=0</span></span>
+<span id="cb8-2"><a href="chap_trad_reg_models.html#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The PNDE and TNIE are:</span></span>
+<span id="cb8-3"><a href="chap_trad_reg_models.html#cb8-3" aria-hidden="true" tabindex="-1"></a>trad_PNDE_qol <span class="ot">&lt;-</span> gamma.A.q <span class="sc">+</span> gamma.AM.q <span class="sc">*</span> (<span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>))</span>
+<span id="cb8-4"><a href="chap_trad_reg_models.html#cb8-4" aria-hidden="true" tabindex="-1"></a>trad_PNDE_qol</span>
+<span id="cb8-5"><a href="chap_trad_reg_models.html#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># -4.845089</span></span>
+<span id="cb8-6"><a href="chap_trad_reg_models.html#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="chap_trad_reg_models.html#cb8-7" aria-hidden="true" tabindex="-1"></a>trad_TNIE_qol <span class="ot">&lt;-</span> (gamma.M.q <span class="sc">+</span> gamma.AM.q) <span class="sc">*</span></span>
+<span id="cb8-8"><a href="chap_trad_reg_models.html#cb8-8" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">-</span></span>
+<span id="cb8-9"><a href="chap_trad_reg_models.html#cb8-9" aria-hidden="true" tabindex="-1"></a>     <span class="fu">exp</span>(beta<span class="fl">.0</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)))</span>
+<span id="cb8-10"><a href="chap_trad_reg_models.html#cb8-10" aria-hidden="true" tabindex="-1"></a>trad_TNIE_qol</span>
+<span id="cb8-11"><a href="chap_trad_reg_models.html#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># -1.50119</span></span>
+<span id="cb8-12"><a href="chap_trad_reg_models.html#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="chap_trad_reg_models.html#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="do">## The TNDE and PNIE are:</span></span>
+<span id="cb8-14"><a href="chap_trad_reg_models.html#cb8-14" aria-hidden="true" tabindex="-1"></a>trad_TNDE_qol <span class="ot">&lt;-</span> gamma.A.q <span class="sc">+</span></span>
+<span id="cb8-15"><a href="chap_trad_reg_models.html#cb8-15" aria-hidden="true" tabindex="-1"></a>  gamma.AM.q <span class="sc">*</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A))</span>
+<span id="cb8-16"><a href="chap_trad_reg_models.html#cb8-16" aria-hidden="true" tabindex="-1"></a>trad_TNDE_qol</span>
+<span id="cb8-17"><a href="chap_trad_reg_models.html#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># -5.436773</span></span>
+<span id="cb8-18"><a href="chap_trad_reg_models.html#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="chap_trad_reg_models.html#cb8-19" aria-hidden="true" tabindex="-1"></a>trad_PNIE_qol <span class="ot">&lt;-</span> gamma.M.q <span class="sc">*</span></span>
+<span id="cb8-20"><a href="chap_trad_reg_models.html#cb8-20" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span></span>
+<span id="cb8-21"><a href="chap_trad_reg_models.html#cb8-21" aria-hidden="true" tabindex="-1"></a>     (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">-</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)))</span>
+<span id="cb8-22"><a href="chap_trad_reg_models.html#cb8-22" aria-hidden="true" tabindex="-1"></a>trad_PNIE_qol</span>
+<span id="cb8-23"><a href="chap_trad_reg_models.html#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co"># -0.9095061</span></span></code></pre></div>
+<p><strong>For binary outcomes</strong>, total, direct and indirect effects can be expressed on relative risk or odds ratio scales:</p>
+<p>The total effect risk ratio is equal to :
+<span class="math display">\[\text{RR}^\text{TE}=\frac{\mathbb{E}(Y_1)}{\mathbb{E}(Y_0)}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_0})}\]</span></p>
+<p>The total effect risk ratio can be decomposed as the product of the PNDE risk ratio and the TNIE risk ratio:
+<span class="math display">\[\text{RR}^\text{TE}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_0})}=\frac{\mathbb{E}(Y_{1,M_0})}{\mathbb{E}(Y_{0,M_0})} \times \frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{1,M_0})}=\text{RR}^\text{PNDE} \times \text{RR}^\text{TNIE}\]</span></p>
+<p>Similarly, the total effect risk ratio can be decomposed as the product of the TNDE risk ratio and the PNIE risk ratio:
+<span class="math display">\[\text{RR}^\text{TE}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_0})}=\frac{\mathbb{E}(Y_{1,M_1})}{\mathbb{E}(Y_{0,M_1})} \times \frac{\mathbb{E}(Y_{0,M_1})}{\mathbb{E}(Y_{0,M_0})}=\text{RR}^\text{TNDE} \times \text{RR}^\text{PNIE}\]</span></p>
+<p>PNDE, TNIE, TNDE and PNIE can also be given on the OR scale,
+<span class="math display">\[\text{OR}^\text{PNDE} = \frac{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}{\frac{P\left(Y_{A=0,M_{A=0}}=1\right)}{1 - P\left(Y_{A=0,M_{A=0}}=1\right)}} \quad \text{,} \quad \text{OR}^\text{TNIE} = \frac{\frac{P\left(Y_{A=1,M_{A=1}}=1\right)}{1 - P\left(Y_{A=1,M_{A=1}}=1\right)}}{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}\]</span>
+and
+<span class="math display">\[\text{OR}^\text{TNDE} = \frac{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}{\frac{P\left(Y_{A=0,M_{A=0}}=1\right)}{1 - P\left(Y_{A=0,M_{A=0}}=1\right)}} \quad \text{and} \quad \text{OR}^\text{PNIE} = \frac{\frac{P\left(Y_{A=1,M_{A=1}}=1\right)}{1 - P\left(Y_{A=1,M_{A=1}}=1\right)}}{\frac{P\left(Y_{A=1,M_{A=0}}=1\right)}{1 - P\left(Y_{A=1,M_{A=0}}=1\right)}}.\]</span>
+If the outcome is rare, we have <span class="math inline">\(P(Y=1) \approx \frac{P(Y=1)}{1-P(Y=1)}\)</span> so that, <span class="math inline">\(\text{OR}^{\text{PNDE}}\)</span> AND <span class="math inline">\(\text{OR}^{\text{TNIE}}\)</span> can be estimated using the logistic model of the outcome (equation <a href="chap_trad_reg_models.html#eq:binoutcomereg">(5.5)</a>) and the logistic model of the mediator (equation <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>):
+<span class="math display">\[\small \text{OR}^\text{PNDE} \mid L(0), L(1) \approx \frac{\text{exp}(\hat{\gamma}_A \times 1) \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0  + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]}{ \text{exp}(\hat{\gamma}_A \times 0) \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0 + \hat{\beta}_A \times 0  + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]} \]</span></p>
+<p>and</p>
+<p><span class="math display">\[ \scriptsize \text{OR}^\text{TNIE} \mid L(0), L(1) \approx \frac{\left[1 + \text{exp}(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)) \right]  \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]}{ \left[1 + \text{exp}(\hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)) \right]  \left[ 1 + \text{exp}(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))\right]} \]</span>
+Similarly, if the outcome is rare, <span class="math inline">\(\text{OR}^{\text{TNDE}}\)</span> AND <span class="math inline">\(\text{OR}^{\text{PNIE}}\)</span> can be estimated using the logistic regression models for the outcome and the mediator (equations <a href="chap_trad_reg_models.html#eq:binoutcomereg">(5.5)</a> and <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>):
+<span class="math display">\[\small \text{OR}^\text{TNDE} \mid L(0), L(1) \approx \frac{\text{exp}\left(\hat{\gamma}_A \times 1 \right)  \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 + \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]}{ \text{exp}\left(\hat{\gamma}_A \times 0 \right) \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]}\]</span></p>
+<p>and
+<span class="math display">\[\scriptsize \text{OR}^\text{PNIE} \mid L(0), L(1) \approx \frac{\left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right] \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]}{ \left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right] \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 + \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right)\right]} \]</span>
+Conditional on participants for which <span class="math inline">\(L(0)=0\)</span> and <span class="math inline">\(L(1)=0\)</span>, these expressions are simplified:
+<span class="math display">\[\text{OR}^\text{PNDE} \Bigg| \left(L(0) = 0, L(1) = 0\right) \approx \frac{\text{exp}\left(\hat{\gamma}_A\right) \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0\right)\right]}{ \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\beta}_0 \right)\right]}\]</span>
+and
+<span class="math display">\[\text{OR}^\text{TNIE} \Bigg| \left(L(0)=0, L(1)=0\right) \approx \frac{\left[1 + \text{exp}\left(\hat{\beta}_0\right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0  + \hat{\beta}_A\right)\right]}{ \left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0 \right)\right]} \]</span>
+Similarly, conditional on <span class="math inline">\(L(0)=0\)</span> and <span class="math inline">\(L(1)=0\)</span>,
+<span class="math display">\[\text{OR}^\text{TNDE} \Bigg| \left(L(0)=0, L(1)=0\right) \approx \frac{\text{exp}\left(\hat{\gamma}_A\right) \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\gamma}_{A \ast M} + \hat{\beta}_0 + \hat{\beta}_A \right)\right]}{ \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\beta}_0 + \hat{\beta}_A \right)\right]}\]</span>
+<span class="math display">\[\text{OR}^\text{PNIE} \Bigg| \left(L(0)=0, L(1)=0\right) \approx \frac{\left[1 + \text{exp}\left(\hat{\beta}_0 \right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M + \hat{\beta}_0  + \hat{\beta}_A \right)\right]}{ \left[1 + \text{exp}\left(\hat{\beta}_0  + \hat{\beta}_A \right) \right] \times \left[ 1 + \text{exp}\left(\hat{\gamma}_M +  \hat{\beta}_0 \right)\right]} \]</span></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="chap_trad_reg_models.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a binary outcome, in the subgroup with L(0)=0 and L(1)=0</span></span>
+<span id="cb9-2"><a href="chap_trad_reg_models.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The PNDE and TNIE are (on the OR scale):</span></span>
+<span id="cb9-3"><a href="chap_trad_reg_models.html#cb9-3" aria-hidden="true" tabindex="-1"></a>trad_OR_PNDE_death <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span></span>
+<span id="cb9-4"><a href="chap_trad_reg_models.html#cb9-4" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> gamma.AM.d <span class="sc">+</span> beta<span class="fl">.0</span> )) <span class="sc">/</span></span>
+<span id="cb9-5"><a href="chap_trad_reg_models.html#cb9-5" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> beta<span class="fl">.0</span>))</span>
+<span id="cb9-6"><a href="chap_trad_reg_models.html#cb9-6" aria-hidden="true" tabindex="-1"></a>trad_OR_PNDE_death</span>
+<span id="cb9-7"><a href="chap_trad_reg_models.html#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.448035</span></span>
+<span id="cb9-8"><a href="chap_trad_reg_models.html#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="chap_trad_reg_models.html#cb9-9" aria-hidden="true" tabindex="-1"></a>trad_OR_TNIE_death <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">*</span></span>
+<span id="cb9-10"><a href="chap_trad_reg_models.html#cb9-10" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> gamma.AM.d <span class="sc">+</span> beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">/</span></span>
+<span id="cb9-11"><a href="chap_trad_reg_models.html#cb9-11" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> gamma.AM.d <span class="sc">+</span> beta<span class="fl">.0</span>)))</span>
+<span id="cb9-12"><a href="chap_trad_reg_models.html#cb9-12" aria-hidden="true" tabindex="-1"></a>trad_OR_TNIE_death</span>
+<span id="cb9-13"><a href="chap_trad_reg_models.html#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.050029</span></span>
+<span id="cb9-14"><a href="chap_trad_reg_models.html#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="chap_trad_reg_models.html#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="do">## The TNDE and PNIE are (on the OR scale):</span></span>
+<span id="cb9-16"><a href="chap_trad_reg_models.html#cb9-16" aria-hidden="true" tabindex="-1"></a>trad_OR_TNDE_death <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span></span>
+<span id="cb9-17"><a href="chap_trad_reg_models.html#cb9-17" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> gamma.AM.d <span class="sc">+</span> beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">/</span></span>
+<span id="cb9-18"><a href="chap_trad_reg_models.html#cb9-18" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> beta<span class="fl">.0</span> <span class="sc">+</span> beta.A))</span>
+<span id="cb9-19"><a href="chap_trad_reg_models.html#cb9-19" aria-hidden="true" tabindex="-1"></a>trad_OR_TNDE_death</span>
+<span id="cb9-20"><a href="chap_trad_reg_models.html#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.450344</span></span>
+<span id="cb9-21"><a href="chap_trad_reg_models.html#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="chap_trad_reg_models.html#cb9-22" aria-hidden="true" tabindex="-1"></a>trad_OR_PNIE_death <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">*</span></span>
+<span id="cb9-23"><a href="chap_trad_reg_models.html#cb9-23" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">/</span></span>
+<span id="cb9-24"><a href="chap_trad_reg_models.html#cb9-24" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(gamma.M.d <span class="sc">+</span> beta<span class="fl">.0</span>)))</span>
+<span id="cb9-25"><a href="chap_trad_reg_models.html#cb9-25" aria-hidden="true" tabindex="-1"></a>trad_OR_PNIE_death</span>
+<span id="cb9-26"><a href="chap_trad_reg_models.html#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.048358</span></span></code></pre></div>
+<p>The <code>regmedint</code> <a href="https://cran.r-project.org/web/packages/regmedint/index.html">package</a> (Regression-Based Causal Mediation Analysis with Interaction and Effect Modification Terms) can be used for two-way decomposition. Estimations of the CDE, PNDE, TNIE, TNDE and PNIE presented above can be obtained as we show in the following example.</p>
+<p>For continuous outcomes:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="chap_trad_reg_models.html#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(regmedint)</span>
+<span id="cb10-2"><a href="chap_trad_reg_models.html#cb10-2" aria-hidden="true" tabindex="-1"></a>regmedint_cont <span class="ot">&lt;-</span> <span class="fu">regmedint</span>(<span class="at">data =</span> df1_int,</span>
+<span id="cb10-3"><a href="chap_trad_reg_models.html#cb10-3" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Variables</span></span>
+<span id="cb10-4"><a href="chap_trad_reg_models.html#cb10-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yvar =</span> <span class="st">&quot;Y_qol&quot;</span>,                   <span class="co"># outcome variable</span></span>
+<span id="cb10-5"><a href="chap_trad_reg_models.html#cb10-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">avar =</span> <span class="st">&quot;A0_ace&quot;</span>,                  <span class="co"># exposure</span></span>
+<span id="cb10-6"><a href="chap_trad_reg_models.html#cb10-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mvar =</span> <span class="st">&quot;M_smoking&quot;</span>,               <span class="co"># mediator</span></span>
+<span id="cb10-7"><a href="chap_trad_reg_models.html#cb10-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cvar =</span> <span class="fu">c</span>(<span class="st">&quot;L0_male&quot;</span>,               <span class="co"># confounders</span></span>
+<span id="cb10-8"><a href="chap_trad_reg_models.html#cb10-8" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">&quot;L0_parent_low_educ_lv&quot;</span>,</span>
+<span id="cb10-9"><a href="chap_trad_reg_models.html#cb10-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">&quot;L1&quot;</span>),</span>
+<span id="cb10-10"><a href="chap_trad_reg_models.html#cb10-10" aria-hidden="true" tabindex="-1"></a>                            <span class="co">#eventvar = &quot;event&quot;,     # only for survival outcome</span></span>
+<span id="cb10-11"><a href="chap_trad_reg_models.html#cb10-11" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Values at which effects are evaluated</span></span>
+<span id="cb10-12"><a href="chap_trad_reg_models.html#cb10-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">a0 =</span> <span class="dv">0</span>,</span>
+<span id="cb10-13"><a href="chap_trad_reg_models.html#cb10-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">a1 =</span> <span class="dv">1</span>,</span>
+<span id="cb10-14"><a href="chap_trad_reg_models.html#cb10-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">m_cde =</span> <span class="dv">0</span>,              <span class="co"># mediator level for the CDE</span></span>
+<span id="cb10-15"><a href="chap_trad_reg_models.html#cb10-15" aria-hidden="true" tabindex="-1"></a>                            <span class="at">c_cond =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>),                 <span class="co"># covariate level</span></span>
+<span id="cb10-16"><a href="chap_trad_reg_models.html#cb10-16" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Model types</span></span>
+<span id="cb10-17"><a href="chap_trad_reg_models.html#cb10-17" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mreg =</span> <span class="st">&quot;logistic&quot;</span>,</span>
+<span id="cb10-18"><a href="chap_trad_reg_models.html#cb10-18" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yreg =</span> <span class="st">&quot;linear&quot;</span>,</span>
+<span id="cb10-19"><a href="chap_trad_reg_models.html#cb10-19" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Additional specification</span></span>
+<span id="cb10-20"><a href="chap_trad_reg_models.html#cb10-20" aria-hidden="true" tabindex="-1"></a>                            <span class="at">interaction =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-21"><a href="chap_trad_reg_models.html#cb10-21" aria-hidden="true" tabindex="-1"></a>                            <span class="at">casecontrol =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-22"><a href="chap_trad_reg_models.html#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(regmedint_cont)</span>
+<span id="cb10-23"><a href="chap_trad_reg_models.html#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="do">#### Mediation analysis</span></span>
+<span id="cb10-24"><a href="chap_trad_reg_models.html#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="co">#             est         se          Z            p      lower      upper</span></span>
+<span id="cb10-25"><a href="chap_trad_reg_models.html#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co"># cde  -3.7152652 0.41600219  -8.930879 0.000000e+00 -4.5306145 -2.8999159</span></span>
+<span id="cb10-26"><a href="chap_trad_reg_models.html#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="co"># pnde -4.8450888 0.35052810 -13.822255 0.000000e+00 -5.5321113 -4.1580663</span></span>
+<span id="cb10-27"><a href="chap_trad_reg_models.html#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co"># tnie -1.5011902 0.20821830  -7.209694 5.608847e-13 -1.9092905 -1.0930898</span></span>
+<span id="cb10-28"><a href="chap_trad_reg_models.html#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="co"># tnde -5.4367728 0.34049175 -15.967414 0.000000e+00 -6.1041244 -4.7694213</span></span>
+<span id="cb10-29"><a href="chap_trad_reg_models.html#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co"># pnie -0.9095061 0.12266064  -7.414817 1.219025e-13 -1.1499166 -0.6690957</span></span>
+<span id="cb10-30"><a href="chap_trad_reg_models.html#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co"># te   -6.3462790 0.38788368 -16.361294 0.000000e+00 -7.1065170 -5.5860409</span></span>
+<span id="cb10-31"><a href="chap_trad_reg_models.html#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co"># pm    0.2365465 0.02947624   8.024991 1.110223e-15  0.1787742  0.2943189</span></span>
+<span id="cb10-32"><a href="chap_trad_reg_models.html#cb10-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-33"><a href="chap_trad_reg_models.html#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co"># note: te = total effect = (pnde + tnie) = (tnde + pnie)</span></span>
+<span id="cb10-34"><a href="chap_trad_reg_models.html#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co">#       pm = proportion mediated = tnie / te</span></span></code></pre></div>
+<p>For binary outcomes:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="chap_trad_reg_models.html#cb11-1" aria-hidden="true" tabindex="-1"></a>regmedint_bin <span class="ot">&lt;-</span> <span class="fu">regmedint</span>(<span class="at">data =</span> df1_int,</span>
+<span id="cb11-2"><a href="chap_trad_reg_models.html#cb11-2" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Variables</span></span>
+<span id="cb11-3"><a href="chap_trad_reg_models.html#cb11-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yvar =</span> <span class="st">&quot;Y_death&quot;</span>,                 <span class="co"># outcome variable</span></span>
+<span id="cb11-4"><a href="chap_trad_reg_models.html#cb11-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">avar =</span> <span class="st">&quot;A0_ace&quot;</span>,                  <span class="co"># exposure</span></span>
+<span id="cb11-5"><a href="chap_trad_reg_models.html#cb11-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mvar =</span> <span class="st">&quot;M_smoking&quot;</span>,               <span class="co"># mediator</span></span>
+<span id="cb11-6"><a href="chap_trad_reg_models.html#cb11-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cvar =</span> <span class="fu">c</span>(<span class="st">&quot;L0_male&quot;</span>,               <span class="co"># confounders</span></span>
+<span id="cb11-7"><a href="chap_trad_reg_models.html#cb11-7" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">&quot;L0_parent_low_educ_lv&quot;</span>,</span>
+<span id="cb11-8"><a href="chap_trad_reg_models.html#cb11-8" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">&quot;L1&quot;</span>),</span>
+<span id="cb11-9"><a href="chap_trad_reg_models.html#cb11-9" aria-hidden="true" tabindex="-1"></a>                            <span class="co">#eventvar = &quot;event&quot;,     # only for survival outcome</span></span>
+<span id="cb11-10"><a href="chap_trad_reg_models.html#cb11-10" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Values at which effects are evaluated</span></span>
+<span id="cb11-11"><a href="chap_trad_reg_models.html#cb11-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">a0 =</span> <span class="dv">0</span>,</span>
+<span id="cb11-12"><a href="chap_trad_reg_models.html#cb11-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">a1 =</span> <span class="dv">1</span>,</span>
+<span id="cb11-13"><a href="chap_trad_reg_models.html#cb11-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">m_cde =</span> <span class="dv">0</span>,              <span class="co"># mediator level for the CDE</span></span>
+<span id="cb11-14"><a href="chap_trad_reg_models.html#cb11-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">c_cond =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>),                 <span class="co"># covariate level</span></span>
+<span id="cb11-15"><a href="chap_trad_reg_models.html#cb11-15" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Model types</span></span>
+<span id="cb11-16"><a href="chap_trad_reg_models.html#cb11-16" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mreg =</span> <span class="st">&quot;logistic&quot;</span>,</span>
+<span id="cb11-17"><a href="chap_trad_reg_models.html#cb11-17" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yreg =</span> <span class="st">&quot;logistic&quot;</span>,</span>
+<span id="cb11-18"><a href="chap_trad_reg_models.html#cb11-18" aria-hidden="true" tabindex="-1"></a>                            <span class="do">## Additional specification</span></span>
+<span id="cb11-19"><a href="chap_trad_reg_models.html#cb11-19" aria-hidden="true" tabindex="-1"></a>                            <span class="at">interaction =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb11-20"><a href="chap_trad_reg_models.html#cb11-20" aria-hidden="true" tabindex="-1"></a>                            <span class="at">casecontrol =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-21"><a href="chap_trad_reg_models.html#cb11-21" aria-hidden="true" tabindex="-1"></a>results.binary <span class="ot">&lt;-</span> <span class="fu">summary</span>(regmedint_bin)</span>
+<span id="cb11-22"><a href="chap_trad_reg_models.html#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="chap_trad_reg_models.html#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="co"># taking the exponential of the estimations</span></span>
+<span id="cb11-24"><a href="chap_trad_reg_models.html#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(results.binary<span class="sc">$</span>summary_myreg[<span class="fu">c</span>(<span class="st">&quot;cde&quot;</span>,<span class="st">&quot;pnde&quot;</span>,<span class="st">&quot;tnie&quot;</span>,<span class="st">&quot;tnde&quot;</span>,<span class="st">&quot;pnie&quot;</span>,<span class="st">&quot;te&quot;</span>),</span>
+<span id="cb11-25"><a href="chap_trad_reg_models.html#cb11-25" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">c</span>(<span class="st">&quot;est&quot;</span>,<span class="st">&quot;lower&quot;</span>,<span class="st">&quot;upper&quot;</span>)])</span>
+<span id="cb11-26"><a href="chap_trad_reg_models.html#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="do">#### Mediation analysis</span></span>
+<span id="cb11-27"><a href="chap_trad_reg_models.html#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="co">#           est    lower    upper</span></span>
+<span id="cb11-28"><a href="chap_trad_reg_models.html#cb11-28" aria-hidden="true" tabindex="-1"></a><span class="co"># cde  1.442942 1.191195 1.747893</span></span>
+<span id="cb11-29"><a href="chap_trad_reg_models.html#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="co"># pnde 1.448035 1.245470 1.683545</span></span>
+<span id="cb11-30"><a href="chap_trad_reg_models.html#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="co"># tnie 1.050029 1.013842 1.087509</span></span>
+<span id="cb11-31"><a href="chap_trad_reg_models.html#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co"># tnde 1.450344 1.257042 1.673371</span></span>
+<span id="cb11-32"><a href="chap_trad_reg_models.html#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="co"># pnie 1.048358 1.029285 1.067783</span></span>
+<span id="cb11-33"><a href="chap_trad_reg_models.html#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co"># te   1.520479 1.316954 1.755457</span></span></code></pre></div>
+</div>
+</div>
+<div id="trad3way" class="section level2 hasAnchor" number="5.3">
+<h2><span class="header-section-number">5.3</span> Three-way decomposition<a href="chap_trad_reg_models.html#trad3way" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In order to carry-out a three-way decomposition with standard regressions, we will use the same models as for the two-way decomposition (equations <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a>, <a href="chap_trad_reg_models.html#eq:binoutcomereg">(5.5)</a> and <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>).</p>
+<p><span class="citation">(<a href="#ref-vanderweele2013" role="doc-biblioref">VanderWeele 2013</a>)</span> defines:</p>
+<ul>
+<li>the <span class="math inline">\(\text{PNDE} = \mathbb{E}\left(Y_{A=1,M_{A=0}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)\)</span>,</li>
+<li>the <span class="math inline">\(\text{PNIE} = \mathbb{E}\left(Y_{A=0,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=0}}\right)\)</span>,</li>
+<li>and the mediated interactive effect <span class="math inline">\(\text{MIE} = \mathbb{E}\left( \left[ Y_{1,1} - Y_{1,0} - Y_{0,1} - Y_{0,0}\right] \times \left[M_1 - M_0 \right]\right)\)</span>.</li>
+</ul>
+<p>The sum of these 3 components is equal to the Average total effect (ATE).</p>
+<p><strong>With a continuous outcome and a binary mediator</strong>, the PNDE and PNIE can be estimated as for the two-way decomposition (section <a href="chap_trad_reg_models.html#trad2waynatural">5.2.2</a>) using the linear regression of the outcome (equation <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a>) and the logistic regression of the mediator (equation <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>).</p>
+<p>The mediated interactive effect can be estimated using the same equations <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a> and <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>, by:
+<span class="math display">\[ \scriptsize \text{MIE} \mid (L(0), L(1)) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]\]</span></p>
+<p>Conditional on participants for which <span class="math inline">\(L(0)=0\)</span> and <span class="math inline">\(L(1)=0\)</span>, the expression is simplified:
+<span class="math display">\[\text{MIE} \Big| (L(0)=0, L(1)=0) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A )}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A )} - \frac{\exp (\hat{\beta}_0)}{1 + \exp (\hat{\beta}_0)}\right]\]</span></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="chap_trad_reg_models.html#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a continuous outcome, in the subgroup with L(0)=0 and L(1)=0</span></span>
+<span id="cb12-2"><a href="chap_trad_reg_models.html#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The PNDE is:</span></span>
+<span id="cb12-3"><a href="chap_trad_reg_models.html#cb12-3" aria-hidden="true" tabindex="-1"></a>trad_PNDE_qol <span class="ot">&lt;-</span> gamma.A.q <span class="sc">+</span> gamma.AM.q <span class="sc">*</span> (<span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>))</span>
+<span id="cb12-4"><a href="chap_trad_reg_models.html#cb12-4" aria-hidden="true" tabindex="-1"></a>trad_PNDE_qol</span>
+<span id="cb12-5"><a href="chap_trad_reg_models.html#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># -4.845089</span></span>
+<span id="cb12-6"><a href="chap_trad_reg_models.html#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="chap_trad_reg_models.html#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The PNIE is:</span></span>
+<span id="cb12-8"><a href="chap_trad_reg_models.html#cb12-8" aria-hidden="true" tabindex="-1"></a>trad_PNIE_qol <span class="ot">&lt;-</span> gamma.M.q <span class="sc">*</span></span>
+<span id="cb12-9"><a href="chap_trad_reg_models.html#cb12-9" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span></span>
+<span id="cb12-10"><a href="chap_trad_reg_models.html#cb12-10" aria-hidden="true" tabindex="-1"></a>     (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">-</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)))</span>
+<span id="cb12-11"><a href="chap_trad_reg_models.html#cb12-11" aria-hidden="true" tabindex="-1"></a>trad_PNIE_qol</span>
+<span id="cb12-12"><a href="chap_trad_reg_models.html#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># -0.9095061</span></span>
+<span id="cb12-13"><a href="chap_trad_reg_models.html#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="chap_trad_reg_models.html#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="do">## The MIE is:</span></span>
+<span id="cb12-15"><a href="chap_trad_reg_models.html#cb12-15" aria-hidden="true" tabindex="-1"></a>trad_MIE_qol <span class="ot">&lt;-</span> gamma.AM.q <span class="sc">*</span></span>
+<span id="cb12-16"><a href="chap_trad_reg_models.html#cb12-16" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">-</span></span>
+<span id="cb12-17"><a href="chap_trad_reg_models.html#cb12-17" aria-hidden="true" tabindex="-1"></a>     <span class="fu">exp</span>(beta<span class="fl">.0</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)))</span>
+<span id="cb12-18"><a href="chap_trad_reg_models.html#cb12-18" aria-hidden="true" tabindex="-1"></a>trad_MIE_qol</span>
+<span id="cb12-19"><a href="chap_trad_reg_models.html#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co"># -0.591684</span></span></code></pre></div>
+<p><strong>With a binary outcome</strong>, the total effect, the direct and indirect effects can be expressed using risk ratios or odds ratios. In order to express the mediated interactive effect, <span class="citation">(<a href="#ref-vanderweele2013" role="doc-biblioref">VanderWeele 2013</a>)</span> suggested decomposing the <em>excess relative risk of the total effect</em> <span class="math inline">\((\text{RR}^{\text{TE}}-1)\)</span>, which enables the expression of the mediated interactive effect on an additive scale.</p>
+<p>On the difference scale, the total effect can be decomposed as the sum of the PNDE, the PNIE and the MIE:
+<span class="math display">\[\begin{array}{rl}
+\mathbb{E}(Y_1) - \mathbb{E}(Y_0) = &amp; \left[ \mathbb{E}\left(Y_{1M_0}\right) - \mathbb{E}\left(Y_{0M_0}\right) \right] + \left[ \mathbb{E}\left(Y_{0M_1}\right) - \mathbb{E}\left(Y_{0M_0}\right) \right] \\
+                                    &amp; + \left[ \left[ \mathbb{E}\left(Y_{1M_1}\right) - \mathbb{E}\left(Y_{1M_0}\right) \right] - \left[ \mathbb{E}\left(Y_{0M_1}\right) - \mathbb{E}\left(Y_{0M_0}\right) \right] \right] \\
+                                  = &amp; \text{PNDE + PNIE} \\
+                                    &amp; \text{ + MIE}
+\end{array}\]</span></p>
+<p>Dividing by <span class="math inline">\(\mathbb{E}(Y_0) = \mathbb{E}\left(Y_{0M_0}\right)\)</span>, we obtain the excess relative risk of the total effect decomposition:
+<span class="math display">\[\begin{array}{rl}
+\frac{\mathbb{E}(Y_1)}{\mathbb{E}(Y_0)}-1 = &amp; \left[ \frac{\mathbb{E}\left( Y_{1M_0}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - 1 \right]  + \left[ \frac{\mathbb{E}\left( Y_{0M_1}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - 1 \right] \\
+                                            &amp; + \left[ \frac{\mathbb{E}\left( Y_{1M_1}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - \frac{\mathbb{E}\left( Y_{1M_0}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} - \frac{\mathbb{E}\left( Y_{0M_1}\right)}{\mathbb{E}\left( Y_{0M_0}\right)} + 1 \right]
+\end{array}\]</span>
+where the first component is the <em>excess relative risk due to the PNDE</em>, the second component is the <em>excess relative risk due to the PNIE</em> and the third component is the <em>mediated excess relative risk due to interaction</em>.</p>
+<p>If the outcome is rare, relative risks are approximately equal to odds ratios, and the 3 components of the excess relative risk can be estimated using the logistic regression of the outcome (equation <a href="chap_trad_reg_models.html#eq:binoutcomereg">(5.5)</a>) and the logistic regression of the mediator (equation <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>).</p>
+<p>The component of the excess relative risk due to the PNDE is approximately equal to:
+<span class="math display">\[\scriptsize
+\text{RR}^\text{PNDE} - 1 \approx \frac{ \exp \left[ \hat{\gamma}_A (1 - 0) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \right]}{ \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right] } - 1 \]</span></p>
+<p>The component of the excess relative risk due to the PNIE is approximately equal to:
+<span class="math display">\[\scriptsize
+\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right] } - 1 \]</span></p>
+<p>The component of the excess relative risk due to the mediated interactive effect is approximately equal to:
+<span class="math display">\[\small
+\begin{array}{rl}
+\text{RERI}_{mediated} \approx  &amp; \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]} \\
+                                &amp; - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)  \right) \right]} \\
+                                &amp; - \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right]} + 1
+\end{array}\]</span></p>
+<p>Conditional on participants for which <span class="math inline">\(L(0)=0\)</span> and <span class="math inline">\(L(1)=0\)</span>, these expressions are simplified:
+<span class="math display">\[\text{RR}^\text{PNDE} - 1 \approx \frac{ \exp \left( \hat{\gamma}_A \right) \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{ \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right) \right] } - 1 \]</span></p>
+<p><span class="math display">\[\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right) \right] } - 1 \]</span></p>
+<p>and
+<span class="math display">\[\begin{array}{rl}
+\text{RERI}_\text{mediated} \approx  &amp; \frac{ \exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \right) \right]}  - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \right) \right]} \\
+                                &amp; - \frac{ \exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right]} + 1
+\end{array}\]</span></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="chap_trad_reg_models.html#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a binary outcome, in the subgroup with L(0)=0 and L(1)=0</span></span>
+<span id="cb13-2"><a href="chap_trad_reg_models.html#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The excess relative risk is 52.3% (calculated from the OR of the total effect)</span></span>
+<span id="cb13-3"><a href="chap_trad_reg_models.html#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fl">1.523254</span> <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb13-4"><a href="chap_trad_reg_models.html#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.523254</span></span>
+<span id="cb13-5"><a href="chap_trad_reg_models.html#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="chap_trad_reg_models.html#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## The excess relative risk is decomposed into 3 components:</span></span>
+<span id="cb13-7"><a href="chap_trad_reg_models.html#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to PNDE is:</span></span>
+<span id="cb13-8"><a href="chap_trad_reg_models.html#cb13-8" aria-hidden="true" tabindex="-1"></a>comp_PNDE_death <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d <span class="sc">+</span> gamma.AM.d)) <span class="sc">/</span></span>
+<span id="cb13-9"><a href="chap_trad_reg_models.html#cb13-9" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb13-10"><a href="chap_trad_reg_models.html#cb13-10" aria-hidden="true" tabindex="-1"></a>comp_PNDE_death</span>
+<span id="cb13-11"><a href="chap_trad_reg_models.html#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.4480347 </span></span>
+<span id="cb13-12"><a href="chap_trad_reg_models.html#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="chap_trad_reg_models.html#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to PNIE is:</span></span>
+<span id="cb13-14"><a href="chap_trad_reg_models.html#cb13-14" aria-hidden="true" tabindex="-1"></a>comp_PNIE_death <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A <span class="sc">+</span> gamma.M.d)) <span class="sc">/</span></span>
+<span id="cb13-15"><a href="chap_trad_reg_models.html#cb13-15" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d))) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb13-16"><a href="chap_trad_reg_models.html#cb13-16" aria-hidden="true" tabindex="-1"></a>comp_PNIE_death</span>
+<span id="cb13-17"><a href="chap_trad_reg_models.html#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.04835753</span></span>
+<span id="cb13-18"><a href="chap_trad_reg_models.html#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="chap_trad_reg_models.html#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to the mediated interactive</span></span>
+<span id="cb13-20"><a href="chap_trad_reg_models.html#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="do">## effect is:</span></span>
+<span id="cb13-21"><a href="chap_trad_reg_models.html#cb13-21" aria-hidden="true" tabindex="-1"></a>comp_MIE_qol <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span></span>
+<span id="cb13-22"><a href="chap_trad_reg_models.html#cb13-22" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A <span class="sc">+</span> gamma.M.d <span class="sc">+</span> gamma.AM.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span></span>
+<span id="cb13-23"><a href="chap_trad_reg_models.html#cb13-23" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A))) <span class="sc">-</span></span>
+<span id="cb13-24"><a href="chap_trad_reg_models.html#cb13-24" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A <span class="sc">+</span> gamma.M.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span></span>
+<span id="cb13-25"><a href="chap_trad_reg_models.html#cb13-25" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A))) <span class="sc">-</span></span>
+<span id="cb13-26"><a href="chap_trad_reg_models.html#cb13-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d <span class="sc">+</span> gamma.AM.d)) <span class="sc">/</span></span>
+<span id="cb13-27"><a href="chap_trad_reg_models.html#cb13-27" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb13-28"><a href="chap_trad_reg_models.html#cb13-28" aria-hidden="true" tabindex="-1"></a>comp_MIE_qol</span>
+<span id="cb13-29"><a href="chap_trad_reg_models.html#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.02408674</span></span></code></pre></div>
+<p>In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is <span class="math inline">\(\approx 52.3\%\)</span>, and of this excess relative risk…:</p>
+<ul>
+<li><span class="math inline">\(\approx 44.8\%\)</span> is attributable to the PNDE of ACE,</li>
+<li><span class="math inline">\(\approx 4.8\%\)</span> is attributable to the PNIE of ACE through smoking,</li>
+<li><span class="math inline">\(\approx 2.4\%\)</span> is attributable to the mediated interactive effect between ACE and smoking.</li>
+</ul>
+<p>Note: in this simulated data, the probability of death is around <span class="math inline">\(20\%\)</span>, so that the requirement of a rare outcome is not really fulfilled (usually, we would consider <span class="math inline">\(&lt; 10\%\)</span> to be acceptable).</p>
+</div>
+<div id="four-way-decomposition" class="section level2 hasAnchor" number="5.4">
+<h2><span class="header-section-number">5.4</span> Four-way decomposition<a href="chap_trad_reg_models.html#four-way-decomposition" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The same models as for the two-way and three-way decomposition (equations <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a>, <a href="chap_trad_reg_models.html#eq:binoutcomereg">(5.5)</a> and <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>) will be used in order to apply the four-way decomposition.</p>
+<p><span class="citation">(<a href="#ref-vanderweele2014" role="doc-biblioref">VanderWeele 2014</a>)</span> defines:</p>
+<ul>
+<li>the <span class="math inline">\(\text{CDE}_{M=0} = \mathbb{E}\left( Y_{1,0}\right) - \mathbb{E}\left(Y_{0,0} \right)\)</span>,</li>
+<li>the mediated interaction effect <span class="math inline">\(\text{MIE} = \mathbb{E}\left( \left[ Y_{1,1} - Y_{1,0} - Y_{0,1} - Y_{0,0}\right] \times \left[M_1 - M_0 \right]\right)\)</span>,</li>
+<li>the reference interaction effect <span class="math inline">\(\text{RIE} = \mathbb{E}\left( \left[Y_{1,1} - Y_{1,0} - Y_{0,1} - Y_{0,0}\right] \times M_0 \right)\)</span>,</li>
+<li>and the <span class="math inline">\(\text{PNIE} = \mathbb{E}\left(Y_{A=0,M_{A=1}}) - \mathbb{E}(Y_{A=0,M_{A=0}} \right)\)</span>.</li>
+</ul>
+<p>The sum of these 4 components is equal to the Average total effect (ATE), and if the exposure affects the outcome, then at least one of these 4 components should be non-null.</p>
+<p><strong>With a continuous outcome and a binary mediator</strong>, the <span class="math inline">\(\text{CDE}_{M=0}\)</span> and <span class="math inline">\(\text{PNIE}\)</span> can be estimated as for the two-way decomposition (sections <a href="chap_trad_reg_models.html#trad2waycde">5.2.1</a> and <a href="chap_trad_reg_models.html#trad2waynatural">5.2.2</a>), and the <span class="math inline">\(\text{MIE}\)</span> can be estimated as for the three-way decomposition (section <a href="chap_trad_reg_models.html#trad3way">5.3</a>), using the linear regression of the outcome (equation <a href="chap_trad_reg_models.html#eq:contoutcomereg">(5.3)</a>) and the logistic regression of the mediator (equation <a href="chap_trad_reg_models.html#eq:medreg">(5.4)</a>).</p>
+<p><span class="math display">\[\text{CDE}_{M=0} \mid \left(L(0),L(1) \right) = \hat{\gamma}_A + \hat{\gamma}_{A \ast M} \times 0\]</span></p>
+<p><span class="math display">\[\scriptsize \text{PNIE} \mid L(0), L(1) = \left( \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \left[ \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + exp(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]\]</span></p>
+<p>and</p>
+<p><span class="math display">\[ \scriptsize \text{MIE} \mid (L(0), L(1)) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}\right]\]</span>
+The RIE can be estimated by:
+<span class="math display">\[\scriptsize
+\text{RIE} \mid (L(0), L(1)) = \hat{\gamma}_{A \ast M} \left[ \frac{\exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))}{1 + \exp (\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1))} - 0 \right]\]</span></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="chap_trad_reg_models.html#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a continuous outcome, in the subgroup with L(0)=0 and L(1)=0</span></span>
+<span id="cb14-2"><a href="chap_trad_reg_models.html#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The CDE_(M=0) is:</span></span>
+<span id="cb14-3"><a href="chap_trad_reg_models.html#cb14-3" aria-hidden="true" tabindex="-1"></a>trad_CDE_qol_m0 <span class="ot">&lt;-</span> gamma.A.q <span class="sc">+</span> gamma.AM.q <span class="sc">*</span> <span class="dv">0</span></span>
+<span id="cb14-4"><a href="chap_trad_reg_models.html#cb14-4" aria-hidden="true" tabindex="-1"></a>trad_CDE_qol_m0</span>
+<span id="cb14-5"><a href="chap_trad_reg_models.html#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># -3.715265</span></span>
+<span id="cb14-6"><a href="chap_trad_reg_models.html#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="chap_trad_reg_models.html#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The PNIE is:</span></span>
+<span id="cb14-8"><a href="chap_trad_reg_models.html#cb14-8" aria-hidden="true" tabindex="-1"></a>trad_PNIE_qol <span class="ot">&lt;-</span> gamma.M.q <span class="sc">*</span></span>
+<span id="cb14-9"><a href="chap_trad_reg_models.html#cb14-9" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span></span>
+<span id="cb14-10"><a href="chap_trad_reg_models.html#cb14-10" aria-hidden="true" tabindex="-1"></a>     (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">-</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)))</span>
+<span id="cb14-11"><a href="chap_trad_reg_models.html#cb14-11" aria-hidden="true" tabindex="-1"></a>trad_PNIE_qol</span>
+<span id="cb14-12"><a href="chap_trad_reg_models.html#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co"># -0.9095061</span></span>
+<span id="cb14-13"><a href="chap_trad_reg_models.html#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="chap_trad_reg_models.html#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="do">## The MIE is:</span></span>
+<span id="cb14-15"><a href="chap_trad_reg_models.html#cb14-15" aria-hidden="true" tabindex="-1"></a>trad_MIE_qol <span class="ot">&lt;-</span> gamma.AM.q <span class="sc">*</span></span>
+<span id="cb14-16"><a href="chap_trad_reg_models.html#cb14-16" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">-</span></span>
+<span id="cb14-17"><a href="chap_trad_reg_models.html#cb14-17" aria-hidden="true" tabindex="-1"></a>     <span class="fu">exp</span>(beta<span class="fl">.0</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)))</span>
+<span id="cb14-18"><a href="chap_trad_reg_models.html#cb14-18" aria-hidden="true" tabindex="-1"></a>trad_MIE_qol</span>
+<span id="cb14-19"><a href="chap_trad_reg_models.html#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co"># -0.591684</span></span>
+<span id="cb14-20"><a href="chap_trad_reg_models.html#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="chap_trad_reg_models.html#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="do">## The RIE is:</span></span>
+<span id="cb14-22"><a href="chap_trad_reg_models.html#cb14-22" aria-hidden="true" tabindex="-1"></a>trad_RIE_qol <span class="ot">&lt;-</span> gamma.AM.q <span class="sc">*</span> (<span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>))</span>
+<span id="cb14-23"><a href="chap_trad_reg_models.html#cb14-23" aria-hidden="true" tabindex="-1"></a>trad_RIE_qol</span>
+<span id="cb14-24"><a href="chap_trad_reg_models.html#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="co"># -1.129824</span></span></code></pre></div>
+<p><strong>With a binary outcome and a binary mediator</strong>, <span class="citation">(<a href="#ref-vanderweele2014" role="doc-biblioref">VanderWeele 2014</a>)</span> suggested decomposing the <em>excess relative risk of the total effect</em> <span class="math inline">\((\text{RR}^{\text{TE}}-1)\)</span> (as for the 3-way decomposition), which enables the expression of the MIE and the RIE on an additive scale.</p>
+<p>If the outcome is rare,</p>
+<p>The component of the excess relative risk due to the CDE is approximately equal to:</p>
+<p><span class="math display">\[\small
+\begin{array}{rl}
+\frac{\mathbb{E}\left( Y_{0,0} \mid L(0), L(1) \right)}{\mathbb{E}\left( Y_0 \mid L(0), L(1) \right)} \left(\frac{\mathbb{E}\left(Y_{1,0} \mid L(0),L(1) \right)}{\mathbb{E}\left(Y_{0,0} \mid L(0),L(1)\right)} - 1\right) \approx &amp; \frac{\exp \left( \hat{\gamma}_A(1-0) + \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} \times 1 \times 0 \right) \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)} \\
+&amp; - \frac{\exp \left( \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} \times 0 \times 0\right) \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(0)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)}
+\end{array}\]</span></p>
+<p>The component of the excess relative risk due to the PNIE is approximately equal to:
+<span class="math display">\[\scriptsize
+\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) \right] } - 1 \]</span></p>
+<p>The component of the excess relative risk due to the mediated interactive effect is approximately equal to:
+<span class="math display">\[\small
+\begin{array}{rl}
+\text{RERI}_{mediated} \approx  &amp; \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)\right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]} \\
+                                &amp; - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right) \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 1 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1)  \right) \right]} \\
+                                &amp; - \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)\right]} + 1
+\end{array}\]</span></p>
+<p>and the component of the excess relative risk due to the reference interaction effect is approximately equal to:
+<span class="math display">\[
+\begin{array}{rl}
+\text{RERI}_\text{ref} \approx  &amp; \frac{\exp \left[ \hat{\gamma}_A (1 - 0)\right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 1\right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0\right)\right] } - 1 \\
+                                &amp; - \frac{\exp \left[ \hat{\gamma}_A (1 - 0) + \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} 1 \times 0 \right] \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right)} \\
+                                &amp; + \frac{\exp \left( \hat{\gamma}_M \times 0 + \hat{\gamma}_{A \ast M} \times 0 \times 0 \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \times 0 + \hat{\beta}_{L(0)}^\prime L(0) + \hat{\beta}_{L(1)}^\prime L(1) + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \times 0 \right) }
+\end{array}\]</span></p>
+<p>Conditional on participants for which <span class="math inline">\(L(0)=0\)</span> and <span class="math inline">\(L(1)=0\)</span>, these expressions are simplified:</p>
+<p>The component of the excess relative risk due to the CDE is approximately equal to:
+<span class="math display">\[ \approx \frac{\exp \left( \hat{\gamma}_A \right) \left[ 1 + \exp \left( \hat{\beta}_0 \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right)} - \frac{ \left[ 1 + \exp \left( \hat{\beta}_0 \right) \right]}{1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right)}\]</span></p>
+<p>The component of the excess relative risk due to the PNIE is approximately equal to:
+<span class="math display">\[\text{RR}^\text{PNIE} - 1 \approx \frac{\left[ 1 + \exp \left( \hat{\beta}_0 \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right]}{\left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\beta}_A \right) \right] \left[ 1 + \exp \left( \hat{\beta}_0 + \hat{\gamma}_M \right) \right] } - 1 \]</span></p>
+<p>The component of the excess relative risk due to the mediated interactive effect is approximately equal to:
+<span class="math display">\[
+\begin{array}{rl}
+\text{RERI}_{mediated} \approx &amp; \frac{\exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A  \right) \right]}  - \frac{\left[1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A + \hat{\gamma}_M \right) \right] \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] \left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\beta}_A \right) \right]} \\
+&amp; - \frac{\exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right]} + 1
+\end{array}
+\]</span></p>
+<p>and the component of the excess relative risk due to the reference interaction effect is approximately equal to:
+<span class="math display">\[\small
+\text{RERI}_\text{ref} \approx \frac{\exp \left( \hat{\gamma}_A\right) \left[1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M + \hat{\gamma}_{A \ast M} \right) \right]}{\left[ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)\right] } - 1  - \frac{\exp \left( \hat{\gamma}_A \right) \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right)} + \frac{ \left[1 + \exp \left(\hat{\beta}_0 \right) \right]}{ 1 + \exp \left(\hat{\beta}_0 + \hat{\gamma}_M \right) }
+\]</span></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="chap_trad_reg_models.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For a binary outcome, in the subgroup with L(0)=0 and L(1)=0</span></span>
+<span id="cb15-2"><a href="chap_trad_reg_models.html#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="do">## The excess relative risk is 52.3% (calculated from the OR of the total effect)</span></span>
+<span id="cb15-3"><a href="chap_trad_reg_models.html#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fl">1.523254</span> <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb15-4"><a href="chap_trad_reg_models.html#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.523254</span></span>
+<span id="cb15-5"><a href="chap_trad_reg_models.html#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="chap_trad_reg_models.html#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="do">## The excess relative risk is decomposed into 4 components:</span></span>
+<span id="cb15-7"><a href="chap_trad_reg_models.html#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to the CDE(M=0) is:</span></span>
+<span id="cb15-8"><a href="chap_trad_reg_models.html#cb15-8" aria-hidden="true" tabindex="-1"></a>comp_CDE_death_m0 <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span></span>
+<span id="cb15-9"><a href="chap_trad_reg_models.html#cb15-9" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">-</span></span>
+<span id="cb15-10"><a href="chap_trad_reg_models.html#cb15-10" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d))</span>
+<span id="cb15-11"><a href="chap_trad_reg_models.html#cb15-11" aria-hidden="true" tabindex="-1"></a>comp_CDE_death_m0</span>
+<span id="cb15-12"><a href="chap_trad_reg_models.html#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.402041</span></span>
+<span id="cb15-13"><a href="chap_trad_reg_models.html#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="chap_trad_reg_models.html#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to the PNIE is:</span></span>
+<span id="cb15-15"><a href="chap_trad_reg_models.html#cb15-15" aria-hidden="true" tabindex="-1"></a>comp_PNIE_death <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A <span class="sc">+</span> gamma.M.d)) <span class="sc">/</span></span>
+<span id="cb15-16"><a href="chap_trad_reg_models.html#cb15-16" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d))) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb15-17"><a href="chap_trad_reg_models.html#cb15-17" aria-hidden="true" tabindex="-1"></a>comp_PNIE_death</span>
+<span id="cb15-18"><a href="chap_trad_reg_models.html#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.04835753</span></span>
+<span id="cb15-19"><a href="chap_trad_reg_models.html#cb15-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-20"><a href="chap_trad_reg_models.html#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to the MIE is:</span></span>
+<span id="cb15-21"><a href="chap_trad_reg_models.html#cb15-21" aria-hidden="true" tabindex="-1"></a>comp_MIE_death <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A <span class="sc">+</span> gamma.M.d <span class="sc">+</span></span>
+<span id="cb15-22"><a href="chap_trad_reg_models.html#cb15-22" aria-hidden="true" tabindex="-1"></a>                                              gamma.AM.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span></span>
+<span id="cb15-23"><a href="chap_trad_reg_models.html#cb15-23" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A))) <span class="sc">-</span></span>
+<span id="cb15-24"><a href="chap_trad_reg_models.html#cb15-24" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A <span class="sc">+</span> gamma.M.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span></span>
+<span id="cb15-25"><a href="chap_trad_reg_models.html#cb15-25" aria-hidden="true" tabindex="-1"></a>  ((<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> beta.A))) <span class="sc">-</span></span>
+<span id="cb15-26"><a href="chap_trad_reg_models.html#cb15-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d <span class="sc">+</span> gamma.AM.d)) <span class="sc">/</span></span>
+<span id="cb15-27"><a href="chap_trad_reg_models.html#cb15-27" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb15-28"><a href="chap_trad_reg_models.html#cb15-28" aria-hidden="true" tabindex="-1"></a>comp_MIE_death</span>
+<span id="cb15-29"><a href="chap_trad_reg_models.html#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.02408674</span></span>
+<span id="cb15-30"><a href="chap_trad_reg_models.html#cb15-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-31"><a href="chap_trad_reg_models.html#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="do">## The component of the excess relative risk due to the RIE is:</span></span>
+<span id="cb15-32"><a href="chap_trad_reg_models.html#cb15-32" aria-hidden="true" tabindex="-1"></a>comp_RIE_death <span class="ot">&lt;-</span> <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d <span class="sc">+</span> gamma.AM.d)) <span class="sc">/</span></span>
+<span id="cb15-33"><a href="chap_trad_reg_models.html#cb15-33" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">-</span></span>
+<span id="cb15-34"><a href="chap_trad_reg_models.html#cb15-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">exp</span>(gamma.A.d) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d)) <span class="sc">+</span></span>
+<span id="cb15-35"><a href="chap_trad_reg_models.html#cb15-35" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span>)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(beta<span class="fl">.0</span> <span class="sc">+</span> gamma.M.d))</span>
+<span id="cb15-36"><a href="chap_trad_reg_models.html#cb15-36" aria-hidden="true" tabindex="-1"></a>comp_RIE_death</span>
+<span id="cb15-37"><a href="chap_trad_reg_models.html#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.04599376</span></span></code></pre></div>
+<p>In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is <span class="math inline">\(\approx 52.3\%\)</span>, and of this excess relative risk…:</p>
+<ul>
+<li><span class="math inline">\(\approx 40.2\%\)</span> is attributable to the CDE of ACE,</li>
+<li><span class="math inline">\(\approx 4.8\%\)</span> is attributable to the PNIE of ACE through smoking,</li>
+<li><span class="math inline">\(\approx 2.4\%\)</span> is attributable to the mediated interactive effect between ACE and smoking.</li>
+<li>and <span class="math inline">\(\approx 4.6\%\)</span> is attributable to the (ACE <span class="math inline">\(\ast\)</span> smoking) reference interactive effect.</li>
+</ul>
+<p>Note: in this simulated data, the probability of death is around <span class="math inline">\(20\%\)</span>, so that the requirement of a rare outcome is not really fulfilled (usually, we would consider <span class="math inline">\(&lt; 10\%\)</span> to be acceptable).</p>
+<p><strong>R package for 3-way and 4-way decomposition</strong></p>
+<p>The <code>CMAverse</code> R <a href="https://bs1125.github.io/CMAverse/index.html">package</a> (a suite of functions for causal mediation analysis) can be used for 3-way and 4-way decomposition. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.</p>
+<p>For continuous outcomes:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="chap_trad_reg_models.html#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CMAverse)</span>
+<span id="cb16-2"><a href="chap_trad_reg_models.html#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="chap_trad_reg_models.html#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="do">### For the continuous outcome</span></span>
+<span id="cb16-4"><a href="chap_trad_reg_models.html#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Closed-form parameter function estimation and delta method inferece</span></span>
+<span id="cb16-5"><a href="chap_trad_reg_models.html#cb16-5" aria-hidden="true" tabindex="-1"></a>res_rb_param_delta <span class="ot">&lt;-</span> <span class="fu">cmest</span>(<span class="at">data =</span> df1_int,</span>
+<span id="cb16-6"><a href="chap_trad_reg_models.html#cb16-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">model =</span> <span class="st">&quot;rb&quot;</span>, <span class="co"># for &quot;regression based&quot; (rb) approach</span></span>
+<span id="cb16-7"><a href="chap_trad_reg_models.html#cb16-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">outcome =</span> <span class="st">&quot;Y_qol&quot;</span>,        <span class="co"># outcome variable</span></span>
+<span id="cb16-8"><a href="chap_trad_reg_models.html#cb16-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">exposure =</span> <span class="st">&quot;A0_ace&quot;</span>,      <span class="co"># exposure variable</span></span>
+<span id="cb16-9"><a href="chap_trad_reg_models.html#cb16-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mediator =</span> <span class="st">&quot;M_smoking&quot;</span>,   <span class="co"># mediator</span></span>
+<span id="cb16-10"><a href="chap_trad_reg_models.html#cb16-10" aria-hidden="true" tabindex="-1"></a>                            <span class="at">basec =</span> <span class="fu">c</span>(<span class="st">&quot;L0_male&quot;</span>,      <span class="co"># confounders</span></span>
+<span id="cb16-11"><a href="chap_trad_reg_models.html#cb16-11" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">&quot;L0_parent_low_educ_lv&quot;</span>,</span>
+<span id="cb16-12"><a href="chap_trad_reg_models.html#cb16-12" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">&quot;L1&quot;</span>),</span>
+<span id="cb16-13"><a href="chap_trad_reg_models.html#cb16-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">EMint =</span> <span class="cn">TRUE</span>, <span class="co"># exposures*mediator interaction</span></span>
+<span id="cb16-14"><a href="chap_trad_reg_models.html#cb16-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mreg =</span> <span class="fu">list</span>(<span class="st">&quot;logistic&quot;</span>), <span class="co"># model of the mediator</span></span>
+<span id="cb16-15"><a href="chap_trad_reg_models.html#cb16-15" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yreg =</span> <span class="st">&quot;linear&quot;</span>,       <span class="co"># model of the outcome</span></span>
+<span id="cb16-16"><a href="chap_trad_reg_models.html#cb16-16" aria-hidden="true" tabindex="-1"></a>                            <span class="at">astar =</span> <span class="dv">0</span>,</span>
+<span id="cb16-17"><a href="chap_trad_reg_models.html#cb16-17" aria-hidden="true" tabindex="-1"></a>                            <span class="at">a =</span> <span class="dv">1</span>,</span>
+<span id="cb16-18"><a href="chap_trad_reg_models.html#cb16-18" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mval =</span> <span class="fu">list</span>(<span class="dv">0</span>),</span>
+<span id="cb16-19"><a href="chap_trad_reg_models.html#cb16-19" aria-hidden="true" tabindex="-1"></a>                            <span class="at">basecval =</span> <span class="fu">list</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>),      <span class="co"># covariate level</span></span>
+<span id="cb16-20"><a href="chap_trad_reg_models.html#cb16-20" aria-hidden="true" tabindex="-1"></a>                            <span class="at">estimation =</span> <span class="st">&quot;paramfunc&quot;</span>, <span class="co">#  closed-form parameter</span></span>
+<span id="cb16-21"><a href="chap_trad_reg_models.html#cb16-21" aria-hidden="true" tabindex="-1"></a>                                                      <span class="co"># function estimation</span></span>
+<span id="cb16-22"><a href="chap_trad_reg_models.html#cb16-22" aria-hidden="true" tabindex="-1"></a>                            <span class="at">inference =</span> <span class="st">&quot;delta&quot;</span>) <span class="co"># IC95% : delta method</span></span>
+<span id="cb16-23"><a href="chap_trad_reg_models.html#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(res_rb_param_delta)</span>
+<span id="cb16-24"><a href="chap_trad_reg_models.html#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Closed-form parameter function estimation with</span></span>
+<span id="cb16-25"><a href="chap_trad_reg_models.html#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="co"># delta method standard errors, confidence intervals and p-values</span></span>
+<span id="cb16-26"><a href="chap_trad_reg_models.html#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb16-27"><a href="chap_trad_reg_models.html#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="co">#                Estimate Std.error  95% CIL 95% CIU    P.val</span></span>
+<span id="cb16-28"><a href="chap_trad_reg_models.html#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="co">#   cde          -3.71527   0.41600 -4.53061  -2.900  &lt; 2e-16 ***   CDE(M=0)</span></span>
+<span id="cb16-29"><a href="chap_trad_reg_models.html#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="co">#   pnde         -4.84509   0.35053 -5.53211  -4.158  &lt; 2e-16 ***</span></span>
+<span id="cb16-30"><a href="chap_trad_reg_models.html#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="co">#   tnde         -5.43677   0.34049 -6.10412  -4.769  &lt; 2e-16 ***</span></span>
+<span id="cb16-31"><a href="chap_trad_reg_models.html#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="co">#   pnie         -0.90951   0.12266 -1.14992  -0.669 1.22e-13 ***   PNIE</span></span>
+<span id="cb16-32"><a href="chap_trad_reg_models.html#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="co">#   tnie         -1.50119   0.20822 -1.90929  -1.093 5.61e-13 ***</span></span>
+<span id="cb16-33"><a href="chap_trad_reg_models.html#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="co">#   te           -6.34628   0.38788 -7.10652  -5.586  &lt; 2e-16 ***</span></span>
+<span id="cb16-34"><a href="chap_trad_reg_models.html#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="co">#   intref       -1.12982   0.13824 -1.40076  -0.859 2.22e-16 ***   INTref</span></span>
+<span id="cb16-35"><a href="chap_trad_reg_models.html#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="co">#   intmed       -0.59168   0.10398 -0.79547  -0.388 1.27e-08 ***   MIE</span></span>
+<span id="cb16-36"><a href="chap_trad_reg_models.html#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="co">#   cde(prop)     0.58542   0.04505  0.49712   0.674  &lt; 2e-16 ***</span></span>
+<span id="cb16-37"><a href="chap_trad_reg_models.html#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co">#   intref(prop)  0.17803   0.02560  0.12786   0.228 3.51e-12 ***</span></span>
+<span id="cb16-38"><a href="chap_trad_reg_models.html#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co">#   intmed(prop)  0.09323   0.01586  0.06216   0.124 4.11e-09 ***</span></span>
+<span id="cb16-39"><a href="chap_trad_reg_models.html#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co">#   pnie(prop)    0.14331   0.01655  0.11087   0.176  &lt; 2e-16 ***</span></span>
+<span id="cb16-40"><a href="chap_trad_reg_models.html#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="co">#   pm            0.23655   0.02948  0.17877   0.294 1.11e-15 ***</span></span>
+<span id="cb16-41"><a href="chap_trad_reg_models.html#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="co">#   int           0.27126   0.03780  0.19717   0.345 7.20e-13 ***</span></span>
+<span id="cb16-42"><a href="chap_trad_reg_models.html#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="co">#   pe            0.41458   0.04505  0.32627   0.503  &lt; 2e-16 ***</span></span>
+<span id="cb16-43"><a href="chap_trad_reg_models.html#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="co">#   ---</span></span>
+<span id="cb16-44"><a href="chap_trad_reg_models.html#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="co">#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span></span>
+<span id="cb16-45"><a href="chap_trad_reg_models.html#cb16-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-46"><a href="chap_trad_reg_models.html#cb16-46" aria-hidden="true" tabindex="-1"></a><span class="co"># for the 3-way decomposition, the PNDE, PNIE, and MIE are given by:</span></span>
+<span id="cb16-47"><a href="chap_trad_reg_models.html#cb16-47" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">&quot;Estimate&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pe,</span>
+<span id="cb16-48"><a href="chap_trad_reg_models.html#cb16-48" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;lower95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.low,</span>
+<span id="cb16-49"><a href="chap_trad_reg_models.html#cb16-49" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;upper95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.high,</span>
+<span id="cb16-50"><a href="chap_trad_reg_models.html#cb16-50" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;P.value&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pval)[<span class="fu">c</span>(<span class="st">&quot;pnde&quot;</span>,<span class="st">&quot;pnie&quot;</span>, <span class="st">&quot;intmed&quot;</span>),]</span>
+<span id="cb16-51"><a href="chap_trad_reg_models.html#cb16-51" aria-hidden="true" tabindex="-1"></a><span class="co">#          Estimate  lower95CI  upper95CI      P.value</span></span>
+<span id="cb16-52"><a href="chap_trad_reg_models.html#cb16-52" aria-hidden="true" tabindex="-1"></a><span class="co"># pnde   -4.8450888 -5.5321113 -4.1580663 0.000000e+00</span></span>
+<span id="cb16-53"><a href="chap_trad_reg_models.html#cb16-53" aria-hidden="true" tabindex="-1"></a><span class="co"># pnie   -0.9095061 -1.1499166 -0.6690957 1.219025e-13</span></span>
+<span id="cb16-54"><a href="chap_trad_reg_models.html#cb16-54" aria-hidden="true" tabindex="-1"></a><span class="co"># intmed -0.5916840 -0.7954739 -0.3878941 1.266206e-08</span></span>
+<span id="cb16-55"><a href="chap_trad_reg_models.html#cb16-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-56"><a href="chap_trad_reg_models.html#cb16-56" aria-hidden="true" tabindex="-1"></a><span class="co"># for the 4-way decomposition, the CDE(M=0), Intref, MIE and PNIE are given by:</span></span>
+<span id="cb16-57"><a href="chap_trad_reg_models.html#cb16-57" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">&quot;Estimate&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pe,</span>
+<span id="cb16-58"><a href="chap_trad_reg_models.html#cb16-58" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;lower95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.low,</span>
+<span id="cb16-59"><a href="chap_trad_reg_models.html#cb16-59" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;upper95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.high,</span>
+<span id="cb16-60"><a href="chap_trad_reg_models.html#cb16-60" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;P.value&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pval)[<span class="fu">c</span>(<span class="st">&quot;cde&quot;</span>,<span class="st">&quot;intref&quot;</span>,<span class="st">&quot;intmed&quot;</span>,<span class="st">&quot;pnie&quot;</span>),]</span>
+<span id="cb16-61"><a href="chap_trad_reg_models.html#cb16-61" aria-hidden="true" tabindex="-1"></a><span class="co">#          Estimate  lower95CI  upper95CI      P.value</span></span>
+<span id="cb16-62"><a href="chap_trad_reg_models.html#cb16-62" aria-hidden="true" tabindex="-1"></a><span class="co"># cde    -3.7152652 -4.5306145 -2.8999159 0.000000e+00</span></span>
+<span id="cb16-63"><a href="chap_trad_reg_models.html#cb16-63" aria-hidden="true" tabindex="-1"></a><span class="co"># intref -1.1298236 -1.4007600 -0.8588871 2.220446e-16</span></span>
+<span id="cb16-64"><a href="chap_trad_reg_models.html#cb16-64" aria-hidden="true" tabindex="-1"></a><span class="co"># intmed -0.5916840 -0.7954739 -0.3878941 1.266206e-08</span></span>
+<span id="cb16-65"><a href="chap_trad_reg_models.html#cb16-65" aria-hidden="true" tabindex="-1"></a><span class="co"># pnie   -0.9095061 -1.1499166 -0.6690957 1.219025e-13</span></span></code></pre></div>
+<p>For binary outcomes:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="chap_trad_reg_models.html#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">### For the binary outcome</span></span>
+<span id="cb17-2"><a href="chap_trad_reg_models.html#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Closed-form parameter function estimation and delta method inferece</span></span>
+<span id="cb17-3"><a href="chap_trad_reg_models.html#cb17-3" aria-hidden="true" tabindex="-1"></a>res_rb_param_delta <span class="ot">&lt;-</span> <span class="fu">cmest</span>(<span class="at">data =</span> df1_int,</span>
+<span id="cb17-4"><a href="chap_trad_reg_models.html#cb17-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">model =</span> <span class="st">&quot;rb&quot;</span>, <span class="co"># for &quot;regression based&quot; (rb) approach</span></span>
+<span id="cb17-5"><a href="chap_trad_reg_models.html#cb17-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">outcome =</span> <span class="st">&quot;Y_death&quot;</span>,        <span class="co"># outcome variable</span></span>
+<span id="cb17-6"><a href="chap_trad_reg_models.html#cb17-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">exposure =</span> <span class="st">&quot;A0_ace&quot;</span>,      <span class="co"># exposure variable</span></span>
+<span id="cb17-7"><a href="chap_trad_reg_models.html#cb17-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mediator =</span> <span class="st">&quot;M_smoking&quot;</span>,   <span class="co"># mediator</span></span>
+<span id="cb17-8"><a href="chap_trad_reg_models.html#cb17-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">basec =</span> <span class="fu">c</span>(<span class="st">&quot;L0_male&quot;</span>,      <span class="co"># confounders</span></span>
+<span id="cb17-9"><a href="chap_trad_reg_models.html#cb17-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">&quot;L0_parent_low_educ_lv&quot;</span>,</span>
+<span id="cb17-10"><a href="chap_trad_reg_models.html#cb17-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">&quot;L1&quot;</span>),</span>
+<span id="cb17-11"><a href="chap_trad_reg_models.html#cb17-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">EMint =</span> <span class="cn">TRUE</span>, <span class="co"># exposures*mediator interaction</span></span>
+<span id="cb17-12"><a href="chap_trad_reg_models.html#cb17-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mreg =</span> <span class="fu">list</span>(<span class="st">&quot;logistic&quot;</span>), <span class="co"># model of the mediator</span></span>
+<span id="cb17-13"><a href="chap_trad_reg_models.html#cb17-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yreg =</span> <span class="st">&quot;logistic&quot;</span>,       <span class="co"># model of the outcome</span></span>
+<span id="cb17-14"><a href="chap_trad_reg_models.html#cb17-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">astar =</span> <span class="dv">0</span>,</span>
+<span id="cb17-15"><a href="chap_trad_reg_models.html#cb17-15" aria-hidden="true" tabindex="-1"></a>                            <span class="at">a =</span> <span class="dv">1</span>,</span>
+<span id="cb17-16"><a href="chap_trad_reg_models.html#cb17-16" aria-hidden="true" tabindex="-1"></a>                            <span class="at">mval =</span> <span class="fu">list</span>(<span class="dv">0</span>),</span>
+<span id="cb17-17"><a href="chap_trad_reg_models.html#cb17-17" aria-hidden="true" tabindex="-1"></a>                            <span class="at">basecval =</span> <span class="fu">list</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>),      <span class="co"># covariate level</span></span>
+<span id="cb17-18"><a href="chap_trad_reg_models.html#cb17-18" aria-hidden="true" tabindex="-1"></a>                            <span class="at">estimation =</span> <span class="st">&quot;paramfunc&quot;</span>, <span class="co">#  closed-form parameter</span></span>
+<span id="cb17-19"><a href="chap_trad_reg_models.html#cb17-19" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># function estimation</span></span>
+<span id="cb17-20"><a href="chap_trad_reg_models.html#cb17-20" aria-hidden="true" tabindex="-1"></a>                            <span class="at">inference =</span> <span class="st">&quot;delta&quot;</span>) <span class="co"># IC95% : delta method</span></span>
+<span id="cb17-21"><a href="chap_trad_reg_models.html#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(res_rb_param_delta)</span>
+<span id="cb17-22"><a href="chap_trad_reg_models.html#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Closed-form parameter function estimation with</span></span>
+<span id="cb17-23"><a href="chap_trad_reg_models.html#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="co"># delta method standard errors, confidence intervals and p-values</span></span>
+<span id="cb17-24"><a href="chap_trad_reg_models.html#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb17-25"><a href="chap_trad_reg_models.html#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate Std.error  95% CIL 95% CIU    P.val</span></span>
+<span id="cb17-26"><a href="chap_trad_reg_models.html#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="co">#   Rcde            1.44294   0.14115  1.19120   1.748 0.000178 ***</span></span>
+<span id="cb17-27"><a href="chap_trad_reg_models.html#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="co">#   Rpnde           1.44803   0.11133  1.24547   1.684 1.47e-06 ***</span></span>
+<span id="cb17-28"><a href="chap_trad_reg_models.html#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="co">#   Rtnde           1.45034   0.10585  1.25704   1.673 3.50e-07 ***</span></span>
+<span id="cb17-29"><a href="chap_trad_reg_models.html#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="co">#   Rpnie           1.04836   0.00982  1.02929   1.068 4.62e-07 ***</span></span>
+<span id="cb17-30"><a href="chap_trad_reg_models.html#cb17-30" aria-hidden="true" tabindex="-1"></a><span class="co">#   Rtnie           1.05003   0.01879  1.01384   1.088 0.006368 **</span></span>
+<span id="cb17-31"><a href="chap_trad_reg_models.html#cb17-31" aria-hidden="true" tabindex="-1"></a><span class="co">#   Rte             1.52048   0.11148  1.31695   1.755 1.10e-08 ***</span></span>
+<span id="cb17-32"><a href="chap_trad_reg_models.html#cb17-32" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERcde           0.40204   0.12699  0.15315   0.651 0.001546 **  CDE(M=0)</span></span>
+<span id="cb17-33"><a href="chap_trad_reg_models.html#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERintref        0.04599   0.04821 -0.04850   0.140 0.340093     INTref</span></span>
+<span id="cb17-34"><a href="chap_trad_reg_models.html#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERintmed        0.02409   0.02543 -0.02576   0.074 0.343607     MIE</span></span>
+<span id="cb17-35"><a href="chap_trad_reg_models.html#cb17-35" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERpnie          0.04836   0.00982  0.02911   0.068 8.47e-07 *** PNIE</span></span>
+<span id="cb17-36"><a href="chap_trad_reg_models.html#cb17-36" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERcde(prop)     0.77244   0.14282  0.49252   1.052 6.36e-08 ***</span></span>
+<span id="cb17-37"><a href="chap_trad_reg_models.html#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERintref(prop)  0.08837   0.09311 -0.09413   0.271 0.342600</span></span>
+<span id="cb17-38"><a href="chap_trad_reg_models.html#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERintmed(prop)  0.04628   0.04901 -0.04978   0.142 0.345058</span></span>
+<span id="cb17-39"><a href="chap_trad_reg_models.html#cb17-39" aria-hidden="true" tabindex="-1"></a><span class="co">#   ERpnie(prop)    0.09291   0.02602  0.04192   0.144 0.000356 ***</span></span>
+<span id="cb17-40"><a href="chap_trad_reg_models.html#cb17-40" aria-hidden="true" tabindex="-1"></a><span class="co">#   pm              0.13919   0.05498  0.03142   0.247 0.011359 *</span></span>
+<span id="cb17-41"><a href="chap_trad_reg_models.html#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="co">#   int             0.13465   0.14186 -0.14340   0.413 0.342562</span></span>
+<span id="cb17-42"><a href="chap_trad_reg_models.html#cb17-42" aria-hidden="true" tabindex="-1"></a><span class="co">#   pe              0.22756   0.14282 -0.05237   0.507 0.111092</span></span>
+<span id="cb17-43"><a href="chap_trad_reg_models.html#cb17-43" aria-hidden="true" tabindex="-1"></a><span class="co">#   ---</span></span>
+<span id="cb17-44"><a href="chap_trad_reg_models.html#cb17-44" aria-hidden="true" tabindex="-1"></a><span class="co">#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span></span>
+<span id="cb17-45"><a href="chap_trad_reg_models.html#cb17-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-46"><a href="chap_trad_reg_models.html#cb17-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-47"><a href="chap_trad_reg_models.html#cb17-47" aria-hidden="true" tabindex="-1"></a><span class="co"># for the 3-way decomposition, the excess relative risk due to</span></span>
+<span id="cb17-48"><a href="chap_trad_reg_models.html#cb17-48" aria-hidden="true" tabindex="-1"></a><span class="co"># the PNDE, PNIE and MIE are given by:</span></span>
+<span id="cb17-49"><a href="chap_trad_reg_models.html#cb17-49" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">&quot;Estimate&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pe <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb17-50"><a href="chap_trad_reg_models.html#cb17-50" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;lower95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.low <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb17-51"><a href="chap_trad_reg_models.html#cb17-51" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;upper95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.high <span class="sc">-</span> <span class="dv">1</span>)[<span class="fu">c</span>(<span class="st">&quot;Rpnde&quot;</span>),]</span>
+<span id="cb17-52"><a href="chap_trad_reg_models.html#cb17-52" aria-hidden="true" tabindex="-1"></a><span class="co">#        Estimate lower95CI upper95CI</span></span>
+<span id="cb17-53"><a href="chap_trad_reg_models.html#cb17-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Rpnde 0.4480347 0.2454699 0.6835449</span></span>
+<span id="cb17-54"><a href="chap_trad_reg_models.html#cb17-54" aria-hidden="true" tabindex="-1"></a><span class="co"># and</span></span>
+<span id="cb17-55"><a href="chap_trad_reg_models.html#cb17-55" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">&quot;Estimate&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pe,</span>
+<span id="cb17-56"><a href="chap_trad_reg_models.html#cb17-56" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;lower95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.low,</span>
+<span id="cb17-57"><a href="chap_trad_reg_models.html#cb17-57" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;upper95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.high,</span>
+<span id="cb17-58"><a href="chap_trad_reg_models.html#cb17-58" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;P.value&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pval)[<span class="fu">c</span>(<span class="st">&quot;ERpnie&quot;</span>, <span class="st">&quot;ERintmed&quot;</span>),]</span>
+<span id="cb17-59"><a href="chap_trad_reg_models.html#cb17-59" aria-hidden="true" tabindex="-1"></a><span class="co">#            Estimate   lower95CI  upper95CI      P.value</span></span>
+<span id="cb17-60"><a href="chap_trad_reg_models.html#cb17-60" aria-hidden="true" tabindex="-1"></a><span class="co"># ERpnie   0.04835753  0.02910970 0.06760535 8.473169e-07</span></span>
+<span id="cb17-61"><a href="chap_trad_reg_models.html#cb17-61" aria-hidden="true" tabindex="-1"></a><span class="co"># ERintmed 0.02408674 -0.02576124 0.07393472 3.436070e-01</span></span>
+<span id="cb17-62"><a href="chap_trad_reg_models.html#cb17-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-63"><a href="chap_trad_reg_models.html#cb17-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-64"><a href="chap_trad_reg_models.html#cb17-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-65"><a href="chap_trad_reg_models.html#cb17-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-66"><a href="chap_trad_reg_models.html#cb17-66" aria-hidden="true" tabindex="-1"></a><span class="co"># for the 4-way decomposition, the CDE(M=0), the excess relative risk due to</span></span>
+<span id="cb17-67"><a href="chap_trad_reg_models.html#cb17-67" aria-hidden="true" tabindex="-1"></a><span class="co"># CDE(M=0), Intref, MIE and PNIE are given by:</span></span>
+<span id="cb17-68"><a href="chap_trad_reg_models.html#cb17-68" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">&quot;Estimate&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pe,</span>
+<span id="cb17-69"><a href="chap_trad_reg_models.html#cb17-69" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;lower95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.low,</span>
+<span id="cb17-70"><a href="chap_trad_reg_models.html#cb17-70" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;upper95CI&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.ci.high,</span>
+<span id="cb17-71"><a href="chap_trad_reg_models.html#cb17-71" aria-hidden="true" tabindex="-1"></a>           <span class="st">&quot;P.value&quot;</span> <span class="ot">=</span> res_rb_param_delta<span class="sc">$</span>effect.pval)[<span class="fu">c</span>(<span class="st">&quot;ERcde&quot;</span>,<span class="st">&quot;ERintref&quot;</span>,<span class="st">&quot;ERintmed&quot;</span>,<span class="st">&quot;ERpnie&quot;</span>),]</span>
+<span id="cb17-72"><a href="chap_trad_reg_models.html#cb17-72" aria-hidden="true" tabindex="-1"></a><span class="co">#            Estimate   lower95CI  upper95CI      P.value</span></span>
+<span id="cb17-73"><a href="chap_trad_reg_models.html#cb17-73" aria-hidden="true" tabindex="-1"></a><span class="co"># ERcde    0.40204098  0.15315072 0.65093124 1.545523e-03</span></span>
+<span id="cb17-74"><a href="chap_trad_reg_models.html#cb17-74" aria-hidden="true" tabindex="-1"></a><span class="co"># ERintref 0.04599376 -0.04850084 0.14048835 3.400930e-01</span></span>
+<span id="cb17-75"><a href="chap_trad_reg_models.html#cb17-75" aria-hidden="true" tabindex="-1"></a><span class="co"># ERintmed 0.02408674 -0.02576124 0.07393472 3.436070e-01</span></span>
+<span id="cb17-76"><a href="chap_trad_reg_models.html#cb17-76" aria-hidden="true" tabindex="-1"></a><span class="co"># ERpnie   0.04835753  0.02910970 0.06760535 8.473169e-07</span></span></code></pre></div>
+
+</div>
+</div>
+<h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-naimi2020" class="csl-entry">
+Naimi, Ashley I, and Brian W Whitcomb. 2020. <span>“Estimating Risk Ratios and Risk Differences Using Regression.”</span> <em>American Journal of Epidemiology</em> 189 (6): 508–10.
+</div>
+<div id="ref-valeri2013" class="csl-entry">
+Valeri, Linda, and Tyler J VanderWeele. 2013. <span>“Mediation Analysis Allowing for Exposure-Mediator Interactions and Causal Interpretation: Theoretical Assumptions and Implementation with SAS and SPSS Macros.”</span> <em>Psycol Methods</em> 18 (2): 137–50.
+</div>
+<div id="ref-vanderweele2013" class="csl-entry">
+VanderWeele, Tyler J. 2013. <span>“A Three-Way Decomposition of a Total Effect into Direct, Indirect, and Interactive Effects.”</span> <em>Epidemiology</em> 13: 224–32.
+</div>
+<div id="ref-vanderweele2014" class="csl-entry">
+———. 2014. <span>“A Unification of Mediation and Interaction. A 4-Way Decomposition.”</span> <em>Epidemiology</em> 25: 749–61.
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="chap_baron_kenny_sem.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="chap_gcomp.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/benoitlepage/mediation_workshop/02-trad_reg_models.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf", "_main.epub"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

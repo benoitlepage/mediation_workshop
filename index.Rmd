@@ -1,60 +1,69 @@
 --- 
-title: "A Minimal Book Example"
+title: "Mediation Workshop"
 author: "Benoît Lepage"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
+# output: 
+  # bookdown::gitbook: default
+  # bookdown::pdf_book: default
 documentclass: book
-bibliography: [book.bib, packages.bib]
+bibliography: [references_mediation_workshop.bib]
+biblio-style: apalike
 # url: your book url like https://bookdown.org/yihui/bookdown
 # cover-image: path to the social sharing image like images/cover.jpg
-description: |
-  This is a minimal example of using the bookdown package to write a book.
-  The HTML output format for this example is bookdown::gitbook,
-  set in the _output.yml file.
+description: "Expanse project - Mediation workshop. Online complementary document with practical examples in R."
 link-citations: yes
-github-repo: rstudio/bookdown-demo
+github-repo: mediation_workshop
 ---
 
-# About
+# Introduction
 
-This is a _sample_ book written in **Markdown**. You can use anything that Pandoc's Markdown supports; for example, a math equation $a^2 + b^2 = c^2$.
+The objective of this document is to provide practical examples for the Expanse report _"Mediation Analysis: a Starting Guide for Epidemiologists"_ with R scripts corresponding to the different estimation methods presented in the report.
 
-## Usage 
+# Software 
+The examples given in this workshop have been elaborated for R (version 4.2.2).
 
-Each **bookdown** chapter is an .Rmd file, and each .Rmd file can contain one (and only one) chapter. A chapter *must* start with a first-level heading: `# A good chapter`, and can contain one (and only one) first-level heading.
+Depending on the estimator, some R packages might be necessary:
 
-Use second-level and higher headings within chapters like: `## A short section` or `### An even shorter section`.
+- COMPLETE ONCE ALL THE EXAMPLES ARE DONE
 
-The `index.Rmd` file is required, and is also your first book chapter. It will be the homepage when you render the book.
+# Data sets
+## General presentation of the data used in our examples
+Four data sets have been simulated, each containing 7 variables:
 
-## Render book
+- 2 baseline confounders (denoted $L(0)$ in the DAGs):
+    - `L0_male`, a binary variable indicating the sex of the participant (1 for men, 0 for women);
+    - `L0_parent_low_educ_lv`, a binary variable indicated if the parents of the participants had a low level of education (1 for a low educational level, 0 for a high educational level);
+- 1 exposure of interest (denoted $A$ in the DAGs):
+    - `A0_ace`, a binary variable indicating if the participants had been exposed to a high level of "Adverse childhood experience";
+- 1 confounder of the mediator-outcome relationship (denoted $L(1)$ in the DAGs):
+    - `L1`, a binary variable indicating if the participant has a low educational level (1 for a low educational level, 0 for a high educational level);
+- 1 mediator of interest (denoted $M$ in the DAGs):
+    - `M_smoking`, a binary variable indicating if the participant is a smoker (1 for smokers, 0 for non-smokers);
+- 2 outcomes (denoted $Y$ in the DAGs):
+    - `Y2_death`, a binary variable indicating the occurrence of death before 60 years of age (1 if dead, 0 if alive);
+    - `Y2_qol`, a quantitative variable corresponding to a quality of life measurement.
 
-You can render the HTML version of this example book without changing anything:
+## Data generating mechanisms
+The 4 data generating mechanisms used to simulate the data sets are described in chapter 4 of the _Expanse "Mediation analysis" report_:
 
-1. Find the **Build** pane in the RStudio IDE, and
+- The first two data sets are simulated from a causal model where confounders of the mediator-outcome relationship ($L(1)$) are not affected by the exposure $A$ (Figure \@ref(fig:figDAGM1)),
+    - The data set `df1.csv` is simulated from the statistical model $\mathcal{M}_1$, which does not contain any $A \ast M$ interaction effect on the outcome $Y$.
+    - The data set `df1_int.csv` is simulated from the statistical model $\mathcal{M}_{1 \ast}$, which contains an $A \ast M$ interaction effect on the outcome $Y$.
 
-1. Click on **Build Book**, then select your output format, or select "All formats" if you'd like to use multiple formats from the same book source files.
-
-Or build the book from the R console:
-
-```{r, eval=FALSE}
-bookdown::render_book()
+```{r figDAGM1, echo=FALSE, out.width="50%", fig.align="center", fig.cap="Causal model 1"}
+knitr::include_graphics("./figures/DAG_M1.jpg")    
 ```
 
-To render this example to PDF as a `bookdown::pdf_book`, you'll need to install XeLaTeX. You are recommended to install TinyTeX (which includes XeLaTeX): <https://yihui.org/tinytex/>.
-
-## Preview book
-
-As you work, you may start a local server to live preview this HTML book. This preview will update as you edit the book when you save individual .Rmd files. You can start the server in a work session by using the RStudio add-in "Preview book", or from the R console:
-
-```{r eval=FALSE}
-bookdown::serve_book()
+- The next two data set are simulated from a causal model where confounders of the mediator-outcome relationship ($L(1)$) are affected by the exposure $A$ (Figure \@ref(fig:figDAGM2)),
+    - The data set `df2.csv` is simulated from the statistical model $\mathcal{M}_2$, which does not contain any $A \ast M$ interaction effect on the outcome $Y$.
+    - The data set `df2_int.csv` is simulated from the statistical model $\mathcal{M}_{2 \ast}$, which contains an $A \ast M$ interaction effect on the outcome $Y$.
+    
+```{r figDAGM2, echo=FALSE, out.width="50%", fig.align="center", fig.cap="Causal model 2"}
+knitr::include_graphics("./figures/DAG_M2.jpg")    
 ```
 
+The R functions used to simulate these 4 data sets are given in the Appendix A.
 
-```{r include=FALSE}
-# automatically create a bib database for R packages
-knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'packages.bib')
-```
+The Appendix B describes how the true values for the estimands of the causal quantities of interest given in Table 2 of the _Expanse "Mediation analysis" report_ were calculated. Those true values are the theoretical values expected under the causal and statistical models $\mathcal{M}_1$, $\mathcal{M}_{1 \ast}$, $\mathcal{M}_2$ and $\mathcal{M}_{2 \ast}$. Estimations that will be obtained from the data sets `df1.csv`, `df1_int.csv`, `df2.csv`, and `df2_int.csv` will be slightly different from the true values because of sample variability.
+

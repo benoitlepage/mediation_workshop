@@ -1,0 +1,2598 @@
+# Appendix B: Calculation of the true causal quantities {#appendix_b} 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE)  # to use "myround" command
+```
+
+```{r load_packages, include=FALSE}
+library(broman)
+```
+
+## True causal quantities without mediator-ouctome confounder affected by the exposure
+
+### Average total effects (ATE)
+
+The following function `true.ATE1` can be used to run the calculation for the average total effects (ATE).
+```{r true.ATE1.function, echo=TRUE, eval = TRUE}
+true.ATE1 <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  for (n in 1:16) {
+    S[n,"sum"] <- ( ( ( b["b_Y"] + 
+                      b["b_male_Y"] * S[n,"male"] + 
+                      b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                      b["b_A_Y"] * 1 + 
+                      b["b_L1_Y"] * S[n,"L1"] +
+                      b["b_M_Y"] * S[n,"M"] +
+                      b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+                    (( b["b_M"] + 
+                           b["b_male_M"] * S[n,"male"] + 
+                           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                           b["b_L1_M"] * S[n,"L1"] +
+                           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+                    (( 1 - (b["b_M"] + 
+                              b["b_male_M"] * S[n,"male"] + 
+                              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                              b["b_L1_M"] * S[n,"L1"] +
+                              b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) ) - 
+                    ( ( b["b_Y"] + 
+                          b["b_male_Y"] * S[n,"male"] + 
+                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_A_Y"] * 0 + 
+                          b["b_L1_Y"] * S[n,"L1"] +
+                          b["b_M_Y"] * S[n,"M"] +
+                          b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+                        (( b["b_M"] + 
+                             b["b_male_M"] * S[n,"male"] + 
+                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_L1_M"] * S[n,"L1"] +
+                             b["b_A_M"] * 0 )^( S[n,"M"] )) *
+                        (( 1 - (b["b_M"] + 
+                                  b["b_male_M"] * S[n,"male"] + 
+                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_L1_M"] * S[n,"L1"] +
+                                  b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) ) *
+    ((b["p_L1"])^(S[n,"L1"])) *
+    ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+    ((b["p_L0_male"])^(S[n,"male"])) * 
+    ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+    ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+    ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+}
+
+ATE.death <- sum(S[,"sum"])
+
+
+# quantitative outcome (QoL)
+S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
+colnames(S) <- list("male","parent_educ","L1","M","sum")
+for (n in 1:16) {
+  S[n,"sum"] <- ( ( ( b["mu_Y"] + 
+                        b["c_male_Y"] * S[n,"male"] + 
+                        b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                        b["c_A_Y"] * 1 +
+                        b["c_L1_Y"] * S[n,"L1"] +
+                        b["c_M_Y"] * S[n,"M"] + 
+                        b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+                      (( b["b_M"] + 
+                           b["b_male_M"] * S[n,"male"] + 
+                           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                           b["b_L1_M"] * S[n,"L1"] +
+                           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+                      (( 1 - (b["b_M"] + 
+                                b["b_male_M"] * S[n,"male"] + 
+                                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                b["b_L1_M"] * S[n,"L1"] +
+                                b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) ) - 
+                    ( ( b["mu_Y"] + 
+                          b["c_male_Y"] * S[n,"male"] + 
+                          b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                          b["c_A_Y"] * 0 +
+                          b["c_L1_Y"] * S[n,"L1"] +
+                          b["c_M_Y"] * S[n,"M"] + 
+                          b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+                        (( b["b_M"] + 
+                             b["b_male_M"] * S[n,"male"] + 
+                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_L1_M"] * S[n,"L1"] +
+                             b["b_A_M"] * 0 )^( S[n,"M"] )) *
+                        (( 1 - (b["b_M"] + 
+                                  b["b_male_M"] * S[n,"male"] + 
+                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_L1_M"] * S[n,"L1"] +
+                                  b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) ) *
+    ((b["p_L1"])^(S[n,"L1"])) *
+    ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+    ((b["p_L0_male"])^(S[n,"male"])) * 
+    ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+    ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+    ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+}
+
+ATE.qol <- sum(S[,"sum"])
+
+return(list(ATE.death = ATE.death, ATE.qol = ATE.qol))
+  
+}
+```
+
+```{r true.ATE1.calculation, echo=TRUE, eval = TRUE}
+true.ATE1.no.inter <- true.ATE1(interaction = 0)
+
+true.ATE1.with.inter <- true.ATE1(interaction = 1)
+```
+
+
+The average total effects $\text{ATE} = \mathbb{E}(Y_1) - \mathbb{E}(Y_0)$ are: 
+
+- `r true.ATE1.no.inter["ATE.death"]` for death and `r true.ATE1.no.inter["ATE.qol"]` for quality of life without interaction;
+- `r true.ATE1.with.inter["ATE.death"]` for death and `r true.ATE1.with.inter["ATE.qol"]` for quality of life with interaction.
+
+
+### Controlled direct effects (CDE)
+
+The following function `true.CDE1` can be used to run the calculation for controlled direct effects (CDE).
+
+```{r true.CDE1.function, echo=TRUE, eval=TRUE}
+true.CDE1 <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  # we estimate both CDE, fixing do(M) = 0 et do(M) = 1 and 
+  # using the corresponding lines in the S matrix
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3))
+  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  for (n in 1:16) {
+    S[n,"sum"] <- ( ( b["b_Y"] + 
+                        b["b_male_Y"] * S[n,"male"] + 
+                        b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["b_A_Y"] * 1 + 
+                        b["b_L1_Y"] * S[n,"L1"] +
+                        b["b_M_Y"] * S[n,"M"] +
+                        b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                      ( b["b_Y"] + 
+                          b["b_male_Y"] * S[n,"male"] + 
+                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_A_Y"] * 0 + 
+                          b["b_L1_Y"] * S[n,"L1"] +
+                          b["b_M_Y"] * S[n,"M"] +
+                          b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  CDE.M0.death <- sum(S[1:8,"sum"])
+  CDE.M1.death <- sum(S[9:16,"sum"])
+  
+  # quantitative outcome (QoL)
+  # we estimate both CDE, fixing do(M) = 0 et do(M) = 1 and using 
+  # the corresponding lines in the S matrix
+  for (n in 1:16) {
+    S[n,"sum"] <- ( ( b["mu_Y"] + 
+                        b["c_male_Y"] * S[n,"male"] + 
+                        b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["c_A_Y"] * 1 + 
+                        b["c_L1_Y"] * S[n,"L1"] +
+                        b["c_M_Y"] * S[n,"M"] +
+                        b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                      ( b["mu_Y"] + 
+                          b["c_male_Y"] * S[n,"male"] + 
+                          b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["c_A_Y"] * 0 + 
+                          b["c_L1_Y"] * S[n,"L1"] +
+                          b["c_M_Y"] * S[n,"M"] +
+                          b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  CDE.M0.qol <- sum(S[1:8,"sum"])
+  CDE.M1.qol <- sum(S[9:16,"sum"])
+  
+  return(list(CDE.M0.death = CDE.M0.death, CDE.M1.death = CDE.M1.death, 
+              CDE.M0.qol = CDE.M0.qol, CDE.M1.qol = CDE.M1.qol))
+}
+```
+
+```{r true.CDE1.calculation, echo=TRUE, eval=TRUE}
+true.CDE1.no.inter <- true.CDE1(interaction = 0)
+
+true.CDE1.with.inter <- true.CDE1(interaction = 1)
+```
+
+Setting $do(M=0)$, the controlled direct effects $\text{CDE}_{M=0} = \mathbb{E}\left(Y_{1,0} \right) - \mathbb{E}\left(Y_{0,0} \right)$ are: 
+
+- `r true.CDE1.no.inter["CDE.M0.death"]` for death and `r true.CDE1.no.inter["CDE.M0.qol"]` for quality of life without interaction,
+- `r true.CDE1.with.inter["CDE.M0.death"]` for death and `r true.CDE1.with.inter["CDE.M0.qol"]` for quality of life with interaction.
+
+Setting $do(M=1)$, the controlled direct effects $\text{CDE}_{M=1} = \mathbb{E}\left(Y_{1,1} \right) - \mathbb{E}\left(Y_{0,1} \right)$ are: 
+
+- `r true.CDE1.no.inter["CDE.M1.death"]` for death and `r true.CDE1.no.inter["CDE.M1.qol"]` for quality of life without interaction,
+- `r true.CDE1.with.inter["CDE.M1.death"]` for death and `r true.CDE1.with.inter["CDE.M1.qol"]` for quality of life with interaction.
+
+
+
+### Pure natural direct effect and Total natural indirect effect
+
+The following function `true.PNDE.TNIE1` can be used to run the calculation for pure natural direct effects (PNDE) and total natural indirect effects (TNIE).
+
+```{r true.PNDE.TNIE1.function, echo=TRUE, eval=TRUE}
+true.PNDE.TNIE1 <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.pnde", "sum.tnie")
+  for (n in 1:16) {
+    # PNDE 
+    S[n,"sum.pnde"] <- ( ( b["b_Y"] + 
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                           ( b["b_Y"] + 
+                               b["b_male_Y"] * S[n,"male"] + 
+                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_A_Y"] * 0 + 
+                               b["b_L1_Y"] * S[n,"L1"] +
+                               b["b_M_Y"] * S[n,"M"] + 
+                               b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      (( b["b_M"] + 
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) * 
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # TNIE 
+    S[n,"sum.tnie"] <- ( b["b_Y"] + 
+                           b["b_male_Y"] * S[n,"male"] + 
+                           b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["b_A_Y"] * 1 + 
+                           b["b_L1_Y"] * S[n,"L1"] +
+                           b["b_M_Y"] * S[n,"M"] +
+                           b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ( (( b["b_M"] + 
+             b["b_male_M"] * S[n,"male"] + 
+             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_L1_M"] * S[n,"L1"] +
+             b["b_A_M"] * 1 )^( S[n,"M"] )) +
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
+          (( b["b_M"] + 
+               b["b_male_M"] * S[n,"male"] + 
+               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_L1_M"] * S[n,"L1"] +
+               b["b_A_M"] * 0 )^( S[n,"M"] )) - 
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  PNDE.death <- sum(S[,"sum.pnde"])
+  TNIE.death <- sum(S[,"sum.tnie"])
+  
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.pnde", "sum.tnie")
+  for (n in 1:16) {
+    # PNDE 
+    S[n,"sum.pnde"] <- ( ( b["mu_Y"] + 
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                           ( b["mu_Y"] + 
+                               b["c_male_Y"] * S[n,"male"] + 
+                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_A_Y"] * 0 + 
+                               b["c_L1_Y"] * S[n,"L1"] +
+                               b["c_M_Y"] * S[n,"M"] + 
+                               b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      (( b["b_M"] + 
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) * 
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # TNIE 
+    S[n,"sum.tnie"] <- ( b["mu_Y"] + 
+                           b["c_male_Y"] * S[n,"male"] + 
+                           b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["c_A_Y"] * 1 + 
+                           b["c_L1_Y"] * S[n,"L1"] +
+                           b["c_M_Y"] * S[n,"M"] +
+                           b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ( (( b["b_M"] + 
+             b["b_male_M"] * S[n,"male"] + 
+             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_L1_M"] * S[n,"L1"] +
+             b["b_A_M"] * 1 )^( S[n,"M"] )) +
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
+          (( b["b_M"] + 
+               b["b_male_M"] * S[n,"male"] + 
+               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_L1_M"] * S[n,"L1"] +
+               b["b_A_M"] * 0 )^( S[n,"M"] )) - 
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  PNDE.qol <- sum(S[,"sum.pnde"])
+  TNIE.qol <- sum(S[,"sum.tnie"])
+  
+  return(list(PNDE.death = PNDE.death, TNIE.death = TNIE.death, 
+              PNDE.qol = PNDE.qol, TNIE.qol = TNIE.qol))
+}
+```
+
+
+```{r true.PNDE.TNIE1.calculation, echo=TRUE, eval = TRUE}
+true.PNDE.TNIE.no.inter <- true.PNDE.TNIE1(interaction = 0)
+
+true.PNDE.TNIE.with.inter <- true.PNDE.TNIE1(interaction = 1)
+```
+
+The $\text{PNDE}=\mathbb{E}\left( Y_{1,M_0}\right) - \mathbb{E}\left(Y_{0,M_0}\right)$ and $\text{TNIE}=\mathbb{E}\left( Y_{1,M_1}\right) - \mathbb{E}\left(Y_{1,M_0}\right)$ are respectively:
+
+- `r true.PNDE.TNIE.no.inter["PNDE.death"]` and `r true.PNDE.TNIE.no.inter["TNIE.death"]` for death  without interaction,
+- `r true.PNDE.TNIE.with.inter["PNDE.death"]` and `r true.PNDE.TNIE.with.inter["TNIE.death"]` for death  with interaction,
+- `r true.PNDE.TNIE.no.inter["PNDE.qol"]` and `r true.PNDE.TNIE.no.inter["TNIE.qol"]` for quality of life without interaction,
+- `r true.PNDE.TNIE.with.inter["PNDE.qol"]` and `r true.PNDE.TNIE.with.inter["TNIE.qol"]` for quality of life with interaction.
+
+
+### Total natural direct effect and Pure natural indirect effect
+
+The following function `true.TNDE.PNIE1` can be used to run the calculation for total natural direct effects (TNDE) and pure natural indirect effects (PNIE).
+
+```{r true.TNDE.PNIE1.function, echo=TRUE, eval=TRUE}
+true.TNDE.PNIE1 <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.tnde", "sum.pnie")
+  
+  for (n in 1:16) {
+    # TNDE 
+    S[n,"sum.tnde"] <- ( ( b["b_Y"] + 
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                           ( b["b_Y"] + 
+                               b["b_male_Y"] * S[n,"male"] + 
+                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_A_Y"] * 0 + 
+                               b["b_L1_Y"] * S[n,"L1"] +
+                               b["b_M_Y"] * S[n,"M"] + 
+                               b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      (( b["b_M"] + 
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 1 )^( S[n,"M"] )) * 
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 1) )^( 1 - S[n,"M"] ))  *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # PNIE 
+    S[n,"sum.pnie"] <- ( b["b_Y"] + 
+                           b["b_male_Y"] * S[n,"male"] + 
+                           b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["b_A_Y"] * 0 + 
+                           b["b_L1_Y"] * S[n,"L1"] +
+                           b["b_M_Y"] * S[n,"M"] +
+                           b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ( (( b["b_M"] + 
+             b["b_male_M"] * S[n,"male"] + 
+             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_L1_M"] * S[n,"L1"] +
+             b["b_A_M"] * 1 )^( S[n,"M"] )) +
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
+          (( b["b_M"] + 
+               b["b_male_M"] * S[n,"male"] + 
+               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_L1_M"] * S[n,"L1"] +
+               b["b_A_M"] * 0 )^( S[n,"M"] )) - 
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  TNDE.death <- sum(S[,"sum.tnde"])
+  PNIE.death <- sum(S[,"sum.pnie"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.tnde", "sum.pnie")
+  for (n in 1:16) {
+    # TNDE 
+    S[n,"sum.tnde"] <- ( ( b["mu_Y"] + 
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                           ( b["mu_Y"] + 
+                               b["c_male_Y"] * S[n,"male"] + 
+                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_A_Y"] * 0 + 
+                               b["c_L1_Y"] * S[n,"L1"] +
+                               b["c_M_Y"] * S[n,"M"] + 
+                               b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      (( b["b_M"] + 
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] +
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 1 )^( S[n,"M"] )) * 
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 1) )^( 1 - S[n,"M"] ))  *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # PNIE 
+    S[n,"sum.pnie"] <- ( b["mu_Y"] + 
+                           b["c_male_Y"] * S[n,"male"] + 
+                           b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["c_A_Y"] * 0 + 
+                           b["c_L1_Y"] * S[n,"L1"] +
+                           b["c_M_Y"] * S[n,"M"] +
+                           b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ( (( b["b_M"] + 
+             b["b_male_M"] * S[n,"male"] + 
+             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_L1_M"] * S[n,"L1"] +
+             b["b_A_M"] * 1 )^( S[n,"M"] )) +
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
+          (( b["b_M"] + 
+               b["b_male_M"] * S[n,"male"] + 
+               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_L1_M"] * S[n,"L1"] +
+               b["b_A_M"] * 0 )^( S[n,"M"] )) - 
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  TNDE.qol <- sum(S[,"sum.tnde"])
+  PNIE.qol <- sum(S[,"sum.pnie"])
+   
+  return(list(TNDE.death = TNDE.death, PNIE.death = PNIE.death, 
+              TNDE.qol = TNDE.qol, PNIE.qol = PNIE.qol))
+}
+```
+
+
+```{r true.TNDE.PNIE1.calculation, echo=TRUE, eval=TRUE}
+true.TNDE.PNIE.no.inter <- true.TNDE.PNIE1(interaction = 0)
+
+true.TNDE.PNIE.with.inter <- true.TNDE.PNIE1(interaction = 1)
+```
+
+The $\text{TNDE}=\mathbb{E}\left( Y_{1,M_1}\right) - \mathbb{E}\left(Y_{0,M_1}\right)$ and $\text{PNIE}=\mathbb{E}\left( Y_{0,M_1}\right) - \mathbb{E}\left(Y_{0,M_0}\right)$ are respectively:
+
+- `r true.TNDE.PNIE.no.inter["TNDE.death"]` and `r true.TNDE.PNIE.no.inter["PNIE.death"]` for death  without interaction,
+- `r true.TNDE.PNIE.with.inter["TNDE.death"]` and `r true.TNDE.PNIE.with.inter["PNIE.death"]` for death  with interaction,
+- `r true.TNDE.PNIE.no.inter["TNDE.qol"]` and `r true.TNDE.PNIE.no.inter["PNIE.qol"]` for quality of life without interaction,
+- `r true.TNDE.PNIE.with.inter["TNDE.qol"]` and `r true.TNDE.PNIE.with.inter["PNIE.qol"]` for quality of life with interaction.
+
+
+
+### Vanderweele's 3-way decomposition
+
+The following function `true.3way.decomp` can be used to run the calculation for the 3-way decomposition of the total effect into a "pure natural direct effect" (PNDE), a "pure natural indirect effect" (PNIE) and a "mediated interactive effect" (MIE).
+
+```{r true.3way.decomp.function, echo=TRUE, eval=TRUE}
+true.3way.decomp <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.pde", "sum.pie")
+  for (n in 1:16) {
+    # PDE 
+    S[n,"sum.pde"] <- ( ( b["b_Y"] + 
+                            b["b_male_Y"] * S[n,"male"] + 
+                            b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["b_A_Y"] * 1 + 
+                            b["b_L1_Y"] * S[n,"L1"] +
+                            b["b_M_Y"] * S[n,"M"] +
+                            b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                          ( b["b_Y"] + 
+                              b["b_male_Y"] * S[n,"male"] + 
+                              b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["b_A_Y"] * 0 + 
+                              b["b_L1_Y"] * S[n,"L1"] +
+                              b["b_M_Y"] * S[n,"M"] + 
+                              b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+    (( b["b_M"] + 
+         b["b_male_M"] * S[n,"male"] + 
+         b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+         b["b_L1_M"] * S[n,"L1"] +
+         b["b_A_M"] * 0 )^( S[n,"M"] )) * 
+    (( 1 - (b["b_M"] + 
+              b["b_male_M"] * S[n,"male"] + 
+              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
+    ((b["p_L1"])^(S[n,"L1"])) *
+    ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+    ((b["p_L0_male"])^(S[n,"male"])) * 
+    ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+    ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+    ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # PIE 
+    S[n,"sum.pie"] <- ( b["b_Y"] + 
+                          b["b_male_Y"] * S[n,"male"] + 
+                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_A_Y"] * 0 + 
+                          b["b_L1_Y"] * S[n,"L1"] +
+                          b["b_M_Y"] * S[n,"M"] +
+                          b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ( (( b["b_M"] + 
+             b["b_male_M"] * S[n,"male"] + 
+             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_L1_M"] * S[n,"L1"] +
+             b["b_A_M"] * 1 )^( S[n,"M"] )) +
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
+          (( b["b_M"] + 
+               b["b_male_M"] * S[n,"male"] + 
+               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_L1_M"] * S[n,"L1"] +
+               b["b_A_M"] * 0 )^( S[n,"M"] )) - 
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  # MI 
+  S.MI <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4))
+  colnames(S.MI) <- list("male","parent_educ","L1", "sum.mi")
+  for (n in 1:8) {
+    S.MI[n,"sum.mi"] <- ( ( b["b_Y"] + 
+                              b["b_male_Y"] * S.MI[n,"male"] + 
+                              b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                              b["b_A_Y"] * 1 + 
+                              b["b_L1_Y"] * S.MI[n,"L1"] +
+                              b["b_M_Y"] * 1 +
+                              b["b_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
+                            ( b["b_Y"] + 
+                                b["b_male_Y"] * S.MI[n,"male"] + 
+                                b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["b_A_Y"] * 1 + 
+                                b["b_L1_Y"] * S.MI[n,"L1"] +
+                                b["b_M_Y"] * 0 +
+                                b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                            ( b["b_Y"] + 
+                                b["b_male_Y"] * S.MI[n,"male"] + 
+                                b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["b_A_Y"] * 0 + 
+                                b["b_L1_Y"] * S.MI[n,"L1"] +
+                                b["b_M_Y"] * 1 +
+                                b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
+                            ( b["b_Y"] + 
+                                b["b_male_Y"] * S.MI[n,"male"] + 
+                                b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["b_A_Y"] * 0 + 
+                                b["b_L1_Y"] * S.MI[n,"L1"] +
+                                b["b_M_Y"] * 0 +
+                                b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
+      ( ( b["b_M"] + 
+            b["b_male_M"] * S.MI[n,"male"] + 
+            b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+            b["b_L1_M"] * S[n,"L1"] +
+            b["b_A_M"] * 1 ) - 
+          ( b["b_M"] + 
+              b["b_male_M"] * S.MI[n,"male"] + 
+              b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0 )) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S.MI[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S.MI[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S.MI[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S.MI[n,"parent_educ"])) 
+    }
+  
+  PDE.death <- sum(S[,"sum.pde"])
+  PIE.death <- sum(S[,"sum.pie"])
+  MI.death <- sum(S.MI[,"sum.mi"])
+  
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.pde", "sum.pie")
+  for (n in 1:16) {
+    # PDE 
+    S[n,"sum.pde"] <- ( ( b["mu_Y"] + 
+                            b["c_male_Y"] * S[n,"male"] + 
+                            b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["c_A_Y"] * 1 + 
+                            b["c_L1_Y"] * S[n,"L1"] +
+                            b["c_M_Y"] * S[n,"M"] +
+                            b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
+                          ( b["mu_Y"] + 
+                              b["c_male_Y"] * S[n,"male"] + 
+                              b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["c_A_Y"] * 0 + 
+                              b["c_L1_Y"] * S[n,"L1"] +
+                              b["c_M_Y"] * S[n,"M"] + 
+                              b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
+      (( b["b_M"] + 
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) * 
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # PIE 
+    S[n,"sum.pie"] <- ( b["mu_Y"] + 
+                          b["c_male_Y"] * S[n,"male"] + 
+                          b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["c_A_Y"] * 0 + 
+                          b["c_L1_Y"] * S[n,"L1"] +
+                          b["c_M_Y"] * S[n,"M"] +
+                          b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ( (( b["b_M"] + 
+             b["b_male_M"] * S[n,"male"] + 
+             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_L1_M"] * S[n,"L1"] +
+             b["b_A_M"] * 1 )^( S[n,"M"] )) +
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
+          (( b["b_M"] + 
+               b["b_male_M"] * S[n,"male"] + 
+               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_L1_M"] * S[n,"L1"] +
+               b["b_A_M"] * 0 )^( S[n,"M"] )) - 
+          (( 1 - (b["b_M"] + 
+                    b["b_male_M"] * S[n,"male"] + 
+                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_L1_M"] * S[n,"L1"] +
+                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  # MI 
+  S.MI <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4))
+  colnames(S.MI) <- list("male","parent_educ","L1","sum.mi")
+  for (n in 1:8) {
+    S.MI[n,"sum.mi"] <- ( ( b["mu_Y"] + 
+                              b["c_male_Y"] * S.MI[n,"male"] + 
+                              b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                              b["c_A_Y"] * 1 + 
+                              b["c_L1_Y"] * S.MI[n,"L1"] +
+                              b["c_M_Y"] * 1 +
+                              b["c_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
+                            ( b["mu_Y"] + 
+                                b["c_male_Y"] * S.MI[n,"male"] + 
+                                b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["c_A_Y"] * 1 + 
+                                b["c_L1_Y"] * S.MI[n,"L1"] +
+                                b["c_M_Y"] * 0 +
+                                b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                            ( b["mu_Y"] + 
+                                b["c_male_Y"] * S.MI[n,"male"] + 
+                                b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["c_A_Y"] * 0 + 
+                                b["c_L1_Y"] * S.MI[n,"L1"] +
+                                b["c_M_Y"] * 1 +
+                                b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
+                            ( b["mu_Y"] + 
+                                b["c_male_Y"] * S.MI[n,"male"] + 
+                                b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["c_A_Y"] * 0 + 
+                                b["c_L1_Y"] * S.MI[n,"L1"] +
+                                b["c_M_Y"] * 0 +
+                                b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
+      ( ( b["b_M"] + 
+            b["b_male_M"] * S.MI[n,"male"] + 
+            b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+            b["b_L1_M"] * S[n,"L1"] +
+            b["b_A_M"] * 1 ) - 
+          ( b["b_M"] + 
+              b["b_male_M"] * S.MI[n,"male"] + 
+              b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0 )) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S.MI[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S.MI[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S.MI[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S.MI[n,"parent_educ"])) 
+    }
+  
+  PDE.qol <- sum(S[,"sum.pde"])
+  PIE.qol <- sum(S[,"sum.pie"])
+  MI.qol <- sum(S.MI[,"sum.mi"])
+  
+  return(list(PDE.death = PDE.death, PIE.death = PIE.death, MI.death = MI.death,
+              PDE.qol = PDE.qol, PIE.qol = PIE.qol, MI.qol = MI.qol))
+}
+```
+
+
+```{r true.3way.decomp.calculation, echo=TRUE, eval=TRUE}
+true.3way.no.inter <- true.3way.decomp(interaction = 0)
+
+true.3way.with.inter <- true.3way.decomp(interaction = 1)
+```
+
+The $\text{PNDE}=\mathbb{E}\left( Y_{1,M_0}\right) - \mathbb{E}\left( Y_{0,M_0}\right)$, the $\text{PNIE}=\mathbb{E}\left(Y_{0,M_1}\right) - \mathbb{E}\left(Y_{0,M_0}\right)$ and the $\text{MIE}=\mathbb{E}\left( (Y_{1,1} - Y_{1,0} - Y_{0,1} + Y_{0,0}) \times (M_1 - M_0) \right)$ are respectively:
+
+- `r true.3way.no.inter["PDE.death"]`, `r true.3way.no.inter["PIE.death"]` and `r myround( true.3way.no.inter["MI.death"], 3)` for death  without interaction,
+- `r true.3way.with.inter["PDE.death"]`, `r true.3way.with.inter["PIE.death"]` and `r true.3way.with.inter["MI.death"]` for death  with interaction,
+- `r true.3way.no.inter["PDE.qol"]`, `r true.3way.no.inter["PIE.qol"]` and `r true.3way.no.inter["MI.qol"]` for quality of life  without interaction,
+- `r true.3way.with.inter["PDE.qol"]`, `r true.3way.with.inter["PIE.qol"]` and `r true.3way.with.inter["MI.qol"]` for quality of life  with interaction.
+
+
+### Vanderweele's 4-way decomposition
+
+The following function `true.4way.decomp` can be used to run the calculation for the 4-way decomposition of the total effect into a "controlled direct effect" (CDE), a "reference interaction effect" (RIE), a "mediated interaction effect" (MIE) and a "pure natural indirect effect" (PNIE).
+
+```{r true.4way.decomp.function, echo=TRUE, eval=TRUE}
+true.4way.decomp <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3), rep(NA,n=2^3), 
+             rep(NA,n=2^3), rep(NA,n=2^3))
+  colnames(S) <- list("male","parent_educ", "L1", "sum.cde", "sum.intref", 
+                      "sum.intmed", "sum.pie")
+  for (n in 1:8) {
+    # CDE 
+    S[n,"sum.cde"] <- ( ( b["b_Y"] + 
+                            b["b_male_Y"] * S[n,"male"] + 
+                            b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["b_A_Y"] * 1 + 
+                            b["b_L1_Y"] * S[n,"L1"] +
+                            b["b_M_Y"] * 0 +
+                            b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                          ( b["b_Y"] + 
+                              b["b_male_Y"] * S[n,"male"] + 
+                              b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["b_A_Y"] * 0 + 
+                              b["b_L1_Y"] * S[n,"L1"] +
+                              b["b_M_Y"] * 0 +
+                              b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] ) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # INTref 
+    S[n,"sum.intref"] <- ( ( b["b_Y"] + 
+                               b["b_male_Y"] * S[n,"male"] + 
+                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_A_Y"] * 1 + 
+                               b["b_L1_Y"] * S[n,"L1"] +
+                               b["b_M_Y"] * 1 +
+                               b["b_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
+                             ( b["b_Y"] + 
+                                 b["b_male_Y"] * S[n,"male"] + 
+                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_A_Y"] * 1 + 
+                                 b["b_L1_Y"] * S[n,"L1"] +
+                                 b["b_M_Y"] * 0 +
+                                 b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                             ( b["b_Y"] + 
+                                 b["b_male_Y"] * S[n,"male"] + 
+                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_A_Y"] * 0 + 
+                                 b["b_L1_Y"] * S[n,"L1"] +
+                                 b["b_M_Y"] * 1 +
+                                 b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
+                             ( b["b_Y"] + 
+                                 b["b_male_Y"] * S[n,"male"] + 
+                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_A_Y"] * 0 + 
+                                 b["b_L1_Y"] * S[n,"L1"] +
+                                 b["b_M_Y"] * 0 +
+                                 b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
+      ( b["b_M"] + 
+          b["b_male_M"] * S[n,"male"] + 
+          b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+          b["b_L1_M"] * S[n,"L1"] +
+          b["b_A_M"] * 0 ) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"]))
+    
+    # INTmed 
+    S[n,"sum.intmed"] <- ( ( b["b_Y"] + 
+                               b["b_male_Y"] * S[n,"male"] + 
+                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_A_Y"] * 1 + 
+                               b["b_L1_Y"] * S[n,"L1"] +
+                               b["b_M_Y"] * 1 +
+                               b["b_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
+                             ( b["b_Y"] + 
+                                 b["b_male_Y"] * S[n,"male"] + 
+                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_A_Y"] * 1 + 
+                                 b["b_L1_Y"] * S[n,"L1"] +
+                                 b["b_M_Y"] * 0 +
+                                 b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                             ( b["b_Y"] + 
+                                 b["b_male_Y"] * S[n,"male"] + 
+                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_A_Y"] * 0 + 
+                                 b["b_L1_Y"] * S[n,"L1"] +
+                                 b["b_M_Y"] * 1 +
+                                 b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
+                             ( b["b_Y"] + 
+                                 b["b_male_Y"] * S[n,"male"] + 
+                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_A_Y"] * 0 + 
+                                 b["b_L1_Y"] * S[n,"L1"] +
+                                 b["b_M_Y"] * 0 +
+                                 b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
+      ( ( b["b_M"] + 
+            b["b_male_M"] * S[n,"male"] + 
+            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_L1_M"] * S[n,"L1"] +
+            b["b_A_M"] * 1 ) - 
+          ( b["b_M"] + 
+              b["b_male_M"] * S[n,"male"] + 
+              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0 )) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # PIE 
+    S[n,"sum.pie"] <- ( ( b["b_Y"] + 
+                            b["b_male_Y"] * S[n,"male"] + 
+                            b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["b_A_Y"] * 0 + 
+                            b["b_L1_Y"] * S[n,"L1"] +
+                            b["b_M_Y"] * 1 +
+                            b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) - 
+                          ( b["b_Y"] + 
+                              b["b_male_Y"] * S[n,"male"] + 
+                              b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["b_A_Y"] * 0 + 
+                              b["b_L1_Y"] * S[n,"L1"] +
+                              b["b_M_Y"] * 0 +
+                              b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] ) ) *
+      ( ( b["b_M"] + 
+            b["b_male_M"] * S[n,"male"] + 
+            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_L1_M"] * S[n,"L1"] +
+            b["b_A_M"] * 1 ) - 
+          ( b["b_M"] + 
+              b["b_male_M"] * S[n,"male"] + 
+              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0 )) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  CDE.death <- sum(S[,"sum.cde"])
+  INTref.death <- sum(S[,"sum.intref"])
+  INTmed.death <- sum(S[,"sum.intmed"])
+  PIE.death <- sum(S[,"sum.pie"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3), rep(NA,n=2^3), 
+             rep(NA,n=2^3), rep(NA,n=2^3))
+  colnames(S) <- list("male","parent_educ", "L1", "sum.cde", "sum.intref", 
+                      "sum.intmed", "sum.pie")
+  for (n in 1:8) {
+    # CDE 
+    S[n,"sum.cde"] <- ( ( b["mu_Y"] + 
+                            b["c_male_Y"] * S[n,"male"] + 
+                            b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["c_A_Y"] * 1 + 
+                            b["c_L1_Y"] * S[n,"L1"] +
+                            b["c_M_Y"] * 0 +
+                            b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                          ( b["mu_Y"] + 
+                              b["c_male_Y"] * S[n,"male"] + 
+                              b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["c_A_Y"] * 0 + 
+                              b["c_L1_Y"] * S[n,"L1"] +
+                              b["c_M_Y"] * 0 +
+                              b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] ) ) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # INTref 
+    S[n,"sum.intref"] <- ( ( b["mu_Y"] + 
+                               b["c_male_Y"] * S[n,"male"] + 
+                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_A_Y"] * 1 + 
+                               b["c_L1_Y"] * S[n,"L1"] +
+                               b["c_M_Y"] * 1 +
+                               b["c_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
+                             ( b["mu_Y"] + 
+                                 b["c_male_Y"] * S[n,"male"] + 
+                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_A_Y"] * 1 + 
+                                 b["c_L1_Y"] * S[n,"L1"] +
+                                 b["c_M_Y"] * 0 +
+                                 b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                             ( b["mu_Y"] + 
+                                 b["c_male_Y"] * S[n,"male"] + 
+                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_A_Y"] * 0 + 
+                                 b["c_L1_Y"] * S[n,"L1"] +
+                                 b["c_M_Y"] * 1 +
+                                 b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
+                             ( b["mu_Y"] + 
+                                 b["c_male_Y"] * S[n,"male"] + 
+                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_A_Y"] * 0 + 
+                                 b["c_L1_Y"] * S[n,"L1"] +
+                                 b["c_M_Y"] * 0 +
+                                 b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
+      ( b["b_M"] + 
+          b["b_male_M"] * S[n,"male"] + 
+          b["b_parent_educ_M"] * S[n,"parent_educ"] +
+          b["b_L1_M"] * S[n,"L1"] +
+          b["b_A_M"] * 0 ) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # INTmed 
+    S[n,"sum.intmed"] <- ( ( b["mu_Y"] + 
+                               b["c_male_Y"] * S[n,"male"] + 
+                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_A_Y"] * 1 + 
+                               b["c_L1_Y"] * S[n,"L1"] +
+                               b["c_M_Y"] * 1 +
+                               b["c_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
+                             ( b["mu_Y"] + 
+                                 b["c_male_Y"] * S[n,"male"] + 
+                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_A_Y"] * 1 + 
+                                 b["c_L1_Y"] * S[n,"L1"] +
+                                 b["c_M_Y"] * 0 +
+                                 b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
+                             ( b["mu_Y"] + 
+                                 b["c_male_Y"] * S[n,"male"] + 
+                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_A_Y"] * 0 + 
+                                 b["c_L1_Y"] * S[n,"L1"] +
+                                 b["c_M_Y"] * 1 +
+                                 b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
+                             ( b["mu_Y"] + 
+                                 b["c_male_Y"] * S[n,"male"] + 
+                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_A_Y"] * 0 + 
+                                 b["c_L1_Y"] * S[n,"L1"] +
+                                 b["c_M_Y"] * 0 +
+                                 b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
+      ( ( b["b_M"] + 
+            b["b_male_M"] * S[n,"male"] + 
+            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_L1_M"] * S[n,"L1"] +
+            b["b_A_M"] * 1 ) - 
+          ( b["b_M"] + 
+              b["b_male_M"] * S[n,"male"] + 
+              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0 )) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    # PIE 
+    S[n,"sum.pie"] <- ( ( b["mu_Y"] + 
+                            b["c_male_Y"] * S[n,"male"] + 
+                            b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["c_A_Y"] * 0 + 
+                            b["c_L1_Y"] * S[n,"L1"] +
+                            b["c_M_Y"] * 1 +
+                            b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) - 
+                          ( b["mu_Y"] + 
+                              b["c_male_Y"] * S[n,"male"] + 
+                              b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["c_A_Y"] * 0 + 
+                              b["c_L1_Y"] * S[n,"L1"] +
+                              b["c_M_Y"] * 0 +
+                              b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] ) ) *
+      ( ( b["b_M"] + 
+            b["b_male_M"] * S[n,"male"] + 
+            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_L1_M"] * S[n,"L1"] +
+            b["b_A_M"] * 1 ) - 
+          ( b["b_M"] + 
+              b["b_male_M"] * S[n,"male"] + 
+              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_L1_M"] * S[n,"L1"] +
+              b["b_A_M"] * 0 )) * 
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  CDE.qol <- sum(S[,"sum.cde"])
+  INTref.qol <- sum(S[,"sum.intref"])
+  INTmed.qol <- sum(S[,"sum.intmed"])
+  PIE.qol <- sum(S[,"sum.pie"])
+  
+  return(list(CDE.death = CDE.death, INTref.death = INTref.death, 
+              INTmed.death = INTmed.death, PIE.death = PIE.death,
+              CDE.qol = CDE.qol, INTref.qol = INTref.qol, 
+              INTmed.qol = INTmed.qol, PIE.qol = PIE.qol))
+}
+```
+
+```{r true.4way.decomp.calculation, echo=TRUE, eval=TRUE}
+true.4way.no.inter <- true.4way.decomp(interaction = 0)
+
+true.4way.with.inter <- true.4way.decomp(interaction = 1)
+```
+
+The $\text{CDE}=\mathbb{E}\left(Y_{1,0} \right) - \mathbb{E}\left(Y_{0,0}\right)$, $\text{RIE}=\left((Y_{1,1} - Y_{1,0} - Y_{0,1} + Y_{0,0}) \times M_0\right)$, $\text{MIE}= \mathbb{E}\left((Y_{1,1} - Y_{1,0} - Y_{0,1} + Y_{0,0}) \times (M_1 - M_0)\right)$ and $\text{PNIE}=\mathbb{E}\left(Y_{0,M_1}\right) - \mathbb{E}\left(Y_{0,M_0}\right)$ are respectively:
+
+- `r true.4way.no.inter["CDE.death"]`, `r myround(true.4way.no.inter["INTref.death"], 3)`, `r myround(true.4way.no.inter["INTmed.death"], 3)` and `r true.4way.no.inter["PIE.death"]` for death  without interaction,
+- `r true.4way.with.inter["CDE.death"]`, `r true.4way.with.inter["INTref.death"]`, `r true.4way.with.inter["INTmed.death"]` and `r true.4way.with.inter["PIE.death"]` for death  with interaction,
+- `r true.4way.no.inter["CDE.qol"]`, `r true.4way.no.inter["INTref.qol"]`, `r true.4way.no.inter["INTmed.qol"]` and `r true.4way.no.inter["PIE.qol"]` for quality of life  without interaction,
+- `r true.4way.with.inter["CDE.qol"]`, `r true.4way.with.inter["INTref.qol"]`, `r true.4way.with.inter["INTmed.qol"]` and `r true.4way.with.inter["PIE.qol"]` for quality of life  with interaction.
+
+
+
+### Marginal randomized direct and indirect effects
+
+The following function `true.marg.random` can be used to run the calculation for the marginal randomized natural direct (marginal MRDE) and indirect effects (marginal MRIE).
+
+```{r true.marg.random.function, echo=TRUE, eval=TRUE}
+true.marg.random <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # marginal distribution of M
+  M.S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^5))
+  colnames(M.S) <- list("male","parent_educ","L1","M","A","sum")
+  
+  for (n in 1:32) {
+    M.S[n,"sum"] <- (( b["b_M"] +                                                              
+                         b["b_male_M"] * M.S[n,"male"] + 
+                         b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                         b["b_L1_M"] * M.S[n,"L1"] +
+                         b["b_A_M"] * M.S[n,"A"])^( M.S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * M.S[n,"male"] + 
+                b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                b["b_L1_M"] * M.S[n,"L1"] +
+                b["b_A_M"] * M.S[n,"A"]) )^( 1 - M.S[n,"M"] )) 
+    }
+  
+  M0.A0.L0_00.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M0.A0.L0_01.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M0.A0.L0_10.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M0.A0.L0_11.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M0.A0.L0_00.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M0.A0.L0_01.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  M0.A0.L0_10.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M0.A0.L0_11.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  
+  M1.A0.L0_00.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M1.A0.L0_01.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M1.A0.L0_10.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M1.A0.L0_11.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M1.A0.L0_00.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M1.A0.L0_01.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  M1.A0.L0_10.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M1.A0.L0_11.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  
+  M0.A1.L0_00.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M0.A1.L0_01.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M0.A1.L0_10.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M0.A1.L0_11.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M0.A1.L0_00.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M0.A1.L0_01.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  M0.A1.L0_10.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M0.A1.L0_11.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  
+  M1.A1.L0_00.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M1.A1.L0_01.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M1.A1.L0_10.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+  M1.A1.L0_11.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+  M1.A1.L0_00.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M1.A1.L0_01.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  M1.A1.L0_10.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+  M1.A1.L0_11.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4), 
+             rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["b_Y"] +                                            # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=1             
+          M1.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M1.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M1.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( S[n,"M"] )) *
+      ((M0.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +                
+          M0.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M0.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M0.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(M.S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["b_Y"] +                                            # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(M.S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["b_Y"] +                                            # A=0
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 0 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(M.S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  mrNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  mrNIE.death <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+                      "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=1
+          M1.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M1.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M1.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( S[n,"M"] )) *
+      ((M0.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +                
+          M0.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M0.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M0.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(M.S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 +
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(M.S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 0 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+          (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(M.S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  mrNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  mrNIE.qol <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  return(list(mrNDE.death = mrNDE.death, mrNIE.death = mrNIE.death, 
+              mrNDE.qol = mrNDE.qol, mrNIE.qol = mrNIE.qol))
+}
+```
+
+```{r true.marg.random.calculation, echo=TRUE, eval=TRUE}
+true.marg.random.no.inter <- true.marg.random(interaction = 0)
+
+true.marg.random.with.inter <- true.marg.random(interaction = 1)
+```
+
+The marginal randomized direct effect $\text{MRDE}=\mathbb{E}\left(Y_{1,G_{0|L(0)}}\right) - \mathbb{E}\left(Y_{0,G_{0|L(0)}}\right)$ and the marginal randomized indirect effect $\text{MRIE}=\mathbb{E}\left(Y_{1,G_{1|L(0)}}\right) - \mathbb{E}\left(Y_{1,G_{0|L(0)}}\right)$ are respectively:
+
+- `r true.marg.random.no.inter["mrNDE.death"]` and `r true.marg.random.no.inter["mrNIE.death"]` for death  without interaction,
+- `r true.marg.random.with.inter["mrNDE.death"]` and `r true.marg.random.with.inter["mrNIE.death"]` for death  with interaction,
+- `r true.marg.random.no.inter["mrNDE.qol"]` and `r true.marg.random.no.inter["mrNIE.qol"]` for quality of life without interaction,
+- `r true.marg.random.with.inter["mrNDE.qol"]` and `r true.marg.random.with.inter["mrNIE.qol"]` for quality of life with interaction.
+
+
+
+### Conditional randomized direct and indirect effects
+
+The following function `true.cond.random` can be used to run the calculation for the conditional randomized natural direct (CRDE) and indirect effects (CRIE).
+
+```{r true.cond.random.function, echo=TRUE, eval=TRUE}
+true.cond.random <- function(interaction = NULL) {
+  b <- param.causal.model.1(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+                      "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["b_Y"] +                                           # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=1
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["b_Y"] +                                           # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["b_Y"] +                                           # A=0
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 0 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"]))
+    }
+  
+  crNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  crNIE.death <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+                      "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=1
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 0 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      ((b["p_L1"])^(S[n,"L1"])) *
+      ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  crNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  crNIE.qol <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  return(list(crNDE.death = crNDE.death, crNIE.death = crNIE.death, 
+              crNDE.qol = crNDE.qol, crNIE.qol = crNIE.qol))
+}
+```
+
+```{r true.cond.random.calculation, echo=TRUE, eval=TRUE}
+true.cond.random.no.inter <- true.cond.random(interaction = 0)
+
+true.cond.random.with.inter <- true.cond.random(interaction = 1)
+```
+
+The conditional randomized direct effect $\text{CRDE}=\mathbb{E}\left(Y_{1,\Gamma_{0\mid L(0),L(1)}}\right) - \mathbb{E}\left(Y_{0,\Gamma_{0\mid L(0),L(1)}}\right)$ and conditional randomized indirect effect $\text{CRIE}=\mathbb{E}\left(Y_{1,\Gamma_{1\mid L(0),L(1)}}\right) - \mathbb{E}\left(Y_{1,\Gamma_{0\mid L(0),L(1)}}\right)$ are respectively:
+
+- `r true.cond.random.no.inter["crNDE.death"]` and `r true.cond.random.no.inter["crNIE.death"]` for death  without interaction,
+- `r true.cond.random.with.inter["crNDE.death"]` and `r true.cond.random.with.inter["crNIE.death"]` for death  with interaction,
+- `r true.cond.random.no.inter["crNDE.qol"]` and `r true.cond.random.no.inter["crNIE.qol"]` for quality of life without interaction,
+- `r true.cond.random.with.inter["crNDE.qol"]` and `r true.cond.random.with.inter["crNIE.qol"]` for quality of life with interaction.
+
+
+Table: True values without time varying confounders
+
+| Effects                       | Without $A*M$ interaction                           | with $A*M$ interaction                         |
+|:----------------------------- |:---------------------------------------------------:|:----------------------------------------------:|
+|**Binary outcome**             |                                                     |                                                |
+|Average total effect (ATE)     | `r true.ATE1.no.inter["ATE.death"]`                 | `r true.ATE1.with.inter["ATE.death"]`          |
+|                               |                                                     |                                                |
+|Controlled direct effect (CDE) |                                                     |                                                |
+|- CDE, setting do(M=0)         | `r true.CDE1.no.inter["CDE.M0.death"]`              | `r true.CDE1.with.inter["CDE.M0.death"]`       |
+|- CDE, setting do(M=1)         | `r true.CDE1.no.inter["CDE.M1.death"]`              | `r true.CDE1.with.inter["CDE.M1.death"]`       |
+|                               |                                                     |                                                |
+|Pure NDE and Total NIE         |                                                     |                                                |
+|- PNDE                         | `r true.PNDE.TNIE.no.inter["PNDE.death"]`           | `r true.PNDE.TNIE.with.inter["PNDE.death"]`    |
+|- TNIE                         | `r true.PNDE.TNIE.no.inter["TNIE.death"]`           | `r true.PNDE.TNIE.with.inter["TNIE.death"]`    |
+|                               |                                                     |                                                |
+|Total NDE and Pure NIE         |                                                     |                                                |
+|- TNDE                         | `r true.TNDE.PNIE.no.inter["TNDE.death"]`           | `r true.TNDE.PNIE.with.inter["TNDE.death"]`    |
+|- PNIE                         | `r true.TNDE.PNIE.no.inter["PNIE.death"]`           | `r true.TNDE.PNIE.with.inter["PNIE.death"]`    |
+|                               |                                                     |                                                |
+|3-way decomposition            |                                                     |                                                |
+|- PDE                          | `r true.3way.no.inter["PDE.death"]`                 | `r true.3way.with.inter["PDE.death"]`          |
+|- PIE                          | `r true.3way.no.inter["PIE.death"]`                 | `r true.3way.with.inter["PIE.death"]`          |
+|- MI                           | `r myround( true.3way.no.inter["MI.death"], 3)`     | `r true.3way.with.inter["MI.death"]`           |
+|                               |                                                     |                                                |
+|4-way decomposition            |                                                     |                                                |
+|- CDE                          | `r true.4way.no.inter["CDE.death"]`                 | `r true.4way.with.inter["CDE.death"]`          |
+|- INTref                       | `r myround( true.4way.no.inter["INTref.death"], 3)` | `r true.4way.with.inter["INTref.death"]`       |
+|- INTmed                       | `r myround( true.4way.no.inter["INTmed.death"], 3)` | `r true.4way.with.inter["INTmed.death"]`       |
+|- PIE                          | `r true.4way.no.inter["PIE.death"]`                 | `r true.4way.with.inter["PIE.death"]`          |
+|                               |                                                     |                                                |
+|Marginal randomized            |                                                     |                                                |
+|- marginal rNDE                | `r true.marg.random.no.inter["mrNDE.death"]`        | `r true.marg.random.with.inter["mrNDE.death"]` |
+|- marginal rNIE                | `r true.marg.random.no.inter["mrNIE.death"]`        | `r true.marg.random.with.inter["mrNIE.death"]` |
+|                               |                                                     |                                                |
+|Conditional randomized         |                                                     |                                                |
+|- conditional rNDE             | `r true.cond.random.no.inter["crNDE.death"]`        | `r true.cond.random.with.inter["crNDE.death"]` |
+|- conditional rNIE             | `r true.cond.random.no.inter["crNIE.death"]`        | `r true.cond.random.with.inter["crNIE.death"]` |
+|                               |                                                     |                                                |
+|**Quantitative outcome**       |                                                     |                                                |
+|Average total effect (ATE)     | `r true.ATE1.no.inter["ATE.qol"]`                   | `r true.ATE1.with.inter["ATE.qol"]`            |
+|                               |                                                     |                                                |
+|Controlled direct effect (CDE) |                                                     |                                                |
+|- CDE, setting do(M=0)         | `r true.CDE1.no.inter["CDE.M0.qol"]`                | `r true.CDE1.with.inter["CDE.M0.qol"]`         |
+|- CDE, setting do(M=1)         | `r true.CDE1.no.inter["CDE.M1.qol"]`                | `r true.CDE1.with.inter["CDE.M1.qol"]`         |
+|                               |                                                     |                                                |
+|Pure NDE and Total NIE         |                                                     |                                                |
+|- PNDE                         | `r true.PNDE.TNIE.no.inter["PNDE.qol"]`             | `r true.PNDE.TNIE.with.inter["PNDE.qol"]`      |
+|- TNIE                         | `r true.PNDE.TNIE.no.inter["TNIE.qol"]`             | `r true.PNDE.TNIE.with.inter["TNIE.qol"]`      |
+|                               |                                                     |                                                |
+|Total NDE and Pure NIE         |                                                     |                                                |
+|- TNDE                         | `r true.TNDE.PNIE.no.inter["TNDE.qol"]`             | `r true.TNDE.PNIE.with.inter["TNDE.qol"]`      |
+|- PNIE                         | `r true.TNDE.PNIE.no.inter["PNIE.qol"]`             | `r true.TNDE.PNIE.with.inter["PNIE.qol"]`      |
+|                               |                                                     |                                                |
+|3-way decomposition            |                                                     |                                                |
+|- PDE                          | `r true.3way.no.inter["PDE.qol"]`                   | `r true.3way.with.inter["PDE.qol"]`            |
+|- PIE                          | `r true.3way.no.inter["PIE.qol"]`                   | `r true.3way.with.inter["PIE.qol"]`            |
+|- MI                           | `r true.3way.no.inter["MI.qol"]`                    | `r true.3way.with.inter["MI.qol"]`             |
+|                               |                                                     |                                                |
+|4-way decomposition            |                                                     |                                                |
+|- CDE                          | `r true.4way.no.inter["CDE.qol"]`                   | `r true.4way.with.inter["CDE.qol"]`            |
+|- INTref                       | `r myround( true.4way.no.inter["INTref.qol"], 3)`   | `r true.4way.with.inter["INTref.qol"]`         |
+|- INTmed                       | `r myround( true.4way.no.inter["INTmed.qol"], 3)`   | `r true.4way.with.inter["INTmed.qol"]`         |
+|- PIE                          | `r true.4way.no.inter["PIE.qol"]`                   | `r true.4way.with.inter["PIE.qol"]`            |
+|                               |                                                     |                                                |
+|Marginal randomized            |                                                     |                                                |
+|- marginal rNDE                | `r true.marg.random.no.inter["mrNDE.qol"]`          | `r true.marg.random.with.inter["mrNDE.qol"]`   |
+|- marginal rNIE                | `r true.marg.random.no.inter["mrNIE.qol"]`          | `r true.marg.random.with.inter["mrNIE.qol"]`   |
+|                               |                                                     |                                                |
+|Conditional randomized         |                                                     |                                                |
+|- conditional rNDE             | `r true.cond.random.no.inter["crNDE.qol"]`          | `r true.cond.random.with.inter["crNDE.qol"]`   |
+|- conditional rNIE             | `r true.cond.random.no.inter["crNIE.qol"]`          | `r true.cond.random.with.inter["crNIE.qol"]`   |
+
+
+
+
+## True causal quantities with mediator-ouctome confounder affected by the exposure
+
+### Average total effects (ATE)
+
+The following function `true.ATE.tv.conf` can be used to run the calculation for the average total effects (ATE).
+```{r true.ATE2.function, echo=TRUE, eval=TRUE}
+true.ATE.time.var.conf <- function(interaction = NULL) {
+  b <- param.causal.model.2(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  for (n in 1:16) {
+    S[n,"sum"] <- ( ( ( b["b_Y"] + 
+                      b["b_male_Y"] * S[n,"male"] + 
+                      b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                      b["b_A_Y"] * 1 + 
+                      b["b_L1_Y"] * S[n,"L1"] +
+                      b["b_M_Y"] * S[n,"M"] +
+                      b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+                    (( b["b_M"] + 
+                           b["b_male_M"] * S[n,"male"] + 
+                           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                           b["b_L1_M"] * S[n,"L1"] +
+                           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+                    (( 1 - (b["b_M"] + 
+                              b["b_male_M"] * S[n,"male"] + 
+                              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                              b["b_L1_M"] * S[n,"L1"] +
+                              b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) *
+                        (( b["b_L1"] +
+                             b["b_male_L1"] * S[n,"male"] +  
+                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+                        (( 1 - ( b["b_L1"] +
+                                   b["b_male_L1"] * S[n,"male"] +  
+                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) ) - 
+                    ( ( b["b_Y"] + 
+                          b["b_male_Y"] * S[n,"male"] + 
+                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_A_Y"] * 0 + 
+                          b["b_L1_Y"] * S[n,"L1"] +
+                          b["b_M_Y"] * S[n,"M"] +
+                          b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+                        (( b["b_M"] + 
+                             b["b_male_M"] * S[n,"male"] + 
+                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_L1_M"] * S[n,"L1"] +
+                             b["b_A_M"] * 0 )^( S[n,"M"] )) *
+                        (( 1 - (b["b_M"] + 
+                                  b["b_male_M"] * S[n,"male"] + 
+                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_L1_M"] * S[n,"L1"] +
+                                  b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) *
+                        (( b["b_L1"] +
+                             b["b_male_L1"] * S[n,"male"] +  
+                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+                        (( 1 - ( b["b_L1"] +
+                                   b["b_male_L1"] * S[n,"male"] +  
+                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) ) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  ATE.death <- sum(S[,"sum"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  for (n in 1:16) {
+    S[n,"sum"] <- ( ( ( b["mu_Y"] + 
+                          b["c_male_Y"] * S[n,"male"] + 
+                          b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                          b["c_A_Y"] * 1 +
+                          b["c_L1_Y"] * S[n,"L1"] +
+                          b["c_M_Y"] * S[n,"M"] + 
+                          b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+                        (( b["b_M"] + 
+                             b["b_male_M"] * S[n,"male"] + 
+                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_L1_M"] * S[n,"L1"] +
+                             b["b_A_M"] * 1 )^( S[n,"M"] )) *
+                        (( 1 - (b["b_M"] + 
+                                  b["b_male_M"] * S[n,"male"] + 
+                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_L1_M"] * S[n,"L1"] +
+                                  b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) *
+                        (( b["b_L1"] +
+                             b["b_male_L1"] * S[n,"male"] +  
+                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+                        (( 1 - ( b["b_L1"] +
+                                   b["b_male_L1"] * S[n,"male"] +  
+                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) ) - 
+                      ( ( b["mu_Y"] + 
+                            b["c_male_Y"] * S[n,"male"] + 
+                            b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                            b["c_A_Y"] * 0 +
+                            b["c_L1_Y"] * S[n,"L1"] +
+                            b["c_M_Y"] * S[n,"M"] + 
+                            b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+                          (( b["b_M"] + 
+                               b["b_male_M"] * S[n,"male"] + 
+                               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                               b["b_L1_M"] * S[n,"L1"] +
+                               b["b_A_M"] * 0 )^( S[n,"M"] )) *
+                          (( 1 - (b["b_M"] + 
+                                    b["b_male_M"] * S[n,"male"] + 
+                                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                    b["b_L1_M"] * S[n,"L1"] +
+                                    b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
+                        (( b["b_L1"] +
+                             b["b_male_L1"] * S[n,"male"] +  
+                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+                        (( 1 - ( b["b_L1"] +
+                                   b["b_male_L1"] * S[n,"male"] +  
+                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  ATE.qol <- sum(S[,"sum"])
+  
+  return(list(ATE.death = ATE.death, ATE.qol = ATE.qol))
+}
+```
+
+```{r true.ATE2.calculation, echo=TRUE, eval=TRUE}
+true.ATE2.no.inter <- true.ATE.time.var.conf(interaction = 0)
+
+true.ATE2.with.inter <- true.ATE.time.var.conf(interaction = 1)
+```
+
+
+The average total effects $\text{ATE} = \mathbb{E}(Y_1) - \mathbb{E}(Y_0)$ are: 
+
+- `r true.ATE2.no.inter["ATE.death"]` for death and `r true.ATE2.no.inter["ATE.qol"]` for quality of life without interaction
+- `r true.ATE2.with.inter["ATE.death"]` for death and `r true.ATE2.with.inter["ATE.qol"]` for quality of life with interaction
+
+
+### Controlled direct effects (CDE)
+
+The following function `true.CDE.time.var` can be used to run the calculation for controlled direct effects (CDE).
+
+```{r true.CDE2.function, echo=TRUE, eval=TRUE}
+true.CDE.time.var <- function(interaction = NULL) {
+  b <- param.causal.model.2(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  # we estimate both CDE, fixing do(M) = 0 et do(M) = 1 and using the 
+  # corresponding lines in the S matrix
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3))
+  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  for (n in 1:16) {
+    S[n,"sum"] <- ( (( b["b_Y"] + 
+                        b["b_male_Y"] * S[n,"male"] + 
+                        b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["b_A_Y"] * 1 + 
+                        b["b_L1_Y"] * S[n,"L1"] +
+                        b["b_M_Y"] * S[n,"M"] +
+                        b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+                      (( b["b_L1"] +
+                           b["b_male_L1"] * S[n,"male"] +  
+                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+                      (( 1 - ( b["b_L1"] +
+                                 b["b_male_L1"] * S[n,"male"] +  
+                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) ) - 
+                      (( b["b_Y"] + 
+                          b["b_male_Y"] * S[n,"male"] + 
+                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_A_Y"] * 0 + 
+                          b["b_L1_Y"] * S[n,"L1"] +
+                          b["b_M_Y"] * S[n,"M"] +
+                          b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+                      (( b["b_L1"] +
+                           b["b_male_L1"] * S[n,"male"] +  
+                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+                      (( 1 - ( b["b_L1"] +
+                                 b["b_male_L1"] * S[n,"male"] +  
+                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) ) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  CDE.M0.death <- sum(S[1:8,"sum"])
+  CDE.M1.death <- sum(S[9:16,"sum"])
+  
+  # quantitative outcome (QoL)
+  # we estimate both CDE, fixing do(M) = 0 et do(M) = 1 and using the 
+  # corresponding lines in the S matrix
+  for (n in 1:16) {
+    S[n,"sum"] <- ( (( b["mu_Y"] + 
+                        b["c_male_Y"] * S[n,"male"] + 
+                        b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["c_A_Y"] * 1 + 
+                        b["c_L1_Y"] * S[n,"L1"] +
+                        b["c_M_Y"] * S[n,"M"] +
+                        b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+                      (( b["b_L1"] +
+                           b["b_male_L1"] * S[n,"male"] +  
+                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+                      (( 1 - ( b["b_L1"] +
+                                 b["b_male_L1"] * S[n,"male"] +  
+                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] ))) - 
+                      (( b["mu_Y"] + 
+                          b["c_male_Y"] * S[n,"male"] + 
+                          b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["c_A_Y"] * 0 + 
+                          b["c_L1_Y"] * S[n,"L1"] +
+                          b["c_M_Y"] * S[n,"M"] +
+                          b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+                      (( b["b_L1"] +
+                           b["b_male_L1"] * S[n,"male"] +  
+                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+                      (( 1 - ( b["b_L1"] +
+                                 b["b_male_L1"] * S[n,"male"] +  
+                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) ) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  CDE.M0.qol <- sum(S[1:8,"sum"])
+  CDE.M1.qol <- sum(S[9:16,"sum"])
+  
+  return(list(CDE.M0.death = CDE.M0.death, CDE.M1.death = CDE.M1.death, 
+              CDE.M0.qol = CDE.M0.qol, CDE.M1.qol = CDE.M1.qol))
+}
+```
+
+```{r true.CDE2.calculation, echo=TRUE, eval=TRUE}
+true.CDE2.no.inter <- true.CDE.time.var(interaction = 0)
+
+true.CDE2.with.inter <- true.CDE.time.var(interaction = 1)
+```
+
+Setting $do(M=0)$, the controlled direct effects $\text{CDE}_{M=0} = \mathbb{E}\left(Y_{1,0} \right) - \mathbb{E}\left(Y_{0,0} \right)$ are: 
+
+- `r true.CDE2.no.inter["CDE.M0.death"]` for death and `r true.CDE2.no.inter["CDE.M0.qol"]` for quality of life without interaction
+- `r true.CDE2.with.inter["CDE.M0.death"]` for death and `r true.CDE2.with.inter["CDE.M0.qol"]` for quality of life with interaction
+
+Setting $do(M=1)$, the controlled direct effects $\text{CDE}_{M=1} = \mathbb{E}\left(Y_{1,1} \right) - \mathbb{E}\left(Y_{0,1} \right)$ are:
+
+- `r true.CDE2.no.inter["CDE.M1.death"]` for death and `r true.CDE2.no.inter["CDE.M1.qol"]` for quality of life without interaction
+- `r true.CDE2.with.inter["CDE.M1.death"]` for death and `r true.CDE2.with.inter["CDE.M1.qol"]` for quality of life with interaction
+
+
+### Marginal randomized direct and indirect effects
+
+The following function `true.marg.random.time.var` can be used to run the calculation for the marginal randomized natural direct (marginal MRDE) and indirect effects (marginal MRIE).
+
+```{r true.marg.random2.function, echo=TRUE, eval=TRUE}
+true.marg.random.time.var <- function(interaction = NULL) {
+  b <- param.causal.model.2(A.M.interaction = interaction)
+  
+  # marginal distribution of M
+  M.S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^5))
+  colnames(M.S) <- list("male","parent_educ","L1","M","A","sum")
+  
+  for (n in 1:32) {
+    M.S[n,"sum"] <- (( b["b_M"] +                                                              
+                         b["b_male_M"] * M.S[n,"male"] + 
+                         b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                         b["b_L1_M"] * M.S[n,"L1"] +
+                         b["b_A_M"] * M.S[n,"A"])^( M.S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * M.S[n,"male"] + 
+                b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                b["b_L1_M"] * M.S[n,"L1"] +
+                b["b_A_M"] * M.S[n,"A"]) )^( 1 - M.S[n,"M"] )) *
+      (( b["b_L1"] +                                                           
+           b["b_male_L1"] * M.S[n,"male"] +  
+           b["b_parent_L1"] * M.S[n,"parent_educ"] +
+           b["b_A_L1"] * M.S[n,"A"])^( M.S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * M.S[n,"male"] +  
+                 b["b_parent_L1"] * M.S[n,"parent_educ"] +
+                 b["b_A_L1"] * M.S[n,"A"]))^( 1 - M.S[n,"L1"] )) 
+    }
+  
+  M0.A0.L00 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M0.A0.L01 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  M0.A0.L10 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M0.A0.L11 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  
+  M1.A0.L00 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M1.A0.L01 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  M1.A0.L10 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M1.A0.L11 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+
+  M0.A1.L00 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M0.A1.L01 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  M0.A1.L10 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M0.A1.L11 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  
+  M1.A1.L00 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M1.A1.L01 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  M1.A1.L10 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==0,"sum"])
+  M1.A1.L11 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
+                         M.S[,"parent_educ"]==1,"sum"])
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", 
+                      "sum.psi10", "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["b_Y"] +                                           # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+          ((M1.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                # A'=1
+              M1.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+              M1.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+              M1.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
+      ((M0.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
+          M0.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M0.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M0.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["b_Y"] +                                           # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["b_Y"] +                                           # A=0
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 0 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=0
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  mrNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  mrNIE.death <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+                      "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=1
+          M1.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M1.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M1.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
+      ((M0.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
+          M0.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M0.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M0.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 +
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 0 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=0
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  mrNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  mrNIE.qol <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  return(list(mrNDE.death = mrNDE.death, mrNIE.death = mrNIE.death, 
+              mrNDE.qol = mrNDE.qol, mrNIE.qol = mrNIE.qol))
+}
+```
+
+```{r true.marg.random2.calculation, echo=TRUE, eval=TRUE}
+true.marg.random2.no.inter <- true.marg.random.time.var(interaction = 0)
+
+true.marg.random2.with.inter <- true.marg.random.time.var(interaction = 1)
+```
+
+The marginal randomized direct effect $\text{MRDE}=\mathbb{E}\left(Y_{1,G_{0|L(0)}}\right) - \mathbb{E}\left(Y_{0,G_{0|L(0)}}\right)$ and the marginal randomized indirect effect $\text{MRIE}=\mathbb{E}\left(Y_{1,G_{1|L(0)}}\right) - \mathbb{E}\left(Y_{1,G_{0|L(0)}}\right)$ are respectively:
+
+- `r true.marg.random2.no.inter["mrNDE.death"]` and `r true.marg.random2.no.inter["mrNIE.death"]` for death  without interaction
+- `r true.marg.random2.with.inter["mrNDE.death"]` and `r true.marg.random2.with.inter["mrNIE.death"]` for death  with interaction
+- `r true.marg.random2.no.inter["mrNDE.qol"]` and `r true.marg.random2.no.inter["mrNIE.qol"]` for quality of life without interaction
+- `r true.marg.random2.with.inter["mrNDE.qol"]` and `r true.marg.random2.with.inter["mrNIE.qol"]` for quality of life with interaction
+
+
+
+### Conditional randomized direct and indirect effects
+
+The following function `true.cond.random.time.var` can be used to run the calculation for the conditional randomized natural direct (CRDE) and the conditional randomized indirect effects (CRIE).
+
+```{r true.cond.random2.function, echo=TRUE, eval=TRUE}
+true.cond.random.time.var <- function(interaction = NULL) {
+  b <- param.causal.model.2(A.M.interaction = interaction)
+  
+  # binary outcome (death)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+                      "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["b_Y"] +                                           # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=1
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["b_Y"] +                                           # A=1
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 1 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["b_Y"] +                                           # A=0
+                             b["b_male_Y"] * S[n,"male"] + 
+                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_A_Y"] * 0 + 
+                             b["b_L1_Y"] * S[n,"L1"] +
+                             b["b_M_Y"] * S[n,"M"] +
+                             b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=0
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"]))
+    }
+  
+  crNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  crNIE.death <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  # quantitative outcome (QoL)
+  S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
+             rep(NA,n=2^4), rep(NA,n=2^4))
+  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+                      "sum.psi00")
+  for (n in 1:16) {
+    S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=1
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 1 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 1 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=1
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 1)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    
+    S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
+                             b["c_male_Y"] * S[n,"male"] + 
+                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_A_Y"] * 0 + 
+                             b["c_L1_Y"] * S[n,"L1"] +
+                             b["c_M_Y"] * S[n,"M"] +
+                             b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
+      (( b["b_M"] +                                                             # A'=0
+           b["b_male_M"] * S[n,"male"] + 
+           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_L1_M"] * S[n,"L1"] +
+           b["b_A_M"] * 0 )^( S[n,"M"] )) *
+      (( 1 - (b["b_M"] + 
+                b["b_male_M"] * S[n,"male"] + 
+                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_L1_M"] * S[n,"L1"] +
+                b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
+      (( b["b_L1"] +                                                            # A=0
+           b["b_male_L1"] * S[n,"male"] +  
+           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_A_L1"] * 0)^( S[n,"L1"] )) *
+      (( 1 - ( b["b_L1"] +
+                 b["b_male_L1"] * S[n,"male"] +  
+                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
+      ((b["p_L0_male"])^(S[n,"male"])) * 
+      ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
+      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
+      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    }
+  
+  crNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
+  crNIE.qol <- sum(S[,"sum.psi11"]) - sum(S[,"sum.psi10"])
+  
+  return(list(crNDE.death = crNDE.death, crNIE.death = crNIE.death, 
+              crNDE.qol = crNDE.qol, crNIE.qol = crNIE.qol))
+}
+```
+
+```{r true.cond.random2.calculation, echo=TRUE, eval=TRUE}
+true.cond.random2.no.inter <- true.cond.random.time.var(interaction = 0)
+
+true.cond.random2.with.inter <- true.cond.random.time.var(interaction = 1)
+```
+
+The conditional randomized direct effect $\text{CRDE}=\mathbb{E}\left(Y_{1,\Gamma_{0\mid L(0),L(1)}}\right) - \mathbb{E}\left(Y_{0,\Gamma_{0\mid L(0),L(1)}}\right)$ and conditional randomized indirect effect $\text{CRIE}=\mathbb{E}\left(Y_{1,\Gamma_{1\mid L(0),L(1)}}\right) - \mathbb{E}\left(Y_{1,\Gamma_{0\mid L(0),L(1)}}\right)$ are respectively:
+
+- `r true.cond.random2.no.inter["crNDE.death"]` and `r true.cond.random2.no.inter["crNIE.death"]` for death  without interaction,
+- `r true.cond.random2.with.inter["crNDE.death"]` and `r true.cond.random2.with.inter["crNIE.death"]` for death  with interaction,
+- `r true.cond.random2.no.inter["crNDE.qol"]` and `r true.cond.random2.no.inter["crNIE.qol"]` for quality of life without interaction,
+- `r true.cond.random2.with.inter["crNDE.qol"]` and `r true.cond.random2.with.inter["crNIE.qol"]` for quality of life with interaction.
+
+
+
+
+Table: True values with time varying confounders
+
+| Effects                       | Without $A*M$ interaction                           | with $A*M$ interaction                          |
+|:----------------------------- |:---------------------------------------------------:|:-----------------------------------------------:|
+|**Binary outcome**             |                                                     |                                                 |
+|Average total effect (ATE)     | `r true.ATE2.no.inter["ATE.death"]`                 | `r true.ATE2.with.inter["ATE.death"]`           |
+|                               |                                                     |                                                 |
+|Controlled direct effect (CDE) |                                                     |                                                 |
+|- CDE, setting do(M=0)         | `r true.CDE2.no.inter["CDE.M0.death"]`              | `r true.CDE2.with.inter["CDE.M0.death"]`        |
+|- CDE, setting do(M=1)         | `r true.CDE2.no.inter["CDE.M1.death"]`              | `r true.CDE2.with.inter["CDE.M1.death"]`        |
+|                               |                                                     |                                                 |
+|Marginal randomized            |                                                     |                                                 |
+|- marginal rNDE                | `r true.marg.random2.no.inter["mrNDE.death"]`       | `r true.marg.random2.with.inter["mrNDE.death"]` |
+|- marginal rNIE                | `r true.marg.random2.no.inter["mrNIE.death"]`       | `r true.marg.random2.with.inter["mrNIE.death"]` |
+|                               |                                                     |                                                 |
+|Conditional randomized         |                                                     |                                                 |
+|- conditional rNDE             | `r true.cond.random2.no.inter["crNDE.death"]`       | `r true.cond.random2.with.inter["crNDE.death"]` |
+|- conditional rNIE             | `r true.cond.random2.no.inter["crNIE.death"]`       | `r true.cond.random2.with.inter["crNIE.death"]` |
+|                               |                                                     |                                                 |
+|**Quantitative outcome**       |                                                     |                                                 |
+|Average total effect (ATE)     | `r true.ATE2.no.inter["ATE.qol"]`                   | `r true.ATE2.with.inter["ATE.qol"]`             |
+|                               |                                                     |                                                 |
+|Controlled direct effect (CDE) |                                                     |                                                 |
+|- CDE, setting do(M=0)         | `r true.CDE2.no.inter["CDE.M0.qol"]`                | `r true.CDE2.with.inter["CDE.M0.qol"]`          |
+|- CDE, setting do(M=1)         | `r true.CDE2.no.inter["CDE.M1.qol"]`                | `r true.CDE2.with.inter["CDE.M1.qol"]`          |
+|                               |                                                     |                                                 |
+|Marginal randomized            |                                                     |                                                 |
+|- marginal rNDE                | `r true.marg.random2.no.inter["mrNDE.qol"]`         | `r true.marg.random2.with.inter["mrNDE.qol"]`   |
+|- marginal rNIE                | `r true.marg.random2.no.inter["mrNIE.qol"]`         | `r true.marg.random2.with.inter["mrNIE.qol"]`   |
+|                               |                                                     |                                                 |
+|Conditional randomized         |                                                     |                                                 |
+|- conditional rNDE             | `r true.cond.random2.no.inter["crNDE.qol"]`         | `r true.cond.random2.with.inter["crNDE.qol"]`   |
+|- conditional rNIE             | `r true.cond.random2.no.inter["crNIE.qol"]`         | `r true.cond.random2.with.inter["crNIE.qol"]`   |

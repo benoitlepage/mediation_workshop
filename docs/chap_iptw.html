@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Mediation Workshop</title>
+  <title>Chapter 7 Inverse Probability of Treatment Weighting (IPTW) | Mediation Workshop</title>
   <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
   <meta name="generator" content="bookdown 0.32 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Mediation Workshop" />
+  <meta property="og:title" content="Chapter 7 Inverse Probability of Treatment Weighting (IPTW) | Mediation Workshop" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
   <meta name="github-repo" content="mediation_workshop" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Mediation Workshop" />
+  <meta name="twitter:title" content="Chapter 7 Inverse Probability of Treatment Weighting (IPTW) | Mediation Workshop" />
   
   <meta name="twitter:description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-
-<link rel="next" href="software.html"/>
+<link rel="prev" href="chap_gcomp.html"/>
+<link rel="next" href="chap_tmle.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -248,22 +248,87 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">Mediation Workshop</h1>
-<p class="author"><em>Benoît Lepage</em></p>
-<p class="date"><em>2023-02-15</em></p>
+<div id="chap_iptw" class="section level1 hasAnchor" number="7">
+<h1><span class="header-section-number">Chapter 7</span> Inverse Probability of Treatment Weighting (IPTW)<a href="chap_iptw.html#chap_iptw" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="estimation-of-the-average-total-effect" class="section level2 hasAnchor" number="7.1">
+<h2><span class="header-section-number">7.1</span> Estimation of the Average total effect<a href="chap_iptw.html#estimation-of-the-average-total-effect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="iptw-for-the-ate" class="section level3 hasAnchor" number="7.1.1">
+<h3><span class="header-section-number">7.1.1</span> IPTW for the ATE<a href="chap_iptw.html#iptw-for-the-ate" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>If the average total effect (ATE) is identifiable, <span class="math inline">\(\Psi_{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})\)</span> can be expressed using Inverse probability of treatment weighting (IPTW), denoting <span class="math inline">\(\mathbb{P}(A=a \mid L(0)) = g(A=a \mid L(0))\)</span>:
+<span class="math display">\[\begin{equation}
+\Psi_{ATE} = \mathbb{E}\left( \frac{\mathbb{I}(A=1)}{g(A=1 \mid L(0))} Y \right) - \mathbb{E}\left( \frac{\mathbb{I}(A=0)}{g(A=0 \mid L(0))} Y \right)
+\end{equation}\]</span></p>
+<p>The following steps describe the implementation of the IPTW estimator</p>
+<ol style="list-style-type: decimal">
+<li><p>Estimate the treatment mechanism <span class="math inline">\(g(A=1 \mid L(0))\)</span></p></li>
+<li><p>Predict each individual’s probability of being exposed to her own exposure</p></li>
+<li><p>Apply weights corresponding to the inverse of the predicted probability <span class="math inline">\(w_i = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\)</span></p></li>
+<li><p>Use the empirical mean of the weighted outcome <span class="math inline">\(Y\)</span>: <span class="math inline">\(\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A_i=a \mid L(0)_i)} Y_i\)</span></p></li>
+</ol>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="chap_iptw.html#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Estimate g</span></span>
+<span id="cb23-2"><a href="chap_iptw.html#cb23-2" aria-hidden="true" tabindex="-1"></a>g.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
+<span id="cb23-3"><a href="chap_iptw.html#cb23-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb23-4"><a href="chap_iptw.html#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="chap_iptw.html#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb23-6"><a href="chap_iptw.html#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
+<span id="cb23-7"><a href="chap_iptw.html#cb23-7" aria-hidden="true" tabindex="-1"></a>pred.g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-8"><a href="chap_iptw.html#cb23-8" aria-hidden="true" tabindex="-1"></a>pred.g0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.L</span>
+<span id="cb23-9"><a href="chap_iptw.html#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment A_i=a is :</span></span>
+<span id="cb23-10"><a href="chap_iptw.html#cb23-10" aria-hidden="true" tabindex="-1"></a>gA.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
+<span id="cb23-11"><a href="chap_iptw.html#cb23-11" aria-hidden="true" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.L[df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb23-12"><a href="chap_iptw.html#cb23-12" aria-hidden="true" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.L[df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb23-13"><a href="chap_iptw.html#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-14"><a href="chap_iptw.html#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
+<span id="cb23-15"><a href="chap_iptw.html#cb23-15" aria-hidden="true" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gA.L</span>
+<span id="cb23-16"><a href="chap_iptw.html#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="chap_iptw.html#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Use the empirical mean of the weighted outcome</span></span>
+<span id="cb23-18"><a href="chap_iptw.html#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co"># point estimates:</span></span>
+<span id="cb23-19"><a href="chap_iptw.html#cb23-19" aria-hidden="true" tabindex="-1"></a>IPTW.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
+<span id="cb23-20"><a href="chap_iptw.html#cb23-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death)</span>
+<span id="cb23-21"><a href="chap_iptw.html#cb23-21" aria-hidden="true" tabindex="-1"></a>IPTW.death</span>
+<span id="cb23-22"><a href="chap_iptw.html#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] 0.08224947</span></span>
+<span id="cb23-23"><a href="chap_iptw.html#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="chap_iptw.html#cb23-24" aria-hidden="true" tabindex="-1"></a>IPTW.qol <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
+<span id="cb23-25"><a href="chap_iptw.html#cb23-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol)</span>
+<span id="cb23-26"><a href="chap_iptw.html#cb23-26" aria-hidden="true" tabindex="-1"></a>IPTW.qol</span>
+<span id="cb23-27"><a href="chap_iptw.html#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] -8.436797</span></span></code></pre></div>
+<p>The ATE estimates using IPTW for death probability and mean quality of life are respectively +8.2% and -8.44.</p>
 </div>
-<div id="introduction" class="section level1 hasAnchor" number="1">
-<h1><span class="header-section-number">Chapter 1</span> Introduction<a href="index.html#introduction" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>The objective of this document is to provide practical examples for the Expanse report <em>“Mediation Analysis: a Starting Guide for Epidemiologists”</em> with R scripts corresponding to the different estimation methods presented in the report.</p>
+<div id="stabilized-iptw-for-the-ate" class="section level3 hasAnchor" number="7.1.2">
+<h3><span class="header-section-number">7.1.2</span> Stabilized IPTW for the ATE<a href="chap_iptw.html#stabilized-iptw-for-the-ate" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>If the average total effect (ATE) is identifiable, <span class="math inline">\(\Psi_{ATE}\)</span> can be estimated using a stabilized IPTW estimator:
+<span class="math display">\[\begin{equation}
+\hat{\mathbb{E}}(Y_1) - \hat{\mathbb{E}}(Y_0) =  \frac{\frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=1)\hat{g}^*(A_i=1)}{\hat{g}(A_i=1 \mid L(0)_i)} Y_i}{ \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=1)\hat{g}^*(A_i=1)}{\hat{g}(A_i=1 \mid L(0)_i)}} - \frac{\frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=0)\hat{g}^*(A_i=0)}{\hat{g}(A_i=0 \mid L(0)_i)} Y_i}{ \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=0)\hat{g}^*(A_i=0)}{\hat{g}(A_i=0 \mid L(0)_i)}}
+\end{equation}\]</span>
+The estimation algorithm is the same as for IPTW, but taking into account any non-null function of <span class="math inline">\(A\)</span> (<span class="math inline">\(g^*(A_i=a)\)</span>) in the denominator of the weight in step 3, and applying the stabilized estimator in step 4.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="chap_iptw.html#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. For example, applying g^*(A) = 1</span></span>
+<span id="cb24-2"><a href="chap_iptw.html#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Applying the stabilized estimator</span></span>
+<span id="cb24-3"><a href="chap_iptw.html#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># point estimates:</span></span>
+<span id="cb24-4"><a href="chap_iptw.html#cb24-4" aria-hidden="true" tabindex="-1"></a>s.IPTW.death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
+<span id="cb24-5"><a href="chap_iptw.html#cb24-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>))) <span class="sc">-</span></span>
+<span id="cb24-6"><a href="chap_iptw.html#cb24-6" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
+<span id="cb24-7"><a href="chap_iptw.html#cb24-7" aria-hidden="true" tabindex="-1"></a>     <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>)))</span>
+<span id="cb24-8"><a href="chap_iptw.html#cb24-8" aria-hidden="true" tabindex="-1"></a>s.IPTW.death</span>
+<span id="cb24-9"><a href="chap_iptw.html#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] 0.08294185</span></span>
+<span id="cb24-10"><a href="chap_iptw.html#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="chap_iptw.html#cb24-11" aria-hidden="true" tabindex="-1"></a>s.IPTW.qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span></span>
+<span id="cb24-12"><a href="chap_iptw.html#cb24-12" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>))) <span class="sc">-</span></span>
+<span id="cb24-13"><a href="chap_iptw.html#cb24-13" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span></span>
+<span id="cb24-14"><a href="chap_iptw.html#cb24-14" aria-hidden="true" tabindex="-1"></a>     <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>)))</span>
+<span id="cb24-15"><a href="chap_iptw.html#cb24-15" aria-hidden="true" tabindex="-1"></a>s.IPTW.qol</span>
+<span id="cb24-16"><a href="chap_iptw.html#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] -8.291992</span></span></code></pre></div>
+<p>The ATE estimates using stabilized IPTW for death probability and mean quality of life are respectively +8.3% and -8.29.</p>
+
+</div>
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-
-<a href="software.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="chap_gcomp.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="chap_tmle.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -294,7 +359,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/benoitlepage/mediation_workshop/index.Rmd",
+"link": "https://github.com/benoitlepage/mediation_workshop/04-IPTW.Rmd",
 "text": "Edit"
 },
 "history": {
