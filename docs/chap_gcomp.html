@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-02-15" />
+<meta name="date" content="2023-02-17" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -341,16 +341,46 @@ div.csl-indent {
 <div id="estimation-of-controlled-direct-effects-cde" class="section level2 hasAnchor" number="6.2">
 <h2><span class="header-section-number">6.2</span> Estimation of Controlled Direct Effects (CDE)<a href="chap_gcomp.html#estimation-of-controlled-direct-effects-cde" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The controlled direct effect <span class="math inline">\(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span> is the difference between the mean outcome had the whole population been exposed to ACE (setting <span class="math inline">\(A=1\)</span>), compared to the mean outcome had the whole population been unexposed (setting <span class="math inline">\(A=0\)</span>), while keeping the mediator equal to a constant given value (<span class="math inline">\(M=m\)</span>) in both scenarios.</p>
-<p>The g-formula of the components of a CDE (<span class="math inline">\(\mathbb{E}(Y_{A=a^\prime,M=m})\)</span>) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:</p>
+<p>The g-formula for a CDE (<span class="math inline">\(\mathbb{E}(Y_{A=a^\prime,M=m})\)</span>) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:</p>
 <p><span class="math inline">\(\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\right( L(1)=l(1) | a^\prime,l(0) \left) \right] \times P\left( L(0)=l(0) \right)\)</span></p>
-<p>Several g-computation procedures have been described to estimate CDE:</p>
+<p>In our simple example with a binary exposure <span class="math inline">\(A\)</span>, a binary mediator <span class="math inline">\(M\)</span> and a binary intermediate confounder <span class="math inline">\(L(1)\)</span>, it is still possible to apply the substitution approach (corresponding to a non-parametric g-computation estimation) by estimating the following components of the g-formula:</p>
 <ul>
-<li>parametric g-computation, using Monte Carlo simulations</li>
+<li><span class="math inline">\(\overline{Q}_Y(A,L(1),M)=\mathbb{E}\left(Y \mid L(0), A,L(1), M \right)\)</span>,</li>
+<li>and <span class="math inline">\(\overline{Q}_{L(1)}(A)=P\left(L(1)=1) \mid A, l(0)\right)\)</span></li>
+</ul>
+<p>We can then generate predicted outcomes from these 3 models for each subject in the data set, and obtain a <em>non-parametric maximum likelihood estimator (NPMLE)</em> of the CDE using the empirical mean:
+<span class="math display">\[\scriptsize
+\begin{array}{r l}
+\Psi^{\text{CDE}_m}_{\text{NPMLE}} = \frac{1}{n}\sum &amp; \left[\hat{\overline{Q}}_Y(A=1,L(1)=1,M=m) \times \hat{\overline{Q}}_{L(1)}(A=1) + \hat{\overline{Q}}_Y(A=1,L(1)=0,M=m) \times (1 - \hat{\overline{Q}}_{L(1)}(A=1))\right]\\
+  &amp;  - \left[\hat{\overline{Q}}_Y(A=0,L(1)=1,M=m) \times \hat{\overline{Q}}_{L(1)}(A=0) + \hat{\overline{Q}}_Y(A=0,L(1)=0,M=m) \times (1 - \hat{\overline{Q}}_{L(1)}(A=0))\right]
+\end{array}\]</span></p>
+<p>However NPMLE is tedious with high-dimensional intermediate confounders <span class="math inline">\(L(1)\)</span> or if mediators is repeated over time. In that case, parametric g-computation using a Monte Carlo algorithm, or g-computation by iterative conditional expectation are easier to apply.</p>
+<p>Below, we describe three g-computation procedures for the estimation of a CDE:</p>
+<ul>
+<li>parametric g-computation, using Monte Carlo simulation</li>
 <li>g-computation by iterative conditional expectation</li>
 <li>sequential g-estimator</li>
 </ul>
 <div id="parametric-g-computation" class="section level3 hasAnchor" number="6.2.1">
 <h3><span class="header-section-number">6.2.1</span> Parametric g-computation<a href="chap_gcomp.html#parametric-g-computation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Parametric g-computation by Monte Carlo simulation have been described by Robins <span class="citation">(<a href="#ref-robins1986" role="doc-biblioref">Robins 1986</a>)</span>, Taubman <em>et al.</em> <span class="citation">(<a href="#ref-taubman2009" role="doc-biblioref">Taubman et al. 2009</a>)</span>, or Daniel <em>et al.</em> <span class="citation">(<a href="#ref-daniel2013" role="doc-biblioref">Daniel et al. 2013</a>)</span>.</p>
+<ol style="list-style-type: decimal">
+<li><p>Fit a parametric model to estimate the density of the intermediate confounder <span class="math inline">\(L(1)\)</span> conditional on its parents. If <span class="math inline">\(L(1)\)</span> is a set of several variables, it is necessary to fit a model for each variable conditional on its parents.
+<span class="math display">\[\begin{equation}
+  Q_{L(1)}(A) = P(L(1)=1 \mid L(0),A)
+\end{equation}\]</span></p></li>
+<li><p>Fit a model of the outcome <span class="math inline">\(Y\)</span> conditional on its parents:
+<span class="math display">\[\begin{equation}
+  \overline{Q}_Y(A,L(1),M) = \mathbb{E}\left(Y \mid L(0),A,L(1),M \right)
+\end{equation}\]</span></p></li>
+<li><p>Simulate individual values of <span class="math inline">\(L(1)_a\)</span> using the estimated density <span class="math inline">\(\hat{Q}_{L(1)}(A=a)\)</span> under the counterfactual scenarios setting <span class="math inline">\(A=0\)</span> or <span class="math inline">\(A=1\)</span></p></li>
+<li><p>Estimate mean values of the outcome under the counterfactual scenarios setting <span class="math inline">\(A=0\)</span> (or <span class="math inline">\(A=1\)</span>), <span class="math inline">\(L(1)=l(1)_{A=0}\)</span> (or <span class="math inline">\(L(1)=l(1)_{A=1}\)</span>) and <span class="math inline">\(M=m\)</span>, using <span class="math inline">\(\hat{\overline{Q}}_Y(A=a,L(1)=l(1)_a,M=m)\)</span></p></li>
+<li><p>Estimate the controlled direct effect <span class="math inline">\(\Psi_{\text{CDE}_m}\)</span> by the sample mean:
+<span class="math display">\[\begin{equation}
+  \small \hat{\Psi}^{\text{CDE}_m}_{\text{param.gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}_Y(A=1,L(1)=l(1)_{A=1},M=m)_i - \hat{\overline{Q}}_Y(A=0,L(1)=l(1)_{A=0},M=m)_i \right]
+\end{equation}\]</span></p></li>
+</ol>
+<p>For continuous outcomes, <span class="math inline">\(\overline{Q}_Y(A,L(1),M)\)</span> functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="chap_gcomp.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Fit parametric models to estimate the density of intermediate confounders, </span></span>
 <span id="cb20-2"><a href="chap_gcomp.html#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">#    conditional on the parents of the intermediate confounders</span></span>
 <span id="cb20-3"><a href="chap_gcomp.html#cb20-3" aria-hidden="true" tabindex="-1"></a>L1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(L1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace, </span>
@@ -364,7 +394,7 @@ div.csl-indent {
 <span id="cb20-11"><a href="chap_gcomp.html#cb20-11" aria-hidden="true" tabindex="-1"></a>                              M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking, </span>
 <span id="cb20-12"><a href="chap_gcomp.html#cb20-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb20-13"><a href="chap_gcomp.html#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-14"><a href="chap_gcomp.html#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Simulate L1 values under the counterfactual scenarios setting A0=0 or A0=1</span></span>
+<span id="cb20-14"><a href="chap_gcomp.html#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1</span></span>
 <span id="cb20-15"><a href="chap_gcomp.html#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
 <span id="cb20-16"><a href="chap_gcomp.html#cb20-16" aria-hidden="true" tabindex="-1"></a>data.A0  <span class="ot">&lt;-</span> data.A1 <span class="ot">&lt;-</span> df2_int</span>
 <span id="cb20-17"><a href="chap_gcomp.html#cb20-17" aria-hidden="true" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
@@ -426,11 +456,11 @@ div.csl-indent {
 </div>
 <div id="g-computation-by-iterative-conditional-expectation" class="section level3 hasAnchor" number="6.2.2">
 <h3><span class="header-section-number">6.2.2</span> G-computation by iterative conditional expectation<a href="chap_gcomp.html#g-computation-by-iterative-conditional-expectation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component <span class="math inline">\(\mathbb{E}(Y_{A=a^\prime,M=m})\)</span> used in the definition of CDE <span class="math inline">\(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span>.</p>
+<p>The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component <span class="math inline">\(\mathbb{E}(Y_{A=a^\prime,M=m})\)</span> used in the definition of CDE <span class="math inline">\(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span>. Interestingly, there is no need to estimate or simulate <span class="math inline">\(L(1)\)</span> density with this method.</p>
 <ol style="list-style-type: decimal">
-<li><p>Fit a logistic or a linear regression of the final outcome, conditional on the exposure <span class="math inline">\(A\)</span>, the mediator <span class="math inline">\(M\)</span> and all the parents of <span class="math inline">\(Y\)</span> preceeding <span class="math inline">\(M\)</span>, to estimate <span class="math inline">\(\overline{Q}_{L(2)} = \mathbb{E}(Y \mid L(0),A,L(1),M)\)</span>;</p></li>
-<li><p>Use this estimate to predict an outcome for each subject <span class="math inline">\(\hat{\overline{Q}}_{L(2)}(M=m)_i\)</span>, by evaluating the regression fit <span class="math inline">\(\overline{Q}_{L(2)}\)</span> at the chosen value for the mediator <span class="math inline">\(M=m\)</span>;</p></li>
-<li><p>Fit a quasibinomial or a linear regression of the predicted values <span class="math inline">\(\hat{\overline{Q}}_{L(2)}(M=m)_i\)</span> conditional on the exposure <span class="math inline">\(A\)</span> and baseline confounders <span class="math inline">\(L(0)\)</span> to estimate <span class="math inline">\(\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{L(2)}(M=m) \middle| L(0),A\right)\)</span>;</p></li>
+<li><p>Fit a logistic or a linear regression of the final outcome, conditional on the exposure <span class="math inline">\(A\)</span>, the mediator <span class="math inline">\(M\)</span> and all the parents of <span class="math inline">\(Y\)</span> preceeding <span class="math inline">\(M\)</span>, to estimate <span class="math inline">\(\overline{Q}_{Y} = \mathbb{E}(Y \mid L(0),A,L(1),M)\)</span>;</p></li>
+<li><p>Use this estimate to predict an outcome for each subject <span class="math inline">\(\hat{\overline{Q}}_{Y}(M=m)_i\)</span>, by evaluating the regression fit <span class="math inline">\(\overline{Q}_{Y}\)</span> at the chosen value for the mediator <span class="math inline">\(M=m\)</span>;</p></li>
+<li><p>Fit a quasibinomial or a linear regression of the predicted values <span class="math inline">\(\hat{\overline{Q}}_{Y}(M=m)_i\)</span> conditional on the exposure <span class="math inline">\(A\)</span> and baseline confounders <span class="math inline">\(L(0)\)</span> to estimate <span class="math inline">\(\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{Y}(M=m) \middle| L(0),A\right)\)</span>;</p></li>
 <li><p>Use this estimate to predict the outcome <span class="math inline">\(\hat{\overline{Q}}_{L(1)}(A=a^\prime)_i\)</span> for each subject, by evaluating the regression fit <span class="math inline">\(\overline{Q}_{L(1)}\)</span> at <span class="math inline">\(A=a^\prime\)</span>;</p></li>
 <li><p>Use the sample mean to estimate <span class="math inline">\(\Psi^{\text{CDE}_m}_{\text{gcomp}}\)</span>
 <span class="math display">\[\begin{equation}
@@ -453,23 +483,23 @@ div.csl-indent {
 <span id="cb21-14"><a href="chap_gcomp.html#cb21-14" aria-hidden="true" tabindex="-1"></a>data.Mis0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb21-15"><a href="chap_gcomp.html#cb21-15" aria-hidden="true" tabindex="-1"></a>data.Mis1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb21-16"><a href="chap_gcomp.html#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-17"><a href="chap_gcomp.html#cb21-17" aria-hidden="true" tabindex="-1"></a>Q.L2.death.Mis0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb21-18"><a href="chap_gcomp.html#cb21-18" aria-hidden="true" tabindex="-1"></a>Q.L2.death.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb21-17"><a href="chap_gcomp.html#cb21-17" aria-hidden="true" tabindex="-1"></a>Q.Y.death.Mis0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb21-18"><a href="chap_gcomp.html#cb21-18" aria-hidden="true" tabindex="-1"></a>Q.Y.death.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb21-19"><a href="chap_gcomp.html#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-20"><a href="chap_gcomp.html#cb21-20" aria-hidden="true" tabindex="-1"></a>Q.L2.qol.Mis0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb21-21"><a href="chap_gcomp.html#cb21-21" aria-hidden="true" tabindex="-1"></a>Q.L2.qol.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb21-20"><a href="chap_gcomp.html#cb21-20" aria-hidden="true" tabindex="-1"></a>Q.Y.qol.Mis0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb21-21"><a href="chap_gcomp.html#cb21-21" aria-hidden="true" tabindex="-1"></a>Q.Y.qol.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb21-22"><a href="chap_gcomp.html#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-23"><a href="chap_gcomp.html#cb21-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-24"><a href="chap_gcomp.html#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Regress the predicted values conditional on the exposure A</span></span>
 <span id="cb21-25"><a href="chap_gcomp.html#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="co">#    and baseline confounders L(0)</span></span>
-<span id="cb21-26"><a href="chap_gcomp.html#cb21-26" aria-hidden="true" tabindex="-1"></a>L1.death.Mis0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.Mis0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb21-26"><a href="chap_gcomp.html#cb21-26" aria-hidden="true" tabindex="-1"></a>L1.death.Mis0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.Mis0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
 <span id="cb21-27"><a href="chap_gcomp.html#cb21-27" aria-hidden="true" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb21-28"><a href="chap_gcomp.html#cb21-28" aria-hidden="true" tabindex="-1"></a>L1.death.Mis1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.Mis1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb21-28"><a href="chap_gcomp.html#cb21-28" aria-hidden="true" tabindex="-1"></a>L1.death.Mis1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.Mis1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
 <span id="cb21-29"><a href="chap_gcomp.html#cb21-29" aria-hidden="true" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb21-30"><a href="chap_gcomp.html#cb21-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-31"><a href="chap_gcomp.html#cb21-31" aria-hidden="true" tabindex="-1"></a>L1.qol.Mis0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.Mis0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb21-31"><a href="chap_gcomp.html#cb21-31" aria-hidden="true" tabindex="-1"></a>L1.qol.Mis0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.qol.Mis0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
 <span id="cb21-32"><a href="chap_gcomp.html#cb21-32" aria-hidden="true" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb21-33"><a href="chap_gcomp.html#cb21-33" aria-hidden="true" tabindex="-1"></a>L1.qol.Mis1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.Mis1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb21-33"><a href="chap_gcomp.html#cb21-33" aria-hidden="true" tabindex="-1"></a>L1.qol.Mis1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.qol.Mis1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
 <span id="cb21-34"><a href="chap_gcomp.html#cb21-34" aria-hidden="true" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb21-35"><a href="chap_gcomp.html#cb21-35" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-36"><a href="chap_gcomp.html#cb21-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) generate predicted values by evaluating the regression at exposure </span></span>
@@ -558,6 +588,18 @@ Y_{res} = Y - \hat{\gamma}_M M - \hat{\psi}_{A \ast M} \times A \times M
 </div>
 </div>
 </div>
+<h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-daniel2013" class="csl-entry">
+Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. <span>“Methods for Dealing with Time-Dependent Confounding.”</span> <em>Statistics in Medicine</em> 32 (9): 1584–1618.
+</div>
+<div id="ref-robins1986" class="csl-entry">
+Robins, James. 1986. <span>“A New Approach to Causal Inference in Mortality Studies with a Sustained Exposure Period—Application to Control of the Healthy Worker Survivor Effect.”</span> <em>Mathematical Modelling</em> 7 (9): 1393–1512.
+</div>
+<div id="ref-taubman2009" class="csl-entry">
+Taubman, Sarah L, James M Robins, Murray A Mittleman, and Miguel A Hernán. 2009. <span>“Intervening on Risk Factors for Coronary Heart Disease: An Application of the Parametric g-Formula.”</span> <em>International Journal of Epidemiology</em> 38 (6): 1599–1611.
+</div>
+</div>
             </section>
 
           </div>
@@ -606,7 +648,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["_main.pdf", "_main.epub"],
+"download": ["_main.pdf"],
 "search": {
 "engine": "fuse",
 "options": null

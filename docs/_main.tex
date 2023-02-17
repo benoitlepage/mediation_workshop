@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-02-15}
+\date{2023-02-17}
 
 \begin{document}
 \maketitle
@@ -1307,16 +1307,35 @@ A 95\% confidence interval can be estimated applying a bootstrap procedure. An e
 
 The controlled direct effect \(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\) is the difference between the mean outcome had the whole population been exposed to ACE (setting \(A=1\)), compared to the mean outcome had the whole population been unexposed (setting \(A=0\)), while keeping the mediator equal to a constant given value (\(M=m\)) in both scenarios.
 
-The g-formula of the components of a CDE (\(\mathbb{E}(Y_{A=a^\prime,M=m})\)) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
+The g-formula for a CDE (\(\mathbb{E}(Y_{A=a^\prime,M=m})\)) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
 
 \(\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\right( L(1)=l(1) | a^\prime,l(0) \left) \right] \times P\left( L(0)=l(0) \right)\)
 
-Several g-computation procedures have been described to estimate CDE:
+In our simple example with a binary exposure \(A\), a binary mediator \(M\) and a binary intermediate confounder \(L(1)\), it is still possible to apply the substitution approach (corresponding to a non-parametric g-computation estimation) by estimating the following components of the g-formula:
 
 \begin{itemize}
 \tightlist
 \item
-  parametric g-computation, using Monte Carlo simulations
+  \(\overline{Q}_Y(A,L(1),M)=\mathbb{E}\left(Y \mid L(0), A,L(1), M \right)\),
+\item
+  and \(\overline{Q}_{L(1)}(A)=P\left(L(1)=1) \mid A, l(0)\right)\)
+\end{itemize}
+
+We can then generate predicted outcomes from these 3 models for each subject in the data set, and obtain a \emph{non-parametric maximum likelihood estimator (NPMLE)} of the CDE using the empirical mean:
+\[\scriptsize
+\begin{array}{r l}
+\Psi^{\text{CDE}_m}_{\text{NPMLE}} = \frac{1}{n}\sum & \left[\hat{\overline{Q}}_Y(A=1,L(1)=1,M=m) \times \hat{\overline{Q}}_{L(1)}(A=1) + \hat{\overline{Q}}_Y(A=1,L(1)=0,M=m) \times (1 - \hat{\overline{Q}}_{L(1)}(A=1))\right]\\
+  &  - \left[\hat{\overline{Q}}_Y(A=0,L(1)=1,M=m) \times \hat{\overline{Q}}_{L(1)}(A=0) + \hat{\overline{Q}}_Y(A=0,L(1)=0,M=m) \times (1 - \hat{\overline{Q}}_{L(1)}(A=0))\right]
+\end{array}\]
+
+However NPMLE is tedious with high-dimensional intermediate confounders \(L(1)\) or if mediators is repeated over time. In that case, parametric g-computation using a Monte Carlo algorithm, or g-computation by iterative conditional expectation are easier to apply.
+
+Below, we describe three g-computation procedures for the estimation of a CDE:
+
+\begin{itemize}
+\tightlist
+\item
+  parametric g-computation, using Monte Carlo simulation
 \item
   g-computation by iterative conditional expectation
 \item
@@ -1325,6 +1344,33 @@ Several g-computation procedures have been described to estimate CDE:
 
 \hypertarget{parametric-g-computation}{%
 \subsection{Parametric g-computation}\label{parametric-g-computation}}
+
+Parametric g-computation by Monte Carlo simulation have been described by Robins (\protect\hyperlink{ref-robins1986}{Robins 1986}), Taubman \emph{et al.} (\protect\hyperlink{ref-taubman2009}{Taubman et al. 2009}), or Daniel \emph{et al.} (\protect\hyperlink{ref-daniel2013}{Daniel et al. 2013}).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Fit a parametric model to estimate the density of the intermediate confounder \(L(1)\) conditional on its parents. If \(L(1)\) is a set of several variables, it is necessary to fit a model for each variable conditional on its parents.
+  \begin{equation}
+    Q_{L(1)}(A) = P(L(1)=1 \mid L(0),A)
+  \end{equation}
+\item
+  Fit a model of the outcome \(Y\) conditional on its parents:
+  \begin{equation}
+    \overline{Q}_Y(A,L(1),M) = \mathbb{E}\left(Y \mid L(0),A,L(1),M \right)
+  \end{equation}
+\item
+  Simulate individual values of \(L(1)_a\) using the estimated density \(\hat{Q}_{L(1)}(A=a)\) under the counterfactual scenarios setting \(A=0\) or \(A=1\)
+\item
+  Estimate mean values of the outcome under the counterfactual scenarios setting \(A=0\) (or \(A=1\)), \(L(1)=l(1)_{A=0}\) (or \(L(1)=l(1)_{A=1}\)) and \(M=m\), using \(\hat{\overline{Q}}_Y(A=a,L(1)=l(1)_a,M=m)\)
+\item
+  Estimate the controlled direct effect \(\Psi_{\text{CDE}_m}\) by the sample mean:
+  \begin{equation}
+    \small \hat{\Psi}^{\text{CDE}_m}_{\text{param.gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}_Y(A=1,L(1)=l(1)_{A=1},M=m)_i - \hat{\overline{Q}}_Y(A=0,L(1)=l(1)_{A=0},M=m)_i \right]
+  \end{equation}
+\end{enumerate}
+
+For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1341,7 +1387,7 @@ Several g-computation procedures have been described to estimate CDE:
 \NormalTok{                              M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking, }
                     \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 3. Simulate L1 values under the counterfactual scenarios setting A0=0 or A0=1}
+\CommentTok{\# 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1}
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{54321}\NormalTok{)}
 \NormalTok{data.A0  }\OtherTok{\textless{}{-}}\NormalTok{ data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
 \NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
@@ -1406,16 +1452,16 @@ Several g-computation procedures have been described to estimate CDE:
 \hypertarget{g-computation-by-iterative-conditional-expectation}{%
 \subsection{G-computation by iterative conditional expectation}\label{g-computation-by-iterative-conditional-expectation}}
 
-The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component \(\mathbb{E}(Y_{A=a^\prime,M=m})\) used in the definition of CDE \(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\).
+The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component \(\mathbb{E}(Y_{A=a^\prime,M=m})\) used in the definition of CDE \(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\). Interestingly, there is no need to estimate or simulate \(L(1)\) density with this method.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  Fit a logistic or a linear regression of the final outcome, conditional on the exposure \(A\), the mediator \(M\) and all the parents of \(Y\) preceeding \(M\), to estimate \(\overline{Q}_{L(2)} = \mathbb{E}(Y \mid L(0),A,L(1),M)\);
+  Fit a logistic or a linear regression of the final outcome, conditional on the exposure \(A\), the mediator \(M\) and all the parents of \(Y\) preceeding \(M\), to estimate \(\overline{Q}_{Y} = \mathbb{E}(Y \mid L(0),A,L(1),M)\);
 \item
-  Use this estimate to predict an outcome for each subject \(\hat{\overline{Q}}_{L(2)}(M=m)_i\), by evaluating the regression fit \(\overline{Q}_{L(2)}\) at the chosen value for the mediator \(M=m\);
+  Use this estimate to predict an outcome for each subject \(\hat{\overline{Q}}_{Y}(M=m)_i\), by evaluating the regression fit \(\overline{Q}_{Y}\) at the chosen value for the mediator \(M=m\);
 \item
-  Fit a quasibinomial or a linear regression of the predicted values \(\hat{\overline{Q}}_{L(2)}(M=m)_i\) conditional on the exposure \(A\) and baseline confounders \(L(0)\) to estimate \(\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{L(2)}(M=m) \middle| L(0),A\right)\);
+  Fit a quasibinomial or a linear regression of the predicted values \(\hat{\overline{Q}}_{Y}(M=m)_i\) conditional on the exposure \(A\) and baseline confounders \(L(0)\) to estimate \(\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{Y}(M=m) \middle| L(0),A\right)\);
 \item
   Use this estimate to predict the outcome \(\hat{\overline{Q}}_{L(1)}(A=a^\prime)_i\) for each subject, by evaluating the regression fit \(\overline{Q}_{L(1)}\) at \(A=a^\prime\);
 \item
@@ -1443,23 +1489,23 @@ The following steps describe the implementation of the g-computation estimator b
 \NormalTok{data.Mis0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{0}
 \NormalTok{data.Mis1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{1}
 
-\NormalTok{Q.L2.death.Mis0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
-\NormalTok{Q.L2.death.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.Y.death.Mis0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.Y.death.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 
-\NormalTok{Q.L2.qol.Mis0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
-\NormalTok{Q.L2.qol.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.Y.qol.Mis0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.Y.qol.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 
 
 \CommentTok{\# 3) Regress the predicted values conditional on the exposure A}
 \CommentTok{\#    and baseline confounders L(0)}
-\NormalTok{L1.death.Mis0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.death.Mis0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.death.Mis0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.Mis0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
                          \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{L1.death.Mis1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.death.Mis1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.death.Mis1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.Mis1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
                          \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\NormalTok{L1.qol.Mis0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.qol.Mis0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.qol.Mis0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.qol.Mis0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
                          \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{L1.qol.Mis1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.qol.Mis1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.qol.Mis1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.qol.Mis1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
                          \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
 \CommentTok{\# 4) generate predicted values by evaluating the regression at exposure }
@@ -4816,8 +4862,17 @@ Conditional randomized & & \\
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-daniel2013}{}}%
+Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. {``Methods for Dealing with Time-Dependent Confounding.''} \emph{Statistics in Medicine} 32 (9): 1584--1618.
+
 \leavevmode\vadjust pre{\hypertarget{ref-naimi2020}{}}%
 Naimi, Ashley I, and Brian W Whitcomb. 2020. {``Estimating Risk Ratios and Risk Differences Using Regression.''} \emph{American Journal of Epidemiology} 189 (6): 508--10.
+
+\leavevmode\vadjust pre{\hypertarget{ref-robins1986}{}}%
+Robins, James. 1986. {``A New Approach to Causal Inference in Mortality Studies with a Sustained Exposure Period---Application to Control of the Healthy Worker Survivor Effect.''} \emph{Mathematical Modelling} 7 (9): 1393--1512.
+
+\leavevmode\vadjust pre{\hypertarget{ref-taubman2009}{}}%
+Taubman, Sarah L, James M Robins, Murray A Mittleman, and Miguel A Hernán. 2009. {``Intervening on Risk Factors for Coronary Heart Disease: An Application of the Parametric g-Formula.''} \emph{International Journal of Epidemiology} 38 (6): 1599--1611.
 
 \leavevmode\vadjust pre{\hypertarget{ref-valeri2013}{}}%
 Valeri, Linda, and Tyler J VanderWeele. 2013. {``Mediation Analysis Allowing for Exposure-Mediator Interactions and Causal Interpretation: Theoretical Assumptions and Implementation with SAS and SPSS Macros.''} \emph{Psycol Methods} 18 (2): 137--50.

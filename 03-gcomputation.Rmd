@@ -105,18 +105,56 @@ IC95.ATE.qol
 
 The controlled direct effect $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$ is the difference between the mean outcome had the whole population been exposed to ACE (setting $A=1$), compared to the mean outcome had the whole population been unexposed (setting $A=0$), while keeping the mediator equal to a constant given value ($M=m$) in both scenarios.
 
-The g-formula of the components of a CDE ($\mathbb{E}(Y_{A=a^\prime,M=m})$) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
+The g-formula for a CDE ($\mathbb{E}(Y_{A=a^\prime,M=m})$) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
 
 $\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\right( L(1)=l(1) | a^\prime,l(0) \left) \right] \times P\left( L(0)=l(0) \right)$
 
-Several g-computation procedures have been described to estimate CDE:
+In our simple example with a binary exposure $A$, a binary mediator $M$ and a binary intermediate confounder $L(1)$, it is still possible to apply the substitution approach (corresponding to a non-parametric g-computation estimation) by estimating the following components of the g-formula:
 
-- parametric g-computation, using Monte Carlo simulations
+ - $\overline{Q}_Y(A,L(1),M)=\mathbb{E}\left(Y \mid L(0), A,L(1), M \right)$,
+ - and $\overline{Q}_{L(1)}(A)=P\left(L(1)=1) \mid A, l(0)\right)$
+
+We can then generate predicted outcomes from these 3 models for each subject in the data set, and obtain a _non-parametric maximum likelihood estimator (NPMLE)_ of the CDE using the empirical mean:
+$$\scriptsize
+\begin{array}{r l}
+\Psi^{\text{CDE}_m}_{\text{NPMLE}} = \frac{1}{n}\sum & \left[\hat{\overline{Q}}_Y(A=1,L(1)=1,M=m) \times \hat{\overline{Q}}_{L(1)}(A=1) + \hat{\overline{Q}}_Y(A=1,L(1)=0,M=m) \times (1 - \hat{\overline{Q}}_{L(1)}(A=1))\right]\\
+  &  - \left[\hat{\overline{Q}}_Y(A=0,L(1)=1,M=m) \times \hat{\overline{Q}}_{L(1)}(A=0) + \hat{\overline{Q}}_Y(A=0,L(1)=0,M=m) \times (1 - \hat{\overline{Q}}_{L(1)}(A=0))\right]
+\end{array}$$
+
+However NPMLE is tedious with high-dimensional intermediate confounders $L(1)$ or if mediators is repeated over time. In that case,  parametric g-computation using a Monte Carlo algorithm, or g-computation by iterative conditional expectation are easier to apply.
+
+Below, we describe three g-computation procedures for the estimation of a CDE:
+
+- parametric g-computation, using Monte Carlo simulation
 - g-computation by iterative conditional expectation
 - sequential g-estimator
 
 
 ### Parametric g-computation
+Parametric g-computation by Monte Carlo simulation have been described by Robins [@robins1986], Taubman _et al._ [@taubman2009], or Daniel _et al._ [@daniel2013].
+
+1. Fit a parametric model to estimate the density of the intermediate confounder $L(1)$ conditional on its parents. If $L(1)$ is a set of several variables, it is necessary to fit a model for each variable conditional on its parents. 
+\begin{equation}
+  Q_{L(1)}(A) = P(L(1)=1 \mid L(0),A)
+\end{equation}
+
+
+2. Fit a model of the outcome $Y$ conditional on its parents:
+\begin{equation}
+  \overline{Q}_Y(A,L(1),M) = \mathbb{E}\left(Y \mid L(0),A,L(1),M \right)
+\end{equation}
+
+                                            
+3. Simulate individual values of $L(1)_a$ using the estimated density $\hat{Q}_{L(1)}(A=a)$ under the counterfactual scenarios setting $A=0$ or $A=1$
+
+4. Estimate mean values of the outcome under the counterfactual scenarios setting $A=0$ (or $A=1$), $L(1)=l(1)_{A=0}$ (or $L(1)=l(1)_{A=1}$) and $M=m$, using $\hat{\overline{Q}}_Y(A=a,L(1)=l(1)_a,M=m)$
+                                          
+5. Estimate the controlled direct effect $\Psi_{\text{CDE}_m}$ by the sample mean:
+\begin{equation}
+  \small \hat{\Psi}^{\text{CDE}_m}_{\text{param.gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}_Y(A=1,L(1)=l(1)_{A=1},M=m)_i - \hat{\overline{Q}}_Y(A=0,L(1)=l(1)_{A=0},M=m)_i \right]
+\end{equation}
+
+For continuous outcomes, $\overline{Q}_Y(A,L(1),M)$ functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.
 
 ```{r param_gcomp_CDE, echo=TRUE, eval = FALSE}
 # 1. Fit parametric models to estimate the density of intermediate confounders, 
@@ -132,7 +170,7 @@ Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
                               M_smoking + A0_ace:M_smoking, 
                     family = "gaussian", data = df2_int)
 
-# 3. Simulate L1 values under the counterfactual scenarios setting A0=0 or A0=1
+# 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1
 set.seed(54321)
 data.A0  <- data.A1 <- df2_int
 data.A0$A0_ace <- 0
@@ -196,13 +234,13 @@ CDE.qol.m1.gcomp.param
 
 
 ### G-computation by iterative conditional expectation
-The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component $\mathbb{E}(Y_{A=a^\prime,M=m})$ used in the definition of CDE $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$.
+The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component $\mathbb{E}(Y_{A=a^\prime,M=m})$ used in the definition of CDE $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$. Interestingly, there is no need to estimate or simulate $L(1)$ density with this method.
                                           
-1. Fit a logistic or a linear regression of the final outcome, conditional on the exposure $A$, the mediator $M$ and all the parents of $Y$ preceeding $M$, to estimate $\overline{Q}_{L(2)} = \mathbb{E}(Y \mid L(0),A,L(1),M)$;
+1. Fit a logistic or a linear regression of the final outcome, conditional on the exposure $A$, the mediator $M$ and all the parents of $Y$ preceeding $M$, to estimate $\overline{Q}_{Y} = \mathbb{E}(Y \mid L(0),A,L(1),M)$;
                                             
-2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}_{L(2)}(M=m)_i$, by evaluating the regression fit $\overline{Q}_{L(2)}$ at the chosen value for the mediator $M=m$;
+2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}_{Y}(M=m)_i$, by evaluating the regression fit $\overline{Q}_{Y}$ at the chosen value for the mediator $M=m$;
 
-3. Fit a quasibinomial or a linear regression of the predicted values $\hat{\overline{Q}}_{L(2)}(M=m)_i$ conditional on the exposure $A$ and baseline confounders $L(0)$ to estimate $\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{L(2)}(M=m) \middle| L(0),A\right)$;
+3. Fit a quasibinomial or a linear regression of the predicted values $\hat{\overline{Q}}_{Y}(M=m)_i$ conditional on the exposure $A$ and baseline confounders $L(0)$ to estimate $\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{Y}(M=m) \middle| L(0),A\right)$;
 
 4. Use this estimate to predict the outcome $\hat{\overline{Q}}_{L(1)}(A=a^\prime)_i$ for each subject, by evaluating the regression fit $\overline{Q}_{L(1)}$ at $A=a^\prime$;
                                           
@@ -229,23 +267,23 @@ data.Mis0 <- data.Mis1 <- df2_int
 data.Mis0$M_smoking <- 0
 data.Mis1$M_smoking <- 1
 
-Q.L2.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
-Q.L2.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
+Q.Y.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
+Q.Y.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
 
-Q.L2.qol.Mis0 <- predict(Y.qol.model, newdata = data.Mis0, type="response")
-Q.L2.qol.Mis1 <- predict(Y.qol.model, newdata = data.Mis1, type="response")
+Q.Y.qol.Mis0 <- predict(Y.qol.model, newdata = data.Mis0, type="response")
+Q.Y.qol.Mis1 <- predict(Y.qol.model, newdata = data.Mis1, type="response")
 
 
 # 3) Regress the predicted values conditional on the exposure A
 #    and baseline confounders L(0)
-L1.death.Mis0.model <- glm(Q.L2.death.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.Mis0.model <- glm(Q.Y.death.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "quasibinomial", data = df2_int)
-L1.death.Mis1.model <- glm(Q.L2.death.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.Mis1.model <- glm(Q.Y.death.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "quasibinomial", data = df2_int)
 
-L1.qol.Mis0.model <- glm(Q.L2.qol.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.Mis0.model <- glm(Q.Y.qol.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "gaussian", data = df2_int)
-L1.qol.Mis1.model <- glm(Q.L2.qol.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.Mis1.model <- glm(Q.Y.qol.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "gaussian", data = df2_int)
 
 # 4) generate predicted values by evaluating the regression at exposure 
