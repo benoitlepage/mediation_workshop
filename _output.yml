@@ -6,7 +6,7 @@ bookdown::gitbook:
         <li><a href="./">Mediation workshop</a></li>
       after: |
         <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
-    edit: https://github.com/benoitlepage/mediation_workshop/%s
+    edit: https://github.com/benoitlepage/mediation_workshop/edit/BRANCH/%s
     download: ["pdf"]
     # download: ["pdf", "epub"]
 bookdown::pdf_book:

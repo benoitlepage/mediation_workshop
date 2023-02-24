@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-02-17" />
+<meta name="date" content="2023-02-24" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -468,11 +468,11 @@ where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10
 <p>Applying a sample size N=10000, we generate the <code>df1.csv</code> and <code>df1_int.csv</code> data sets.</p>
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="appendix_a.html#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
 <span id="cb28-2"><a href="appendix_a.html#cb28-2" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
-<span id="cb28-3"><a href="appendix_a.html#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df1, <span class="at">file =</span> <span class="st">&quot;df1.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb28-3"><a href="appendix_a.html#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df1, <span class="at">file =</span> <span class="st">&quot;data/df1.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb28-4"><a href="appendix_a.html#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-5"><a href="appendix_a.html#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
 <span id="cb28-6"><a href="appendix_a.html#cb28-6" aria-hidden="true" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
-<span id="cb28-7"><a href="appendix_a.html#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df1_int, <span class="at">file =</span> <span class="st">&quot;df1_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<span id="cb28-7"><a href="appendix_a.html#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df1_int, <span class="at">file =</span> <span class="st">&quot;data/df1_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="appendix_a.html#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df1)</span></code></pre></div>
 <pre><code>##   L0_male L0_parent_low_educ_lv A0_ace L1 M_smoking Y_death    Y_qol
 ## 1       0                     1      0  1         0       0 93.41819
@@ -548,11 +548,11 @@ where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10
 <p>Applying a sample size N=10000, we generate the <code>df2.csv</code> and <code>df2_int.csv</code> data sets.</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="appendix_a.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
 <span id="cb34-2"><a href="appendix_a.html#cb34-2" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
-<span id="cb34-3"><a href="appendix_a.html#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df2, <span class="at">file =</span> <span class="st">&quot;df2.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb34-3"><a href="appendix_a.html#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df2, <span class="at">file =</span> <span class="st">&quot;data/df2.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb34-4"><a href="appendix_a.html#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb34-5"><a href="appendix_a.html#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
 <span id="cb34-6"><a href="appendix_a.html#cb34-6" aria-hidden="true" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
-<span id="cb34-7"><a href="appendix_a.html#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df2_int, <span class="at">file =</span> <span class="st">&quot;df2_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<span id="cb34-7"><a href="appendix_a.html#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(df2_int, <span class="at">file =</span> <span class="st">&quot;data/df2_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="appendix_a.html#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(df2)</span></code></pre></div>
 <pre><code>##       L0_male L0_parent_low_educ_lv A0_ace L1 M_smoking Y_death    Y_qol
 ## 9995        0                     1      0  1         1       0 53.25115
@@ -610,7 +610,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/benoitlepage/mediation_workshop/06-appendixA.Rmd",
+"link": "https://github.com/benoitlepage/mediation_workshop/edit/BRANCH/06-appendixA.Rmd",
 "text": "Edit"
 },
 "history": {

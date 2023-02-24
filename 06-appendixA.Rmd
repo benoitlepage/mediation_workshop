@@ -235,11 +235,11 @@ Applying a sample size N=10000, we generate the `df1.csv` and `df1_int.csv` data
 ```{r simulate_data_1, echo=TRUE, eval = TRUE}
 set.seed(1234)
 df1 <- gen.data.causal.model.1(N=10000, A.M.inter=0)
-write.csv(df1, file = "df1.csv", row.names = FALSE)
+write.csv(df1, file = "data/df1.csv", row.names = FALSE)
 
 set.seed(1234)
 df1_int <- gen.data.causal.model.1(N=10000, A.M.inter=1)
-write.csv(df1_int, file = "df1_int.csv", row.names = FALSE)
+write.csv(df1_int, file = "data/df1_int.csv", row.names = FALSE)
 ```
 
 ```{r show_data_df1, echo=TRUE, eval = TRUE}
@@ -315,11 +315,11 @@ Applying a sample size N=10000, we generate the `df2.csv` and `df2_int.csv` data
 ```{r simulate_data_2, echo=TRUE, eval = TRUE}
 set.seed(1234)
 df2 <- gen.data.causal.model.2(N=10000, A.M.inter=0)
-write.csv(df2, file = "df2.csv", row.names = FALSE)
+write.csv(df2, file = "data/df2.csv", row.names = FALSE)
 
 set.seed(1234)
 df2_int <- gen.data.causal.model.2(N=10000, A.M.inter=1)
-write.csv(df2_int, file = "df2_int.csv", row.names = FALSE)
+write.csv(df2_int, file = "data/df2_int.csv", row.names = FALSE)
 ```
 
 ```{r show_data_df2, echo=TRUE, eval = TRUE}

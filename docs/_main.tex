@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-02-17}
+\date{2023-02-24}
 
 \begin{document}
 \maketitle
@@ -1951,11 +1951,11 @@ Applying a sample size N=10000, we generate the \texttt{df1.csv} and \texttt{df1
 \begin{Highlighting}[]
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
 \NormalTok{df1 }\OtherTok{\textless{}{-}} \FunctionTok{gen.data.causal.model.1}\NormalTok{(}\AttributeTok{N=}\DecValTok{10000}\NormalTok{, }\AttributeTok{A.M.inter=}\DecValTok{0}\NormalTok{)}
-\FunctionTok{write.csv}\NormalTok{(df1, }\AttributeTok{file =} \StringTok{"df1.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+\FunctionTok{write.csv}\NormalTok{(df1, }\AttributeTok{file =} \StringTok{"data/df1.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
 
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
 \NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{gen.data.causal.model.1}\NormalTok{(}\AttributeTok{N=}\DecValTok{10000}\NormalTok{, }\AttributeTok{A.M.inter=}\DecValTok{1}\NormalTok{)}
-\FunctionTok{write.csv}\NormalTok{(df1\_int, }\AttributeTok{file =} \StringTok{"df1\_int.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+\FunctionTok{write.csv}\NormalTok{(df1\_int, }\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -2059,11 +2059,11 @@ Applying a sample size N=10000, we generate the \texttt{df2.csv} and \texttt{df2
 \begin{Highlighting}[]
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
 \NormalTok{df2 }\OtherTok{\textless{}{-}} \FunctionTok{gen.data.causal.model.2}\NormalTok{(}\AttributeTok{N=}\DecValTok{10000}\NormalTok{, }\AttributeTok{A.M.inter=}\DecValTok{0}\NormalTok{)}
-\FunctionTok{write.csv}\NormalTok{(df2, }\AttributeTok{file =} \StringTok{"df2.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+\FunctionTok{write.csv}\NormalTok{(df2, }\AttributeTok{file =} \StringTok{"data/df2.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
 
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
 \NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{gen.data.causal.model.2}\NormalTok{(}\AttributeTok{N=}\DecValTok{10000}\NormalTok{, }\AttributeTok{A.M.inter=}\DecValTok{1}\NormalTok{)}
-\FunctionTok{write.csv}\NormalTok{(df2\_int, }\AttributeTok{file =} \StringTok{"df2\_int.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+\FunctionTok{write.csv}\NormalTok{(df2\_int, }\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
