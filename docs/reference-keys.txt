@@ -28,6 +28,9 @@ chap_iptw
 estimation-of-the-average-total-effect
 iptw-for-the-ate
 stabilized-iptw-for-the-ate
+estimation-of-the-controlled-direct-effect-cde
+iptw-for-the-cde
+stabilized-iptw-for-the-cde
 chap_tmle
 appendix_a
 first-causal-model-data-generating-mechanism-without-mediator-outcome-confounder-affected-by-the-exposure

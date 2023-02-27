@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-02-24" />
+<meta name="date" content="2023-02-27" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -194,6 +194,11 @@ div.csl-indent {
 <li class="chapter" data-level="7.1.1" data-path="chap_iptw.html"><a href="chap_iptw.html#iptw-for-the-ate"><i class="fa fa-check"></i><b>7.1.1</b> IPTW for the ATE</a></li>
 <li class="chapter" data-level="7.1.2" data-path="chap_iptw.html"><a href="chap_iptw.html#stabilized-iptw-for-the-ate"><i class="fa fa-check"></i><b>7.1.2</b> Stabilized IPTW for the ATE</a></li>
 </ul></li>
+<li class="chapter" data-level="7.2" data-path="chap_iptw.html"><a href="chap_iptw.html#estimation-of-the-controlled-direct-effect-cde"><i class="fa fa-check"></i><b>7.2</b> Estimation of the Controlled direct effect (CDE)</a>
+<ul>
+<li class="chapter" data-level="7.2.1" data-path="chap_iptw.html"><a href="chap_iptw.html#iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.1</b> IPTW for the CDE</a></li>
+<li class="chapter" data-level="7.2.2" data-path="chap_iptw.html"><a href="chap_iptw.html#stabilized-iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.2</b> Stabilized IPTW for the CDE</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="8" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>8</b> Targeted Maximum Likelihood Estimation (TMLE)</a></li>
 <li class="chapter" data-level="9" data-path="appendix_a.html"><a href="appendix_a.html"><i class="fa fa-check"></i><b>9</b> Appendix A: Data generating mechanisms</a>
@@ -318,6 +323,33 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 <span id="cb24-15"><a href="chap_iptw.html#cb24-15" aria-hidden="true" tabindex="-1"></a>s.IPTW.qol</span>
 <span id="cb24-16"><a href="chap_iptw.html#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] -8.291992</span></span></code></pre></div>
 <p>The ATE estimates using stabilized IPTW for death probability and mean quality of life are respectively +8.3% and -8.29.</p>
+</div>
+</div>
+<div id="estimation-of-the-controlled-direct-effect-cde" class="section level2 hasAnchor" number="7.2">
+<h2><span class="header-section-number">7.2</span> Estimation of the Controlled direct effect (CDE)<a href="chap_iptw.html#estimation-of-the-controlled-direct-effect-cde" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="iptw-for-the-cde" class="section level3 hasAnchor" number="7.2.1">
+<h3><span class="header-section-number">7.2.1</span> IPTW for the CDE<a href="chap_iptw.html#iptw-for-the-cde" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>If the controlled direct effect (CDE) is identifiable, <span class="math inline">\(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span> can be expressed by the basic Horvitz Thompson estimator (using Inverse probability of treatment weighting (IPTW)), denoting <span class="math inline">\(\mathbb{P}\left(A=a \mid L(0)) = g(A=a \mid L(0)\right)\)</span> and <span class="math inline">\(\mathbb{P}\left(M=m \mid L(0),A,L(1)) = g(M=m \mid L(0),A,L(1)\right)\)</span>:
+<span class="math display">\[\begin{equation}
+\small
+\Psi^{\text{CDE}_m} = \mathbb{E}\left( \frac{\mathbb{I}(A=1 \cap M=m)}{g(A=1 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right) - \mathbb{E}\left( \frac{\mathbb{I}(A=0 \cap M=m)}{g(A=0 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right)
+\end{equation}\]</span></p>
+<p>The following steps describe the implementation of the IPTW estimator</p>
+<ol style="list-style-type: decimal">
+<li><p>Estimate the treatment mechanisms <span class="math inline">\(g\left(A=1 \mid L(0)\right)\)</span> and <span class="math inline">\(g\left(M=1 \mid L(0),A,L(1)\right)\)</span></p></li>
+<li><p>Predict each individual’s probability of being exposed to her own exposure</p></li>
+<li><p>Apply weights corresponding to the inverse of the predicted probability <span class="math inline">\(w_{A_i} = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\)</span> and <span class="math inline">\(w_{M_i} = \frac{1}{\hat{g}(M_i = m \mid L(0)_i,A_i,L(1)_i)}\)</span></p></li>
+<li><p>Use the empirical mean of the weighted outcome <span class="math inline">\(Y\)</span>: <span class="math inline">\(\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i\)</span></p></li>
+</ol>
+</div>
+<div id="stabilized-iptw-for-the-cde" class="section level3 hasAnchor" number="7.2.2">
+<h3><span class="header-section-number">7.2.2</span> Stabilized IPTW for the CDE<a href="chap_iptw.html#stabilized-iptw-for-the-cde" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>If the controlled dired effect (CDE) is identifiable, <span class="math inline">\(\Psi^{CDE}\)</span> can be estimated using a stabilized IPTW estimator (modified Horvitz Thompson estimator):
+<span class="math display">\[\begin{equation}
+\small
+\hat{\mathbb{E}}(Y_{1,m}) - \hat{\mathbb{E}}(Y_{0,m}) =  \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{\sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}} - \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}}
+\end{equation}\]</span>
+The estimation algorithm is the same as for IPTW, but applying the stabilized estimator in step 4.</p>
 
 </div>
 </div>

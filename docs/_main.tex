@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-02-24}
+\date{2023-02-27}
 
 \begin{document}
 \maketitle
@@ -1699,6 +1699,42 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 \end{Shaded}
 
 The ATE estimates using stabilized IPTW for death probability and mean quality of life are respectively +8.3\% and -8.29.
+
+\hypertarget{estimation-of-the-controlled-direct-effect-cde}{%
+\section{Estimation of the Controlled direct effect (CDE)}\label{estimation-of-the-controlled-direct-effect-cde}}
+
+\hypertarget{iptw-for-the-cde}{%
+\subsection{IPTW for the CDE}\label{iptw-for-the-cde}}
+
+If the controlled direct effect (CDE) is identifiable, \(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\) can be expressed by the basic Horvitz Thompson estimator (using Inverse probability of treatment weighting (IPTW)), denoting \(\mathbb{P}\left(A=a \mid L(0)) = g(A=a \mid L(0)\right)\) and \(\mathbb{P}\left(M=m \mid L(0),A,L(1)) = g(M=m \mid L(0),A,L(1)\right)\):
+\begin{equation}
+\small
+\Psi^{\text{CDE}_m} = \mathbb{E}\left( \frac{\mathbb{I}(A=1 \cap M=m)}{g(A=1 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right) - \mathbb{E}\left( \frac{\mathbb{I}(A=0 \cap M=m)}{g(A=0 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right)
+\end{equation}
+
+The following steps describe the implementation of the IPTW estimator
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Estimate the treatment mechanisms \(g\left(A=1 \mid L(0)\right)\) and \(g\left(M=1 \mid L(0),A,L(1)\right)\)
+\item
+  Predict each individual's probability of being exposed to her own exposure
+\item
+  Apply weights corresponding to the inverse of the predicted probability \(w_{A_i} = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\) and \(w_{M_i} = \frac{1}{\hat{g}(M_i = m \mid L(0)_i,A_i,L(1)_i)}\)
+\item
+  Use the empirical mean of the weighted outcome \(Y\): \(\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i\)
+\end{enumerate}
+
+\hypertarget{stabilized-iptw-for-the-cde}{%
+\subsection{Stabilized IPTW for the CDE}\label{stabilized-iptw-for-the-cde}}
+
+If the controlled dired effect (CDE) is identifiable, \(\Psi^{CDE}\) can be estimated using a stabilized IPTW estimator (modified Horvitz Thompson estimator):
+\begin{equation}
+\small
+\hat{\mathbb{E}}(Y_{1,m}) - \hat{\mathbb{E}}(Y_{0,m}) =  \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{\sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}} - \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}}
+\end{equation}
+The estimation algorithm is the same as for IPTW, but applying the stabilized estimator in step 4.
 
 \hypertarget{chap_tmle}{%
 \chapter{Targeted Maximum Likelihood Estimation (TMLE)}\label{chap_tmle}}
