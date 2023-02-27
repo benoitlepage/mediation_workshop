@@ -30,21 +30,21 @@ pred.g1.L <- predict(g.L, type="response")
 pred.g0.L <- 1 - pred.g1.L
 # the predicted probability of the observed treatment A_i=a is :
 gA.L <- rep(NA, nrow(df2_int))
-gA.L[df2_int$A0_ace==1] <- pred.g1.L[df2_int$A0_ace==1]
-gA.L[df2_int$A0_ace==0] <- pred.g0.L[df2_int$A0_ace==0]
+gA.L[df2_int$A0_ace == 1] <- pred.g1.L[df2_int$A0_ace == 1]
+gA.L[df2_int$A0_ace == 0] <- pred.g0.L[df2_int$A0_ace == 0]
 
 # 3. Apply weights corresponding to the inverse of the predicted probability
 wt <- 1 / gA.L
 
 # 4. Use the empirical mean of the weighted outcome
 # point estimates:
-IPTW.death <- mean(wt * as.numeric(df2_int$A0_ace==1) * df2_int$Y_death) -
-  mean(wt * as.numeric(df2_int$A0_ace==0) * df2_int$Y_death)
+IPTW.death <- mean(wt * as.numeric(df2_int$A0_ace == 1) * df2_int$Y_death) -
+  mean(wt * as.numeric(df2_int$A0_ace == 0) * df2_int$Y_death)
 IPTW.death
 # [1] 0.08224947
 
-IPTW.qol <- mean(wt * as.numeric(df2_int$A0_ace==1) * df2_int$Y_qol) -
-  mean(wt * as.numeric(df2_int$A0_ace==0) * df2_int$Y_qol)
+IPTW.qol <- mean(wt * as.numeric(df2_int$A0_ace == 1) * df2_int$Y_qol) -
+  mean(wt * as.numeric(df2_int$A0_ace == 0) * df2_int$Y_qol)
 IPTW.qol
 # [1] -8.436797
 ```
@@ -62,17 +62,17 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 # 3. For example, applying g^*(A) = 1
 # 4. Applying the stabilized estimator
 # point estimates:
-s.IPTW.death <- (mean(wt * as.numeric(df2_int$A0_ace==1) * df2_int$Y_death) /
-                   mean(wt * as.numeric(df2_int$A0_ace==1))) -
-  (mean(wt * as.numeric(df2_int$A0_ace==0) * df2_int$Y_death) /
-     mean(wt * as.numeric(df2_int$A0_ace==0)))
+s.IPTW.death <- (mean(wt * as.numeric(df2_int$A0_ace == 1) * df2_int$Y_death) /
+                   mean(wt * as.numeric(df2_int$A0_ace == 1))) -
+  (mean(wt * as.numeric(df2_int$A0_ace == 0) * df2_int$Y_death) /
+     mean(wt * as.numeric(df2_int$A0_ace == 0)))
 s.IPTW.death
 # [1] 0.08294185
 
-s.IPTW.qol <- (mean(wt * as.numeric(df2_int$A0_ace==1) * df2_int$Y_qol) /
-                 mean(wt * as.numeric(df2_int$A0_ace==1))) -
-  (mean(wt * as.numeric(df2_int$A0_ace==0) * df2_int$Y_qol) /
-     mean(wt * as.numeric(df2_int$A0_ace==0)))
+s.IPTW.qol <- (mean(wt * as.numeric(df2_int$A0_ace == 1) * df2_int$Y_qol) /
+                 mean(wt * as.numeric(df2_int$A0_ace == 1))) -
+  (mean(wt * as.numeric(df2_int$A0_ace == 0) * df2_int$Y_qol) /
+     mean(wt * as.numeric(df2_int$A0_ace == 0)))
 s.IPTW.qol
 # [1] -8.291992
 ```
@@ -86,7 +86,7 @@ The ATE estimates using stabilized IPTW for death probability and mean quality o
 If the controlled direct effect (CDE) is identifiable, $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$ can be expressed by the basic Horvitz Thompson estimator (using Inverse probability of treatment weighting (IPTW)), denoting $\mathbb{P}\left(A=a \mid L(0)) = g(A=a \mid L(0)\right)$ and $\mathbb{P}\left(M=m \mid L(0),A,L(1)) = g(M=m \mid L(0),A,L(1)\right)$:
 \begin{equation}
 \small
-\Psi^{\text{CDE}_m} = \mathbb{E}\left( \frac{\mathbb{I}(A=1 \cap M=m)}{g(A=1 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right) - \mathbb{E}\left( \frac{\mathbb{I}(A=0 \cap M=m)}{g(A=0 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right)
+\Psi^{\text{CDE}_m} = \mathbb{E}\left[ \frac{\mathbb{I}(A=1 \cap M=m)}{g(A=1 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right] - \mathbb{E}\left[ \frac{\mathbb{I}(A=0 \cap M=m)}{g(A=0 \mid L(0)) \times g(M=m \mid L(0),A,L(1))} Y \right]
 \end{equation}
   
 The following steps describe the implementation of the IPTW estimator
@@ -99,6 +99,74 @@ The following steps describe the implementation of the IPTW estimator
 
 4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i$
 
+```{r Psi_CDE_iptw, echo=TRUE, eval = FALSE}
+# 1. Estimate gA and gM
+gA.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv, 
+            family = "binomial", data = df2_int)
+gM.L <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1, 
+            family = "binomial", data = df2_int)
+
+# 2. Predict each individual's probability of being exposed to her own exposure
+# predict the probabilities P(A0_ace=1|L(0)) & P(A0_ace=0|L(0))
+pred.gA1.L <- predict(gA.L, type = "response")
+pred.gA0.L <- 1 - pred.gA1.L
+# the predicted probability of the observed treatment A_i=a is :
+gAobs.L <- rep(NA, nrow(df2_int))
+gAobs.L[df2_int$A0_ace == 1] <- pred.gA1.L[df2_int$A0_ace == 1]
+gAobs.L[df2_int$A0_ace == 0] <- pred.gA0.L[df2_int$A0_ace == 0]
+
+# predict the probabilities P(M=1|L(0),A,L(1)) & P(M=0|L(0),A,L(1))
+pred.gM1.L <- predict(gM.L, type = "response")
+pred.gM0.L <- 1 - pred.gM1.L
+# the predicted probability of the observed treatment M_i=m is :
+gMobs.L <- rep(NA, nrow(df2_int))
+gMobs.L[df2_int$M_smoking == 1] <- pred.gM1.L[df2_int$M_smoking == 1]
+gMobs.L[df2_int$M_smoking == 0] <- pred.gM0.L[df2_int$M_smoking == 0]
+
+# 3. Apply weights corresponding to the inverse of the predicted probability
+wt_A <- 1 / gAobs.L
+wt_M <- 1 / gMobs.L
+wt <- wt_A * wt_M
+
+# 4. Use the empirical mean of the weighted outcome
+# point estimates of CDE, setting M=0
+CDE_IPTW_m0_death <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                             df2_int$M_smoking == 0) * 
+                             df2_int$Y_death) -
+                        mean(wt * as.numeric(df2_int$A0_ace==0 & 
+                                               df2_int$M_smoking == 0) * 
+                               df2_int$Y_death))
+CDE_IPTW_m0_death
+# [1] 0.05874684
+
+CDE_IPTW_m0_qol <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                           df2_int$M_smoking == 0) * 
+                           df2_int$Y_qol) -
+                      mean(wt * as.numeric(df2_int$A0_ace==0 & 
+                                             df2_int$M_smoking == 0) * 
+                             df2_int$Y_qol))
+CDE_IPTW_m0_qol
+# [1] -5.341138
+
+# point estimates of CDE, setting M=1
+CDE_IPTW_m1_death <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                             df2_int$M_smoking == 1) * 
+                             df2_int$Y_death) -
+                        mean(wt * as.numeric(df2_int$A0_ace==0 & 
+                                               df2_int$M_smoking == 1) * 
+                               df2_int$Y_death))
+CDE_IPTW_m1_death
+# [1] 0.101733
+
+CDE_IPTW_m1_qol <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                           df2_int$M_smoking == 1) * 
+                           df2_int$Y_qol) -
+                      mean(wt * as.numeric(df2_int$A0_ace==0 & 
+                                             df2_int$M_smoking == 1) * 
+                             df2_int$Y_qol))
+CDE_IPTW_m1_qol
+# [1] -8.185866
+```
 
 ### Stabilized IPTW for the CDE
 If the controlled dired effect (CDE) is identifiable, $\Psi^{CDE}$ can be estimated using a stabilized IPTW estimator (modified Horvitz Thompson estimator):
@@ -107,3 +175,60 @@ If the controlled dired effect (CDE) is identifiable, $\Psi^{CDE}$ can be estima
 \hat{\mathbb{E}}(Y_{1,m}) - \hat{\mathbb{E}}(Y_{0,m}) =  \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{\sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}} - \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}}
 \end{equation}
 The estimation algorithm is the same as for IPTW, but applying the stabilized estimator in step 4.
+
+```{r Psi_CDE_siptw, echo=TRUE, eval = FALSE}
+# 4. Applying the stabilized estimator
+# point estimates of CDE, setting M=0:
+CDE_sIPTW_m0_death <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                              df2_int$M_smoking == 0) * 
+                              df2_int$Y_death) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                                df2_int$M_smoking == 0))) -
+                         (mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                              df2_int$M_smoking == 0) * 
+                              df2_int$Y_death) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                                df2_int$M_smoking == 0)))
+CDE_sIPTW_m0_death
+# [1] 0.0601292
+
+CDE_sIPTW_m0_qol <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                              df2_int$M_smoking == 0) * 
+                              df2_int$Y_qol) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                                df2_int$M_smoking == 0))) -
+                         (mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                              df2_int$M_smoking == 0) * 
+                              df2_int$Y_qol) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                                df2_int$M_smoking == 0)))
+CDE_sIPTW_m0_qol
+# [1] -4.966328
+
+# point estimates of CDE, setting M=1:
+CDE_sIPTW_m1_death <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                              df2_int$M_smoking == 1) * 
+                              df2_int$Y_death) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                                df2_int$M_smoking == 1))) -
+                         (mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                              df2_int$M_smoking == 1) * 
+                              df2_int$Y_death) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                                df2_int$M_smoking == 1)))
+CDE_sIPTW_m1_death
+# [1] 0.09030186
+
+CDE_sIPTW_m1_qol <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                              df2_int$M_smoking == 1) * 
+                              df2_int$Y_qol) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 1 & 
+                                                df2_int$M_smoking == 1))) -
+                         (mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                              df2_int$M_smoking == 1) * 
+                              df2_int$Y_qol) / 
+                         mean(wt * as.numeric(df2_int$A0_ace == 0 & 
+                                                df2_int$M_smoking == 1)))
+CDE_sIPTW_m1_qol
+# [1] -10.03045
+```
