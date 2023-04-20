@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-02-27}
+\date{2023-04-20}
 
 \begin{document}
 \maketitle
@@ -1868,6 +1868,40 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 
 \hypertarget{chap_tmle}{%
 \chapter{Targeted Maximum Likelihood Estimation (TMLE)}\label{chap_tmle}}
+
+When estimating a mean counterfactual outcome using g-computation methods, we have to estimate some \(\bar{Q}\) functions (functions of the outcome conditional on the exposures and confounders, \(\bar{Q}=\mathbb{E}\left(Y\mid A,L(0)\right)\)). For example, the Average Total Effect (ATE) is defined as a marginal effect, based on the empirical mean of such \(\bar{Q}\) functions:
+\begin{equation*}
+\hat{\Psi}^{\text{ATE}}_{\text{gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}(A=1)_i - \hat{\overline{Q}}(A=0)_i \right]
+\end{equation*}
+
+Unless the \(\bar{Q}\) functions are not misspecified, its estimate is expected to be biased (especially if the set of baseline confounders \(L(0)\) is high dimensional, for example if it includes is a large number of variables or continuous variables). In order to improve the estimation of \(\bar{Q}(A,L)\), it is possible to use data-adaptive methods (machine learning algorithms) in order to optimize the bias-variance trade-off. However, this bias-variance trade-off would be optimized for the \(\bar{Q}\) functions, not for the ATE estimate \(\hat{\Psi}^\text{ATE}_\text{gcomp}\). If the \(\bar{Q}\) function is unknown and has to be estimated (preferably by data-adaptive methods), it can be shown that the g-computation estimate of \(\Psi^\text{ATE}\) is asymptotically biased.
+
+The Targeted Maximum Likelihood Estimation (TMLE) method has been developed as an asymptotically linear estimator, so that the estimation of any target parameter in any semiparametric statistical model is unbiased and efficient. In order to estimate a parameter \(\Psi(P_0)\), where \(P_0\) is an unknown probability distribution among a set \(\mathcal{M}\) of possible statistical models, the TMLE is described as a two-step procedure (\protect\hyperlink{ref-vanderlaan_book2011}{Laan and Rose 2011}):
+
+\begin{itemize}
+\tightlist
+\item
+  The first step is to obtain an initial estimate of the relevant part \(\bar{Q}_0\) of the probability distribution \(P_0\). Data adaptive methods (machine learning algorithms) can be used to optimize this first step.
+\item
+  The second step is to update the initial fit in order to ``target toward making an optimal bias-variance tradeoff for the parameter of interest'' \(\Psi(\bar{Q})\).
+\end{itemize}
+
+Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the \texttt{ltmle} package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. It can also be used in simpler settings with only one binary or continous outcome, measure only once at the end a the study.
+
+\hypertarget{tmle-for-the-ate}{%
+\section{TMLE for the ATE}\label{tmle-for-the-ate}}
+
+In order to illustrate the TMLE procedure, the estimation of a mean counterfactual outcome will be described in detail, following the algorithm implemented in the \texttt{ltmle} package.
+
+The basic steps of the procedure are the following (\protect\hyperlink{ref-vanderlaan_book2011}{Laan and Rose 2011}):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Estimate \(\bar{Q}_0\). Data-adpative methods can be used here, the \texttt{ltmle} package relies on the \texttt{SuperLearner} package to fit and predict \(\hat{\bar{Q}}(A=a)\).
+\item
+  Estimate the treatment mechanism \(g(A=1 \mid L(0))\). Once again, data-adpative methods can be used to improve the estimation.
+\end{enumerate}
 
 \hypertarget{appendix_a}{%
 \chapter{Appendix A: Data generating mechanisms}\label{appendix_a}}
@@ -5030,6 +5064,9 @@ Conditional randomized & & \\
 \begin{CSLReferences}{1}{0}
 \leavevmode\vadjust pre{\hypertarget{ref-daniel2013}{}}%
 Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. {``Methods for Dealing with Time-Dependent Confounding.''} \emph{Statistics in Medicine} 32 (9): 1584--1618.
+
+\leavevmode\vadjust pre{\hypertarget{ref-vanderlaan_book2011}{}}%
+Laan, Mark J. van der, and Sherri Rose. 2011. \emph{Targeted Learning: Causal Inference for Observational and Experimental Data.} 1st ed. Springer Series in Statistics. New York, NY: Springer.
 
 \leavevmode\vadjust pre{\hypertarget{ref-naimi2020}{}}%
 Naimi, Ashley I, and Brian W Whitcomb. 2020. {``Estimating Risk Ratios and Risk Differences Using Regression.''} \emph{American Journal of Epidemiology} 189 (6): 508--10.
