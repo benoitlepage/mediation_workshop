@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-04-20" />
+<meta name="date" content="2023-05-02" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -268,15 +268,33 @@ div.csl-indent {
 <li>The first step is to obtain an initial estimate of the relevant part <span class="math inline">\(\bar{Q}_0\)</span> of the probability distribution <span class="math inline">\(P_0\)</span>. Data adaptive methods (machine learning algorithms) can be used to optimize this first step.</li>
 <li>The second step is to update the initial fit in order to “target toward making an optimal bias-variance tradeoff for the parameter of interest” <span class="math inline">\(\Psi(\bar{Q})\)</span>.</li>
 </ul>
-<p>Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the <code>ltmle</code> package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. It can also be used in simpler settings with only one binary or continous outcome, measure only once at the end a the study.</p>
+<p>Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the <code>ltmle</code> package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. It can also be used in simpler settings with only one binary or continuous outcome, measure only once at the end a the study.</p>
 <div id="tmle-for-the-ate" class="section level2 hasAnchor" number="8.1">
 <h2><span class="header-section-number">8.1</span> TMLE for the ATE<a href="chap_tmle.html#tmle-for-the-ate" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>In order to illustrate the TMLE procedure, the estimation of a mean counterfactual outcome will be described in detail, following the algorithm implemented in the <code>ltmle</code> package.</p>
+<p>In order to illustrate the TMLE procedure, the estimation of a mean counterfactual outcome, denoted <span class="math inline">\(\Psi(A=1) = \mathbb{E} \left[\bar{Q}(A=1,L(0))\right]\)</span>, will be described in detail, following the algorithm implemented in the <code>ltmle</code> package.</p>
 <p>The basic steps of the procedure are the following <span class="citation">(<a href="#ref-vanderlaan_book2011" role="doc-biblioref">Laan and Rose 2011</a>)</span>:</p>
 <ol style="list-style-type: decimal">
-<li><p>Estimate <span class="math inline">\(\bar{Q}_0\)</span>. Data-adpative methods can be used here, the <code>ltmle</code> package relies on the <code>SuperLearner</code> package to fit and predict <span class="math inline">\(\hat{\bar{Q}}(A=a)\)</span>.</p></li>
-<li><p>Estimate the treatment mechanism <span class="math inline">\(g(A=1 \mid L(0))\)</span>. Once again, data-adpative methods can be used to improve the estimation.</p></li>
+<li><p>Estimate <span class="math inline">\(\bar{Q}_0\)</span>. Data-adaptive methods can be used here, the <code>ltmle</code> package relies on the <code>SuperLearner</code> package to fit and predict <span class="math inline">\(\hat{\bar{Q}}(A=1)\)</span>.</p></li>
+<li><p>Estimate the treatment mechanism <span class="math inline">\(g(A=1 \mid L(0))\)</span>. Once again, data-adaptive methods can be used to improve the estimation.</p></li>
+<li><p>The initial estimator of <span class="math inline">\(\bar{Q}_0(A=1)\)</span> will be slightly modified using a parametric fluctuation model, in order to reduce the bias when estimating the ATE. For example, the following parametric model of <span class="math inline">\(\bar{Q}_0(A=1)\)</span> and a “clever covariate” <span class="math inline">\(H = \frac{I(A=1)}{\hat{g}(A=1 \mid L(0))}\)</span> can be applied:
+<span class="math display">\[\begin{equation*}
+\text{logit} P(Y \mid \hat{\bar{Q}}, H) = \hat{\bar{Q}} + \varepsilon H
+\end{equation*}\]</span>
+The parametric fluctuation model is chosen so that the derivative of its log-likelihood loss function is equal to the appropriate component of the efficient influence curve of the target parameter <span class="math inline">\(\Psi(A=1)\)</span>.</p></li>
+<li><p>Modify the initial estimator of <span class="math inline">\(\bar{Q}_0(A=1)\)</span> with the parametric fluctuation model (using the estimation <span class="math inline">\(\hat{\varepsilon}\)</span> from the previous step). We denote <span class="math inline">\(\hat{\bar{Q}}^*(A=1)\)</span> the updated value of <span class="math inline">\(\hat{\bar{Q}}(A=1)\)</span></p></li>
+<li><p>Use the updated values <span class="math inline">\(\hat{\bar{Q}}^*(A=1)\)</span> in the substitution estimator to estimate the target parameter <span class="math inline">\(\Psi(A=1)\)</span> :
+<span class="math display">\[\begin{equation*}
+\hat{\Psi}(A=1)_\text{TMLE} = \frac{1}{n} \sum_{i=1}^n \hat{\bar{Q}}^* (A=1,L(0))
+\end{equation*}\]</span></p></li>
+<li><p>Estimate the efficient influence curve <span class="math inline">\(D^*(Q_0,g_0)\)</span> :
+<span class="math display">\[\begin{equation*}
+D^*(Q_0,g_0) = \frac{I(A=1)}{g_0(A=1 \mid L(0))}(Y - \bar{Q}_0(A,L(O))) + \bar{Q}_0(A=1,L(0))  + \Psi(A=1)
+\end{equation*}\]</span></p></li>
 </ol>
+<p>The variance of the target parameter can then be calculated using the variance of the efficient influence curve:
+<span class="math display">\[\begin{equation*}
+\text{var} \hat{\Psi}(A=1)_\text{TMLE} = \frac{\text{var} \hat{D}^*}{n}
+\end{equation*}\]</span></p>
 
 </div>
 </div>

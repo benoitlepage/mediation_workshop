@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-04-20}
+\date{2023-05-02}
 
 \begin{document}
 \maketitle
@@ -1886,22 +1886,45 @@ The Targeted Maximum Likelihood Estimation (TMLE) method has been developed as a
   The second step is to update the initial fit in order to ``target toward making an optimal bias-variance tradeoff for the parameter of interest'' \(\Psi(\bar{Q})\).
 \end{itemize}
 
-Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the \texttt{ltmle} package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. It can also be used in simpler settings with only one binary or continous outcome, measure only once at the end a the study.
+Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the \texttt{ltmle} package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. It can also be used in simpler settings with only one binary or continuous outcome, measure only once at the end a the study.
 
 \hypertarget{tmle-for-the-ate}{%
 \section{TMLE for the ATE}\label{tmle-for-the-ate}}
 
-In order to illustrate the TMLE procedure, the estimation of a mean counterfactual outcome will be described in detail, following the algorithm implemented in the \texttt{ltmle} package.
+In order to illustrate the TMLE procedure, the estimation of a mean counterfactual outcome, denoted \(\Psi(A=1) = \mathbb{E} \left[\bar{Q}(A=1,L(0))\right]\), will be described in detail, following the algorithm implemented in the \texttt{ltmle} package.
 
 The basic steps of the procedure are the following (\protect\hyperlink{ref-vanderlaan_book2011}{Laan and Rose 2011}):
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  Estimate \(\bar{Q}_0\). Data-adpative methods can be used here, the \texttt{ltmle} package relies on the \texttt{SuperLearner} package to fit and predict \(\hat{\bar{Q}}(A=a)\).
+  Estimate \(\bar{Q}_0\). Data-adaptive methods can be used here, the \texttt{ltmle} package relies on the \texttt{SuperLearner} package to fit and predict \(\hat{\bar{Q}}(A=1)\).
 \item
-  Estimate the treatment mechanism \(g(A=1 \mid L(0))\). Once again, data-adpative methods can be used to improve the estimation.
+  Estimate the treatment mechanism \(g(A=1 \mid L(0))\). Once again, data-adaptive methods can be used to improve the estimation.
+\item
+  The initial estimator of \(\bar{Q}_0(A=1)\) will be slightly modified using a parametric fluctuation model, in order to reduce the bias when estimating the ATE. For example, the following parametric model of \(\bar{Q}_0(A=1)\) and a ``clever covariate'' \(H = \frac{I(A=1)}{\hat{g}(A=1 \mid L(0))}\) can be applied:
+  \begin{equation*}
+   \text{logit} P(Y \mid \hat{\bar{Q}}, H) = \hat{\bar{Q}} + \varepsilon H
+  \end{equation*}
+  The parametric fluctuation model is chosen so that the derivative of its log-likelihood loss function is equal to the appropriate component of the efficient influence curve of the target parameter \(\Psi(A=1)\).
+\item
+  Modify the initial estimator of \(\bar{Q}_0(A=1)\) with the parametric fluctuation model (using the estimation \(\hat{\varepsilon}\) from the previous step). We denote \(\hat{\bar{Q}}^*(A=1)\) the updated value of \(\hat{\bar{Q}}(A=1)\)
+\item
+  Use the updated values \(\hat{\bar{Q}}^*(A=1)\) in the substitution estimator to estimate the target parameter \(\Psi(A=1)\) :
+  \begin{equation*}
+  \hat{\Psi}(A=1)_\text{TMLE} = \frac{1}{n} \sum_{i=1}^n \hat{\bar{Q}}^* (A=1,L(0)) 
+  \end{equation*}
+\item
+  Estimate the efficient influence curve \(D^*(Q_0,g_0)\) :
+  \begin{equation*}
+  D^*(Q_0,g_0) = \frac{I(A=1)}{g_0(A=1 \mid L(0))}(Y - \bar{Q}_0(A,L(O))) + \bar{Q}_0(A=1,L(0))  + \Psi(A=1)
+  \end{equation*}
 \end{enumerate}
+
+The variance of the target parameter can then be calculated using the variance of the efficient influence curve:
+\begin{equation*}
+\text{var} \hat{\Psi}(A=1)_\text{TMLE} = \frac{\text{var} \hat{D}^*}{n}
+\end{equation*}
 
 \hypertarget{appendix_a}{%
 \chapter{Appendix A: Data generating mechanisms}\label{appendix_a}}
