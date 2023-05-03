@@ -64,34 +64,40 @@ Q.fit <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
              family = "binomial", data = df2_int)
 data.A1 <- df2_int
 data.A1$A0_ace <- 1
-Qbar_Ais1 <- predict(Q.fit, newdata = data.A1, type = "response")
+# Qbar_Ais1 <- predict(Q.fit, newdata = data.A1, type = "response")
 logitQ <- predict(Q.fit, newdata = data.A1, type = "link")
 
 ## 2) Estimate the treatment mechanism
 g.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
            family = "binomial", data = df2_int)
 
-# predict the probabilities P(A0_ace=1|L(0)) & P(A0_ace=0|L(0))
-pred.g1.L <- predict(g.L, type="response")
-pred.g0.L <- 1 - pred.g1.L
+# predict the probabilities P(A0_ace=1|L(0))
+g1.L <- predict(g.L, type="response")
+head(g1.L)
+#          1          2          3          4          5          6
+# 0.10989220 0.15629749 0.15629749 0.08894074 0.15629749 0.15629749
+
+# pred.g1.L <- predict(g.L, type="response")
+# pred.g0.L <- 1 - pred.g1.L
 
 # the predicted probability of the observed treatment A_i=a is :
-gA.L <- rep(NA, nrow(df2_int))
-gA.L[df2_int$A0_ace==1] <- pred.g1.L[df2_int$A0_ace==1]
-gA.L[df2_int$A0_ace==0] <- pred.g0.L[df2_int$A0_ace==0]
+# gA.L <- rep(NA, nrow(df2_int))
+# gA.L[df2_int$A0_ace==1] <- pred.g1.L[df2_int$A0_ace==1]
+# gA.L[df2_int$A0_ace==0] <- pred.g0.L[df2_int$A0_ace==0]
 
 # its useful to check the distribution of gA.L, as values close to 0 or 1
 # (< 0.01 or > 0.999)
 # are indicators of near positivity violation
-summary(gA.L)
+summary(g1.L)
 #    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.06109 0.84370 0.89011 0.80279 0.91106 0.93891
 # there is no positivity issues in this example.
-head(gA.L, 10)
-# [1] 0.8901078 0.1562975 0.8437025 0.9110593 0.8437025 0.8437025 0.8901078 0.8901078 0.1562975 0.8437025
-
-plot(gA.L, Psi_Ais1$cum.g)
-plot(gA.L[Psi_Ais1$cum.g.used == TRUE], Psi_Ais1$cum.g[Psi_Ais1$cum.g.used == TRUE])
+# head(gA.L, 10)
+# # [1] 0.8901078 0.1562975 0.8437025 0.9110593 0.8437025 0.8437025 0.8901078 0.8901078 0.1562975 0.8437025
+#
+#
+# plot(gA.L, Psi_Ais1$cum.g)
+# plot(gA.L[Psi_Ais1$cum.g.used == TRUE], Psi_Ais1$cum.g[Psi_Ais1$cum.g.used == TRUE])
 # en fait, on a pas besoin de calculer la probabilité d'observer sa propre observation, avec l'indicatrice, on retombe sur nos pieds !
 
 
@@ -101,7 +107,7 @@ plot(gA.L[Psi_Ais1$cum.g.used == TRUE], Psi_Ais1$cum.g[Psi_Ais1$cum.g.used == TR
 #     in front of the clever covariate.
 
 # The clever covariate H(A,L(0)) depends on g:
-H <- (df2_int$A0_ace == 1) / gA.L
+H <- (df2_int$A0_ace == 1) / g1.L
 
 
 ## 3) Update the initial fit Qbar from step 1.
@@ -114,7 +120,7 @@ update.fit <- glm(df2_int$Y_death ~ -1 + offset(logitQ) + H,
 # Coefficients:
 #   H
 # -0.0001756
-# Degrees of Freedom: 1124 Total (i.e. Null);  1123 Residual
+# Degrees of Freedom: 10000 Total (i.e. Null);  9999 Residual
 Qstar <- predict(update.fit, data = data.frame(logitQ, H), type = "response")
 
 # in the ltmle package the fluctuation parametric model is the following:
@@ -146,3 +152,95 @@ sqrt(var(IC)/nrow(df2_int))
 
 plot(IC,Psi_Ais1$IC$tmle)
 abline(a = 0, b = 1)
+
+
+
+
+#### ATE With SuperLearner
+library(SuperLearner)
+library(xgboost)
+# Below, we use the same ltmle() function than previously,
+# and specify our family of algorithms to be used with the SuperLearner
+
+## we can change the default argument of the SL.xgboost algorithm and the
+## SL.step.interaction algorithm
+
+# We can check how arguments are used in the pre-specified algorithms
+SL.step.interaction
+# function (Y, X, newX, family, direction = "both", trace = 0,
+#     k = 2, ...)
+# {
+#     fit.glm <- glm(Y ~ ., data = X, family = family)
+#     fit.step <- step(fit.glm, scope = Y ~ .^2, direction = direction,
+#         trace = trace, k = k)
+#     pred <- predict(fit.step, newdata = newX, type = "response")
+#     fit <- list(object = fit.step)
+#     out <- list(pred = pred, fit = fit)
+#     class(out$fit) <- c("SL.step")
+#     return(out)
+# }
+# <bytecode: 0x000001b965ed0dc0>
+# <environment: namespace:SuperLearner>
+
+# The pre-specified can be easily modified to obtain a simple backward selection
+SL.interaction.back = function(...) {
+  SL.step.interaction(..., direction = "backward")
+}
+
+# The same principle can be applied with xgboost
+SL.xgboost
+SL.xgboost.custom = function(...) {
+  SL.xgboost(..., ntrees = 50)
+}
+
+
+
+# the data-adaptive algorithms can be specified separately for the Q and g functions
+SL.library <- list(Q=c("SL.mean","SL.glm","SL.interaction.back", "SL.xgboost.custom"),
+                   g=c("SL.mean","SL.glm","SL.interaction.back", "SL.xgboost.custom"))
+
+set.seed(42)
+Psi_ATE_tmle <- ltmle(data = data_ltmle,
+                      Anodes = "A0_ace",
+                      Ynodes = "Y_death",
+                      Qform = Qform,
+                      gform = gform,
+                      gbounds = c(0.01, 1),
+                      abar = list(1,0), # vector of the counterfactual treatment
+                      SL.library = SL.library,
+                      variance.method = "ic")
+summary(Psi_ATE_tmle)
+# The function give the ATE on the difference scale (as well, as RR and OR)
+# Additive Treatment Effect:
+# Parameter Estimate:  0.081832
+#  Estimated Std Err:  0.014291
+#            p-value:  1.0275e-08
+#  95% Conf Interval: (0.053822, 0.10984)
+
+## We can see how the SuperLearner used the algorithms for the g function
+Psi_ATE_tmle$fit$g
+# [[1]]$A0_ace
+#                               Risk        Coef
+# SL.mean_All             0.09976892 0.003545569 # risk is higher for the bad model
+# SL.glm_All              0.09865424 0.416238369
+# SL.interaction.back_All 0.09865424 0.000000000
+# SL.xgboost.custom_All   0.09865550 0.580216062
+
+# for the g function, the SuperLearner predicts the treatment mechanism
+# base on a mix between the glm and the customized xgboost algorithm.
+
+## We can see how the SuperLearner used the algorithms for the g function
+Psi_ATE_tmle$fit$Q
+#                              Risk       Coef
+# SL.mean_All             0.1684737 0.02003166 # risk is higher for the bad model
+# SL.glm_All              0.1662241 0.00000000
+# SL.interaction.back_All 0.1662241 0.55956284
+# SL.xgboost.custom_All   0.1662422 0.42040550
+
+# The SuperLearner predicts both the treatment mechanism g and the Q function
+# from a mix between the backward interaction glm (or the main term glm) and the
+# customized xgboost algorithm.
+# However, the choice between the SL.glm and the SL.interaction.back
+# procedure was arbitrary: as we can see the Risk is exactly the same for both
+# algorithms. The final model from the step-by-step procedure was much probably
+# a main term glm.

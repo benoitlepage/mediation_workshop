@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-05-02" />
+<meta name="date" content="2023-05-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -272,13 +272,13 @@ div.csl-indent {
 \end{equation}\]</span></p></li>
 </ol>
 <p>For continuous outcomes, <span class="math inline">\(\overline{Q}(A=a)\)</span> functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="chap_gcomp.html#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Estimate Qbar  </span></span>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="chap_gcomp.html#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 1. Estimate Qbar  </span></span>
 <span id="cb18-2"><a href="chap_gcomp.html#cb18-2" aria-hidden="true" tabindex="-1"></a>Q.tot.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
 <span id="cb18-3"><a href="chap_gcomp.html#cb18-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb18-4"><a href="chap_gcomp.html#cb18-4" aria-hidden="true" tabindex="-1"></a>Q.tot.qol <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
 <span id="cb18-5"><a href="chap_gcomp.html#cb18-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb18-6"><a href="chap_gcomp.html#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-7"><a href="chap_gcomp.html#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Predict an outcome for each subject, setting A=0 and A=1</span></span>
+<span id="cb18-7"><a href="chap_gcomp.html#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, setting A=0 and A=1</span></span>
 <span id="cb18-8"><a href="chap_gcomp.html#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare data sets used to predict the outcome under the counterfactual </span></span>
 <span id="cb18-9"><a href="chap_gcomp.html#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># scenarios setting A=0 and A=1</span></span>
 <span id="cb18-10"><a href="chap_gcomp.html#cb18-10" aria-hidden="true" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> data.A0 <span class="ot">&lt;-</span> df2_int</span>
@@ -292,8 +292,8 @@ div.csl-indent {
 <span id="cb18-18"><a href="chap_gcomp.html#cb18-18" aria-hidden="true" tabindex="-1"></a>Y1.qol.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.qol, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
 <span id="cb18-19"><a href="chap_gcomp.html#cb18-19" aria-hidden="true" tabindex="-1"></a>Y0.qol.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.qol, <span class="at">newdata =</span> data.A0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
 <span id="cb18-20"><a href="chap_gcomp.html#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-21"><a href="chap_gcomp.html#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Plug the predicted outcome in the gformula and use the sample mean </span></span>
-<span id="cb18-22"><a href="chap_gcomp.html#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="co">#    to estimate the ATE</span></span>
+<span id="cb18-21"><a href="chap_gcomp.html#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="do">## 3. Plug the predicted outcome in the gformula and use the sample mean </span></span>
+<span id="cb18-22"><a href="chap_gcomp.html#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="do">##    to estimate the ATE</span></span>
 <span id="cb18-23"><a href="chap_gcomp.html#cb18-23" aria-hidden="true" tabindex="-1"></a>ATE.death.gcomp <span class="ot">&lt;-</span> <span class="fu">mean</span>(Y1.death.pred <span class="sc">-</span> Y0.death.pred)</span>
 <span id="cb18-24"><a href="chap_gcomp.html#cb18-24" aria-hidden="true" tabindex="-1"></a>ATE.death.gcomp</span>
 <span id="cb18-25"><a href="chap_gcomp.html#cb18-25" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] 0.08270821</span></span>
@@ -389,12 +389,12 @@ div.csl-indent {
 \end{equation}\]</span></p></li>
 </ol>
 <p>For continuous outcomes, <span class="math inline">\(\overline{Q}_Y(A,L(1),M)\)</span> functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="chap_gcomp.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Fit parametric models to estimate the density of intermediate confounders, </span></span>
-<span id="cb20-2"><a href="chap_gcomp.html#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">#    conditional on the parents of the intermediate confounders</span></span>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="chap_gcomp.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 1. Fit parametric models to estimate the density of intermediate confounders, </span></span>
+<span id="cb20-2"><a href="chap_gcomp.html#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="do">##    conditional on the parents of the intermediate confounders</span></span>
 <span id="cb20-3"><a href="chap_gcomp.html#cb20-3" aria-hidden="true" tabindex="-1"></a>L1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(L1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace, </span>
 <span id="cb20-4"><a href="chap_gcomp.html#cb20-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb20-5"><a href="chap_gcomp.html#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-6"><a href="chap_gcomp.html#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Fit parametric models for the outcome conditional on past</span></span>
+<span id="cb20-6"><a href="chap_gcomp.html#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="do">## 2. Fit parametric models for the outcome conditional on past</span></span>
 <span id="cb20-7"><a href="chap_gcomp.html#cb20-7" aria-hidden="true" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span> </span>
 <span id="cb20-8"><a href="chap_gcomp.html#cb20-8" aria-hidden="true" tabindex="-1"></a>                                  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking, </span>
 <span id="cb20-9"><a href="chap_gcomp.html#cb20-9" aria-hidden="true" tabindex="-1"></a>                      <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
@@ -402,7 +402,7 @@ div.csl-indent {
 <span id="cb20-11"><a href="chap_gcomp.html#cb20-11" aria-hidden="true" tabindex="-1"></a>                              M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking, </span>
 <span id="cb20-12"><a href="chap_gcomp.html#cb20-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb20-13"><a href="chap_gcomp.html#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-14"><a href="chap_gcomp.html#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1</span></span>
+<span id="cb20-14"><a href="chap_gcomp.html#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1</span></span>
 <span id="cb20-15"><a href="chap_gcomp.html#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
 <span id="cb20-16"><a href="chap_gcomp.html#cb20-16" aria-hidden="true" tabindex="-1"></a>data.A0  <span class="ot">&lt;-</span> data.A1 <span class="ot">&lt;-</span> df2_int</span>
 <span id="cb20-17"><a href="chap_gcomp.html#cb20-17" aria-hidden="true" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
@@ -412,9 +412,9 @@ div.csl-indent {
 <span id="cb20-21"><a href="chap_gcomp.html#cb20-21" aria-hidden="true" tabindex="-1"></a>sim.L1.A0 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A0)</span>
 <span id="cb20-22"><a href="chap_gcomp.html#cb20-22" aria-hidden="true" tabindex="-1"></a>sim.L1.A1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A1)</span>
 <span id="cb20-23"><a href="chap_gcomp.html#cb20-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-24"><a href="chap_gcomp.html#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Estimate mean outcomes under the counterfactual scenarios setting different </span></span>
-<span id="cb20-25"><a href="chap_gcomp.html#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="co">#    levels of exposures for A and M:</span></span>
-<span id="cb20-26"><a href="chap_gcomp.html#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="co">#    {A=0, M=0} or {A=1, M=0} or {A=0, M=1} or {A=1, M=1}</span></span>
+<span id="cb20-24"><a href="chap_gcomp.html#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="do">## 4. Estimate mean outcomes under the counterfactual scenarios setting different </span></span>
+<span id="cb20-25"><a href="chap_gcomp.html#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="do">##    levels of exposures for A and M:</span></span>
+<span id="cb20-26"><a href="chap_gcomp.html#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="do">##    {A=0, M=0} or {A=1, M=0} or {A=0, M=1} or {A=1, M=1}</span></span>
 <span id="cb20-27"><a href="chap_gcomp.html#cb20-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-28"><a href="chap_gcomp.html#cb20-28" aria-hidden="true" tabindex="-1"></a>data.A0.M0 <span class="ot">&lt;-</span> data.A0.M1 <span class="ot">&lt;-</span> data.A0</span>
 <span id="cb20-29"><a href="chap_gcomp.html#cb20-29" aria-hidden="true" tabindex="-1"></a>data.A1.M0 <span class="ot">&lt;-</span> data.A1.M1 <span class="ot">&lt;-</span> data.A1</span>
@@ -443,7 +443,7 @@ div.csl-indent {
 <span id="cb20-52"><a href="chap_gcomp.html#cb20-52" aria-hidden="true" tabindex="-1"></a>m.qol.A0.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A0.M1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb20-53"><a href="chap_gcomp.html#cb20-53" aria-hidden="true" tabindex="-1"></a>m.qol.A1.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.M1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb20-54"><a href="chap_gcomp.html#cb20-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-55"><a href="chap_gcomp.html#cb20-55" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Estimate the CDE</span></span>
+<span id="cb20-55"><a href="chap_gcomp.html#cb20-55" aria-hidden="true" tabindex="-1"></a><span class="do">## 5. Estimate the CDE</span></span>
 <span id="cb20-56"><a href="chap_gcomp.html#cb20-56" aria-hidden="true" tabindex="-1"></a><span class="co"># CDE setting M=0</span></span>
 <span id="cb20-57"><a href="chap_gcomp.html#cb20-57" aria-hidden="true" tabindex="-1"></a>CDE.death.m0.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.M0) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A0.M0)</span>
 <span id="cb20-58"><a href="chap_gcomp.html#cb20-58" aria-hidden="true" tabindex="-1"></a>CDE.death.m0.gcomp.param</span>
@@ -475,7 +475,7 @@ div.csl-indent {
 \hat{\Psi}^{\text{CDE}_m}_{\text{gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}_{L(1)}(A=1)_i - \hat{\overline{Q}}_{L(1)}(A=0)_i \right]
 \end{equation}\]</span></p></li>
 </ol>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="chap_gcomp.html#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="chap_gcomp.html#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
 <span id="cb21-2"><a href="chap_gcomp.html#cb21-2" aria-hidden="true" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
 <span id="cb21-3"><a href="chap_gcomp.html#cb21-3" aria-hidden="true" tabindex="-1"></a>                                  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
 <span id="cb21-4"><a href="chap_gcomp.html#cb21-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
@@ -483,8 +483,8 @@ div.csl-indent {
 <span id="cb21-6"><a href="chap_gcomp.html#cb21-6" aria-hidden="true" tabindex="-1"></a>                              M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
 <span id="cb21-7"><a href="chap_gcomp.html#cb21-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb21-8"><a href="chap_gcomp.html#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-9"><a href="chap_gcomp.html#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) Generate predicted values by evaluating the regression setting the mediator</span></span>
-<span id="cb21-10"><a href="chap_gcomp.html#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co">#    value to M=0 or to M=1</span></span>
+<span id="cb21-9"><a href="chap_gcomp.html#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 2) Generate predicted values by evaluating the regression setting the mediator</span></span>
+<span id="cb21-10"><a href="chap_gcomp.html#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="do">##    value to M=0 or to M=1</span></span>
 <span id="cb21-11"><a href="chap_gcomp.html#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co">#    (Note: it is also possible to set A=0 or A=1 to evaluate the regression at</span></span>
 <span id="cb21-12"><a href="chap_gcomp.html#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     exposure history of interest: {A0=1,M=0},{A0=0,M=0},{A0=1,M=1},{A0=0,M=1})</span></span>
 <span id="cb21-13"><a href="chap_gcomp.html#cb21-13" aria-hidden="true" tabindex="-1"></a>data.Mis0 <span class="ot">&lt;-</span> data.Mis1 <span class="ot">&lt;-</span> df2_int</span>
@@ -498,8 +498,8 @@ div.csl-indent {
 <span id="cb21-21"><a href="chap_gcomp.html#cb21-21" aria-hidden="true" tabindex="-1"></a>Q.Y.qol.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb21-22"><a href="chap_gcomp.html#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-23"><a href="chap_gcomp.html#cb21-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-24"><a href="chap_gcomp.html#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Regress the predicted values conditional on the exposure A</span></span>
-<span id="cb21-25"><a href="chap_gcomp.html#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="co">#    and baseline confounders L(0)</span></span>
+<span id="cb21-24"><a href="chap_gcomp.html#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="do">## 3) Regress the predicted values conditional on the exposure A</span></span>
+<span id="cb21-25"><a href="chap_gcomp.html#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="do">##    and baseline confounders L(0)</span></span>
 <span id="cb21-26"><a href="chap_gcomp.html#cb21-26" aria-hidden="true" tabindex="-1"></a>L1.death.Mis0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.Mis0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
 <span id="cb21-27"><a href="chap_gcomp.html#cb21-27" aria-hidden="true" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb21-28"><a href="chap_gcomp.html#cb21-28" aria-hidden="true" tabindex="-1"></a>L1.death.Mis1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.Mis1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
@@ -510,8 +510,8 @@ div.csl-indent {
 <span id="cb21-33"><a href="chap_gcomp.html#cb21-33" aria-hidden="true" tabindex="-1"></a>L1.qol.Mis1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.qol.Mis1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
 <span id="cb21-34"><a href="chap_gcomp.html#cb21-34" aria-hidden="true" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb21-35"><a href="chap_gcomp.html#cb21-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-36"><a href="chap_gcomp.html#cb21-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) generate predicted values by evaluating the regression at exposure </span></span>
-<span id="cb21-37"><a href="chap_gcomp.html#cb21-37" aria-hidden="true" tabindex="-1"></a><span class="co">#    of interest: {A=1} &amp; {A=0}</span></span>
+<span id="cb21-36"><a href="chap_gcomp.html#cb21-36" aria-hidden="true" tabindex="-1"></a><span class="do">## 4) generate predicted values by evaluating the regression at exposure </span></span>
+<span id="cb21-37"><a href="chap_gcomp.html#cb21-37" aria-hidden="true" tabindex="-1"></a><span class="do">##    of interest: {A=1} &amp; {A=0}</span></span>
 <span id="cb21-38"><a href="chap_gcomp.html#cb21-38" aria-hidden="true" tabindex="-1"></a>data.Ais0 <span class="ot">&lt;-</span> data.Ais1 <span class="ot">&lt;-</span> df2_int</span>
 <span id="cb21-39"><a href="chap_gcomp.html#cb21-39" aria-hidden="true" tabindex="-1"></a>data.Ais0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb21-40"><a href="chap_gcomp.html#cb21-40" aria-hidden="true" tabindex="-1"></a>data.Ais1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
@@ -526,7 +526,7 @@ div.csl-indent {
 <span id="cb21-49"><a href="chap_gcomp.html#cb21-49" aria-hidden="true" tabindex="-1"></a>Q.L1.qol.Ais0.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.Mis1.model, <span class="at">newdata =</span> data.Ais0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb21-50"><a href="chap_gcomp.html#cb21-50" aria-hidden="true" tabindex="-1"></a>Q.L1.qol.Ais1.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.Mis1.model, <span class="at">newdata =</span> data.Ais1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb21-51"><a href="chap_gcomp.html#cb21-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-52"><a href="chap_gcomp.html#cb21-52" aria-hidden="true" tabindex="-1"></a><span class="co"># 5) Take empirical mean of final predicted outcomes to estimate CDE</span></span>
+<span id="cb21-52"><a href="chap_gcomp.html#cb21-52" aria-hidden="true" tabindex="-1"></a><span class="do">## 5) Take empirical mean of final predicted outcomes to estimate CDE</span></span>
 <span id="cb21-53"><a href="chap_gcomp.html#cb21-53" aria-hidden="true" tabindex="-1"></a><span class="co"># CDE setting M=0</span></span>
 <span id="cb21-54"><a href="chap_gcomp.html#cb21-54" aria-hidden="true" tabindex="-1"></a>CDE.death.m0.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.Ais1.Mis0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.Ais0.Mis0)</span>
 <span id="cb21-55"><a href="chap_gcomp.html#cb21-55" aria-hidden="true" tabindex="-1"></a>CDE.death.m0.gcomp.ice</span>
@@ -567,22 +567,22 @@ Y_{res} = Y - \hat{\gamma}_M M - \hat{\psi}_{A \ast M} \times A \times M
 <span class="math display">\[\begin{equation}
 \hat{\Psi}^{\text{CDE}_m}_{\text{seq.g.est}} = \hat{\psi}_A + \hat{\psi}_{A \ast M} \times m
 \end{equation}\]</span></p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="chap_gcomp.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) Regress the outcome on past</span></span>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="chap_gcomp.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 1) Regress the outcome on past</span></span>
 <span id="cb22-2"><a href="chap_gcomp.html#cb22-2" aria-hidden="true" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span> </span>
 <span id="cb22-3"><a href="chap_gcomp.html#cb22-3" aria-hidden="true" tabindex="-1"></a>                              M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking, </span>
 <span id="cb22-4"><a href="chap_gcomp.html#cb22-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb22-5"><a href="chap_gcomp.html#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-6"><a href="chap_gcomp.html#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) Calculate a residual outcome Y - (coef.M * M_smoking) - (coef.A0:M * A0:M)</span></span>
+<span id="cb22-6"><a href="chap_gcomp.html#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="do">## 2) Calculate a residual outcome Y - (coef.M * M_smoking) - (coef.A0:M * A0:M)</span></span>
 <span id="cb22-7"><a href="chap_gcomp.html#cb22-7" aria-hidden="true" tabindex="-1"></a>Y.res <span class="ot">&lt;-</span> (df2_int<span class="sc">$</span>Y_qol <span class="sc">-</span> </span>
 <span id="cb22-8"><a href="chap_gcomp.html#cb22-8" aria-hidden="true" tabindex="-1"></a>            (Y2.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;M_smoking&quot;</span>] <span class="sc">*</span>  df2_int<span class="sc">$</span>M_smoking) <span class="sc">-</span> </span>
 <span id="cb22-9"><a href="chap_gcomp.html#cb22-9" aria-hidden="true" tabindex="-1"></a>            (Y2.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_ace:M_smoking&quot;</span>] <span class="sc">*</span> df2_int<span class="sc">$</span>A0_ace </span>
 <span id="cb22-10"><a href="chap_gcomp.html#cb22-10" aria-hidden="true" tabindex="-1"></a>              <span class="sc">*</span> data.inter1<span class="sc">$</span>M_smoking) )</span>
 <span id="cb22-11"><a href="chap_gcomp.html#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-12"><a href="chap_gcomp.html#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Regress the residual outcome on the exposure A and baseline confounders L(0)</span></span>
+<span id="cb22-12"><a href="chap_gcomp.html#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 3) Regress the residual outcome on the exposure A and baseline confounders L(0)</span></span>
 <span id="cb22-13"><a href="chap_gcomp.html#cb22-13" aria-hidden="true" tabindex="-1"></a>Y.res.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y.res <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace, </span>
 <span id="cb22-14"><a href="chap_gcomp.html#cb22-14" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb22-15"><a href="chap_gcomp.html#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-16"><a href="chap_gcomp.html#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:</span></span>
+<span id="cb22-16"><a href="chap_gcomp.html#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:</span></span>
 <span id="cb22-17"><a href="chap_gcomp.html#cb22-17" aria-hidden="true" tabindex="-1"></a>CDE.qol.m0.seq <span class="ot">&lt;-</span> (Y.res.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> </span>
 <span id="cb22-18"><a href="chap_gcomp.html#cb22-18" aria-hidden="true" tabindex="-1"></a>                     <span class="dv">0</span><span class="sc">*</span>Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_ace:M_smoking&quot;</span>])</span>
 <span id="cb22-19"><a href="chap_gcomp.html#cb22-19" aria-hidden="true" tabindex="-1"></a>CDE.qol.m0.seq</span>

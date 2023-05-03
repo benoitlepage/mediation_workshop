@@ -20,11 +20,11 @@ The following steps describe the implementation of the IPTW estimator
 4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A_i=a \mid L(0)_i)} Y_i$
 
 ```{r Psi_ATE_iptw, echo=TRUE, eval = FALSE}
-# 1. Estimate g
+## 1. Estimate g
 g.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv, 
            family = "binomial", data = df2_int)
 
-# 2. Predict each individual's probability of being exposed to her own exposure
+## 2. Predict each individual's probability of being exposed to her own exposure
 # predict the probabilities P(A0_ace=1|L(0)) & P(A0_ace=0|L(0))
 pred.g1.L <- predict(g.L, type="response")
 pred.g0.L <- 1 - pred.g1.L
@@ -33,10 +33,10 @@ gA.L <- rep(NA, nrow(df2_int))
 gA.L[df2_int$A0_ace == 1] <- pred.g1.L[df2_int$A0_ace == 1]
 gA.L[df2_int$A0_ace == 0] <- pred.g0.L[df2_int$A0_ace == 0]
 
-# 3. Apply weights corresponding to the inverse of the predicted probability
+## 3. Apply weights corresponding to the inverse of the predicted probability
 wt <- 1 / gA.L
 
-# 4. Use the empirical mean of the weighted outcome
+## 4. Use the empirical mean of the weighted outcome
 # point estimates:
 IPTW.death <- mean(wt * as.numeric(df2_int$A0_ace == 1) * df2_int$Y_death) -
   mean(wt * as.numeric(df2_int$A0_ace == 0) * df2_int$Y_death)
@@ -59,8 +59,8 @@ If the average total effect (ATE) is identifiable, $\Psi_{ATE}$ can be estimated
 The estimation algorithm is the same as for IPTW, but taking into account any non-null function of $A$ ($g^*(A_i=a)$) in the denominator of the weight in step 3, and applying the stabilized estimator in step 4.
 
 ```{r Psi_ATE_siptw, echo=TRUE, eval = FALSE}
-# 3. For example, applying g^*(A) = 1
-# 4. Applying the stabilized estimator
+## 3. For example, applying g^*(A) = 1
+## 4. Applying the stabilized estimator
 # point estimates:
 s.IPTW.death <- (mean(wt * as.numeric(df2_int$A0_ace == 1) * df2_int$Y_death) /
                    mean(wt * as.numeric(df2_int$A0_ace == 1))) -
@@ -100,13 +100,13 @@ The following steps describe the implementation of the IPTW estimator
 4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i$
 
 ```{r Psi_CDE_iptw, echo=TRUE, eval = FALSE}
-# 1. Estimate gA and gM
+## 1. Estimate gA and gM
 gA.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv, 
             family = "binomial", data = df2_int)
 gM.L <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1, 
             family = "binomial", data = df2_int)
 
-# 2. Predict each individual's probability of being exposed to her own exposure
+## 2. Predict each individual's probability of being exposed to her own exposure
 # predict the probabilities P(A0_ace=1|L(0)) & P(A0_ace=0|L(0))
 pred.gA1.L <- predict(gA.L, type = "response")
 pred.gA0.L <- 1 - pred.gA1.L
@@ -123,12 +123,12 @@ gMobs.L <- rep(NA, nrow(df2_int))
 gMobs.L[df2_int$M_smoking == 1] <- pred.gM1.L[df2_int$M_smoking == 1]
 gMobs.L[df2_int$M_smoking == 0] <- pred.gM0.L[df2_int$M_smoking == 0]
 
-# 3. Apply weights corresponding to the inverse of the predicted probability
+## 3. Apply weights corresponding to the inverse of the predicted probability
 wt_A <- 1 / gAobs.L
 wt_M <- 1 / gMobs.L
 wt <- wt_A * wt_M
 
-# 4. Use the empirical mean of the weighted outcome
+## 4. Use the empirical mean of the weighted outcome
 # point estimates of CDE, setting M=0
 CDE_IPTW_m0_death <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
                                              df2_int$M_smoking == 0) * 
@@ -177,7 +177,7 @@ If the controlled dired effect (CDE) is identifiable, $\Psi^{CDE}$ can be estima
 The estimation algorithm is the same as for IPTW, but applying the stabilized estimator in step 4.
 
 ```{r Psi_CDE_siptw, echo=TRUE, eval = FALSE}
-# 4. Applying the stabilized estimator
+## 4. Applying the stabilized estimator
 # point estimates of CDE, setting M=0:
 CDE_sIPTW_m0_death <- (mean(wt * as.numeric(df2_int$A0_ace == 1 & 
                                               df2_int$M_smoking == 0) * 

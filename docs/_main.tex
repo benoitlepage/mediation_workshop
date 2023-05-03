@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-05-02}
+\date{2023-05-03}
 
 \begin{document}
 \maketitle
@@ -1220,13 +1220,13 @@ For continuous outcomes, \(\overline{Q}(A=a)\) functions can be estimated using 
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 1. Estimate Qbar  }
+\DocumentationTok{\#\# 1. Estimate Qbar  }
 \NormalTok{Q.tot.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv, }
                    \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 \NormalTok{Q.tot.qol }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv, }
                  \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 2. Predict an outcome for each subject, setting A=0 and A=1}
+\DocumentationTok{\#\# 2. Predict an outcome for each subject, setting A=0 and A=1}
 \CommentTok{\# prepare data sets used to predict the outcome under the counterfactual }
 \CommentTok{\# scenarios setting A=0 and A=1}
 \NormalTok{data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
@@ -1240,8 +1240,8 @@ For continuous outcomes, \(\overline{Q}(A=a)\) functions can be estimated using 
 \NormalTok{Y1.qol.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.tot.qol, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{Y0.qol.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.tot.qol, }\AttributeTok{newdata =}\NormalTok{ data.A0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 
-\CommentTok{\# 3. Plug the predicted outcome in the gformula and use the sample mean }
-\CommentTok{\#    to estimate the ATE}
+\DocumentationTok{\#\# 3. Plug the predicted outcome in the gformula and use the sample mean }
+\DocumentationTok{\#\#    to estimate the ATE}
 \NormalTok{ATE.death.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Y1.death.pred }\SpecialCharTok{{-}}\NormalTok{ Y0.death.pred)}
 \NormalTok{ATE.death.gcomp}
 \CommentTok{\# [1] 0.08270821}
@@ -1374,12 +1374,12 @@ For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 1. Fit parametric models to estimate the density of intermediate confounders, }
-\CommentTok{\#    conditional on the parents of the intermediate confounders}
+\DocumentationTok{\#\# 1. Fit parametric models to estimate the density of intermediate confounders, }
+\DocumentationTok{\#\#    conditional on the parents of the intermediate confounders}
 \NormalTok{L1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace, }
                 \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 2. Fit parametric models for the outcome conditional on past}
+\DocumentationTok{\#\# 2. Fit parametric models for the outcome conditional on past}
 \NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+} 
 \NormalTok{                                  M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking, }
                       \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
@@ -1387,7 +1387,7 @@ For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated
 \NormalTok{                              M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking, }
                     \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1}
+\DocumentationTok{\#\# 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1}
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{54321}\NormalTok{)}
 \NormalTok{data.A0  }\OtherTok{\textless{}{-}}\NormalTok{ data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
 \NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
@@ -1397,9 +1397,9 @@ For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated
 \NormalTok{sim.L1.A0 }\OtherTok{\textless{}{-}} \FunctionTok{rbinom}\NormalTok{(}\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(df2\_int), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{prob =}\NormalTok{ p.L1.A0)}
 \NormalTok{sim.L1.A1 }\OtherTok{\textless{}{-}} \FunctionTok{rbinom}\NormalTok{(}\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(df2\_int), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{prob =}\NormalTok{ p.L1.A1)}
 
-\CommentTok{\# 4. Estimate mean outcomes under the counterfactual scenarios setting different }
-\CommentTok{\#    levels of exposures for A and M:}
-\CommentTok{\#    \{A=0, M=0\} or \{A=1, M=0\} or \{A=0, M=1\} or \{A=1, M=1\}}
+\DocumentationTok{\#\# 4. Estimate mean outcomes under the counterfactual scenarios setting different }
+\DocumentationTok{\#\#    levels of exposures for A and M:}
+\DocumentationTok{\#\#    \{A=0, M=0\} or \{A=1, M=0\} or \{A=0, M=1\} or \{A=1, M=1\}}
 
 \NormalTok{data.A0.M0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0.M1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0}
 \NormalTok{data.A1.M0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1.M1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1}
@@ -1428,7 +1428,7 @@ For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated
 \NormalTok{m.qol.A0.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.A0.M1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{m.qol.A1.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.A1.M1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 
-\CommentTok{\# 5. Estimate the CDE}
+\DocumentationTok{\#\# 5. Estimate the CDE}
 \CommentTok{\# CDE setting M=0}
 \NormalTok{CDE.death.m0.gcomp.param }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(p.death.A1.M0) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(p.death.A0.M0)}
 \NormalTok{CDE.death.m0.gcomp.param}
@@ -1473,7 +1473,7 @@ The following steps describe the implementation of the g-computation estimator b
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)}
+\DocumentationTok{\#\# 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)}
 \NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
 \NormalTok{                                  M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
                         \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
@@ -1481,8 +1481,8 @@ The following steps describe the implementation of the g-computation estimator b
 \NormalTok{                              M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
                     \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 2) Generate predicted values by evaluating the regression setting the mediator}
-\CommentTok{\#    value to M=0 or to M=1}
+\DocumentationTok{\#\# 2) Generate predicted values by evaluating the regression setting the mediator}
+\DocumentationTok{\#\#    value to M=0 or to M=1}
 \CommentTok{\#    (Note: it is also possible to set A=0 or A=1 to evaluate the regression at}
 \CommentTok{\#     exposure history of interest: \{A0=1,M=0\},\{A0=0,M=0\},\{A0=1,M=1\},\{A0=0,M=1\})}
 \NormalTok{data.Mis0 }\OtherTok{\textless{}{-}}\NormalTok{ data.Mis1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
@@ -1496,8 +1496,8 @@ The following steps describe the implementation of the g-computation estimator b
 \NormalTok{Q.Y.qol.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 
 
-\CommentTok{\# 3) Regress the predicted values conditional on the exposure A}
-\CommentTok{\#    and baseline confounders L(0)}
+\DocumentationTok{\#\# 3) Regress the predicted values conditional on the exposure A}
+\DocumentationTok{\#\#    and baseline confounders L(0)}
 \NormalTok{L1.death.Mis0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.Mis0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
                          \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 \NormalTok{L1.death.Mis1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.Mis1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
@@ -1508,8 +1508,8 @@ The following steps describe the implementation of the g-computation estimator b
 \NormalTok{L1.qol.Mis1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.qol.Mis1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
                          \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 4) generate predicted values by evaluating the regression at exposure }
-\CommentTok{\#    of interest: \{A=1\} \& \{A=0\}}
+\DocumentationTok{\#\# 4) generate predicted values by evaluating the regression at exposure }
+\DocumentationTok{\#\#    of interest: \{A=1\} \& \{A=0\}}
 \NormalTok{data.Ais0 }\OtherTok{\textless{}{-}}\NormalTok{ data.Ais1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
 \NormalTok{data.Ais0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
 \NormalTok{data.Ais1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
@@ -1524,7 +1524,7 @@ The following steps describe the implementation of the g-computation estimator b
 \NormalTok{Q.L1.qol.Ais0.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.qol.Mis1.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{Q.L1.qol.Ais1.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.qol.Mis1.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 
-\CommentTok{\# 5) Take empirical mean of final predicted outcomes to estimate CDE}
+\DocumentationTok{\#\# 5) Take empirical mean of final predicted outcomes to estimate CDE}
 \CommentTok{\# CDE setting M=0}
 \NormalTok{CDE.death.m0.gcomp.ice }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q.L1.death.Ais1.Mis0) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q.L1.death.Ais0.Mis0)}
 \NormalTok{CDE.death.m0.gcomp.ice}
@@ -1578,22 +1578,22 @@ The controlled direct effect \(\text{CDE}_m\) can then be estimated by:
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 1) Regress the outcome on past}
+\DocumentationTok{\#\# 1) Regress the outcome on past}
 \NormalTok{Y.qol.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+} 
 \NormalTok{                              M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking, }
                    \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 2) Calculate a residual outcome Y {-} (coef.M * M\_smoking) {-} (coef.A0:M * A0:M)}
+\DocumentationTok{\#\# 2) Calculate a residual outcome Y {-} (coef.M * M\_smoking) {-} (coef.A0:M * A0:M)}
 \NormalTok{Y.res }\OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol }\SpecialCharTok{{-}} 
 \NormalTok{            (Y2.qol.model}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_smoking"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{  df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking) }\SpecialCharTok{{-}} 
 \NormalTok{            (Y2.qol.model}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }
               \SpecialCharTok{*}\NormalTok{ data.inter1}\SpecialCharTok{$}\NormalTok{M\_smoking) )}
 
-\CommentTok{\# 3) Regress the residual outcome on the exposure A and baseline confounders L(0)}
+\DocumentationTok{\#\# 3) Regress the residual outcome on the exposure A and baseline confounders L(0)}
 \NormalTok{Y.res.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y.res }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace, }
                    \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:}
+\DocumentationTok{\#\# 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:}
 \NormalTok{CDE.qol.m0.seq }\OtherTok{\textless{}{-}}\NormalTok{ (Y.res.model}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} 
                      \DecValTok{0}\SpecialCharTok{*}\NormalTok{Y.qol.model}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{])}
 \NormalTok{CDE.qol.m0.seq}
@@ -1636,11 +1636,11 @@ The following steps describe the implementation of the IPTW estimator
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 1. Estimate g}
+\DocumentationTok{\#\# 1. Estimate g}
 \NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv, }
            \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\DocumentationTok{\#\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
 \CommentTok{\# predict the probabilities P(A0\_ace=1|L(0)) \& P(A0\_ace=0|L(0))}
 \NormalTok{pred.g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.g0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.L}
@@ -1649,10 +1649,10 @@ The following steps describe the implementation of the IPTW estimator
 \NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
 \NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
 
-\CommentTok{\# 3. Apply weights corresponding to the inverse of the predicted probability}
+\DocumentationTok{\#\# 3. Apply weights corresponding to the inverse of the predicted probability}
 \NormalTok{wt }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ gA.L}
 
-\CommentTok{\# 4. Use the empirical mean of the weighted outcome}
+\DocumentationTok{\#\# 4. Use the empirical mean of the weighted outcome}
 \CommentTok{\# point estimates:}
 \NormalTok{IPTW.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{{-}}
   \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death)}
@@ -1679,8 +1679,8 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 3. For example, applying g\^{}*(A) = 1}
-\CommentTok{\# 4. Applying the stabilized estimator}
+\DocumentationTok{\#\# 3. For example, applying g\^{}*(A) = 1}
+\DocumentationTok{\#\# 4. Applying the stabilized estimator}
 \CommentTok{\# point estimates:}
 \NormalTok{s.IPTW.death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/}
                    \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
@@ -1728,13 +1728,13 @@ The following steps describe the implementation of the IPTW estimator
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 1. Estimate gA and gM}
+\DocumentationTok{\#\# 1. Estimate gA and gM}
 \NormalTok{gA.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv, }
             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 \NormalTok{gM.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1, }
             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
-\CommentTok{\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\DocumentationTok{\#\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
 \CommentTok{\# predict the probabilities P(A0\_ace=1|L(0)) \& P(A0\_ace=0|L(0))}
 \NormalTok{pred.gA1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(gA.L, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.gA0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.gA1.L}
@@ -1751,12 +1751,12 @@ The following steps describe the implementation of the IPTW estimator
 \NormalTok{gMobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM1.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
 \NormalTok{gMobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM0.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
 
-\CommentTok{\# 3. Apply weights corresponding to the inverse of the predicted probability}
+\DocumentationTok{\#\# 3. Apply weights corresponding to the inverse of the predicted probability}
 \NormalTok{wt\_A }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ gAobs.L}
 \NormalTok{wt\_M }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ gMobs.L}
 \NormalTok{wt }\OtherTok{\textless{}{-}}\NormalTok{ wt\_A }\SpecialCharTok{*}\NormalTok{ wt\_M}
 
-\CommentTok{\# 4. Use the empirical mean of the weighted outcome}
+\DocumentationTok{\#\# 4. Use the empirical mean of the weighted outcome}
 \CommentTok{\# point estimates of CDE, setting M=0}
 \NormalTok{CDE\_IPTW\_m0\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
 \NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
@@ -1809,7 +1809,7 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# 4. Applying the stabilized estimator}
+\DocumentationTok{\#\# 4. Applying the stabilized estimator}
 \CommentTok{\# point estimates of CDE, setting M=0:}
 \NormalTok{CDE\_sIPTW\_m0\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
 \NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
@@ -1869,24 +1869,24 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 \hypertarget{chap_tmle}{%
 \chapter{Targeted Maximum Likelihood Estimation (TMLE)}\label{chap_tmle}}
 
-When estimating a mean counterfactual outcome using g-computation methods, we have to estimate some \(\bar{Q}\) functions (functions of the outcome conditional on the exposures and confounders, \(\bar{Q}=\mathbb{E}\left(Y\mid A,L(0)\right)\)). For example, the Average Total Effect (ATE) is defined as a marginal effect, based on the empirical mean of such \(\bar{Q}\) functions:
+When estimating a mean counterfactual outcome using g-computation methods, we have to estimate some \(\bar{Q}\) functions (functions of the outcome conditional on the exposures and confounders, \(\bar{Q}=\mathbb{E}\left(Y\mid A,L(0)\right)\)). For example, the Average Total Effect (ATE) is defined as a marginal effect, estimated using the empirical mean of such \(\bar{Q}\) functions:
 \begin{equation*}
 \hat{\Psi}^{\text{ATE}}_{\text{gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}(A=1)_i - \hat{\overline{Q}}(A=0)_i \right]
 \end{equation*}
 
-Unless the \(\bar{Q}\) functions are not misspecified, its estimate is expected to be biased (especially if the set of baseline confounders \(L(0)\) is high dimensional, for example if it includes is a large number of variables or continuous variables). In order to improve the estimation of \(\bar{Q}(A,L)\), it is possible to use data-adaptive methods (machine learning algorithms) in order to optimize the bias-variance trade-off. However, this bias-variance trade-off would be optimized for the \(\bar{Q}\) functions, not for the ATE estimate \(\hat{\Psi}^\text{ATE}_\text{gcomp}\). If the \(\bar{Q}\) function is unknown and has to be estimated (preferably by data-adaptive methods), it can be shown that the g-computation estimate of \(\Psi^\text{ATE}\) is asymptotically biased.
+Unless the \(\bar{Q}\) functions are not misspecified, its estimate is expected to be biased (and \(\bar{Q}\) are expected to be misspecified, especially if the set of baseline confounders \(L(0)\) is high dimensional, for example if it includes is a large number of variables or continuous variables). In order to improve the estimation of \(\bar{Q}(A,L)\), it is possible to use data-adaptive methods (machine learning algorithms) in order to optimize the bias-variance trade-off. However, this bias-variance trade-off would be optimized for the \(\bar{Q}\) functions, not for the ATE estimate \(\hat{\Psi}^\text{ATE}_\text{gcomp}\). If the \(\bar{Q}\) function is unknown and has to be estimated (preferably by data-adaptive methods), it can be shown that the g-computation estimate of \(\Psi^\text{ATE}\) is asymptotically biased.
 
 The Targeted Maximum Likelihood Estimation (TMLE) method has been developed as an asymptotically linear estimator, so that the estimation of any target parameter in any semiparametric statistical model is unbiased and efficient. In order to estimate a parameter \(\Psi(P_0)\), where \(P_0\) is an unknown probability distribution among a set \(\mathcal{M}\) of possible statistical models, the TMLE is described as a two-step procedure (\protect\hyperlink{ref-vanderlaan_book2011}{Laan and Rose 2011}):
 
 \begin{itemize}
 \tightlist
 \item
-  The first step is to obtain an initial estimate of the relevant part \(\bar{Q}_0\) of the probability distribution \(P_0\). Data adaptive methods (machine learning algorithms) can be used to optimize this first step.
+  The first step is to obtain an initial estimate of the relevant part (\(\bar{Q}_0\) in our applications) of the probability distribution \(P_0\). Data adaptive methods (machine learning algorithms) can be used to optimize this first step.
 \item
   The second step is to update the initial fit in order to ``target toward making an optimal bias-variance tradeoff for the parameter of interest'' \(\Psi(\bar{Q})\).
 \end{itemize}
 
-Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the \texttt{ltmle} package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. It can also be used in simpler settings with only one binary or continuous outcome, measure only once at the end a the study.
+Several R packages have been developed in order to carry out TMLE estimation of causal effects. We will begin using the \texttt{ltmle} package, as it can be used to estimate ATE or CDE. More generally, this package can be used to estimate the counterfactual effects of repeated exposure in time-to-event settings. In the setting of mediation analysis, a controlled direct effect (CDE) corresponds to a sequence of counterfactual interventions on 2 ``exposure variables'': the initial exposure \(A\) and the mediator of interest \(M\). The package can also be used in simpler settings with only one binary or continuous outcome, measure only once at the end a the study.
 
 \hypertarget{tmle-for-the-ate}{%
 \section{TMLE for the ATE}\label{tmle-for-the-ate}}
@@ -1904,7 +1904,7 @@ The basic steps of the procedure are the following (\protect\hyperlink{ref-vande
 \item
   The initial estimator of \(\bar{Q}_0(A=1)\) will be slightly modified using a parametric fluctuation model, in order to reduce the bias when estimating the ATE. For example, the following parametric model of \(\bar{Q}_0(A=1)\) and a ``clever covariate'' \(H = \frac{I(A=1)}{\hat{g}(A=1 \mid L(0))}\) can be applied:
   \begin{equation*}
-   \text{logit} P(Y \mid \hat{\bar{Q}}, H) = \hat{\bar{Q}} + \varepsilon H
+   \text{logit} P(Y \mid \hat{\bar{Q}}, H) = \hat{\text{logit} \bar{Q}} + \varepsilon H
   \end{equation*}
   The parametric fluctuation model is chosen so that the derivative of its log-likelihood loss function is equal to the appropriate component of the efficient influence curve of the target parameter \(\Psi(A=1)\).
 \item
@@ -1925,6 +1925,318 @@ The variance of the target parameter can then be calculated using the variance o
 \begin{equation*}
 \text{var} \hat{\Psi}(A=1)_\text{TMLE} = \frac{\text{var} \hat{D}^*}{n}
 \end{equation*}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# 1) Estimate Qbar and predict Qbar when A0\_ace is set to 1}
+\NormalTok{Q.fit }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
+\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
+
+\CommentTok{\# predict the Qvar function when setting the exposure to A=1, on the logit scale}
+\NormalTok{logit\_Qbar\_Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.fit, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type =} \StringTok{"link"}\NormalTok{)}
+
+\DocumentationTok{\#\# 2) Estimate the treatment mechanism}
+\NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+           \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\CommentTok{\# predict the probabilities g(A=1 | L(0)) = P(A0\_ace=1|L(0))}
+\NormalTok{g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\FunctionTok{head}\NormalTok{(g1.L)}
+\CommentTok{\#          1          2          3          4          5          6}
+\CommentTok{\# 0.10989220 0.15629749 0.15629749 0.08894074 0.15629749 0.15629749}
+
+\CommentTok{\# It is useful to check the distribution of gA.L, as values close to 0 or 1 are }
+\CommentTok{\# indicators of near positivity violation and can result in large variance for the }
+\CommentTok{\# estimation. }
+\CommentTok{\# In case of near positivity violation, gA.L values can be truncated to decrease}
+\CommentTok{\# the variance (at the cost a increased bias).}
+\FunctionTok{summary}\NormalTok{(g1.L)}
+\CommentTok{\#     Min. 1st Qu.  Median    Mean 3rd Qu.    Max. }
+\CommentTok{\# 0.06109 0.08894 0.10989 0.11240 0.15630 0.15630}
+\CommentTok{\# there is no positivity issues in this example.}
+
+\DocumentationTok{\#\# 3) Determine a parametric family of fluctuations of Qbar. }
+\CommentTok{\# The fluctuation model is a model of logitQbar and g(A=1|L(0)) }
+
+\CommentTok{\# The clever covariate H(A,L(0)) depends on g(A=1|L(0)):}
+\NormalTok{H }\OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ g1.L}
+
+\CommentTok{\# Update the initial fit Qbar from step 1.}
+\CommentTok{\# This is achieved by holding Qbar fixed (as intercept) while estimating the}
+\CommentTok{\# coefficient epsilon for H}
+
+\CommentTok{\# for example we could use the following fluctuation model (from the "Targeted }
+\CommentTok{\# Learning" book)}
+\NormalTok{update.fit }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death }\SpecialCharTok{\textasciitilde{}} \SpecialCharTok{{-}}\DecValTok{1} \SpecialCharTok{+} \FunctionTok{offset}\NormalTok{(logitQ) }\SpecialCharTok{+}\NormalTok{ H,}
+                  \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#   H}
+\CommentTok{\# {-}0.0001756}
+
+\CommentTok{\# In the ltmle package, the fluctuation parametric model is slightly different}
+\CommentTok{\# (but with the same purpose). The "clever covariate" H is scaled and used as a }
+\CommentTok{\# weight in the parametric quasi{-}logistic regression}
+\NormalTok{S1 }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{update.fit.ltmle }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death }\SpecialCharTok{\textasciitilde{}} \SpecialCharTok{{-}}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ S1 }\SpecialCharTok{+} \FunctionTok{offset}\NormalTok{(logitQ),}
+                        \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{,}
+                        \AttributeTok{weights =} \FunctionTok{scale}\NormalTok{(H, }\AttributeTok{center =} \ConstantTok{FALSE}\NormalTok{))}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#   S1}
+\CommentTok{\# {-}0.001667}
+
+\DocumentationTok{\#\# 4) Update the initial estimate of Qbar using the fluctuation parametric model}
+\NormalTok{Qstar.tmle }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(update.fit.ltmle, }
+                      \AttributeTok{data =} \FunctionTok{data.frame}\NormalTok{(logitQ, H), }
+                      \AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\FunctionTok{head}\NormalTok{(Qstar.tmle)}
+\CommentTok{\#         1         2         3         4         5         6 }
+\CommentTok{\# 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344}
+
+\DocumentationTok{\#\# 5) Obtain the substition estimator of Psi\_Ais1}
+\NormalTok{Psi\_Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Qstar.tmle)}
+\CommentTok{\# [1] 0.2871408}
+
+\DocumentationTok{\#\# 5) Calculate standard errors based on the influence curve of the TMLE}
+\NormalTok{IC }\OtherTok{\textless{}{-}}\NormalTok{ H }\SpecialCharTok{*}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death }\SpecialCharTok{{-}}\NormalTok{ Qstar.tmle) }\SpecialCharTok{+}\NormalTok{ Qstar.tmle }\SpecialCharTok{{-}}\NormalTok{ Psi\_Ais1}
+\FunctionTok{head}\NormalTok{(IC)}
+\CommentTok{\# 0.0001003559  4.2532581791  0.0569935644 {-}0.0280052148  0.0569935644  0.056993564}
+
+\CommentTok{\# Teh standard error of the target parameter Psi(A=1) can be estimated by :}
+\FunctionTok{sqrt}\NormalTok{(}\FunctionTok{var}\NormalTok{(IC)}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\CommentTok{\# [1] 0.01383821}
+\end{Highlighting}
+\end{Shaded}
+
+We can see that we can get the same output using the \texttt{ltmle} package:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(ltmle)}
+\NormalTok{?ltmle}
+
+\CommentTok{\# The Qform and gform arguments are defined from the DAG}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{)}
+
+\CommentTok{\# in the ltmle package, the data set should be formated so that the order of the }
+\CommentTok{\# columns corresponds to the time{-}ordering of the model}
+\NormalTok{data\_ltmle }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male,L0\_parent\_low\_educ\_lv,}
+\NormalTok{                                         A0\_ace,}
+\NormalTok{                                         Y\_death))}
+
+\CommentTok{\# the counterfactual intervention is defined in the abar argument}
+\NormalTok{abar }\OtherTok{\textless{}{-}} \DecValTok{1}
+
+\NormalTok{Psi\_Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_ltmle,}
+                  \AttributeTok{Anodes =} \StringTok{"A0\_ace"}\NormalTok{,}
+                  \AttributeTok{Ynodes =} \StringTok{"Y\_death"}\NormalTok{,}
+                  \AttributeTok{Qform =}\NormalTok{ Qform,}
+                  \AttributeTok{gform =}\NormalTok{ gform,}
+                  \AttributeTok{gbounds =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.01}\NormalTok{, }\DecValTok{1}\NormalTok{), }\CommentTok{\# by default, g function are truncated at 0.01}
+                  \AttributeTok{abar =}\NormalTok{ abar,}
+                  \AttributeTok{SL.library =} \StringTok{"glm"}\NormalTok{,}
+                  \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
+
+\CommentTok{\# from the ltmle() function, we can get the point estimate, its standard error, }
+\CommentTok{\# 95\% confidence interval and the p{-}value for the null hypothesis.}
+\FunctionTok{summary}\NormalTok{(Psi\_Ais1, }\StringTok{"tmle"}\NormalTok{)}
+\CommentTok{\# Parameter Estimate:  0.28714}
+\CommentTok{\#  Estimated Std Err:  0.013838}
+\CommentTok{\#            p{-}value:  \textless{}2e{-}16}
+\CommentTok{\#  95\% Conf Interval: (0.26002, 0.31426)}
+
+\CommentTok{\# The ltmle() function returns an object with several outputs.}
+\CommentTok{\# We can see that g functions are the same as in the previous manual calculation}
+\FunctionTok{head}\NormalTok{(Psi\_Ais1}\SpecialCharTok{$}\NormalTok{cum.g)}
+\CommentTok{\#            [,1]}
+\CommentTok{\# [1,] 0.10989220}
+\CommentTok{\# [2,] 0.15629749}
+\CommentTok{\# [3,] 0.15629749}
+\CommentTok{\# [4,] 0.08894074}
+\CommentTok{\# [5,] 0.15629749}
+\CommentTok{\# [6,] 0.15629749}
+
+\CommentTok{\# we can get the estimation of the epsilon parameter from the fluctuation model}
+\NormalTok{Psi\_Ais1}\SpecialCharTok{$}\NormalTok{fit}\SpecialCharTok{$}\NormalTok{Qstar}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#   S1}
+\CommentTok{\# {-}0.001667}
+\CommentTok{\# Degrees of Freedom: 1124 Total (i.e. Null);  1123 Residual}
+
+\CommentTok{\# we can get the updated Qbar functions:}
+\FunctionTok{head}\NormalTok{(Psi\_Ais1}\SpecialCharTok{$}\NormalTok{Qstar)}
+\CommentTok{\# [1] 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344}
+
+\CommentTok{\# we can get the influence curve }
+\FunctionTok{head}\NormalTok{(Psi\_Ais1}\SpecialCharTok{$}\NormalTok{IC}\SpecialCharTok{$}\NormalTok{tmle)}
+\CommentTok{\# [1]  0.0001003559  4.2532581791  0.0569935644 {-}0.0280052148  0.0569935644  0.0569935644}
+\end{Highlighting}
+\end{Shaded}
+
+In practice, it is recommended to apply data-adaptive algorithms to estimate \(\bar{Q}\) and \(g\) functions: the \texttt{ltmle} package relies on the \texttt{SuperLearner} package. As indicated in the \href{https://cran.r-project.org/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html}{Guide to SuperLearner},
+The \texttt{SuperLearner} is ``an algorithm that uses cross-validation to estimate the performance of multiple machine learning models, or the same model with different settings. It then creates an optimal weighted average of those models (ensemble learning) using the test data performance.''
+
+Here is an example for our estimation of the Average Total Effect (ATE).
+
+The \texttt{SuperLearner} package includes a set of algorithms with default parameters (showed by \texttt{listWrappers()}). Because the simulated data set only have 2 binary baseline variables, the set \(\mathcal{M}\) of possible statistical models is limited. In order to estimate the ATE, we will include a library with:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{SL.mean}, the null-model which only predict the marginal mean (it can be used as a reference for a bad model);
+\item
+  \texttt{SL.glm}, a glm using the main terms from the \texttt{Qform} and \texttt{gform} argument;
+\item
+  \texttt{SL.interaction.back}, a step-by-step backward GLM prodecure (based on the AIC), starting with all \(2 \times 2\) interactions between main terms. Interaction terms might be useful to estimate the \(\bar{Q}(A,L(0))\) function because the dataset was generated from and additive model, where as the function is estimated below using a logistic (multiplicative) model.
+\item
+  \texttt{SL.xgboost.custom} a customized xgboost algorithm from the initial \texttt{SL.xgboost} algorithm, showing how we can modify some default arguments.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(SuperLearner)}
+\FunctionTok{library}\NormalTok{(xgboost)}
+\CommentTok{\# Below, we use the same ltmle() function than previously, }
+\CommentTok{\# and specify a family of algorithms to be used with the SuperLearner}
+
+\DocumentationTok{\#\# we can change the default argument of the SL.xgboost algorithm and the }
+\DocumentationTok{\#\# SL.step.interaction algorithm}
+
+\CommentTok{\# We can check how arguments are used in the pre{-}specified algorithms}
+\NormalTok{SL.step.interaction}
+\CommentTok{\# function (Y, X, newX, family, direction = "both", trace = 0, }
+\CommentTok{\#     k = 2, ...) }
+\CommentTok{\# \{}
+\CommentTok{\#     fit.glm \textless{}{-} glm(Y \textasciitilde{} ., data = X, family = family)}
+\CommentTok{\#     fit.step \textless{}{-} step(fit.glm, scope = Y \textasciitilde{} .\^{}2, direction = direction, }
+\CommentTok{\#         trace = trace, k = k)}
+\CommentTok{\#     pred \textless{}{-} predict(fit.step, newdata = newX, type = "response")}
+\CommentTok{\#     fit \textless{}{-} list(object = fit.step)}
+\CommentTok{\#     out \textless{}{-} list(pred = pred, fit = fit)}
+\CommentTok{\#     class(out$fit) \textless{}{-} c("SL.step")}
+\CommentTok{\#     return(out)}
+\CommentTok{\# \}}
+\CommentTok{\# \textless{}bytecode: 0x000001b965ed0dc0\textgreater{}}
+\CommentTok{\# \textless{}environment: namespace:SuperLearner\textgreater{}}
+
+\CommentTok{\# The pre{-}specified algorithm can be easily modified to obtain a step{-}by{-}step backward }
+\CommentTok{\# selection.}
+\NormalTok{SL.interaction.back }\OtherTok{=} \ControlFlowTok{function}\NormalTok{(...) \{}
+  \FunctionTok{SL.step.interaction}\NormalTok{(..., }\AttributeTok{direction =} \StringTok{"backward"}\NormalTok{)}
+\NormalTok{\}}
+
+\CommentTok{\# The same principle can be applied to modify the SL.xgboost default algorithm}
+\NormalTok{SL.xgboost}
+\NormalTok{SL.xgboost.custom }\OtherTok{=} \ControlFlowTok{function}\NormalTok{(...) \{}
+  \FunctionTok{SL.xgboost}\NormalTok{(..., }\AttributeTok{ntrees =} \DecValTok{50}\NormalTok{)}
+\NormalTok{\}}
+
+
+\DocumentationTok{\#\# the algorithms we would like to use can be specified separately for the Q and }
+\CommentTok{\# g functions}
+\NormalTok{SL.library }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{Q=}\FunctionTok{c}\NormalTok{(}\StringTok{"SL.mean"}\NormalTok{,}\StringTok{"SL.glm"}\NormalTok{,}\StringTok{"SL.interaction.back"}\NormalTok{, }\StringTok{"SL.xgboost.custom"}\NormalTok{),}
+                   \AttributeTok{g=}\FunctionTok{c}\NormalTok{(}\StringTok{"SL.mean"}\NormalTok{,}\StringTok{"SL.glm"}\NormalTok{,}\StringTok{"SL.interaction.back"}\NormalTok{, }\StringTok{"SL.xgboost.custom"}\NormalTok{))}
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
+\NormalTok{Psi\_ATE\_tmle }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_ltmle,}
+                      \AttributeTok{Anodes =} \StringTok{"A0\_ace"}\NormalTok{,}
+                      \AttributeTok{Ynodes =} \StringTok{"Y\_death"}\NormalTok{,}
+                      \AttributeTok{Qform =}\NormalTok{ Qform,}
+                      \AttributeTok{gform =}\NormalTok{ gform,}
+                      \AttributeTok{gbounds =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.01}\NormalTok{, }\DecValTok{1}\NormalTok{),}
+                      \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# vector of the counterfactual treatment }
+                      \AttributeTok{SL.library =}\NormalTok{ SL.library,}
+                      \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(Psi\_ATE\_tmle, }\AttributeTok{estimator =} \StringTok{"tmle"}\NormalTok{)}
+\CommentTok{\# The function give the ATE on the difference scale (as well, as RR and OR)}
+\CommentTok{\# Additive Treatment Effect:}
+   \CommentTok{\# Parameter Estimate:  0.081832 }
+   \CommentTok{\#  Estimated Std Err:  0.014291 }
+   \CommentTok{\#            p{-}value:  1.0275e{-}08 }
+   \CommentTok{\#  95\% Conf Interval: (0.053822, 0.10984) }
+
+\DocumentationTok{\#\# We can see how the SuperLearner used the algorithms for the g function}
+\NormalTok{Psi\_ATE\_tmle}\SpecialCharTok{$}\NormalTok{fit}\SpecialCharTok{$}\NormalTok{g}
+\CommentTok{\# [[1]]$A0\_ace}
+\CommentTok{\#                               Risk        Coef}
+\CommentTok{\# SL.mean\_All             0.09976892 0.003545569 \# risk is higher for the bad model}
+\CommentTok{\# SL.glm\_All              0.09865424 0.416238369}
+\CommentTok{\# SL.interaction.back\_All 0.09865424 0.000000000}
+\CommentTok{\# SL.xgboost.custom\_All   0.09865550 0.580216062}
+
+\CommentTok{\# for the g function, the SuperLearner predicts the treatment mechanism}
+\CommentTok{\# base on a mix between the glm and the customized xgboost algorithm.}
+
+\DocumentationTok{\#\# We can see how the SuperLearner used the algorithms for the g function}
+\NormalTok{Psi\_ATE\_tmle}\SpecialCharTok{$}\NormalTok{fit}\SpecialCharTok{$}\NormalTok{Q}
+\CommentTok{\#                              Risk       Coef}
+\CommentTok{\# SL.mean\_All             0.1684737 0.02003166 \# risk is higher for the bad model}
+\CommentTok{\# SL.glm\_All              0.1662241 0.00000000}
+\CommentTok{\# SL.interaction.back\_All 0.1662241 0.55956284}
+\CommentTok{\# SL.xgboost.custom\_All   0.1662422 0.42040550}
+
+\CommentTok{\# The SuperLearner predicts both the treatment mechanism g and the Q function}
+\CommentTok{\# from a mix between the backward interaction glm (or the main term glm) and the }
+\CommentTok{\# customized xgboost algorithm. }
+\CommentTok{\# However, the choice between the SL.glm and the SL.interaction.back }
+\CommentTok{\# procedure was arbitrary: as we can see the Risk is exactly the same for both }
+\CommentTok{\# algorithms. The final model from the step{-}by{-}step procedure was much probably }
+\CommentTok{\# a main term glm.}
+
+
+\DocumentationTok{\#\# The \textasciigrave{}ltmle\textasciigrave{} package can also be used to estimate the effect of binary exposures}
+\DocumentationTok{\#\# on continous outcomes}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{Y\_qol=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{)}
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
+\NormalTok{Psi\_ATE\_tmle\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male,L0\_parent\_low\_educ\_lv,}
+\NormalTok{                                         A0\_ace,}
+\NormalTok{                                         Y\_qol)),}
+                      \AttributeTok{Anodes =} \StringTok{"A0\_ace"}\NormalTok{,}
+                      \AttributeTok{Ynodes =} \StringTok{"Y\_qol"}\NormalTok{,}
+                      \AttributeTok{Qform =}\NormalTok{ Qform,}
+                      \AttributeTok{gform =}\NormalTok{ gform,}
+                      \AttributeTok{gbounds =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.01}\NormalTok{, }\DecValTok{1}\NormalTok{),}
+                      \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# vector of the counterfactual treatment }
+                      \AttributeTok{SL.library =}\NormalTok{ SL.library,}
+                      \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(Psi\_ATE\_tmle\_qol, }\AttributeTok{estimator =} \StringTok{"tmle"}\NormalTok{)}
+\CommentTok{\# Additive Treatment Effect:}
+\CommentTok{\#    Parameter Estimate:  {-}8.265 }
+\CommentTok{\#     Estimated Std Err:  0.41008 }
+\CommentTok{\#               p{-}value:  \textless{}2e{-}16 }
+\CommentTok{\#     95\% Conf Interval: ({-}9.0687, {-}7.4612)}
+\end{Highlighting}
+\end{Shaded}
+
+The TMLE estimation of the ATE from the \texttt{ltmle} package for death probability and mean quality of life is +8.18\% (95\% CI={[}+5.38\%, +10.98\%{]}) and -8.27 {[}-9.07, -7.46{]}.
+
+Note that the \texttt{ltmle} package can also be used to calculate the IPTW estimation of the ATE and the CDE.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# using the output from the previous ltmle() procedure}
+\FunctionTok{summary}\NormalTok{(Psi\_ATE\_tmle, }\AttributeTok{estimator =} \StringTok{"iptw"}\NormalTok{)}
+\CommentTok{\# Additive Treatment Effect:}
+\CommentTok{\#    Parameter Estimate:  0.082578 }
+\CommentTok{\#     Estimated Std Err:  0.014415 }
+\CommentTok{\#               p{-}value:  1.0135e{-}08 }
+\CommentTok{\#     95\% Conf Interval: (0.054325, 0.11083) }
+
+\FunctionTok{summary}\NormalTok{(Psi\_ATE\_tmle\_qol, }\AttributeTok{estimator =} \StringTok{"iptw"}\NormalTok{)}
+\CommentTok{\# Additive Treatment Effect:}
+\CommentTok{\#    Parameter Estimate:  {-}8.2887 }
+\CommentTok{\#     Estimated Std Err:  0.41799 }
+\CommentTok{\#               p{-}value:  \textless{}2e{-}16 }
+\CommentTok{\#     95\% Conf Interval: ({-}9.108, {-}7.4695) }
+\end{Highlighting}
+\end{Shaded}
+
+The IPTW estimation of the ATE from the \texttt{ltmle} package for death probability and mean quality of life is +8.26\% (95\% CI={[}+5.43\%, +11.08\%{]}) and -8.29 {[}-9.11, -7.47{]}.
 
 \hypertarget{appendix_a}{%
 \chapter{Appendix A: Data generating mechanisms}\label{appendix_a}}

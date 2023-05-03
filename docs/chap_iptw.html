@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-05-02" />
+<meta name="date" content="2023-05-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -273,11 +273,11 @@ div.csl-indent {
 <li><p>Apply weights corresponding to the inverse of the predicted probability <span class="math inline">\(w_i = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\)</span></p></li>
 <li><p>Use the empirical mean of the weighted outcome <span class="math inline">\(Y\)</span>: <span class="math inline">\(\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A_i=a \mid L(0)_i)} Y_i\)</span></p></li>
 </ol>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="chap_iptw.html#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Estimate g</span></span>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="chap_iptw.html#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 1. Estimate g</span></span>
 <span id="cb23-2"><a href="chap_iptw.html#cb23-2" aria-hidden="true" tabindex="-1"></a>g.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
 <span id="cb23-3"><a href="chap_iptw.html#cb23-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb23-4"><a href="chap_iptw.html#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-5"><a href="chap_iptw.html#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb23-5"><a href="chap_iptw.html#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
 <span id="cb23-6"><a href="chap_iptw.html#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
 <span id="cb23-7"><a href="chap_iptw.html#cb23-7" aria-hidden="true" tabindex="-1"></a>pred.g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
 <span id="cb23-8"><a href="chap_iptw.html#cb23-8" aria-hidden="true" tabindex="-1"></a>pred.g0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.L</span>
@@ -286,10 +286,10 @@ div.csl-indent {
 <span id="cb23-11"><a href="chap_iptw.html#cb23-11" aria-hidden="true" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>]</span>
 <span id="cb23-12"><a href="chap_iptw.html#cb23-12" aria-hidden="true" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>]</span>
 <span id="cb23-13"><a href="chap_iptw.html#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-14"><a href="chap_iptw.html#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
+<span id="cb23-14"><a href="chap_iptw.html#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
 <span id="cb23-15"><a href="chap_iptw.html#cb23-15" aria-hidden="true" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gA.L</span>
 <span id="cb23-16"><a href="chap_iptw.html#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-17"><a href="chap_iptw.html#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Use the empirical mean of the weighted outcome</span></span>
+<span id="cb23-17"><a href="chap_iptw.html#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 4. Use the empirical mean of the weighted outcome</span></span>
 <span id="cb23-18"><a href="chap_iptw.html#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co"># point estimates:</span></span>
 <span id="cb23-19"><a href="chap_iptw.html#cb23-19" aria-hidden="true" tabindex="-1"></a>IPTW.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
 <span id="cb23-20"><a href="chap_iptw.html#cb23-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death)</span>
@@ -309,8 +309,8 @@ div.csl-indent {
 \hat{\mathbb{E}}(Y_1) - \hat{\mathbb{E}}(Y_0) =  \frac{\frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=1)\hat{g}^*(A_i=1)}{\hat{g}(A_i=1 \mid L(0)_i)} Y_i}{ \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=1)\hat{g}^*(A_i=1)}{\hat{g}(A_i=1 \mid L(0)_i)}} - \frac{\frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=0)\hat{g}^*(A_i=0)}{\hat{g}(A_i=0 \mid L(0)_i)} Y_i}{ \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=0)\hat{g}^*(A_i=0)}{\hat{g}(A_i=0 \mid L(0)_i)}}
 \end{equation}\]</span>
 The estimation algorithm is the same as for IPTW, but taking into account any non-null function of <span class="math inline">\(A\)</span> (<span class="math inline">\(g^*(A_i=a)\)</span>) in the denominator of the weight in step 3, and applying the stabilized estimator in step 4.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="chap_iptw.html#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. For example, applying g^*(A) = 1</span></span>
-<span id="cb24-2"><a href="chap_iptw.html#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Applying the stabilized estimator</span></span>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="chap_iptw.html#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 3. For example, applying g^*(A) = 1</span></span>
+<span id="cb24-2"><a href="chap_iptw.html#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="do">## 4. Applying the stabilized estimator</span></span>
 <span id="cb24-3"><a href="chap_iptw.html#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># point estimates:</span></span>
 <span id="cb24-4"><a href="chap_iptw.html#cb24-4" aria-hidden="true" tabindex="-1"></a>s.IPTW.death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
 <span id="cb24-5"><a href="chap_iptw.html#cb24-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
@@ -344,13 +344,13 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 <li><p>Apply weights corresponding to the inverse of the predicted probability <span class="math inline">\(w_{A_i} = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\)</span> and <span class="math inline">\(w_{M_i} = \frac{1}{\hat{g}(M_i = m \mid L(0)_i,A_i,L(1)_i)}\)</span></p></li>
 <li><p>Use the empirical mean of the weighted outcome <span class="math inline">\(Y\)</span>: <span class="math inline">\(\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i\)</span></p></li>
 </ol>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="chap_iptw.html#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Estimate gA and gM</span></span>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="chap_iptw.html#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 1. Estimate gA and gM</span></span>
 <span id="cb25-2"><a href="chap_iptw.html#cb25-2" aria-hidden="true" tabindex="-1"></a>gA.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
 <span id="cb25-3"><a href="chap_iptw.html#cb25-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb25-4"><a href="chap_iptw.html#cb25-4" aria-hidden="true" tabindex="-1"></a>gM.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1, </span>
 <span id="cb25-5"><a href="chap_iptw.html#cb25-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
 <span id="cb25-6"><a href="chap_iptw.html#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-7"><a href="chap_iptw.html#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb25-7"><a href="chap_iptw.html#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
 <span id="cb25-8"><a href="chap_iptw.html#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
 <span id="cb25-9"><a href="chap_iptw.html#cb25-9" aria-hidden="true" tabindex="-1"></a>pred.gA1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(gA.L, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
 <span id="cb25-10"><a href="chap_iptw.html#cb25-10" aria-hidden="true" tabindex="-1"></a>pred.gA0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.gA1.L</span>
@@ -367,12 +367,12 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 <span id="cb25-21"><a href="chap_iptw.html#cb25-21" aria-hidden="true" tabindex="-1"></a>gMobs.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.gM1.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>]</span>
 <span id="cb25-22"><a href="chap_iptw.html#cb25-22" aria-hidden="true" tabindex="-1"></a>gMobs.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.gM0.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>]</span>
 <span id="cb25-23"><a href="chap_iptw.html#cb25-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-24"><a href="chap_iptw.html#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
+<span id="cb25-24"><a href="chap_iptw.html#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="do">## 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
 <span id="cb25-25"><a href="chap_iptw.html#cb25-25" aria-hidden="true" tabindex="-1"></a>wt_A <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gAobs.L</span>
 <span id="cb25-26"><a href="chap_iptw.html#cb25-26" aria-hidden="true" tabindex="-1"></a>wt_M <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gMobs.L</span>
 <span id="cb25-27"><a href="chap_iptw.html#cb25-27" aria-hidden="true" tabindex="-1"></a>wt <span class="ot">&lt;-</span> wt_A <span class="sc">*</span> wt_M</span>
 <span id="cb25-28"><a href="chap_iptw.html#cb25-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-29"><a href="chap_iptw.html#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Use the empirical mean of the weighted outcome</span></span>
+<span id="cb25-29"><a href="chap_iptw.html#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="do">## 4. Use the empirical mean of the weighted outcome</span></span>
 <span id="cb25-30"><a href="chap_iptw.html#cb25-30" aria-hidden="true" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=0</span></span>
 <span id="cb25-31"><a href="chap_iptw.html#cb25-31" aria-hidden="true" tabindex="-1"></a>CDE_IPTW_m0_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
 <span id="cb25-32"><a href="chap_iptw.html#cb25-32" aria-hidden="true" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
@@ -419,7 +419,7 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 \hat{\mathbb{E}}(Y_{1,m}) - \hat{\mathbb{E}}(Y_{0,m}) =  \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{\sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}} - \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}}
 \end{equation}\]</span>
 The estimation algorithm is the same as for IPTW, but applying the stabilized estimator in step 4.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="chap_iptw.html#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Applying the stabilized estimator</span></span>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="chap_iptw.html#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## 4. Applying the stabilized estimator</span></span>
 <span id="cb26-2"><a href="chap_iptw.html#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=0:</span></span>
 <span id="cb26-3"><a href="chap_iptw.html#cb26-3" aria-hidden="true" tabindex="-1"></a>CDE_sIPTW_m0_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
 <span id="cb26-4"><a href="chap_iptw.html#cb26-4" aria-hidden="true" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
