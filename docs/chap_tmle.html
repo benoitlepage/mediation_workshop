@@ -203,6 +203,7 @@ div.csl-indent {
 <li class="chapter" data-level="8" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>8</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
 <li class="chapter" data-level="8.1" data-path="chap_tmle.html"><a href="chap_tmle.html#tmle-for-the-ate"><i class="fa fa-check"></i><b>8.1</b> TMLE for the ATE</a></li>
+<li class="chapter" data-level="8.2" data-path="chap_tmle.html"><a href="chap_tmle.html#tmle-of-the-controlled-direct-effect-cde"><i class="fa fa-check"></i><b>8.2</b> TMLE of the Controlled direct effect (CDE)</a></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="appendix_a.html"><a href="appendix_a.html"><i class="fa fa-check"></i><b>9</b> Appendix A: Data generating mechanisms</a>
 <ul>
@@ -574,6 +575,21 @@ The <code>SuperLearner</code> is “an algorithm that uses cross-validation to e
 <span id="cb30-13"><a href="chap_tmle.html#cb30-13" aria-hidden="true" tabindex="-1"></a><span class="co">#               p-value:  &lt;2e-16 </span></span>
 <span id="cb30-14"><a href="chap_tmle.html#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="co">#     95% Conf Interval: (-9.108, -7.4695) </span></span></code></pre></div>
 <p>The IPTW estimation of the ATE from the <code>ltmle</code> package for death probability and mean quality of life is +8.26% (95% CI=[+5.43%, +11.08%]) and -8.29 [-9.11, -7.47].</p>
+</div>
+<div id="tmle-of-the-controlled-direct-effect-cde" class="section level2 hasAnchor" number="8.2">
+<h2><span class="header-section-number">8.2</span> TMLE of the Controlled direct effect (CDE)<a href="chap_tmle.html#tmle-of-the-controlled-direct-effect-cde" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>If the controlled direct effect (CDE) is identifiable, the <code>ltmle</code> package can be used to calculate a TMLE estimation of the CDE <span class="math inline">\(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span>.</p>
+<p>Below, we show how to use the <code>ltmle()</code> function to estimate CDE by TMLE, with data generated from the causal model with the presence of confounders of the mediator-outcome relationship (<span class="math inline">\(L(1)\)</span>) affected by the exposure <span class="math inline">\(A\)</span> (Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>), and an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome.</p>
+<p>As with the G-computation method by iterative conditional expectation, the TMLE procedure relies on the estimation of 2 <span class="math inline">\(\bar{Q}\)</span> functions:</p>
+<ul>
+<li><span class="math inline">\(\bar{Q}_Y = \mathbb{E}(Y \mid L(0),A,L(1),M)\)</span></li>
+<li>and <span class="math inline">\(\bar{Q}_{L(1)} = \mathbb{E}(\hat{\bar{Q}}_Y(M=m) \mid L(0),A)\)</span>;</li>
+</ul>
+<p>And as with the IPTW method, the TMLE procedure relies also on the estimation of the 2 treatment mechanisms <span class="math inline">\(g\)</span>:</p>
+<ul>
+<li><span class="math inline">\(g_A(L(0)) = P(A=1 \mid L(0))\)</span></li>
+<li>and <span class="math inline">\(g_M(L(0),A,L(1)) = P(M=1 \mid L(0),A,L(1))\)</span>.</li>
+</ul>
 
 </div>
 </div>

@@ -2238,6 +2238,33 @@ Note that the \texttt{ltmle} package can also be used to calculate the IPTW esti
 
 The IPTW estimation of the ATE from the \texttt{ltmle} package for death probability and mean quality of life is +8.26\% (95\% CI={[}+5.43\%, +11.08\%{]}) and -8.29 {[}-9.11, -7.47{]}.
 
+\hypertarget{tmle-of-the-controlled-direct-effect-cde}{%
+\section{TMLE of the Controlled direct effect (CDE)}\label{tmle-of-the-controlled-direct-effect-cde}}
+
+If the controlled direct effect (CDE) is identifiable, the \texttt{ltmle} package can be used to calculate a TMLE estimation of the CDE \(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\).
+
+Below, we show how to use the \texttt{ltmle()} function to estimate CDE by TMLE, with data generated from the causal model with the presence of confounders of the mediator-outcome relationship (\(L(1)\)) affected by the exposure \(A\) (Figure \ref{fig:figDAGM2}), and an \(A \ast M\) interaction effect on the outcome.
+
+As with the G-computation method by iterative conditional expectation, the TMLE procedure relies on the estimation of 2 \(\bar{Q}\) functions:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\bar{Q}_Y = \mathbb{E}(Y \mid L(0),A,L(1),M)\)
+\item
+  and \(\bar{Q}_{L(1)} = \mathbb{E}(\hat{\bar{Q}}_Y(M=m) \mid L(0),A)\);
+\end{itemize}
+
+And as with the IPTW method, the TMLE procedure relies also on the estimation of the 2 treatment mechanisms \(g\):
+
+\begin{itemize}
+\tightlist
+\item
+  \(g_A(L(0)) = P(A=1 \mid L(0))\)
+\item
+  and \(g_M(L(0),A,L(1)) = P(M=1 \mid L(0),A,L(1))\).
+\end{itemize}
+
 \hypertarget{appendix_a}{%
 \chapter{Appendix A: Data generating mechanisms}\label{appendix_a}}
 
