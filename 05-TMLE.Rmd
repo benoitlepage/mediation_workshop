@@ -354,3 +354,143 @@ And as with the IPTW method, the TMLE procedure relies also on the estimation of
 
   - $g_A(L(0)) = P(A=1 \mid L(0))$
   - and $g_M(L(0),A,L(1)) = P(M=1 \mid L(0),A,L(1))$.
+
+Note: for continuous outcomes, the `ltmle` package transforms the outcome on a 0 to 1 continuous scale, $Y_\text{transformed} = \frac{Y - \min(Y)}{\max(Y) - \min(Y)}$, so that quasi-binomial parametric models can be used in the computation procedure. Mean predictions are then back-transformed on the original scale.
+
+### For binary outcomes
+```{r Psi_CDE_ltmle_bin, echo=TRUE, eval = FALSE}
+library(ltmle)
+# Define the formulas for the estimation of the 2 barQ functions
+# Note that it is possible to specify the A*M interaction, if we really want to
+# take it into account.
+# Another option is to indicate prediction algorithms well adapted to the estimation
+# of interaction phenomena into the SuperLearner arguments.
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+           Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                    A0_ace * M_smoking")
+
+# Define the formulas for the estimation of the 2 g function
+gform <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
+           "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+
+# The data frame should follow the time-ordering of the nodes
+data_binary <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
+                                          A0_ace, L1,
+                                          M_smoking, Y_death))
+
+
+
+# Choose a family of data-adaptive algorithms from the SuperLearner package
+SL.library <- list(Q=c("SL.mean","SL.glm","SL.step.interaction","SL.xgboost"),
+                   g=c("SL.mean","SL.glm","SL.step.interaction","SL.xgboost"))
+
+
+## CDE, setting M=0
+set.seed(42) # for reproducibility (xgboost algorithm relies on random procedures)
+CDE_ltmle_M0_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
+                                        c(0,0)), # counterfactual intervention do(A=0,M=0)
+                            SL.library = SL.library,
+                            estimate.time = FALSE, # estimate computation time?
+                            gcomp = FALSE,
+                            variance.method = "ic") # a more robust variance can
+                                                    # be estimated with
+                                                    # variance.method = "tmle"
+summary(CDE_ltmle_M0_death)
+# Parameter Estimate:  0.056766
+#  Estimated Std Err:  0.018037
+#            p-value:  0.0016488
+#  95% Conf Interval: (0.021413, 0.092118)
+
+## CDE, setting M=1
+set.seed(42) # for reproducibility
+CDE_ltmle_M1_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,1), # counterfactual intervention do(A=1,M=1)
+                                        c(0,1)), # counterfactual intervention do(A=0,M=1)
+                            SL.library = SL.library,
+                            estimate.time = FALSE, # estimate computation time?
+                            gcomp = FALSE,
+                            variance.method = "ic")
+summary(CDE_ltmle_M1_death)
+# Parameter Estimate:  0.094776
+#  Estimated Std Err:  0.024
+#            p-value:  7.8496e-05
+#  95% Conf Interval: (0.047736, 0.14182)
+```
+The controlled direct effect of ACE on the probability of death, had the mediator been set to 0 for every participant is 5.68%, 95%CI=[2.14%, 9.21%].
+
+The controlled direct effect of ACE on the probability of death, had the mediator been set to 1 for every participant is 9.48%, 95%CI=[4.77%, 14.18%].
+
+
+### For continuous outcomes
+```{r Psi_CDE_ltmle_cont, echo=TRUE, eval = FALSE}
+# Define the data set with the continuous outcome Y_qol
+data_continuous <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
+                                              A0_ace, L1,
+                                              M_smoking, Y_qol))
+
+# Replace the Qbar function (the 2d formula should be named Y_qol instead of Y_death)
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+           Y_qol="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                    A0_ace * M_smoking")
+
+set.seed(42)
+## CDE, setting M=0
+CDE_ltmle_M0_qol <- ltmle(data = data_continuous,
+                      Anodes = c("A0_ace", "M_smoking"),
+                      Lnodes = c("L1"), # intermediate confounders +/- baseline confounders
+                      Ynodes = c("Y_qol"),
+                      survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                      Qform = Qform,
+                      gform = gform,
+                      abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
+                                  c(0,0)), # counterfactual intervention do(A=0,M=0)
+                      SL.library = SL.library,
+                      estimate.time = FALSE, # estimate computation time?
+                      gcomp = FALSE,
+                      variance.method = "ic")
+summary(CDE_ltmle_M0_qol)
+# Additive Treatment Effect:
+#   Parameter Estimate:  -4.8023
+#    Estimated Std Err:  0.43135
+#              p-value:  <2e-16
+#    95% Conf Interval: (-5.6477, -3.9569)
+
+## CDE, setting M=1
+set.seed(42)
+CDE_ltmle_M1_qol <- ltmle(data = data_continuous,
+                          Anodes = c("A0_ace", "M_smoking"),
+                          Lnodes = c("L1"), # intermediate confounders +/- baseline
+                          Ynodes = c("Y_qol"),
+                          survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                          Qform = Qform,
+                          gform = gform,
+                          abar = list(c(1,1), # counterfactual intervention do(A=1,M=1)
+                                      c(0,1)), # counterfactual intervention do(A=0,M=1)
+                          SL.library = SL.library,
+                          estimate.time = FALSE, # estimate computation time?
+                          gcomp = FALSE,
+                          variance.method = "ic")
+summary(CDE_ltmle_M1_qol)
+# Additive Treatment Effect:
+#   Parameter Estimate:  -10.219
+#    Estimated Std Err:  0.544
+#              p-value:  <2e-16
+#    95% Conf Interval: (-11.285, -9.1523)
+
+```
+The controlled direct effect of ACE on the quality of life score, had the mediator been set to 0 for every participant is -4.8, 95%CI=[-5.6, -4.0].
+
+The controlled direct effect of ACE on the quality of life score, had the mediator been set to 1 for every participant is -10.2, 95%CI=[-11.3, -9.2].

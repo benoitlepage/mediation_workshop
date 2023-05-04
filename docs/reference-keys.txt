@@ -34,6 +34,8 @@ stabilized-iptw-for-the-cde
 chap_tmle
 tmle-for-the-ate
 tmle-of-the-controlled-direct-effect-cde
+for-binary-outcomes
+for-continuous-outcomes
 appendix_a
 first-causal-model-data-generating-mechanism-without-mediator-outcome-confounder-affected-by-the-exposure
 second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure

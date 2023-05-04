@@ -138,7 +138,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2023-05-03}
+\date{2023-05-04}
 
 \begin{document}
 \maketitle
@@ -2264,6 +2264,154 @@ And as with the IPTW method, the TMLE procedure relies also on the estimation of
 \item
   and \(g_M(L(0),A,L(1)) = P(M=1 \mid L(0),A,L(1))\).
 \end{itemize}
+
+Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome on a 0 to 1 continuous scale, \(Y_\text{transformed} = \frac{Y - \min(Y)}{\max(Y) - \min(Y)}\), so that quasi-binomial parametric models can be used in the computation procedure. Mean predictions are then back-transformed on the original scale.
+
+\hypertarget{for-binary-outcomes}{%
+\subsection{For binary outcomes}\label{for-binary-outcomes}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(ltmle)}
+\CommentTok{\# Define the formulas for the estimation of the 2 barQ functions}
+\CommentTok{\# Note that it is possible to specify the A*M interaction, if we really want to}
+\CommentTok{\# take it into account.}
+\CommentTok{\# Another option is to indicate prediction algorithms well adapted to the estimation}
+\CommentTok{\# of interaction phenomena into the SuperLearner arguments.}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{,}
+           \AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + L1 +}
+\StringTok{                    A0\_ace * M\_smoking"}\NormalTok{)}
+
+\CommentTok{\# Define the formulas for the estimation of the 2 g function}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{,}
+           \StringTok{"M\_smoking \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace + L1"}\NormalTok{)}
+
+\CommentTok{\# The data frame should follow the time{-}ordering of the nodes}
+\NormalTok{data\_binary }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_parent\_low\_educ\_lv,}
+\NormalTok{                                          A0\_ace, L1,}
+\NormalTok{                                          M\_smoking, Y\_death))}
+
+
+
+\CommentTok{\# Choose a family of data{-}adaptive algorithms from the SuperLearner package}
+\NormalTok{SL.library }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{Q=}\FunctionTok{c}\NormalTok{(}\StringTok{"SL.mean"}\NormalTok{,}\StringTok{"SL.glm"}\NormalTok{,}\StringTok{"SL.step.interaction"}\NormalTok{,}\StringTok{"SL.xgboost"}\NormalTok{),}
+                   \AttributeTok{g=}\FunctionTok{c}\NormalTok{(}\StringTok{"SL.mean"}\NormalTok{,}\StringTok{"SL.glm"}\NormalTok{,}\StringTok{"SL.step.interaction"}\NormalTok{,}\StringTok{"SL.xgboost"}\NormalTok{))}
+
+
+\DocumentationTok{\#\# CDE, setting M=0}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{) }\CommentTok{\# for reproducibility (xgboost algorithm relies on random procedures)}
+\NormalTok{CDE\_ltmle\_M0\_death }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
+                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                            \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
+                            \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
+                            \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
+                            \AttributeTok{Qform =}\NormalTok{ Qform,}
+                            \AttributeTok{gform =}\NormalTok{ gform,}
+                            \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=0)}
+                                        \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=0)}
+                            \AttributeTok{SL.library =}\NormalTok{ SL.library,}
+                            \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
+                            \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
+                            \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{) }\CommentTok{\# a more robust variance can}
+                                                    \CommentTok{\# be estimated with}
+                                                    \CommentTok{\# variance.method = "tmle"}
+\FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M0\_death)}
+\CommentTok{\# Parameter Estimate:  0.056766}
+\CommentTok{\#  Estimated Std Err:  0.018037}
+\CommentTok{\#            p{-}value:  0.0016488}
+\CommentTok{\#  95\% Conf Interval: (0.021413, 0.092118)}
+
+\DocumentationTok{\#\# CDE, setting M=1}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{) }\CommentTok{\# for reproducibility}
+\NormalTok{CDE\_ltmle\_M1\_death }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
+                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                            \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
+                            \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
+                            \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
+                            \AttributeTok{Qform =}\NormalTok{ Qform,}
+                            \AttributeTok{gform =}\NormalTok{ gform,}
+                            \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=1)}
+                                        \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=1)}
+                            \AttributeTok{SL.library =}\NormalTok{ SL.library,}
+                            \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
+                            \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
+                            \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M1\_death)}
+\CommentTok{\# Parameter Estimate:  0.094776}
+\CommentTok{\#  Estimated Std Err:  0.024}
+\CommentTok{\#            p{-}value:  7.8496e{-}05}
+\CommentTok{\#  95\% Conf Interval: (0.047736, 0.14182)}
+\end{Highlighting}
+\end{Shaded}
+
+The controlled direct effect of ACE on the probability of death, had the mediator been set to 0 for every participant is 5.68\%, 95\%CI={[}2.14\%, 9.21\%{]}.
+
+The controlled direct effect of ACE on the probability of death, had the mediator been set to 1 for every participant is 9.48\%, 95\%CI={[}4.77\%, 14.18\%{]}.
+
+\hypertarget{for-continuous-outcomes}{%
+\subsection{For continuous outcomes}\label{for-continuous-outcomes}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Define the data set with the continuous outcome Y\_qol}
+\NormalTok{data\_continuous }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_parent\_low\_educ\_lv,}
+\NormalTok{                                              A0\_ace, L1,}
+\NormalTok{                                              M\_smoking, Y\_qol))}
+
+\CommentTok{\# Replace the Qbar function (the 2d formula should be named Y\_qol instead of Y\_death)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{,}
+           \AttributeTok{Y\_qol=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + L1 +}
+\StringTok{                    A0\_ace * M\_smoking"}\NormalTok{)}
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
+\DocumentationTok{\#\# CDE, setting M=0}
+\NormalTok{CDE\_ltmle\_M0\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_continuous,}
+                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                      \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline confounders}
+                      \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_qol"}\NormalTok{),}
+                      \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
+                      \AttributeTok{Qform =}\NormalTok{ Qform,}
+                      \AttributeTok{gform =}\NormalTok{ gform,}
+                      \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=0)}
+                                  \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=0)}
+                      \AttributeTok{SL.library =}\NormalTok{ SL.library,}
+                      \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
+                      \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
+                      \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M0\_qol)}
+\CommentTok{\# Additive Treatment Effect:}
+\CommentTok{\#   Parameter Estimate:  {-}4.8023}
+\CommentTok{\#    Estimated Std Err:  0.43135}
+\CommentTok{\#              p{-}value:  \textless{}2e{-}16}
+\CommentTok{\#    95\% Conf Interval: ({-}5.6477, {-}3.9569)}
+
+\DocumentationTok{\#\# CDE, setting M=1}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
+\NormalTok{CDE\_ltmle\_M1\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_continuous,}
+                          \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                          \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
+                          \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_qol"}\NormalTok{),}
+                          \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
+                          \AttributeTok{Qform =}\NormalTok{ Qform,}
+                          \AttributeTok{gform =}\NormalTok{ gform,}
+                          \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=1)}
+                                      \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=1)}
+                          \AttributeTok{SL.library =}\NormalTok{ SL.library,}
+                          \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
+                          \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
+                          \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M1\_qol)}
+\CommentTok{\# Additive Treatment Effect:}
+\CommentTok{\#   Parameter Estimate:  {-}10.219}
+\CommentTok{\#    Estimated Std Err:  0.544}
+\CommentTok{\#              p{-}value:  \textless{}2e{-}16}
+\CommentTok{\#    95\% Conf Interval: ({-}11.285, {-}9.1523)}
+\end{Highlighting}
+\end{Shaded}
+
+The controlled direct effect of ACE on the quality of life score, had the mediator been set to 0 for every participant is -4.8, 95\%CI={[}-5.6, -4.0{]}.
+
+The controlled direct effect of ACE on the quality of life score, had the mediator been set to 1 for every participant is -10.2, 95\%CI={[}-11.3, -9.2{]}.
 
 \hypertarget{appendix_a}{%
 \chapter{Appendix A: Data generating mechanisms}\label{appendix_a}}
