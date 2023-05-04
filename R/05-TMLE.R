@@ -268,51 +268,108 @@ data_binary <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
                                           A0_ace, L1,
                                           M_smoking, Y_death))
 
-# We will use the same family of data-adaptive algorithms from the SuperLearner package
-SL.library <- list(Q=c("SL.mean","SL.glm","SL.step.interaction"),
-                   g=c("SL.mean","SL.glm","SL.step.interaction"))
 
+
+# choose a family of data-adaptive algorithms from the SuperLearner package
+SL.library <- list(Q=c("SL.mean","SL.glm","SL.step.interaction","SL.xgboost"),
+                   g=c("SL.mean","SL.glm","SL.step.interaction","SL.xgboost"))
+
+set.seed(42)
 ## CDE, setting M=0
-CDE_ltmle_M0 <- ltmle(data = data_binary,
+CDE_ltmle_M0_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
+                                        c(0,0)), # counterfactual intervention do(A=0,M=0)
+                            SL.library = SL.library,
+                            estimate.time = FALSE, # estimate computation time?
+                            gcomp = FALSE,
+                            variance.method = "ic") # a more robust variance can
+                                                    # be estimated with
+                                                    # variance.method = "tmle"
+summary(CDE_ltmle_M0_death)
+# Parameter Estimate:  0.056766
+#  Estimated Std Err:  0.018037
+#            p-value:  0.0016488
+#  95% Conf Interval: (0.021413, 0.092118)
+
+## CDE, setting M=1
+set.seed(42)
+CDE_ltmle_M1_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,1), # counterfactual intervention do(A=1,M=1)
+                                        c(0,1)), # counterfactual intervention do(A=0,M=1)
+                            SL.library = SL.library,
+                            estimate.time = FALSE, # estimate computation time?
+                            gcomp = FALSE,
+                            variance.method = "ic")
+summary(CDE_ltmle_M1_death)
+# Parameter Estimate:  0.094776
+#  Estimated Std Err:  0.024
+#            p-value:  7.8496e-05
+#  95% Conf Interval: (0.047736, 0.14182)
+
+
+
+## for continuous outcomes
+#############################
+data_continuous <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
+                                              A0_ace, L1,
+                                              M_smoking, Y_qol))
+
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+           Y_qol="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                    A0_ace * M_smoking")
+
+set.seed(42)
+## CDE, setting M=0
+CDE_ltmle_M0_qol <- ltmle(data = data_continuous,
                       Anodes = c("A0_ace", "M_smoking"),
                       Lnodes = c("L1"), # intermediate confounders +/- baseline confounders
-                      Ynodes = c("Y_death"),
+                      Ynodes = c("Y_qol"),
                       survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
                       Qform = Qform,
                       gform = gform,
                       abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
                                   c(0,0)), # counterfactual intervention do(A=0,M=0)
                       SL.library = SL.library,
-                      estimate.time = TRUE, # estimate computation time
-                      gcomp = FALSE,
-                      variance.method = "ic") # a more robust variance can be estimated
-                                              # with variance.method = "tmle"
-summary(CDE_ltmle_M0)
-# Additive Treatment Effect:
-#   Parameter Estimate:  0.056789
-#    Estimated Std Err:  0.018041
-#              p-value:  0.0016451
-#    95% Conf Interval: (0.02143, 0.092149)
-
-## CDE, setting M=1
-CDE_ltmle_M1 <- ltmle(data = data_binary,
-                      Anodes = c("A0_ace", "M_smoking"),
-                      Lnodes = c("L1"), # intermediate confounders +/- baseline confounders
-                      Ynodes = c("Y_death"),
-                      survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
-                      Qform = Qform,
-                      gform = gform,
-                      abar = list(c(1,1), # counterfactual intervention do(A=1,M=1)
-                                  c(0,1)), # counterfactual intervention do(A=0,M=1)
-                      SL.library = SL.library,
-                      estimate.time = FALSE, # do note estimate computation time
+                      estimate.time = FALSE, # estimate computation time?
                       gcomp = FALSE,
                       variance.method = "ic")
-summary(CDE_ltmle_M1)
+summary(CDE_ltmle_M0_qol)
 # Additive Treatment Effect:
-#   Parameter Estimate:  0.095574
-#    Estimated Std Err:  0.024638
-#              p-value:  0.0001048
-#    95% Conf Interval: (0.047286, 0.14386)
+#   Parameter Estimate:  -4.8023
+#    Estimated Std Err:  0.43135
+#              p-value:  <2e-16
+#    95% Conf Interval: (-5.6477, -3.9569)
 
-## for continuous outcomes
+## CDE, setting M=1
+set.seed(42)
+CDE_ltmle_M1_qol <- ltmle(data = data_continuous,
+                          Anodes = c("A0_ace", "M_smoking"),
+                          Lnodes = c("L1"), # intermediate confounders +/- baseline
+                          Ynodes = c("Y_qol"),
+                          survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                          Qform = Qform,
+                          gform = gform,
+                          abar = list(c(1,1), # counterfactual intervention do(A=1,M=1)
+                                      c(0,1)), # counterfactual intervention do(A=0,M=1)
+                          SL.library = SL.library,
+                          estimate.time = FALSE, # estimate computation time?
+                          gcomp = FALSE,
+                          variance.method = "ic")
+summary(CDE_ltmle_M1_qol)
+# Additive Treatment Effect:
+#   Parameter Estimate:  -10.219
+#    Estimated Std Err:  0.544
+#              p-value:  <2e-16
+#    95% Conf Interval: (-11.285, -9.1523)
