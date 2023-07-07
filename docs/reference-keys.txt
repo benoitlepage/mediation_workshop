@@ -31,6 +31,7 @@ stabilized-iptw-for-the-ate
 estimation-of-the-controlled-direct-effect-cde
 iptw-for-the-cde
 stabilized-iptw-for-the-cde
+msm_chapter
 chap_tmle
 tmle-for-the-ate
 tmle-of-the-controlled-direct-effect-cde
