@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2023-07-07" />
+<meta name="date" content="2024-01-31" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -200,7 +200,10 @@ div.csl-indent {
 <li class="chapter" data-level="7.2.2" data-path="chap_iptw.html"><a href="chap_iptw.html#stabilized-iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.2</b> Stabilized IPTW for the CDE</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="8" data-path="msm_chapter.html"><a href="msm_chapter.html"><i class="fa fa-check"></i><b>8</b> Marginal structural models</a></li>
+<li class="chapter" data-level="8" data-path="msm_chapter.html"><a href="msm_chapter.html"><i class="fa fa-check"></i><b>8</b> Marginal structural models</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="msm_chapter.html"><a href="msm_chapter.html#msm-for-the-total-effect"><i class="fa fa-check"></i><b>8.1</b> MSM for the total effect</a></li>
+</ul></li>
 <li class="chapter" data-level="9" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>9</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
 <li class="chapter" data-level="9.1" data-path="chap_tmle.html"><a href="chap_tmle.html#tmle-for-the-ate"><i class="fa fa-check"></i><b>9.1</b> TMLE for the ATE</a></li>
@@ -264,7 +267,38 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="msm_chapter" class="section level1 hasAnchor" number="8">
 <h1><span class="header-section-number">Chapter 8</span> Marginal structural models<a href="msm_chapter.html#msm_chapter" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome and the exposure(s) and mediators.</p>
+<div id="msm-for-the-total-effect" class="section level2 hasAnchor" number="8.1">
+<h2><span class="header-section-number">8.1</span> MSM for the total effect<a href="msm_chapter.html#msm-for-the-total-effect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>For a continuous or binary outcome, we can use the following MSM:
+<span class="math display" id="eq:MSMATEmarg">\[\begin{equation}
+  \mathbb{E}(Y_a) = \alpha_0 + \alpha_A a
+  \tag{8.1}
+\end{equation}\]</span></p>
+<p>The Average Total Effect <span class="math inline">\(\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})\)</span> can then be expressed using the coefficients of this MSM:
+<span class="math display" id="eq:ATEcoefFromMSM">\[\begin{equation}
+  \text{ATE} := \left(\alpha_0 + \alpha_A \times 1 \right) - \left(\alpha_0 + \alpha_A \times 0 \right) = \alpha_A
+  \tag{8.2}
+\end{equation}\]</span></p>
+<p>Indeed, the coefficient <span class="math inline">\(\alpha_A\)</span> corresponds to the <span class="math inline">\(\text{ATE}\)</span>.</p>
+<p>It is also possible to define MSMs adjusted for a subset <span class="math inline">\(V\)</span> of the baseline confounders (<span class="math inline">\(V \subset L(0)\)</span>). Such MSMs can be useful to estimate conditional effects, for example it is possible to define an average “conditional” total effect <span class="math inline">\(\text{ATE}|L(0)\)</span> (instead of the marginal ATE defined above), projecting the counterfactual outcomes on a parametric model such as the following:</p>
+<p><span class="math display" id="eq:MSMATEcond">\[\begin{equation}
+  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{low.educ.} L_\text{low.educ.}(0)
+  \tag{8.3}
+\end{equation}\]</span></p>
+<p>so that <span class="math inline">\(\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_0\)</span> using the coefficient from the MSM <a href="msm_chapter.html#eq:MSMATEcond">(8.3)</a>.</p>
+<p>MSMs are also very useful to study interactions, or effect modification of the exposure <span class="math inline">\(A\)</span> by a baseline confounder. For example, if we want to study the average total effect according to sex, we can use the following MSM:</p>
+<p><span class="math display" id="eq:MSMATEsex">\[\begin{equation}
+  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
+  \tag{8.4}
+\end{equation}\]</span></p>
+<p>and express the average total effect in each strata of sex using the coefficients of the MSM <a href="msm_chapter.html#eq:MSMATEsex">(8.4)</a>:</p>
+<p><span class="math display">\[\begin{align*}
+\{\text{ATE} \mid L_\text{male}(0) = 0\} &amp;:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 0) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 0) = \alpha_A \\
+\{\text{ATE} \mid L_\text{male}(0) = 1\} &amp;:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 1) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 1) = \alpha_A + \alpha_{A \ast L_\text{male}}
+\end{align*}\]</span></p>
 
+</div>
 </div>
             </section>
 

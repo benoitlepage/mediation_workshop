@@ -5,6 +5,10 @@ eq:logittotaleffect
 eq:contoutcomereg
 eq:medreg
 eq:binoutcomereg
+eq:MSMATEmarg
+eq:ATEcoefFromMSM
+eq:MSMATEcond
+eq:MSMATEsex
 introduction
 software
 data-sets
@@ -32,6 +36,7 @@ estimation-of-the-controlled-direct-effect-cde
 iptw-for-the-cde
 stabilized-iptw-for-the-cde
 msm_chapter
+msm-for-the-total-effect
 chap_tmle
 tmle-for-the-ate
 tmle-of-the-controlled-direct-effect-cde

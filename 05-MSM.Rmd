@@ -1,3 +1,44 @@
 # Marginal structural models {#msm_chapter}
 
+Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome and the exposure(s) and mediators.
 
+## MSM for the total effect
+
+For a continuous or binary outcome, we can use the following MSM:
+\begin{equation} 
+  \mathbb{E}(Y_a) = \alpha_0 + \alpha_A a 
+  (\#eq:MSMATEmarg)
+\end{equation}
+
+The Average Total Effect $\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})$ can then be expressed using the coefficients of this MSM:
+\begin{equation} 
+  \text{ATE} := \left(\alpha_0 + \alpha_A \times 1 \right) - \left(\alpha_0 + \alpha_A \times 0 \right) = \alpha_A 
+  (\#eq:ATEcoefFromMSM)
+\end{equation}
+
+Indeed, the coefficient $\alpha_A$ corresponds to the $\text{ATE}$.
+
+
+It is also possible to define MSMs adjusted for a subset $V$ of the baseline confounders ($V \subset L(0)$). Such MSMs can be useful to estimate conditional effects, for example it is possible to define an average "conditional" total effect $\text{ATE}|L(0)$ (instead of the marginal ATE defined above), projecting the counterfactual outcomes on a parametric model such as the following: 
+
+\begin{equation} 
+  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{low.educ.} L_\text{low.educ.}(0)
+  (\#eq:MSMATEcond)
+\end{equation}
+
+so that $\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_0$ using the coefficient from the MSM \@ref(eq:MSMATEcond).
+
+
+MSMs are also very useful to study interactions, or effect modification of the exposure $A$ by a baseline confounder. For example, if we want to study the average total effect according to sex, we can use the following MSM:
+
+\begin{equation} 
+  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
+  (\#eq:MSMATEsex)
+\end{equation}
+
+and express the average total effect in each strata of sex using the coefficients of the MSM \@ref(eq:MSMATEsex):
+
+\begin{align*}
+ \{\text{ATE} \mid L_\text{male}(0) = 0\} &:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 0) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 0) = \alpha_A \\
+ \{\text{ATE} \mid L_\text{male}(0) = 1\} &:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 1) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 1) = \alpha_A + \alpha_{A \ast L_\text{male}}
+\end{align*}
