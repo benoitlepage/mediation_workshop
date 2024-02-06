@@ -1,4 +1,4 @@
-# G-computation {#chap_gcomp}
+# G-computation {#ChapGcomp}
 
 If we make the assumption that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the `df2_int.csv` data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an $A \star M$ interaction effect on the outcome.
 

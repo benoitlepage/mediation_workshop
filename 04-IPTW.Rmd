@@ -1,4 +1,4 @@
-# Inverse Probability of Treatment Weighting (IPTW) {#chap_iptw}
+# Inverse Probability of Treatment Weighting (IPTW) {#ChapIptw}
 
 ## Estimation of the Average total effect
 
@@ -15,9 +15,9 @@ The following steps describe the implementation of the IPTW estimator
 
 2. Predict each individual's probability of being exposed to her own exposure
 
-3. Apply weights corresponding to the inverse of the predicted probability $w_i = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}$
+3. Apply weights corresponding to the inverse of the predicted probability $w_i = \frac{1}{\hat{g}(A = a_i \mid L(0)_i)}$
 
-4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A_i=a \mid L(0)_i)} Y_i$
+4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A=a_i \mid L(0)_i)} Y_i$
 
 ```{r Psi_ATE_iptw, echo=TRUE, eval = FALSE}
 ## 1. Estimate g
@@ -28,7 +28,7 @@ g.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
 # predict the probabilities P(A0_ace=1|L(0)) & P(A0_ace=0|L(0))
 pred.g1.L <- predict(g.L, type="response")
 pred.g0.L <- 1 - pred.g1.L
-# the predicted probability of the observed treatment A_i=a is :
+# the predicted probability of the observed treatment A=a_i is :
 gA.L <- rep(NA, nrow(df2_int))
 gA.L[df2_int$A0_ace == 1] <- pred.g1.L[df2_int$A0_ace == 1]
 gA.L[df2_int$A0_ace == 0] <- pred.g0.L[df2_int$A0_ace == 0]
@@ -95,9 +95,9 @@ The following steps describe the implementation of the IPTW estimator
 
 2. Predict each individual's probability of being exposed to her own exposure
 
-3. Apply weights corresponding to the inverse of the predicted probability $w_{A_i} = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}$ and $w_{M_i} = \frac{1}{\hat{g}(M_i = m \mid L(0)_i,A_i,L(1)_i)}$
+3. Apply weights corresponding to the inverse of the predicted probability $w_{A_i} = \frac{1}{\hat{g}(A = a_i \mid L(0)_i)}$ and $w_{M_i} = \frac{1}{\hat{g}(M = m_i \mid L(0)_i,A_i,L(1)_i)}$
 
-4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i$
+4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A=a_i \mid L(0)_i) \times \hat{g}(M=m_i \mid L(0)_i,A_i,L(1)_i)} Y_i$
 
 ```{r Psi_CDE_iptw, echo=TRUE, eval = FALSE}
 ## 1. Estimate gA and gM

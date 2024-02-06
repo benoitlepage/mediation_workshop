@@ -1,4 +1,4 @@
-# Traditional regression models {#chap_trad_reg_models}
+# Traditional regression models {#ChapTradRegModels}
 
 Traditional regression models can be applied in the absence of an intermediate confounder $L(1)$ of the $M-Y$ relationship affected by the exposure $A$ (Causal model 1). They can be used for two-way, three-way and four-way decomposition of the average total effect.
 

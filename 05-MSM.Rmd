@@ -2,8 +2,11 @@
 
 Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome and the exposure(s) and mediators.
 
-## MSM for the total effect
+To illustrate the application of MSMs, we will first use the data from the Causal model 1 (with an $A \ast M$ interaction effect on the outcome) where the exposure $A$ doesn't affect the counfonder $L(1)$ between the mediator and the outcome.
 
+## MSM for the Average Total Effect (ATE)
+
+### Expressing the ATE using coefficients of an MSM
 For a continuous or binary outcome, we can use the following MSM:
 \begin{equation} 
   \mathbb{E}(Y_a) = \alpha_0 + \alpha_A a 
@@ -26,13 +29,13 @@ It is also possible to define MSMs adjusted for a subset $V$ of the baseline con
   (\#eq:MSMATEcond)
 \end{equation}
 
-so that $\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_0$ using the coefficient from the MSM \@ref(eq:MSMATEcond).
+so that $\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_A$ using the coefficient from the MSM \@ref(eq:MSMATEcond).
 
 
 MSMs are also very useful to study interactions, or effect modification of the exposure $A$ by a baseline confounder. For example, if we want to study the average total effect according to sex, we can use the following MSM:
 
 \begin{equation} 
-  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
+  \mathbb{E}(Y_a \mid L_\text{male}(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
   (\#eq:MSMATEsex)
 \end{equation}
 
@@ -42,3 +45,178 @@ and express the average total effect in each strata of sex using the coefficient
  \{\text{ATE} \mid L_\text{male}(0) = 0\} &:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 0) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 0) = \alpha_A \\
  \{\text{ATE} \mid L_\text{male}(0) = 1\} &:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 1) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 1) = \alpha_A + \alpha_{A \ast L_\text{male}}
 \end{align*}
+
+Because MSMs are models of unobserved counterfactual outcomes, estimators of the MSM coefficients are necessary. We will describe two possible approaches : estimation by IPTW or by G-computation.
+
+In both approaches, 95\% confidence intervals can be computed by bootstrap.
+
+### Estimation of the MSM coefficients by IPTW
+MSM coefficients can be easily estimated using an Inverse Probability of Treatment (IPTW) approach. 
+
+For example, in order to fit the MSM \@ref(eq:MSMATEsex) described above, we can use a linear regression of the (observed) outcome $Y$ on the exposure and sex, weigthed by individual weights $w_i$:
+\begin{equation} 
+  \mathbb{E}\left[Y \mid L_\text{male}(0)\right] = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
+\end{equation}
+
+where $w_i=\frac{P(A=a_i \mid L_\text{male}(0))}{P(A=a_i \mid L(0)=l(0)_i)}$. 
+
+As in chapter \@ref(ChapIptw), the "no-unmeasured confounding" assumption is addressed by the application of weights $w_i$, which balance confounders $L(0)$ relative to the exposure $A$.
+
+```{r Psi_ATE_bysex_MSM, echo=TRUE, eval = FALSE}
+## 1. Denominator of the weight
+# 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)
+g.A.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+           family = "binomial", data = df1_int)
+
+# 1b. Predict each individual's probability of being exposed to her own exposure
+# predict the probabilities P(A0_ace=1 & P(A0_ace=0)
+pred.g1.L <- predict(g.A.L, type="response")
+pred.g0.L <- 1 - pred.g1.L
+# the predicted probability of the observed treatment P(A = a_i | L(0)) is :
+gAi.L <- rep(NA, nrow(df1_int))
+gAi.L[df1_int$A0_ace==1] <- pred.g1.L[df1_int$A0_ace==1]
+gAi.L[df1_int$A0_ace==0] <- pred.g0.L[df1_int$A0_ace==0]
+
+## 2. Numerator of the weight
+# The numerator of the weight can be 1 for simple weights,
+# or g(A=a_i|V) to obtain stabilized weights which put less weight to individuals
+# with less observation. Stabilized weights enable a weaker positivity assumption.
+
+# 2a. Estimate g(A=a_i | sex) (numerator of the stabilized weight)
+g.A.sex <- glm(A0_ace ~ L0_male,
+           family = "binomial", data = df1_int)
+
+# 2b. Predict each individual's probability of being exposed to her own exposure
+# predict the probabilities P(A0_ace=1 | sex) & P(A0_ace=0 | sex)
+pred.g1.sex <- predict(g.A.sex, type="response")
+pred.g0.sex <- 1 - pred.g1.sex
+# the predicted probability of the observed treatment P(A = a_i | sex) is :
+gAi.sex <- rep(NA, nrow(df1_int))
+gAi.sex[df1_int$A0_ace==1] <- pred.g1.sex[df1_int$A0_ace==1]
+gAi.sex[df1_int$A0_ace==0] <- pred.g0.sex[df1_int$A0_ace==0]
+
+# 3. Define individual weights:
+# We can use simple weights w = 1 / g(A=a_i | L(0))
+w <- 1 / gAi.L
+# Or alternatively, we can use stabilized weights : sw = g(A=a_i) / g(A=a_i | L(0))
+sw <- gAi.sex / gAi.L
+
+# we can see that stabilized weights have less extreme values
+par(mfcol = c(1,2))
+boxplot(w ~ df1_int$A0_ace)
+boxplot(sw ~ df1_int$A0_ace)
+
+# 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
+# a GLM with gaussian family can be applied to estimate risk difference
+msm1 <- glm(Y_death ~ A0_ace + L0_male + A0_ace*L0_male,
+           weights = w, # applying the simple weight
+           family = "gaussian",
+           data = df1_int)
+coef(msm1)
+# (Intercept)         A0_ace        L0_male A0_ace:L0_male
+# 0.17573472     0.03589627     0.04598911     0.04136896
+
+msm2 <- glm(Y_death ~ A0_ace + L0_male + A0_ace*L0_male,
+            weights = sw, # applying the stabilized weight
+            family = "gaussian",
+            data = df1_int)
+coef(msm2)
+# (Intercept)         A0_ace        L0_male A0_ace:L0_male
+# 0.17573472     0.03589627     0.04598911     0.04136896
+
+## 5. Estimate the ATE stratified by sex
+# According to the MSM1 (with simple weights)
+ATE.msm1.male0 <- coef(msm1)["A0_ace"]
+# 0.03589627
+ATE.msm1.male1 <- coef(msm1)["A0_ace"] + coef(msm1)["A0_ace:L0_male"]
+# 0.07726522
+
+# According to the MSM2 (with stabilized weights)
+ATE.msm2.male0 <- coef(msm2)["A0_ace"]
+# 0.03589627
+ATE.msm2.male1 <- coef(msm2)["A0_ace"] + coef(msm2)["A0_ace:L0_male"]
+# 0.07726522
+# The results are the same because there is no violation of the positivity assumption
+# In case of positivity violation, stabilized weights would give more accurate estimates
+```
+
+The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.5\% in women and +7.7\% in men.
+
+Note: Using the true data generating model used to simulate the illustrative datasets, the "true" value of the ATE stratified by sex can be calculated: 
+
+  - the "true" $(ATE \mid L_\text{male}(0) = 0) = 0.0688$ in women,
+
+  - the "true" $(ATE \mid L_\text{male}(0) = 1) = 0.0703$ in men.
+
+### Estimation of the MSM coefficiets by G-computation (imputation)
+We can also use a G-computation (sometimes described as an imputation) approach to estimate coefficients of an MSM.
+
+The following steps can be applied to estimate the MSM's coefficient by G-computation:
+
+1. Fit a logistic or a linear regression to estimate $\overline{Q} = \mathbb{E}(Y \mid A, L(0))$
+
+2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}(A=0)_i$ and $\hat{\overline{Q}}(A=1)_i$, by evaluating the regression fit $\overline{Q}$ at $A=0$ and $A=1$ respectively
+
+3. Duplicate the initial dataset in a single long dataset in which:
+
+  - the first half of the long dataset corresponds to the first counterfactual scenario with $A=0$ and an additional column for the predicted counterfactual outcome $\hat{\overline{Q}}(A=0)$ ; 
+  - the second half of the long dataset corresponds to the second counterfactual scenario with $A=1$ and $\hat{\overline{Q}}(A=1)$ for the predicted counterfactual column.
+
+4. Fit the MSM $E\left[Y_a \mid L\text{male}(0)\right]$ using the long dataset.
+
+
+```{r Psi_ATE_bysex_MSM_gcomp, echo=TRUE, eval = FALSE}
+## 1. Estimate Qbar
+Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+                   family = "gaussian", data = df1_int)
+# The final result would be sligthly different if we apply a binomial family.
+
+## 2. Predict an outcome for each subject, in 2 counterfactual scenarios 
+##    setting A=0 and A=1
+# prepare data sets used to predict the outcome under the counterfactual
+# scenarios setting A=0 and A=1
+data.A1 <- data.A0 <- df1_int
+data.A1$A0_ace <- 1
+data.A0$A0_ace <- 0
+
+# predict values under the same name in the corresponding counterfactual dataset
+data.A1$Ya.death.pred <- predict(Q.tot.death, newdata = data.A1, type = "response")
+data.A0$Ya.death.pred <- predict(Q.tot.death, newdata = data.A0, type = "response")
+
+## 3. Append both counterfactual datasets in a single long dataset
+# (the number of row is twice the initial number of row because there are 2 
+# counterfactual scenarios)
+data.2scenarios <- rbind(data.A0, data.A1)
+
+## 4. fit the MSM: E(Y_a|sex)
+MSM.ATE.gcomp <- glm(Ya.death.pred ~ A0_ace + L0_male + A0_ace:L0_male,
+                     family = "gaussian",
+                     data = data.2scenarios)
+coef(MSM.ATE.gcomp)
+#  (Intercept)         A0_ace        L0_male A0_ace:L0_male
+# 1.743994e-01   7.720726e-02   4.874750e-02   4.802530e-16
+
+## 5. Estimate the ATE stratified by sex
+# According to MSM.ATE.gcomp
+ATE.MSM.gcomp.male0 <- coef(MSM.ATE.gcomp)["A0_ace"]
+# 0.07720726
+ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_ace"] +
+                          coef(MSM.ATE.gcomp)["A0_ace:L0_male"])
+# 0.07720726
+# The results are the same in both strata, because in the first Qbar model,
+# we did not include any (A * sex) interaction term
+
+# Applying a binomial family for the first Qbar model would result in two
+# different values of the ATE stratified by sex.
+# => 0.06880798 in the L0_male = 0 strata
+# => 0.08053575 in the L0_male = 1 strata
+
+# Indeed, applying a gaussian family (additive model) with no interaction terms
+# implies the assumption of some interaction terms in a multiplicative model (such
+# as a glm with a binomial family).
+# On the contrary, applying a binomial family (multiplicative model) with no
+# interaction terms implies some interaction terms in an additive model (such as
+# a glm with a gaussian family)
+
+
+```

@@ -141,7 +141,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-01-31}
+\date{2024-02-02}
 
 \begin{document}
 \maketitle
@@ -279,11 +279,11 @@ The R functions used to simulate these 4 data sets are given in the Appendix A.
 
 The Appendix B describes how the true values for the estimands of the causal quantities of interest given in Table 2 of the \emph{Expanse ``Mediation analysis'' report} were calculated. Those true values are the theoretical values expected under the causal and statistical models \(\mathcal{M}_1\), \(\mathcal{M}_{1 \ast}\), \(\mathcal{M}_2\) and \(\mathcal{M}_{2 \ast}\). Estimations that will be obtained from the data sets \texttt{df1.csv}, \texttt{df1\_int.csv}, \texttt{df2.csv}, and \texttt{df2\_int.csv} will be slightly different from the true values because of sample variability.
 
-\hypertarget{chap_baron_kenny_sem}{%
-\chapter{Baron and Kenny, structural equation models}\label{chap_baron_kenny_sem}}
+\hypertarget{ChapBaronKennySem}{%
+\chapter{Baron and Kenny, structural equation models}\label{ChapBaronKennySem}}
 
-\hypertarget{chap_trad_reg_models}{%
-\chapter{Traditional regression models}\label{chap_trad_reg_models}}
+\hypertarget{ChapTradRegModels}{%
+\chapter{Traditional regression models}\label{ChapTradRegModels}}
 
 Traditional regression models can be applied in the absence of an intermediate confounder \(L(1)\) of the \(M-Y\) relationship affected by the exposure \(A\) (Causal model 1). They can be used for two-way, three-way and four-way decomposition of the average total effect.
 
@@ -1194,8 +1194,8 @@ For binary outcomes:
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{chap_gcomp}{%
-\chapter{G-computation}\label{chap_gcomp}}
+\hypertarget{ChapGcomp}{%
+\chapter{G-computation}\label{ChapGcomp}}
 
 If we make the assumption that the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the \texttt{df2\_int.csv} data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an \(A \star M\) interaction effect on the outcome.
 
@@ -1609,8 +1609,8 @@ The controlled direct effect \(\text{CDE}_m\) can then be estimated by:
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{chap_iptw}{%
-\chapter{Inverse Probability of Treatment Weighting (IPTW)}\label{chap_iptw}}
+\hypertarget{ChapIptw}{%
+\chapter{Inverse Probability of Treatment Weighting (IPTW)}\label{ChapIptw}}
 
 \hypertarget{estimation-of-the-average-total-effect}{%
 \section{Estimation of the Average total effect}\label{estimation-of-the-average-total-effect}}
@@ -1632,9 +1632,9 @@ The following steps describe the implementation of the IPTW estimator
 \item
   Predict each individual's probability of being exposed to her own exposure
 \item
-  Apply weights corresponding to the inverse of the predicted probability \(w_i = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\)
+  Apply weights corresponding to the inverse of the predicted probability \(w_i = \frac{1}{\hat{g}(A = a_i \mid L(0)_i)}\)
 \item
-  Use the empirical mean of the weighted outcome \(Y\): \(\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A_i=a \mid L(0)_i)} Y_i\)
+  Use the empirical mean of the weighted outcome \(Y\): \(\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A=a_i \mid L(0)_i)} Y_i\)
 \end{enumerate}
 
 \begin{Shaded}
@@ -1647,7 +1647,7 @@ The following steps describe the implementation of the IPTW estimator
 \CommentTok{\# predict the probabilities P(A0\_ace=1|L(0)) \& P(A0\_ace=0|L(0))}
 \NormalTok{pred.g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.g0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.L}
-\CommentTok{\# the predicted probability of the observed treatment A\_i=a is :}
+\CommentTok{\# the predicted probability of the observed treatment A=a\_i is :}
 \NormalTok{gA.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
 \NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
 \NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
@@ -1724,9 +1724,9 @@ The following steps describe the implementation of the IPTW estimator
 \item
   Predict each individual's probability of being exposed to her own exposure
 \item
-  Apply weights corresponding to the inverse of the predicted probability \(w_{A_i} = \frac{1}{\hat{g}(A_i = a \mid L(0)_i)}\) and \(w_{M_i} = \frac{1}{\hat{g}(M_i = m \mid L(0)_i,A_i,L(1)_i)}\)
+  Apply weights corresponding to the inverse of the predicted probability \(w_{A_i} = \frac{1}{\hat{g}(A = a_i \mid L(0)_i)}\) and \(w_{M_i} = \frac{1}{\hat{g}(M = m_i \mid L(0)_i,A_i,L(1)_i)}\)
 \item
-  Use the empirical mean of the weighted outcome \(Y\): \(\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A_i=a \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i\)
+  Use the empirical mean of the weighted outcome \(Y\): \(\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A=a_i \mid L(0)_i) \times \hat{g}(M=m_i \mid L(0)_i,A_i,L(1)_i)} Y_i\)
 \end{enumerate}
 
 \begin{Shaded}
@@ -1874,8 +1874,13 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 
 Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome and the exposure(s) and mediators.
 
-\hypertarget{msm-for-the-total-effect}{%
-\section{MSM for the total effect}\label{msm-for-the-total-effect}}
+To illustrate the application of MSMs, we will first use the data from the Causal model 1 (with an \(A \ast M\) interaction effect on the outcome) where the exposure \(A\) doesn't affect the counfonder \(L(1)\) between the mediator and the outcome.
+
+\hypertarget{msm-for-the-average-total-effect-ate}{%
+\section{MSM for the Average Total Effect (ATE)}\label{msm-for-the-average-total-effect-ate}}
+
+\hypertarget{expressing-the-ate-using-coefficients-of-an-msm}{%
+\subsection{Expressing the ATE using coefficients of an MSM}\label{expressing-the-ate-using-coefficients-of-an-msm}}
 
 For a continuous or binary outcome, we can use the following MSM:
 \begin{equation} 
@@ -1898,12 +1903,12 @@ It is also possible to define MSMs adjusted for a subset \(V\) of the baseline c
   \label{eq:MSMATEcond}
 \end{equation}
 
-so that \(\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_0\) using the coefficient from the MSM \eqref{eq:MSMATEcond}.
+so that \(\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_A\) using the coefficient from the MSM \eqref{eq:MSMATEcond}.
 
 MSMs are also very useful to study interactions, or effect modification of the exposure \(A\) by a baseline confounder. For example, if we want to study the average total effect according to sex, we can use the following MSM:
 
 \begin{equation} 
-  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
+  \mathbb{E}(Y_a \mid L_\text{male}(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
   \label{eq:MSMATEsex}
 \end{equation}
 
@@ -1913,6 +1918,204 @@ and express the average total effect in each strata of sex using the coefficient
  \{\text{ATE} \mid L_\text{male}(0) = 0\} &:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 0) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 0) = \alpha_A \\
  \{\text{ATE} \mid L_\text{male}(0) = 1\} &:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 1) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 1) = \alpha_A + \alpha_{A \ast L_\text{male}}
 \end{align*}
+
+Because MSMs are models of unobserved counterfactual outcomes, estimators of the MSM coefficients are necessary. We will describe two possible approaches : estimation by IPTW or by G-computation.
+
+In both approaches, 95\% confidence intervals can be computed by bootstrap.
+
+\hypertarget{estimation-of-the-msm-coefficients-by-iptw}{%
+\subsection{Estimation of the MSM coefficients by IPTW}\label{estimation-of-the-msm-coefficients-by-iptw}}
+
+MSM coefficients can be easily estimated using an Inverse Probability of Treatment (IPTW) approach.
+
+For example, in order to fit the MSM \eqref{eq:MSMATEsex} described above, we can use a linear regression of the (observed) outcome \(Y\) on the exposure and sex, weigthed by individual weights \(w_i\):
+\begin{equation} 
+  \mathbb{E}\left[Y \mid L_\text{male}(0)\right] = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
+\end{equation}
+
+where \(w_i=\frac{P(A=a_i \mid L_\text{male}(0))}{P(A=a_i \mid L(0)=l(0)_i)}\).
+
+As in chapter \ref{ChapIptw}, the ``no-unmeasured confounding'' assumption is addressed by the application of weights \(w_i\), which balance confounders \(L(0)\) relative to the exposure \(A\).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# 1. Denominator of the weight}
+\CommentTok{\# 1a. Estimate g(A=a\_i|L(0)) (denominator of the weight)}
+\NormalTok{g.A.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+           \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+
+\CommentTok{\# 1b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# predict the probabilities P(A0\_ace=1 \& P(A0\_ace=0)}
+\NormalTok{pred.g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{pred.g0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.L}
+\CommentTok{\# the predicted probability of the observed treatment P(A = a\_i | L(0)) is :}
+\NormalTok{gAi.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
+\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+
+\DocumentationTok{\#\# 2. Numerator of the weight}
+\CommentTok{\# The numerator of the weight can be 1 for simple weights,}
+\CommentTok{\# or g(A=a\_i|V) to obtain stabilized weights which put less weight to individuals}
+\CommentTok{\# with less observation. Stabilized weights enable a weaker positivity assumption.}
+
+\CommentTok{\# 2a. Estimate g(A=a\_i | sex) (numerator of the stabilized weight)}
+\NormalTok{g.A.sex }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male,}
+           \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+
+\CommentTok{\# 2b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# predict the probabilities P(A0\_ace=1 | sex) \& P(A0\_ace=0 | sex)}
+\NormalTok{pred.g1.sex }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.sex, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{pred.g0.sex }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.sex}
+\CommentTok{\# the predicted probability of the observed treatment P(A = a\_i | sex) is :}
+\NormalTok{gAi.sex }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
+\NormalTok{gAi.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+
+\CommentTok{\# 3. Define individual weights:}
+\CommentTok{\# We can use simple weights w = 1 / g(A=a\_i | L(0))}
+\NormalTok{w }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ gAi.L}
+\CommentTok{\# Or alternatively, we can use stabilized weights : sw = g(A=a\_i) / g(A=a\_i | L(0))}
+\NormalTok{sw }\OtherTok{\textless{}{-}}\NormalTok{ gAi.sex }\SpecialCharTok{/}\NormalTok{ gAi.L}
+
+\CommentTok{\# we can see that stabilized weights have less extreme values}
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfcol =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{))}
+\FunctionTok{boxplot}\NormalTok{(w }\SpecialCharTok{\textasciitilde{}}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace)}
+\FunctionTok{boxplot}\NormalTok{(sw }\SpecialCharTok{\textasciitilde{}}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace)}
+
+\CommentTok{\# 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)}
+\CommentTok{\# a GLM with gaussian family can be applied to estimate risk difference}
+\NormalTok{msm1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{*}\NormalTok{L0\_male,}
+           \AttributeTok{weights =}\NormalTok{ w, }\CommentTok{\# applying the simple weight}
+           \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
+           \AttributeTok{data =}\NormalTok{ df1\_int)}
+\FunctionTok{coef}\NormalTok{(msm1)}
+\CommentTok{\# (Intercept)         A0\_ace        L0\_male A0\_ace:L0\_male}
+\CommentTok{\# 0.17573472     0.03589627     0.04598911     0.04136896}
+
+\NormalTok{msm2 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{*}\NormalTok{L0\_male,}
+            \AttributeTok{weights =}\NormalTok{ sw, }\CommentTok{\# applying the stabilized weight}
+            \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
+            \AttributeTok{data =}\NormalTok{ df1\_int)}
+\FunctionTok{coef}\NormalTok{(msm2)}
+\CommentTok{\# (Intercept)         A0\_ace        L0\_male A0\_ace:L0\_male}
+\CommentTok{\# 0.17573472     0.03589627     0.04598911     0.04136896}
+
+\DocumentationTok{\#\# 5. Estimate the ATE stratified by sex}
+\CommentTok{\# According to the MSM1 (with simple weights)}
+\NormalTok{ATE.msm1.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# 0.03589627}
+\NormalTok{ATE.msm1.male1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_ace:L0\_male"}\NormalTok{]}
+\CommentTok{\# 0.07726522}
+
+\CommentTok{\# According to the MSM2 (with stabilized weights)}
+\NormalTok{ATE.msm2.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# 0.03589627}
+\NormalTok{ATE.msm2.male1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_ace:L0\_male"}\NormalTok{]}
+\CommentTok{\# 0.07726522}
+\CommentTok{\# The results are the same because there is no violation of the positivity assumption}
+\CommentTok{\# In case of positivity violation, stabilized weights would give more accurate estimates}
+\end{Highlighting}
+\end{Shaded}
+
+The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.5\% in women and +7.7\% in men.
+
+Note: Using the true data generating model used to simulate the illustrative datasets, the ``true'' value of the ATE stratified by sex can be calculated:
+
+\begin{itemize}
+\item
+  the ``true'' \((ATE \mid L_\text{male}(0) = 0) = 0.0688\) in women,
+\item
+  the ``true'' \((ATE \mid L_\text{male}(0) = 1) = 0.0703\) in men.
+\end{itemize}
+
+\hypertarget{estimation-of-the-msm-coefficiets-by-g-computation-imputation}{%
+\subsection{Estimation of the MSM coefficiets by G-computation (imputation)}\label{estimation-of-the-msm-coefficiets-by-g-computation-imputation}}
+
+We can also use a G-computation (sometimes described as an imputation) approach to estimate coefficients of an MSM.
+
+The following steps can be applied to estimate the MSM's coefficient by G-computation:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Fit a logistic or a linear regression to estimate \(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\)
+\item
+  Use this estimate to predict an outcome for each subject \(\hat{\overline{Q}}(A=0)_i\) and \(\hat{\overline{Q}}(A=1)_i\), by evaluating the regression fit \(\overline{Q}\) at \(A=0\) and \(A=1\) respectively
+\item
+  Duplicate the initial dataset in a single long dataset in which:
+\end{enumerate}
+
+\begin{itemize}
+\tightlist
+\item
+  the first half of the long dataset corresponds to the first counterfactual scenario with \(A=0\) and an additional column for the predicted counterfactual outcome \(\hat{\overline{Q}}(A=0)\) ;
+\item
+  the second half of the long dataset corresponds to the second counterfactual scenario with \(A=1\) and \(\hat{\overline{Q}}(A=1)\) for the predicted counterfactual column.
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Fit the MSM \(E\left[Y_a \mid L\text{male}(0)\right]\) using the long dataset.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# 1. Estimate Qbar}
+\NormalTok{Q.tot.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                   \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+\CommentTok{\# The final result would be sligthly different if we apply a binomial family.}
+
+\DocumentationTok{\#\# 2. Predict an outcome for each subject, in 2 counterfactual scenarios }
+\DocumentationTok{\#\#    setting A=0 and A=1}
+\CommentTok{\# prepare data sets used to predict the outcome under the counterfactual}
+\CommentTok{\# scenarios setting A=0 and A=1}
+\NormalTok{data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0 }\OtherTok{\textless{}{-}}\NormalTok{ df1\_int}
+\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
+
+\CommentTok{\# predict values under the same name in the corresponding counterfactual dataset}
+\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{Ya.death.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.tot.death, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{Ya.death.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.tot.death, }\AttributeTok{newdata =}\NormalTok{ data.A0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\# 3. Append both counterfactual datasets in a single long dataset}
+\CommentTok{\# (the number of row is twice the initial number of row because there are 2 }
+\CommentTok{\# counterfactual scenarios)}
+\NormalTok{data}\FloatTok{.2}\NormalTok{scenarios }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(data.A0, data.A1)}
+
+\DocumentationTok{\#\# 4. fit the MSM: E(Y\_a|sex)}
+\NormalTok{MSM.ATE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Ya.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{L0\_male,}
+                     \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
+                     \AttributeTok{data =}\NormalTok{ data}\FloatTok{.2}\NormalTok{scenarios)}
+\FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)}
+\CommentTok{\#  (Intercept)         A0\_ace        L0\_male A0\_ace:L0\_male}
+\CommentTok{\# 1.743994e{-}01   7.720726e{-}02   4.874750e{-}02   4.802530e{-}16}
+
+\DocumentationTok{\#\# 5. Estimate the ATE stratified by sex}
+\CommentTok{\# According to MSM.ATE.gcomp}
+\NormalTok{ATE.MSM.gcomp.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# 0.07720726}
+\NormalTok{ATE.MSM.gcomp.male1 }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+}
+                          \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_ace:L0\_male"}\NormalTok{])}
+\CommentTok{\# 0.07720726}
+\CommentTok{\# The results are the same in both strata, because in the first Qbar model,}
+\CommentTok{\# we did not include any (A * sex) interaction term}
+
+\CommentTok{\# Applying a binomial family for the first Qbar model would result in two}
+\CommentTok{\# different values of the ATE stratified by sex.}
+\CommentTok{\# =\textgreater{} 0.06880798 in the L0\_male = 0 strata}
+\CommentTok{\# =\textgreater{} 0.08053575 in the L0\_male = 1 strata}
+
+\CommentTok{\# Indeed, applying a gaussian family (additive model) with no interaction terms}
+\CommentTok{\# implies the assumption of some interaction terms in a multiplicative model (such}
+\CommentTok{\# as a glm with a binomial family).}
+\CommentTok{\# On the contrary, applying a binomial family (multiplicative model) with no}
+\CommentTok{\# interaction terms implies some interaction terms in an additive model (such as}
+\CommentTok{\# a glm with a gaussian family)}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{chap_tmle}{%
 \chapter{Targeted Maximum Likelihood Estimation (TMLE)}\label{chap_tmle}}
