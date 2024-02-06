@@ -44,7 +44,7 @@ gAi.sex[df1_int$A0_ace==1] <- pred.g1.sex[df1_int$A0_ace==1]
 gAi.sex[df1_int$A0_ace==0] <- pred.g0.sex[df1_int$A0_ace==0]
 
 
-# 3. Define individual weights:
+## 3. Define individual weights:
 # We can use simple weights w = 1 / g(A=a_i | L(0))
 w <- 1 / gAi.L
 
@@ -56,7 +56,7 @@ boxplot(w ~ df1_int$A0_ace)
 boxplot(sw ~ df1_int$A0_ace)
 
 
-# 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
+## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
 # a GLM with gaussian family can be applied to estimate risk difference
 msm1 <- glm(Y_death ~ A0_ace + L0_male + A0_ace*L0_male,
            weights = w,
@@ -416,4 +416,64 @@ ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_ace"] +
 # the "true" value of the ATE stratified by sex can be calculated:
 # (ATE | L0_male = 0) = 0.0688
 # (ATE | L0_male = 1) = 0.0703
+
+
+### MSM of CDE, estimated by IPTW ----------------------------------------------
+## 1. Stabilized weight for the exposure sw_{A,i}
+# 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)
+g.A.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+             family = "binomial", data = df1_int)
+# 1b. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(A = a_i | L(0)) is :
+gAi.L <- rep(NA, nrow(df1_int))
+gAi.L[df1_int$A0_ace==1] <- predict(g.A.L, type="response")[df1_int$A0_ace==1]
+gAi.L[df1_int$A0_ace==0] <- (1 - predict(g.A.L, type="response"))[df1_int$A0_ace==0]
+
+# 1c. Estimate g(A=a_i) (numerator of the weight)
+g.A <- glm(A0_ace ~ 1, family = "binomial", data = df1_int)
+# 1d. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(A = a_i) is :
+gAi <- rep(NA, nrow(df1_int))
+gAi[df1_int$A0_ace==1] <- predict(g.A, type="response")[df1_int$A0_ace==1]
+gAi[df1_int$A0_ace==0] <- (1 - predict(g.A, type="response"))[df1_int$A0_ace==0]
+
+# 1e. Calculate sw_{A,i}
+sw_Ai <- gAi / gAi.L
+
+## 2. Stabilized weight for the mediator sw_{M,i}
+# 2a. Estimate g(M=m_i|L(0),A,L(1)) (denominator of the weight)
+g.M.L <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1,
+             family = "binomial", data = df1_int)
+# 2b. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(A = a_i | L(0)) is :
+gMi.L <- rep(NA, nrow(df1_int))
+gMi.L[df1_int$M_smoking==1] <- predict(g.M.L, type="response")[df1_int$M_smoking==1]
+gMi.L[df1_int$M_smoking==0] <- (1 - predict(g.M.L, type="response"))[df1_int$M_smoking==0]
+
+# 2c. Estimate g(M=m_i|A) (numerator of the weight)
+g.M.A <- glm(M_smoking ~ A0_ace, family = "binomial", data = df1_int)
+# 2d. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(M = m_i|A) is :
+gMi.A <- rep(NA, nrow(df1_int))
+gMi.A[df1_int$M_smoking==1] <- predict(g.M.A, type="response")[df1_int$M_smoking==1]
+gMi.A[df1_int$M_smoking==0] <- (1 - predict(g.M.A, type="response"))[df1_int$M_smoking==0]
+# 2e. Calculate sw_{M,i}
+sw_Mi <- gMi.A / gMi.L
+
+## 3. Define the individual stabilized weight for the CDE_m
+sw_cde <- sw_Ai * sw_Mi
+
+## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
+# a GLM with gaussian family can be applied to estimate risk difference
+msm_cde <- glm(Y_death ~ A0_ace + M_smoking + A0_ace*M_smoking,
+               weights = sw_cde,
+               family = "gaussian",
+               data = df1_int)
+coef(msm_cde)
+
+## 5. Estimate CDE for m=0 and for m=1 using the MSM's coefficients
+CDE_mis0 <- coef(msm_cde)["A0_ace"]
+# 0.06798282
+CDE_mis1 <- coef(msm_cde)["A0_ace"] + coef(msm_cde)["A0_ace:M_smoking"]
+# 0.06302968
 

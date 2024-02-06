@@ -6,9 +6,9 @@ eq:contoutcomereg
 eq:medreg
 eq:binoutcomereg
 eq:MSMATEmarg
-eq:ATEcoefFromMSM
 eq:MSMATEcond
 eq:MSMATEsex
+eq:MSMCDE
 introduction
 software
 data-sets
@@ -36,10 +36,14 @@ estimation-of-the-controlled-direct-effect-cde
 iptw-for-the-cde
 stabilized-iptw-for-the-cde
 msm_chapter
-msm-for-the-average-total-effect-ate
+msm_ATE_paragraph
 expressing-the-ate-using-coefficients-of-an-msm
 estimation-of-the-msm-coefficients-by-iptw
 estimation-of-the-msm-coefficiets-by-g-computation-imputation
+msm_CDE_paragraph
+expressing-the-cde-using-coefficients-of-an-msm
+estimation-of-the-msm-coefficients-by-iptw-1
+msm_NDE_NIE_paragraph
 chap_tmle
 tmle-for-the-ate
 tmle-of-the-controlled-direct-effect-cde

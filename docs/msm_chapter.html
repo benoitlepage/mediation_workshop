@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-02-02" />
+<meta name="date" content="2024-02-06" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -202,12 +202,18 @@ div.csl-indent {
 </ul></li>
 <li class="chapter" data-level="8" data-path="msm_chapter.html"><a href="msm_chapter.html"><i class="fa fa-check"></i><b>8</b> Marginal structural models</a>
 <ul>
-<li class="chapter" data-level="8.1" data-path="msm_chapter.html"><a href="msm_chapter.html#msm-for-the-average-total-effect-ate"><i class="fa fa-check"></i><b>8.1</b> MSM for the Average Total Effect (ATE)</a>
+<li class="chapter" data-level="8.1" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_ATE_paragraph"><i class="fa fa-check"></i><b>8.1</b> MSM for the Average Total Effect (ATE)</a>
 <ul>
 <li class="chapter" data-level="8.1.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-ate-using-coefficients-of-an-msm"><i class="fa fa-check"></i><b>8.1.1</b> Expressing the ATE using coefficients of an MSM</a></li>
 <li class="chapter" data-level="8.1.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw"><i class="fa fa-check"></i><b>8.1.2</b> Estimation of the MSM coefficients by IPTW</a></li>
 <li class="chapter" data-level="8.1.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficiets-by-g-computation-imputation"><i class="fa fa-check"></i><b>8.1.3</b> Estimation of the MSM coefficiets by G-computation (imputation)</a></li>
 </ul></li>
+<li class="chapter" data-level="8.2" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_CDE_paragraph"><i class="fa fa-check"></i><b>8.2</b> MSM for Controlled Direct Effects</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-cde-using-coefficients-of-an-msm"><i class="fa fa-check"></i><b>8.2.1</b> Expressing the CDE using coefficients of an MSM</a></li>
+<li class="chapter" data-level="8.2.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw-1"><i class="fa fa-check"></i><b>8.2.2</b> Estimation of the MSM coefficients by IPTW</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_NDE_NIE_paragraph"><i class="fa fa-check"></i><b>8.3</b> MSM for Natural Direct and Indirect Effects</a></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>9</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
@@ -272,35 +278,35 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="msm_chapter" class="section level1 hasAnchor" number="8">
 <h1><span class="header-section-number">Chapter 8</span> Marginal structural models<a href="msm_chapter.html#msm_chapter" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome and the exposure(s) and mediators.</p>
-<p>To illustrate the application of MSMs, we will first use the data from the Causal model 1 (with an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome) where the exposure <span class="math inline">\(A\)</span> doesn’t affect the counfonder <span class="math inline">\(L(1)\)</span> between the mediator and the outcome.</p>
-<div id="msm-for-the-average-total-effect-ate" class="section level2 hasAnchor" number="8.1">
-<h2><span class="header-section-number">8.1</span> MSM for the Average Total Effect (ATE)<a href="msm_chapter.html#msm-for-the-average-total-effect-ate" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome (<span class="math inline">\(Y_a\)</span> or <span class="math inline">\(Y_{am}\)</span> for example) and the exposure(s) <span class="math inline">\(A\)</span> and mediators <span class="math inline">\(M\)</span>. It also possible to summarize the relationship according to a subset of the baseline confounders if it is relevant for the scientific question.</p>
+<p>To illustrate the application of MSMs, we will first use the data simulated from the Causal model 1 (with an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome) where the exposure <span class="math inline">\(A\)</span> doesn’t affect the counfonder <span class="math inline">\(L(1)\)</span> between the mediator and the outcome.</p>
+<div id="msm_ATE_paragraph" class="section level2 hasAnchor" number="8.1">
+<h2><span class="header-section-number">8.1</span> MSM for the Average Total Effect (ATE)<a href="msm_chapter.html#msm_ATE_paragraph" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div id="expressing-the-ate-using-coefficients-of-an-msm" class="section level3 hasAnchor" number="8.1.1">
 <h3><span class="header-section-number">8.1.1</span> Expressing the ATE using coefficients of an MSM<a href="msm_chapter.html#expressing-the-ate-using-coefficients-of-an-msm" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>For a continuous or binary outcome, we can use the following MSM:
+<p>For a continuous or binary outcome, we can use the following MSM to summarize the relationship between the counterfactual outcome (<span class="math inline">\(Y_a\)</span>) and the exposure(s) <span class="math inline">\(A\)</span>:
 <span class="math display" id="eq:MSMATEmarg">\[\begin{equation}
   \mathbb{E}(Y_a) = \alpha_0 + \alpha_A a
   \tag{8.1}
 \end{equation}\]</span></p>
-<p>The Average Total Effect <span class="math inline">\(\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})\)</span> can then be expressed using the coefficients of this MSM:
-<span class="math display" id="eq:ATEcoefFromMSM">\[\begin{equation}
+<p>The Average Total Effect <span class="math inline">\(\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})\)</span> can then be expressed using the coefficients of this MSM <a href="msm_chapter.html#eq:MSMATEmarg">(8.1)</a>:
+<span class="math display">\[\begin{equation*}
   \text{ATE} := \left(\alpha_0 + \alpha_A \times 1 \right) - \left(\alpha_0 + \alpha_A \times 0 \right) = \alpha_A
-  \tag{8.2}
-\end{equation}\]</span></p>
-<p>Indeed, the coefficient <span class="math inline">\(\alpha_A\)</span> corresponds to the <span class="math inline">\(\text{ATE}\)</span>.</p>
-<p>It is also possible to define MSMs adjusted for a subset <span class="math inline">\(V\)</span> of the baseline confounders (<span class="math inline">\(V \subset L(0)\)</span>). Such MSMs can be useful to estimate conditional effects, for example it is possible to define an average “conditional” total effect <span class="math inline">\(\text{ATE}|L(0)\)</span> (instead of the marginal ATE defined above), projecting the counterfactual outcomes on a parametric model such as the following:</p>
+\end{equation*}\]</span></p>
+<p>In this example, the coefficient <span class="math inline">\(\alpha_A\)</span> corresponds to the <span class="math inline">\(\text{ATE}\)</span>.</p>
+<p>Such a model is not very useful for a binary exposure. It would be much more useful for higher-dimensional exposures, for example with a continuous exposure, where the relationship between all the possible continuous values of the exposure <span class="math inline">\(A=a\)</span> and the corresponding outcomes <span class="math inline">\(Y_a\)</span> is summarized (and arbitrarily simplified) by a single line and the slope coefficient <span class="math inline">\(\alpha_A\)</span>.</p>
+<p>It is also possible to define MSMs adjusted for a subset <span class="math inline">\(V\)</span> of the baseline confounders (<span class="math inline">\(V \subset L(0)\)</span>). Such MSMs can be useful to estimate conditional effects. For example it is possible to define an average “conditional” total effect <span class="math inline">\(\text{ATE}|L(0)\)</span> (instead of the marginal ATE defined above), projecting the counterfactual outcomes on a parametric model such as the following:</p>
 <p><span class="math display" id="eq:MSMATEcond">\[\begin{equation}
   \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{low.educ.} L_\text{low.educ.}(0)
-  \tag{8.3}
+  \tag{8.2}
 \end{equation}\]</span></p>
-<p>so that <span class="math inline">\(\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_A\)</span> using the coefficient from the MSM <a href="msm_chapter.html#eq:MSMATEcond">(8.3)</a>.</p>
-<p>MSMs are also very useful to study interactions, or effect modification of the exposure <span class="math inline">\(A\)</span> by a baseline confounder. For example, if we want to study the average total effect according to sex, we can use the following MSM:</p>
+<p>so that <span class="math inline">\(\text{ATE} \mid L(0) = \mathbb{E}(Y_{A=1} \mid L(0)) - \mathbb{E}(Y_{A=0} \mid L(0)) = \alpha_A\)</span> using the coefficient from the MSM <a href="msm_chapter.html#eq:MSMATEcond">(8.2)</a>.</p>
+<p>MSMs are also very useful to study interactions, or effect modification of the exposure <span class="math inline">\(A\)</span> by a baseline confounder. For example, in order to study the average total effect according to sex, we can use the following MSM:</p>
 <p><span class="math display" id="eq:MSMATEsex">\[\begin{equation}
   \mathbb{E}(Y_a \mid L_\text{male}(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
-  \tag{8.4}
+  \tag{8.3}
 \end{equation}\]</span></p>
-<p>and express the average total effect in each strata of sex using the coefficients of the MSM <a href="msm_chapter.html#eq:MSMATEsex">(8.4)</a>:</p>
+<p>and express the average total effect in each strata of sex using the coefficients of the MSM <a href="msm_chapter.html#eq:MSMATEsex">(8.3)</a>:</p>
 <p><span class="math display">\[\begin{align*}
 \{\text{ATE} \mid L_\text{male}(0) = 0\} &amp;:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 0) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 0) = \alpha_A \\
 \{\text{ATE} \mid L_\text{male}(0) = 1\} &amp;:= \mathbb{E}(Y_1 \mid L_\text{male}(0) = 1) - \mathbb{E}(Y_0 \mid L_\text{male}(0) = 1) = \alpha_A + \alpha_{A \ast L_\text{male}}
@@ -310,13 +316,13 @@ div.csl-indent {
 </div>
 <div id="estimation-of-the-msm-coefficients-by-iptw" class="section level3 hasAnchor" number="8.1.2">
 <h3><span class="header-section-number">8.1.2</span> Estimation of the MSM coefficients by IPTW<a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>MSM coefficients can be easily estimated using an Inverse Probability of Treatment (IPTW) approach.</p>
-<p>For example, in order to fit the MSM <a href="msm_chapter.html#eq:MSMATEsex">(8.4)</a> described above, we can use a linear regression of the (observed) outcome <span class="math inline">\(Y\)</span> on the exposure and sex, weigthed by individual weights <span class="math inline">\(w_i\)</span>:
+<p>MSM coefficients can be easily estimated using an Inverse Probability of Treatment (IPTW) approach based on weighted regressions.</p>
+<p>For example, in order to fit the MSM <a href="msm_chapter.html#eq:MSMATEsex">(8.3)</a> described above, we can use a linear regression of the (observed) outcome <span class="math inline">\(Y\)</span> on the exposure and sex, weigthed by individual weights <span class="math inline">\(w_i\)</span> or <span class="math inline">\(sw_i\)</span>:
 <span class="math display">\[\begin{equation}
   \mathbb{E}\left[Y \mid L_\text{male}(0)\right] = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_{A \ast L_\text{male}} \left(a \times L_\text{male}(0)\right)
 \end{equation}\]</span></p>
-<p>where <span class="math inline">\(w_i=\frac{P(A=a_i \mid L_\text{male}(0))}{P(A=a_i \mid L(0)=l(0)_i)}\)</span>.</p>
-<p>As in chapter <a href="ChapIptw.html#ChapIptw">7</a>, the “no-unmeasured confounding” assumption is addressed by the application of weights <span class="math inline">\(w_i\)</span>, which balance confounders <span class="math inline">\(L(0)\)</span> relative to the exposure <span class="math inline">\(A\)</span>.</p>
+<p>where <span class="math inline">\(w_i=\frac{1}{P(A=a_i \mid L(0)=l(0)_i)}\)</span> or <span class="math inline">\(sw_i=\frac{P(A=a_i \mid L_\text{male}(0))}{P(A=a_i \mid L(0)=l(0)_i)}\)</span>.</p>
+<p>As in chapter <a href="ChapIptw.html#ChapIptw">7</a>, the “no-unmeasured confounding” assumption is addressed by the application of weights <span class="math inline">\(w_i\)</span> or <span class="math inline">\(sw_i\)</span>, which balance confounders <span class="math inline">\(L(0)\)</span> relative to the exposure <span class="math inline">\(A\)</span>.</p>
 <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="msm_chapter.html#cb27-1" tabindex="-1"></a><span class="do">## 1. Denominator of the weight</span></span>
 <span id="cb27-2"><a href="msm_chapter.html#cb27-2" tabindex="-1"></a><span class="co"># 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)</span></span>
 <span id="cb27-3"><a href="msm_chapter.html#cb27-3" tabindex="-1"></a>g.A.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
@@ -349,50 +355,52 @@ div.csl-indent {
 <span id="cb27-30"><a href="msm_chapter.html#cb27-30" tabindex="-1"></a>gAi.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
 <span id="cb27-31"><a href="msm_chapter.html#cb27-31" tabindex="-1"></a>gAi.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
 <span id="cb27-32"><a href="msm_chapter.html#cb27-32" tabindex="-1"></a></span>
-<span id="cb27-33"><a href="msm_chapter.html#cb27-33" tabindex="-1"></a><span class="co"># 3. Define individual weights:</span></span>
+<span id="cb27-33"><a href="msm_chapter.html#cb27-33" tabindex="-1"></a><span class="do">## 3. Define individual weights:</span></span>
 <span id="cb27-34"><a href="msm_chapter.html#cb27-34" tabindex="-1"></a><span class="co"># We can use simple weights w = 1 / g(A=a_i | L(0))</span></span>
 <span id="cb27-35"><a href="msm_chapter.html#cb27-35" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gAi.L</span>
-<span id="cb27-36"><a href="msm_chapter.html#cb27-36" tabindex="-1"></a><span class="co"># Or alternatively, we can use stabilized weights : sw = g(A=a_i) / g(A=a_i | L(0))</span></span>
-<span id="cb27-37"><a href="msm_chapter.html#cb27-37" tabindex="-1"></a>sw <span class="ot">&lt;-</span> gAi.sex <span class="sc">/</span> gAi.L</span>
-<span id="cb27-38"><a href="msm_chapter.html#cb27-38" tabindex="-1"></a></span>
-<span id="cb27-39"><a href="msm_chapter.html#cb27-39" tabindex="-1"></a><span class="co"># we can see that stabilized weights have less extreme values</span></span>
-<span id="cb27-40"><a href="msm_chapter.html#cb27-40" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfcol =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
-<span id="cb27-41"><a href="msm_chapter.html#cb27-41" tabindex="-1"></a><span class="fu">boxplot</span>(w <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
-<span id="cb27-42"><a href="msm_chapter.html#cb27-42" tabindex="-1"></a><span class="fu">boxplot</span>(sw <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
-<span id="cb27-43"><a href="msm_chapter.html#cb27-43" tabindex="-1"></a></span>
-<span id="cb27-44"><a href="msm_chapter.html#cb27-44" tabindex="-1"></a><span class="co"># 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
-<span id="cb27-45"><a href="msm_chapter.html#cb27-45" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk difference</span></span>
-<span id="cb27-46"><a href="msm_chapter.html#cb27-46" tabindex="-1"></a>msm1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
-<span id="cb27-47"><a href="msm_chapter.html#cb27-47" tabindex="-1"></a>           <span class="at">weights =</span> w, <span class="co"># applying the simple weight</span></span>
-<span id="cb27-48"><a href="msm_chapter.html#cb27-48" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb27-49"><a href="msm_chapter.html#cb27-49" tabindex="-1"></a>           <span class="at">data =</span> df1_int)</span>
-<span id="cb27-50"><a href="msm_chapter.html#cb27-50" tabindex="-1"></a><span class="fu">coef</span>(msm1)</span>
-<span id="cb27-51"><a href="msm_chapter.html#cb27-51" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
-<span id="cb27-52"><a href="msm_chapter.html#cb27-52" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
-<span id="cb27-53"><a href="msm_chapter.html#cb27-53" tabindex="-1"></a></span>
-<span id="cb27-54"><a href="msm_chapter.html#cb27-54" tabindex="-1"></a>msm2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
-<span id="cb27-55"><a href="msm_chapter.html#cb27-55" tabindex="-1"></a>            <span class="at">weights =</span> sw, <span class="co"># applying the stabilized weight</span></span>
-<span id="cb27-56"><a href="msm_chapter.html#cb27-56" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb27-57"><a href="msm_chapter.html#cb27-57" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
-<span id="cb27-58"><a href="msm_chapter.html#cb27-58" tabindex="-1"></a><span class="fu">coef</span>(msm2)</span>
-<span id="cb27-59"><a href="msm_chapter.html#cb27-59" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
-<span id="cb27-60"><a href="msm_chapter.html#cb27-60" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
-<span id="cb27-61"><a href="msm_chapter.html#cb27-61" tabindex="-1"></a></span>
-<span id="cb27-62"><a href="msm_chapter.html#cb27-62" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
-<span id="cb27-63"><a href="msm_chapter.html#cb27-63" tabindex="-1"></a><span class="co"># According to the MSM1 (with simple weights)</span></span>
-<span id="cb27-64"><a href="msm_chapter.html#cb27-64" tabindex="-1"></a>ATE.msm1.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb27-65"><a href="msm_chapter.html#cb27-65" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
-<span id="cb27-66"><a href="msm_chapter.html#cb27-66" tabindex="-1"></a>ATE.msm1.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
-<span id="cb27-67"><a href="msm_chapter.html#cb27-67" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
-<span id="cb27-68"><a href="msm_chapter.html#cb27-68" tabindex="-1"></a></span>
-<span id="cb27-69"><a href="msm_chapter.html#cb27-69" tabindex="-1"></a><span class="co"># According to the MSM2 (with stabilized weights)</span></span>
-<span id="cb27-70"><a href="msm_chapter.html#cb27-70" tabindex="-1"></a>ATE.msm2.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb27-71"><a href="msm_chapter.html#cb27-71" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
-<span id="cb27-72"><a href="msm_chapter.html#cb27-72" tabindex="-1"></a>ATE.msm2.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
-<span id="cb27-73"><a href="msm_chapter.html#cb27-73" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
-<span id="cb27-74"><a href="msm_chapter.html#cb27-74" tabindex="-1"></a><span class="co"># The results are the same because there is no violation of the positivity assumption</span></span>
-<span id="cb27-75"><a href="msm_chapter.html#cb27-75" tabindex="-1"></a><span class="co"># In case of positivity violation, stabilized weights would give more accurate estimates</span></span></code></pre></div>
-<p>The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.5% in women and +7.7% in men.</p>
+<span id="cb27-36"><a href="msm_chapter.html#cb27-36" tabindex="-1"></a><span class="co"># Or alternatively, we can use stabilized weights : </span></span>
+<span id="cb27-37"><a href="msm_chapter.html#cb27-37" tabindex="-1"></a><span class="co"># sw = g(A=a_i | sex) / g(A=a_i | L(0))</span></span>
+<span id="cb27-38"><a href="msm_chapter.html#cb27-38" tabindex="-1"></a>sw <span class="ot">&lt;-</span> gAi.sex <span class="sc">/</span> gAi.L</span>
+<span id="cb27-39"><a href="msm_chapter.html#cb27-39" tabindex="-1"></a></span>
+<span id="cb27-40"><a href="msm_chapter.html#cb27-40" tabindex="-1"></a><span class="co"># we can see that stabilized weights have less extreme values</span></span>
+<span id="cb27-41"><a href="msm_chapter.html#cb27-41" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfcol =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb27-42"><a href="msm_chapter.html#cb27-42" tabindex="-1"></a><span class="fu">boxplot</span>(w <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
+<span id="cb27-43"><a href="msm_chapter.html#cb27-43" tabindex="-1"></a><span class="fu">boxplot</span>(sw <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
+<span id="cb27-44"><a href="msm_chapter.html#cb27-44" tabindex="-1"></a></span>
+<span id="cb27-45"><a href="msm_chapter.html#cb27-45" tabindex="-1"></a><span class="do">## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
+<span id="cb27-46"><a href="msm_chapter.html#cb27-46" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk difference</span></span>
+<span id="cb27-47"><a href="msm_chapter.html#cb27-47" tabindex="-1"></a>msm1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
+<span id="cb27-48"><a href="msm_chapter.html#cb27-48" tabindex="-1"></a>           <span class="at">weights =</span> w, <span class="co"># applying the simple weight</span></span>
+<span id="cb27-49"><a href="msm_chapter.html#cb27-49" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb27-50"><a href="msm_chapter.html#cb27-50" tabindex="-1"></a>           <span class="at">data =</span> df1_int)</span>
+<span id="cb27-51"><a href="msm_chapter.html#cb27-51" tabindex="-1"></a><span class="fu">coef</span>(msm1)</span>
+<span id="cb27-52"><a href="msm_chapter.html#cb27-52" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
+<span id="cb27-53"><a href="msm_chapter.html#cb27-53" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
+<span id="cb27-54"><a href="msm_chapter.html#cb27-54" tabindex="-1"></a></span>
+<span id="cb27-55"><a href="msm_chapter.html#cb27-55" tabindex="-1"></a>msm2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
+<span id="cb27-56"><a href="msm_chapter.html#cb27-56" tabindex="-1"></a>            <span class="at">weights =</span> sw, <span class="co"># applying the stabilized weight</span></span>
+<span id="cb27-57"><a href="msm_chapter.html#cb27-57" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb27-58"><a href="msm_chapter.html#cb27-58" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
+<span id="cb27-59"><a href="msm_chapter.html#cb27-59" tabindex="-1"></a><span class="fu">coef</span>(msm2)</span>
+<span id="cb27-60"><a href="msm_chapter.html#cb27-60" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
+<span id="cb27-61"><a href="msm_chapter.html#cb27-61" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
+<span id="cb27-62"><a href="msm_chapter.html#cb27-62" tabindex="-1"></a></span>
+<span id="cb27-63"><a href="msm_chapter.html#cb27-63" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
+<span id="cb27-64"><a href="msm_chapter.html#cb27-64" tabindex="-1"></a><span class="co"># According to the MSM1 (with simple weights)</span></span>
+<span id="cb27-65"><a href="msm_chapter.html#cb27-65" tabindex="-1"></a>ATE.msm1.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb27-66"><a href="msm_chapter.html#cb27-66" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
+<span id="cb27-67"><a href="msm_chapter.html#cb27-67" tabindex="-1"></a>ATE.msm1.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
+<span id="cb27-68"><a href="msm_chapter.html#cb27-68" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
+<span id="cb27-69"><a href="msm_chapter.html#cb27-69" tabindex="-1"></a></span>
+<span id="cb27-70"><a href="msm_chapter.html#cb27-70" tabindex="-1"></a><span class="co"># According to the MSM2 (with stabilized weights)</span></span>
+<span id="cb27-71"><a href="msm_chapter.html#cb27-71" tabindex="-1"></a>ATE.msm2.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb27-72"><a href="msm_chapter.html#cb27-72" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
+<span id="cb27-73"><a href="msm_chapter.html#cb27-73" tabindex="-1"></a>ATE.msm2.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
+<span id="cb27-74"><a href="msm_chapter.html#cb27-74" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
+<span id="cb27-75"><a href="msm_chapter.html#cb27-75" tabindex="-1"></a><span class="co"># The results are the same because there is no violation of the positivity assumption</span></span>
+<span id="cb27-76"><a href="msm_chapter.html#cb27-76" tabindex="-1"></a><span class="co"># In case of positivity violation, stabilized weights would give more accurate estimates</span></span></code></pre></div>
+<p>The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.6% in women and +7.7% in men.</p>
+<p>95% confidence intervales can be calculated by bootstrap.</p>
 <p>Note: Using the true data generating model used to simulate the illustrative datasets, the “true” value of the ATE stratified by sex can be calculated:</p>
 <ul>
 <li><p>the “true” <span class="math inline">\((ATE \mid L_\text{male}(0) = 0) = 0.0688\)</span> in women,</p></li>
@@ -401,19 +409,19 @@ div.csl-indent {
 </div>
 <div id="estimation-of-the-msm-coefficiets-by-g-computation-imputation" class="section level3 hasAnchor" number="8.1.3">
 <h3><span class="header-section-number">8.1.3</span> Estimation of the MSM coefficiets by G-computation (imputation)<a href="msm_chapter.html#estimation-of-the-msm-coefficiets-by-g-computation-imputation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>We can also use a G-computation (sometimes described as an imputation) approach to estimate coefficients of an MSM.</p>
-<p>The following steps can be applied to estimate the MSM’s coefficient by G-computation:</p>
+<p>We can also use a G-computation (sometimes described as an imputation) approach to estimate the coefficients of an MSM.</p>
+<p>The following steps can be applied:</p>
 <ol style="list-style-type: decimal">
-<li><p>Fit a logistic or a linear regression to estimate <span class="math inline">\(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\)</span></p></li>
-<li><p>Use this estimate to predict an outcome for each subject <span class="math inline">\(\hat{\overline{Q}}(A=0)_i\)</span> and <span class="math inline">\(\hat{\overline{Q}}(A=1)_i\)</span>, by evaluating the regression fit <span class="math inline">\(\overline{Q}\)</span> at <span class="math inline">\(A=0\)</span> and <span class="math inline">\(A=1\)</span> respectively</p></li>
+<li><p>Fit a (logistic or a linear) regression to estimate <span class="math inline">\(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\)</span></p></li>
+<li><p>Use this estimate to predict an outcome for each subject under the counterfactual scenarios <span class="math inline">\(\hat{\overline{Q}}(A=0)_i\)</span> and <span class="math inline">\(\hat{\overline{Q}}(A=1)_i\)</span>, by evaluating the regression fit <span class="math inline">\(\overline{Q}\)</span> at <span class="math inline">\(A=0\)</span> and <span class="math inline">\(A=1\)</span> respectively</p></li>
 <li><p>Duplicate the initial dataset in a single long dataset in which:</p></li>
 </ol>
 <ul>
-<li>the first half of the long dataset corresponds to the first counterfactual scenario with <span class="math inline">\(A=0\)</span> and an additional column for the predicted counterfactual outcome <span class="math inline">\(\hat{\overline{Q}}(A=0)\)</span> ;</li>
-<li>the second half of the long dataset corresponds to the second counterfactual scenario with <span class="math inline">\(A=1\)</span> and <span class="math inline">\(\hat{\overline{Q}}(A=1)\)</span> for the predicted counterfactual column.</li>
+<li>the first half of the long dataset corresponds to the first counterfactual scenario with <span class="math inline">\(A=0\)</span> for all individuals and an additional column for the predicted counterfactual outcome <span class="math inline">\(\hat{\overline{Q}}(A=0)\)</span> ;</li>
+<li>the second half of the long dataset corresponds to the second counterfactual scenario with <span class="math inline">\(A=1\)</span> for all individuals and <span class="math inline">\(\hat{\overline{Q}}(A=1)\)</span> for the predicted counterfactual column.</li>
 </ul>
 <ol start="4" style="list-style-type: decimal">
-<li>Fit the MSM <span class="math inline">\(E\left[Y_a \mid L\text{male}(0)\right]\)</span> using the long dataset.</li>
+<li>Fit the MSM <span class="math inline">\(E\left[Y_a \mid L_\text{male}(0)\right]\)</span> using the long dataset.</li>
 </ol>
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="msm_chapter.html#cb28-1" tabindex="-1"></a><span class="do">## 1. Estimate Qbar</span></span>
 <span id="cb28-2"><a href="msm_chapter.html#cb28-2" tabindex="-1"></a>Q.tot.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
@@ -460,14 +468,106 @@ div.csl-indent {
 <span id="cb28-43"><a href="msm_chapter.html#cb28-43" tabindex="-1"></a><span class="co"># =&gt; 0.06880798 in the L0_male = 0 strata</span></span>
 <span id="cb28-44"><a href="msm_chapter.html#cb28-44" tabindex="-1"></a><span class="co"># =&gt; 0.08053575 in the L0_male = 1 strata</span></span>
 <span id="cb28-45"><a href="msm_chapter.html#cb28-45" tabindex="-1"></a></span>
-<span id="cb28-46"><a href="msm_chapter.html#cb28-46" tabindex="-1"></a><span class="co"># Indeed, applying a gaussian family (additive model) with no interaction terms</span></span>
-<span id="cb28-47"><a href="msm_chapter.html#cb28-47" tabindex="-1"></a><span class="co"># implies the assumption of some interaction terms in a multiplicative model (such</span></span>
-<span id="cb28-48"><a href="msm_chapter.html#cb28-48" tabindex="-1"></a><span class="co"># as a glm with a binomial family).</span></span>
+<span id="cb28-46"><a href="msm_chapter.html#cb28-46" tabindex="-1"></a><span class="co"># Comments: For the estimation of the first Qbar model, applying a gaussian family </span></span>
+<span id="cb28-47"><a href="msm_chapter.html#cb28-47" tabindex="-1"></a><span class="co"># (additive model) with no interaction terms implies the presence of some interaction </span></span>
+<span id="cb28-48"><a href="msm_chapter.html#cb28-48" tabindex="-1"></a><span class="co"># terms in a multiplicative model (such as a glm with a binomial family).</span></span>
 <span id="cb28-49"><a href="msm_chapter.html#cb28-49" tabindex="-1"></a><span class="co"># On the contrary, applying a binomial family (multiplicative model) with no</span></span>
 <span id="cb28-50"><a href="msm_chapter.html#cb28-50" tabindex="-1"></a><span class="co"># interaction terms implies some interaction terms in an additive model (such as</span></span>
 <span id="cb28-51"><a href="msm_chapter.html#cb28-51" tabindex="-1"></a><span class="co"># a glm with a gaussian family)</span></span></code></pre></div>
-
 </div>
+</div>
+<div id="msm_CDE_paragraph" class="section level2 hasAnchor" number="8.2">
+<h2><span class="header-section-number">8.2</span> MSM for Controlled Direct Effects<a href="msm_chapter.html#msm_CDE_paragraph" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="expressing-the-cde-using-coefficients-of-an-msm" class="section level3 hasAnchor" number="8.2.1">
+<h3><span class="header-section-number">8.2.1</span> Expressing the CDE using coefficients of an MSM<a href="msm_chapter.html#expressing-the-cde-using-coefficients-of-an-msm" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The controlled direct effect is defined as <span class="math inline">\(\text{CDE}_m= \mathbb{E}(Y_{am}) - \mathbb{E}(Y_{a^*m})\)</span>.</p>
+<p>Using the following MSM
+<span class="math display" id="eq:MSMCDE">\[\begin{equation}
+  \mathbb{E}(Y_{am}) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m
+  \tag{8.4}
+\end{equation}\]</span>
+the controlled direct effect (keeping the mediator constant to the value <span class="math inline">\(M=m\)</span>) can be expressed using the coefficients of the MSM <a href="msm_chapter.html#eq:MSMCDE">(8.4)</a>:
+<span class="math display">\[\begin{align*}
+  \text{CDE}_m &amp;= (\alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m) - (\alpha_0 + \alpha_A a^* + \alpha_M m + \alpha_{A \ast M} a^* \times m) \\
+  \text{CDE}_m &amp;= \alpha_A(a - a^* ) + \alpha_{A \ast M} \times (a - a^*) \times m
+\end{align*}\]</span>
+For a binary exposure <span class="math inline">\(A\)</span>, we have <span class="math inline">\(\text{CDE}_m=\alpha_A + \alpha_{A \ast M} \times m\)</span>.</p>
+</div>
+<div id="estimation-of-the-msm-coefficients-by-iptw-1" class="section level3 hasAnchor" number="8.2.2">
+<h3><span class="header-section-number">8.2.2</span> Estimation of the MSM coefficients by IPTW<a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>MSM coefficients can be easily estimated using an Inverse Probability of Treatment (IPTW) approach based on weighted regressions.</p>
+<p>In order to fit the MSM <a href="msm_chapter.html#eq:MSMCDE">(8.4)</a>, we can use a linear regression of the (observed) outcome <span class="math inline">\(Y\)</span> on the exposure and mediator, weigthed by individual stabilized weights <span class="math inline">\(sw_i\)</span>:
+<span class="math display">\[\begin{equation}
+  \mathbb{E}\left(Y \mid A,M\right) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(sw_i\)</span> is the product of two weights <span class="math inline">\(sw_i = sw_{A,i} \times sw_{M,i}\)</span>,</p>
+<p><span class="math inline">\(sw_{A,i}=\frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)}\)</span> and <span class="math inline">\(sw_{M,i}=\frac{P(M=m_i \mid A=a_i)}{P(M = m_i \mid A=a_i,L(0)=l(0)_i), L(1)=l(1)_i}\)</span>.</p>
+<p>The “no-unmeasured confounding” assumption is addressed by the application of weights <span class="math inline">\(sw_i\)</span>, which balance confounders <span class="math inline">\(L(0)\)</span> relative to the exposure-outcome <span class="math inline">\(A-Y\)</span> relationship, and balance the set of confounders <span class="math inline">\(\{L(0),A,L(1)\}\)</span> relative to the mediator-outcome <span class="math inline">\(M-Y\)</span> relationship.</p>
+<p>Importantly, this approach for the estimation of the controlled direct effect <span class="math inline">\(\text{CDE}_m\)</span> by IPTW is also valid if the exposure <span class="math inline">\(A\)</span> affects the intermediate confounder <span class="math inline">\(L(1)\)</span> (as with the Causal model 2).</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="msm_chapter.html#cb29-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by IPTW ----------------------------------------------</span></span>
+<span id="cb29-2"><a href="msm_chapter.html#cb29-2" tabindex="-1"></a><span class="do">## 1. Stabilized weight for the exposure sw_{A,i}</span></span>
+<span id="cb29-3"><a href="msm_chapter.html#cb29-3" tabindex="-1"></a><span class="co"># 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)</span></span>
+<span id="cb29-4"><a href="msm_chapter.html#cb29-4" tabindex="-1"></a>g.A.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb29-5"><a href="msm_chapter.html#cb29-5" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb29-6"><a href="msm_chapter.html#cb29-6" tabindex="-1"></a><span class="co"># 1b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb29-7"><a href="msm_chapter.html#cb29-7" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i | L(0)) is :</span></span>
+<span id="cb29-8"><a href="msm_chapter.html#cb29-8" tabindex="-1"></a>gAi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb29-9"><a href="msm_chapter.html#cb29-9" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb29-10"><a href="msm_chapter.html#cb29-10" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb29-11"><a href="msm_chapter.html#cb29-11" tabindex="-1"></a></span>
+<span id="cb29-12"><a href="msm_chapter.html#cb29-12" tabindex="-1"></a><span class="co"># 1c. Estimate g(A=a_i) (numerator of the weight)</span></span>
+<span id="cb29-13"><a href="msm_chapter.html#cb29-13" tabindex="-1"></a>g.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb29-14"><a href="msm_chapter.html#cb29-14" tabindex="-1"></a><span class="co"># 1d. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb29-15"><a href="msm_chapter.html#cb29-15" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i) is :</span></span>
+<span id="cb29-16"><a href="msm_chapter.html#cb29-16" tabindex="-1"></a>gAi <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb29-17"><a href="msm_chapter.html#cb29-17" tabindex="-1"></a>gAi[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb29-18"><a href="msm_chapter.html#cb29-18" tabindex="-1"></a>gAi[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb29-19"><a href="msm_chapter.html#cb29-19" tabindex="-1"></a></span>
+<span id="cb29-20"><a href="msm_chapter.html#cb29-20" tabindex="-1"></a><span class="co"># 1e. Calculate the weight for the exposure A: sw_{A,i}</span></span>
+<span id="cb29-21"><a href="msm_chapter.html#cb29-21" tabindex="-1"></a>sw_Ai <span class="ot">&lt;-</span> gAi <span class="sc">/</span> gAi.L</span>
+<span id="cb29-22"><a href="msm_chapter.html#cb29-22" tabindex="-1"></a></span>
+<span id="cb29-23"><a href="msm_chapter.html#cb29-23" tabindex="-1"></a><span class="do">## 2. Stabilized weight for the mediator sw_{M,i}</span></span>
+<span id="cb29-24"><a href="msm_chapter.html#cb29-24" tabindex="-1"></a><span class="co"># 2a. Estimate g(M=m_i|L(0),A,L(1)) (denominator of the weight)</span></span>
+<span id="cb29-25"><a href="msm_chapter.html#cb29-25" tabindex="-1"></a>g.M.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1,</span>
+<span id="cb29-26"><a href="msm_chapter.html#cb29-26" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb29-27"><a href="msm_chapter.html#cb29-27" tabindex="-1"></a><span class="co"># 2b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb29-28"><a href="msm_chapter.html#cb29-28" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i | L(0)) is :</span></span>
+<span id="cb29-29"><a href="msm_chapter.html#cb29-29" tabindex="-1"></a>gMi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb29-30"><a href="msm_chapter.html#cb29-30" tabindex="-1"></a>gMi.L[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb29-31"><a href="msm_chapter.html#cb29-31" tabindex="-1"></a>gMi.L[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.M.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb29-32"><a href="msm_chapter.html#cb29-32" tabindex="-1"></a></span>
+<span id="cb29-33"><a href="msm_chapter.html#cb29-33" tabindex="-1"></a><span class="co"># 2c. Estimate g(M=m_i|A) (numerator of the weight)</span></span>
+<span id="cb29-34"><a href="msm_chapter.html#cb29-34" tabindex="-1"></a>g.M.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb29-35"><a href="msm_chapter.html#cb29-35" tabindex="-1"></a><span class="co"># 2d. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb29-36"><a href="msm_chapter.html#cb29-36" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(M = m_i|A) is :</span></span>
+<span id="cb29-37"><a href="msm_chapter.html#cb29-37" tabindex="-1"></a>gMi.A <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb29-38"><a href="msm_chapter.html#cb29-38" tabindex="-1"></a>gMi.A[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb29-39"><a href="msm_chapter.html#cb29-39" tabindex="-1"></a>gMi.A[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.M.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb29-40"><a href="msm_chapter.html#cb29-40" tabindex="-1"></a><span class="co"># 2e. Calculate the weight for the mediator M: sw_{M,i}</span></span>
+<span id="cb29-41"><a href="msm_chapter.html#cb29-41" tabindex="-1"></a>sw_Mi <span class="ot">&lt;-</span> gMi.A <span class="sc">/</span> gMi.L</span>
+<span id="cb29-42"><a href="msm_chapter.html#cb29-42" tabindex="-1"></a></span>
+<span id="cb29-43"><a href="msm_chapter.html#cb29-43" tabindex="-1"></a><span class="do">## 3. Define the individual stabilized weight for the CDE_m</span></span>
+<span id="cb29-44"><a href="msm_chapter.html#cb29-44" tabindex="-1"></a>sw_cde <span class="ot">&lt;-</span> sw_Ai <span class="sc">*</span> sw_Mi</span>
+<span id="cb29-45"><a href="msm_chapter.html#cb29-45" tabindex="-1"></a></span>
+<span id="cb29-46"><a href="msm_chapter.html#cb29-46" tabindex="-1"></a><span class="do">## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
+<span id="cb29-47"><a href="msm_chapter.html#cb29-47" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk difference</span></span>
+<span id="cb29-48"><a href="msm_chapter.html#cb29-48" tabindex="-1"></a>msm_cde <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">*</span>M_smoking,</span>
+<span id="cb29-49"><a href="msm_chapter.html#cb29-49" tabindex="-1"></a>               <span class="at">weights =</span> sw_cde,</span>
+<span id="cb29-50"><a href="msm_chapter.html#cb29-50" tabindex="-1"></a>               <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb29-51"><a href="msm_chapter.html#cb29-51" tabindex="-1"></a>               <span class="at">data =</span> df1_int)</span>
+<span id="cb29-52"><a href="msm_chapter.html#cb29-52" tabindex="-1"></a><span class="fu">coef</span>(msm_cde)</span>
+<span id="cb29-53"><a href="msm_chapter.html#cb29-53" tabindex="-1"></a></span>
+<span id="cb29-54"><a href="msm_chapter.html#cb29-54" tabindex="-1"></a><span class="do">## 5. Estimate CDE for m=0 and for m=1 using the MSM&#39;s coefficients</span></span>
+<span id="cb29-55"><a href="msm_chapter.html#cb29-55" tabindex="-1"></a>CDE_mis0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb29-56"><a href="msm_chapter.html#cb29-56" tabindex="-1"></a><span class="co"># 0.06798282</span></span>
+<span id="cb29-57"><a href="msm_chapter.html#cb29-57" tabindex="-1"></a>CDE_mis1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>]</span>
+<span id="cb29-58"><a href="msm_chapter.html#cb29-58" tabindex="-1"></a><span class="co"># 0.06302968</span></span></code></pre></div>
+<p>In this example, our estimates of the controlled direct effects are <span class="math inline">\(CDE_{M=0} = 6.8\%\)</span> and <span class="math inline">\(CDE_{M=1} = 6.3\%\)</span>. Confidence intervals can be calculated by bootstrap.</p>
+</div>
+</div>
+<div id="msm_NDE_NIE_paragraph" class="section level2 hasAnchor" number="8.3">
+<h2><span class="header-section-number">8.3</span> MSM for Natural Direct and Indirect Effects<a href="msm_chapter.html#msm_NDE_NIE_paragraph" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+
 </div>
 </div>
             </section>
