@@ -109,7 +109,9 @@ boxplot(w ~ df1_int$A0_ace)
 boxplot(sw ~ df1_int$A0_ace)
 
 ## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
-# a GLM with gaussian family can be applied to estimate risk difference
+# a GLM with gaussian family can be applied to estimate risk differences
+# (for relative risk or rate ratios, we can apply a Poisson family; 
+#  for OR, we can apply a binomial family)
 msm1 <- glm(Y_death ~ A0_ace + L0_male + A0_ace*L0_male,
            weights = w, # applying the simple weight
            family = "gaussian",
@@ -144,7 +146,7 @@ ATE.msm2.male1 <- coef(msm2)["A0_ace"] + coef(msm2)["A0_ace:L0_male"]
 
 The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.6\% in women and +7.7\% in men.
 
-95\% confidence intervales can be calculated by bootstrap.
+95\% confidence intervals can be calculated by bootstrap.
 
 Note: Using the true data generating model used to simulate the illustrative datasets, the "true" value of the ATE stratified by sex can be calculated: 
 
@@ -152,7 +154,7 @@ Note: Using the true data generating model used to simulate the illustrative dat
 
   - the "true" $(ATE \mid L_\text{male}(0) = 1) = 0.0703$ in men.
 
-### Estimation of the MSM coefficiets by G-computation (imputation)
+### Estimation of the MSM coefficients by G-computation (imputation)
 We can also use a G-computation (sometimes described as an imputation) approach to estimate the coefficients of an MSM.
 
 The following steps can be applied:
@@ -166,7 +168,7 @@ The following steps can be applied:
   - the first half of the long dataset corresponds to the first counterfactual scenario with $A=0$ for all individuals and an additional column for the predicted counterfactual outcome $\hat{\overline{Q}}(A=0)$ ; 
   - the second half of the long dataset corresponds to the second counterfactual scenario with $A=1$ for all individuals and $\hat{\overline{Q}}(A=1)$ for the predicted counterfactual column.
 
-4. Fit the MSM $E\left[Y_a \mid L_\text{male}(0)\right]$ using the long dataset.
+4. Fit the MSM $\mathbb{E}\left[Y_a \mid L_\text{male}(0)\right]$ using the long dataset.
 
 
 ```{r Psi_ATE_bysex_MSM_gcomp, echo=TRUE, eval = FALSE}
@@ -193,6 +195,7 @@ data.A0$Ya.death.pred <- predict(Q.tot.death, newdata = data.A0, type = "respons
 data.2scenarios <- rbind(data.A0, data.A1)
 
 ## 4. fit the MSM: E(Y_a|sex)
+# a GLM with gaussian family can be applied to estimate risk differences
 MSM.ATE.gcomp <- glm(Ya.death.pred ~ A0_ace + L0_male + A0_ace:L0_male,
                      family = "gaussian",
                      data = data.2scenarios)
@@ -243,7 +246,7 @@ For a binary exposure $A$, we have $\text{CDE}_m=\alpha_A + \alpha_{A \ast M} \t
 ### Estimation of the MSM coefficients by IPTW
 MSM coefficients can be easily estimated using an Inverse Probability of Treatment (IPTW) approach based on weighted regressions. 
 
-In order to fit the MSM \@ref(eq:MSMCDE), we can use a linear regression of the (observed) outcome $Y$ on the exposure and mediator, weigthed by individual stabilized weights $sw_i$:
+In order to fit the MSM \@ref(eq:MSMCDE), we can use a linear regression of the (observed) outcome $Y$ on the exposure and mediator, weighted by individual stabilized weights $sw_i$ ([@vanderweele2009]):
 \begin{equation} 
   \mathbb{E}\left(Y \mid A,M\right) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m
 \end{equation}
@@ -303,12 +306,14 @@ sw_Mi <- gMi.A / gMi.L
 sw_cde <- sw_Ai * sw_Mi
 
 ## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
-# a GLM with gaussian family can be applied to estimate risk difference
+# a GLM with gaussian family can be applied to estimate risk differences
 msm_cde <- glm(Y_death ~ A0_ace + M_smoking + A0_ace*M_smoking,
                weights = sw_cde,
                family = "gaussian",
                data = df1_int)
 coef(msm_cde)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking 
+#  0.17891689       0.06798282       0.06729724      -0.00495314
 
 ## 5. Estimate CDE for m=0 and for m=1 using the MSM's coefficients
 CDE_mis0 <- coef(msm_cde)["A0_ace"]
@@ -320,4 +325,369 @@ CDE_mis1 <- coef(msm_cde)["A0_ace"] + coef(msm_cde)["A0_ace:M_smoking"]
 In this example, our estimates of the controlled direct effects are $CDE_{M=0} = 6.8\%$ and $CDE_{M=1} = 6.3\%$. Confidence intervals can be calculated by bootstrap.
 
 
+### Estimation of the MSM coefficients by G-computation
+As for the ATE, we can use G-computation to estimate the coefficients of the MSM to estimate Controlled Direct Effects.
+
+Note that the algorithm described below is correct only if the exposure $A$ doesn't affect the intermediate confounders $L(1)$ of the $M \rightarrow Y$ relationship (such as the data simulated from the Causal model 1 in our examples). In that case, the following steps can be applied:
+
+1. Fit a (logistic or a linear) regression to estimate $\overline{Q} = \mathbb{E}(Y \mid A,M, L(0),L(1))$
+
+2. Use this estimate to predict an outcome for each subject under the counterfactual scenarios $\hat{\overline{Q}}(A=0,M=m,L(0),L(1))_i$ and $\hat{\overline{Q}}(A=1,M=m,L(0),L(1))_i$, by evaluating the regression fit $\overline{Q}$ at $(A=0,M=m)$ and $(A=1,M=m)$ respectively. If we want to set the level of the mediator to $M=0$ and $M=1$, this would give 4 counterfactual scenarios $\text{do}(A=0,M=0)$, $\text{do}(A=1,M=0)$, $\text{do}(A=0,M=1)$ and $\text{do}(A=1,M=1)$. 
+
+3. Duplicate the initial dataset for each scenario in a single long dataset in which:
+
+  - the 1st part of the long dataset corresponds to the first counterfactual scenario with $(A=0,M=0)$ for all individuals and an additional column for the predicted counterfactual outcome $\mathbb{E}(Y_{A=0,M=0}\mid L(0),L(1)) = \hat{\overline{Q}}(A=0,M=0,L(0),L(1))$ ; 
+  - the 2d part of the long dataset corresponds to the second counterfactual scenario with $(A=1,M=0)$ for all individuals and an additional column for the predicted counterfactual outcome $\mathbb{E}(Y_{A=1,M=0}\mid L(0),L(1)) = \hat{\overline{Q}}(A=1,M=0,L(0),L(1))$ ; 
+  - the 3d part of the long dataset corresponds to the second counterfactual scenario with $(A=0,M=1)$ for all individuals and an additional column for the predicted counterfactual outcome $\mathbb{E}(Y_{A=0,M=1}\mid L(0),L(1)) = \hat{\overline{Q}}(A=0,M=1,L(0),L(1))$ ; 
+  - the 4th part of the long dataset corresponds to the second counterfactual scenario with $(A=1,M=1)$ for all individuals and an additional column for the predicted counterfactual outcome $\mathbb{E}(Y_{A=1,M=1}\mid L(0),L(1)) = \hat{\overline{Q}}(A=1,M=1,L(0),L(1))$ ; 
+
+4. Fit the MSM $\mathbb{E}(Y_{am}) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m$ using the long dataset.
+
+```{r Psi_CDE_MSM_gcomp, echo=TRUE, eval = FALSE}
+### MSM of CDE, estimated by G-computation -------------------------------------
+## 1. Estimate Qbar(A,M,L0,L1)
+Q.cde.death <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking + L0_male + 
+                     L0_parent_low_educ_lv + L1,
+                   family = "gaussian", data = df1_int)
+# The final result would be sligthly different if we applied a binomial family
+# The Gaussian family corresponds to the true generating model in this example.
+
+## 2. Predict an outcome for each subject, in each counterfactual scenario
+# Prepare data sets that will be used to predict the outcome under the counterfactual
+# 4 counterfactual scenarios setting (A=0,M=0), (A=1,M=0), (A=0,M=1) and (A=1,M=1)
+data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df1_int
+data.A0M0$A0_ace <- 0
+data.A0M0$M_smoking <- 0
+
+data.A1M0$A0_ace <- 1
+data.A1M0$M_smoking <- 0
+
+data.A0M1$A0_ace <- 0
+data.A0M1$M_smoking <- 1
+
+data.A1M1$A0_ace <- 1
+data.A1M1$M_smoking <- 1
+
+# predict values under the same name in the corresponding counterfactual dataset
+data.A0M0$Yam.death.pred <- predict(Q.cde.death, newdata = data.A0M0, type = "response")
+data.A1M0$Yam.death.pred <- predict(Q.cde.death, newdata = data.A1M0, type = "response")
+data.A0M1$Yam.death.pred <- predict(Q.cde.death, newdata = data.A0M1, type = "response")
+data.A1M1$Yam.death.pred <- predict(Q.cde.death, newdata = data.A1M1, type = "response")
+
+## 3. Append the 4 counterfactual datasets in a single long dataset
+# number of row is 4 times the initial value (we have 4 counterfactual scenarios)
+data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
+
+## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+                     family = "gaussian", # gaussian family for risk differences
+                     data = data.4scenarios)
+coef(MSM.CDE.gcomp)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
+#  0.17968603       0.06000138       0.06757214       0.01918153
+
+## 5. Estimate the CDE(M=m)
+# CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+CDE_mis0_gcomp <- coef(MSM.CDE.gcomp)["A0_ace"]
+# 0.06000138
+
+# CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+CDE_mis1_gcomp <- (coef(MSM.CDE.gcomp)["A0_ace"] +
+                     coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+# 0.07918291
+
+# Note: Applying a binomial family for the first Qbar model would result in two
+# sligthly different values of the CDE(M=m)
+# => 0.05934409 in setting M=0
+# => 0.07537874 in setting M=1
+```
+
+If the exposure $A$ affects the intermediate confounder $L(1)$, as in the Causal model 2, the steps 1) and 2) of the algorithm should follow the method described in paragraph \@ref(ChapGcomp-CDE-param) or \@ref(ChapGcomp-CDE-ICE). 
+
+Here is an example applying G-computation by iterative conditional expectation:
+```{r Psi_CDE_MSM_gcomp_ice, echo=TRUE, eval = FALSE}
+### MSM of CDE, estimated by G-computation (by ICE) ----------------------------
+## 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
+Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                       M_smoking + A0_ace:M_smoking,
+                     family = "binomial", data = df2_int)
+
+## 1b) Generate predicted values by evaluating the regression  
+##     under the 4 counterfactual scenarios
+data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df2_int
+data.A0M0$A0_ace <- 0
+data.A0M0$M_smoking <- 0
+
+data.A1M0$A0_ace <- 1
+data.A1M0$M_smoking <- 0
+
+data.A0M1$A0_ace <- 0
+data.A0M1$M_smoking <- 1
+
+data.A1M1$A0_ace <- 1
+data.A1M1$M_smoking <- 1
+
+Q.Y.death.A0M0 <- predict(Y.death.model, newdata = data.A0M0, type = "response")
+Q.Y.death.A1M0 <- predict(Y.death.model, newdata = data.A1M0, type = "response")
+Q.Y.death.A0M1 <- predict(Y.death.model, newdata = data.A0M1, type = "response")
+Q.Y.death.A1M1 <- predict(Y.death.model, newdata = data.A1M1, type = "response")
+
+## 2a) Regress the predicted values conditional on the observed exposure A
+##    and baseline confounders L(0)
+L1.death.A0M0.model <- glm(Q.Y.death.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M0.model <- glm(Q.Y.death.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A0M1.model <- glm(Q.Y.death.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M1.model <- glm(Q.Y.death.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+
+
+## 2b) generate predicted values by evaluating the regression at exposure
+##    of interest: {A=0,M=0}, {A=1,M=0}, {A=0,M=1}, {A=1,M=1}
+data.A0M0$Yam.death.pred <- predict(L1.death.A0M0.model,
+                                    newdata = data.A0M0, type = "response")
+data.A1M0$Yam.death.pred <- predict(L1.death.A1M0.model,
+                                    newdata = data.A1M0, type = "response")
+data.A0M1$Yam.death.pred <- predict(L1.death.A0M1.model,
+                                    newdata = data.A0M1, type = "response")
+data.A1M1$Yam.death.pred <- predict(L1.death.A1M1.model,
+                                    newdata = data.A1M1, type = "response")
+
+
+## 3. Append the 4 counterfactual datasets in a single long dataset
+# number of row is 4 times the initial value (we have 4 counterfactual scenarios)
+data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
+
+## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+                     family = "gaussian", # gaussian family for risk differences
+                     data = data.4scenarios)
+coef(MSM.CDE.gcomp)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
+#  0.17974947       0.06342833       0.07366466       0.02469485
+
+## 5. Estimate the CDE(M=m)
+# CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+CDE_mis0_gcomp_ice <- coef(MSM.CDE.gcomp)["A0_ace"]
+# 0.06342833
+
+# CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+CDE_mis1_gcomp_ice <- (coef(MSM.CDE.gcomp)["A0_ace"] +
+                         coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+# 0.08812318
+```
+
+The example above (MSM estimation using G-computation by ICE) corresponds to the algorithm applied by the `ltmle` package:
+
+```{r Psi_CDE_MSM_ltmle_gcomp, echo=TRUE, eval = FALSE}
+library(ltmle)
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+           Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                    A0_ace * M_smoking")
+gform <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
+           "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+# in this example of g-computation, the propensity scores 'gform' will not be used
+
+data_binary <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
+                                          A0_ace, L1,
+                                          M_smoking, Y_death))
+CDE_ltmle_M0 <- ltmle(data = data_binary,
+                      Anodes = c("A0_ace", "M_smoking"),
+                      Lnodes = c("L1"), # intermediate confounders +/- baseline
+                      Ynodes = c("Y_death"),
+                      survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                      Qform = Qform,
+                      gform = gform,
+                      abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
+                                  c(0,0)), # counterfactual intervention do(A=0,M=0)
+                      SL.library = NULL, # call glm() instead of SuperLearner
+                      estimate.time = FALSE, # estimate computation time?
+                      gcomp = TRUE, # to apply g-computation
+                      variance.method = "ic")
+# CDE with M=0
+summary(CDE_ltmle_M0)$effect.measures$ATE$estimate
+#   Parameter Estimate:  0.06342833
+
+CDE_ltmle_M1 <- ltmle(data = data_binary,
+                      Anodes = c("A0_ace", "M_smoking"),
+                      Lnodes = c("L1"), # intermediate confounders +/- baseline
+                      Ynodes = c("Y_death"),
+                      survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                      Qform = Qform,
+                      gform = gform,
+                      abar = list(c(1,1), # counterfactual intervention do(A=1,M=0)
+                                  c(0,1)), # counterfactual intervention do(A=0,M=0)
+                      SL.library = NULL, # call glm() instead of SuperLearner
+                      estimate.time = FALSE, # estimate computation time?
+                      gcomp = TRUE, # to apply g-computation
+                      variance.method = "ic")
+# CDE with M=1
+summary(CDE_ltmle_M1)$effect.measures$ATE$estimate
+#   Parameter Estimate:  0.08812318
+```
+
+
 ## MSM for Natural Direct and Indirect Effects {#msm_NDE_NIE_paragraph}
+### Expressing the NDE and NIE using coefficients of 2 MSMs
+The (Pure) Natural Direct Effect is defined by $\text{PNDE} = \mathbb{E}(Y_{a,M_{a^*}}) - \mathbb{E}(Y_{a^*,M_{a^*}})$ and the (Total) Natural Indirect Effect is defined by $\text{TNIE} = \mathbb{E}(Y_{a,M_a}) - \mathbb{E}(Y_{a,M_{a^*}})$.
+
+VanderWeele suggested using 2 MSMs conditional on baseline confounders $L(0)$ in order to estimate natural direct and indirect effects [@vanderweele2009]: 
+
+  1) a model of the counterfactual values of the outcome $\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0))$, where $h$ is a link function. For example:
+  \begin{equation}
+    \mathbb{E}(Y_{a,m} \mid l(0)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) (\#eq:MSM-Indirect-model1)
+  \end{equation}
+  (where $h$ is the identity function, so that the model can be used to express risk differences)
+  
+  2) a model of the counterfactual values of the mediator $\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0))$, where $g$ is a link function. For example with a binary mediator:
+    \begin{equation}
+    \mathbb{E}(M_a \mid l(0)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) \right]
+    (\#eq:MSM-Indirect-model2)
+  \end{equation}
+  (where $g$ is the logit function because the mediator is binary).
+  
+VanderWeele shows that if the function $h$ is linear in $m$ (no quadratic terms in $m$, nor transformations such as $\log(m)$ or $\sqrt{m}$, etc) and the exposure $A$ does not affect the intermediate confounder $L(1)$, then
+\begin{equation*}
+  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0)\right),l(0)\right]
+\end{equation*}
+
+Using the 2 MSMs, we can express the Natural Direct and Indirect Effects conditional on baseline confounders $L(0)$. In our example:
+\begin{align*}
+  \text{PNDE} \mid L(0) &= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0)) \\
+  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
+  & \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
+  &= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0))]
+\end{align*}
+
+\begin{align*}
+  \text{TNIE} \mid L(0) &= \mathbb{E}(Y_{a,M_{a}} \mid L(0)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) \\
+  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0)) + \alpha_{L(0)} l(0) \} \\
+  & \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
+  &= \left[ g^{-1}(a,l(0)) - g^{-1}(a^*,l(0)) \right](\alpha_M + \alpha_{AM} a)
+\end{align*}
+
+Marginal Natural Direct and Indirect effect can then be obtained:
+\begin{align*}
+  \text{PNDE} &= \sum_{l(0)} \left[ \text{PNDE} \mid L(0) = l(0) \right] \times P(L(0)=l(0)) \\
+  \quad \text{TNIE} &= \sum_{l(0)} \left[ \text{TNIE} \mid L(0) = l(0) \right] \times P(L(0)=l(0))
+\end{align*}
+
+### Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE
+As previously, MSM coefficients can be estimated using an Inverse Probability of Treatment (IPTW) approach based on weighted regressions. 
+
+In order to fit the 1st MSM \@ref(eq:MSM-Indirect-model1), we can use a linear regression of the (observed) outcome $Y$ on the exposure and mediator, adjusted for $L(0)$, weighted by individual stabilized weights $sw_{msm1,i}$ [@vanderweele2009]:
+\begin{equation*} 
+  \mathbb{E}\left(Y \mid A,M,L(0)\right) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} L(0)
+\end{equation*}
+
+where $sw_{msm1,i}$ is the product of two weights $sw_{msm1,i} = sw_{A,i} \times sw_{M,i}$, 
+\begin{align*}
+  sw_{A,i} =& \frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)} \quad \text{or} \quad sw_{A,i} = \frac{P(A=a_i \mid L(0)=l(0)_i)}{P(A=a_i \mid L(0)=l(0)_i)} = 1 \\
+  sw_{M,i} =& \frac{P(M=m_i \mid A=a_i)}{P(M = m_i \mid A=a_i,L(0)=l(0)_i), L(1)=l(1)_i} \\
+  & \quad \text{or} \quad sw_{M,i} = \frac{P(M=m_i \mid A=a_i,L(0)=l(0)_i)}{P(M = m_i \mid A=a_i,L(0)=l(0)_i), L(1)=l(1)_i} \\
+\end{align*}
+
+In order to fit the 2nd MSM \@ref(eq:MSM-Indirect-model2), we can use a logistic regression of the (observed) mediator $M$ on the exposure, adjusted for $L(0)$, weighted by individual stabilized weights $sw_{msm2,i}$:
+\begin{equation*}
+ \text{logit} \mathbb{E}(M \mid a,l(0)) = \beta_0 + \beta_A a + \beta_{L(0)} l(0)
+\end{equation*}
+
+\begin{equation*}
+ \text{where} \quad sw_{msm2,i} = \frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)}
+\end{equation*}
+
+```{r Psi_PNDE_TNIE_MSM_IPTW, echo=TRUE, eval = FALSE}
+### MSM of NDE & NIE, estimated by IPTW ----------------------------------------
+## 1. Stabilized weight for the MSM1
+# 1a. sw_Ai = g(A=a_i | L(0)) / g(A=a_i | L(0)) = 1
+sw_Ai <- rep(1, nrow(df1_int))
+
+# 1b. sw_Mi = g(M=m_i | A,L(0)) / g(M=m_i | A,L(0),L(1))
+g.M.AL0 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+               family = "binomial", data = df1_int)
+g.Mis1.AL0 <- predict(g.M.AL0, type = "response")
+sw_M.num <- rep(NA, nrow(df1_int))
+sw_M.num[df1_int$M_smoking==1] <- g.Mis1.AL0[df1_int$M_smoking==1]
+sw_M.num[df1_int$M_smoking==0] <- (1 - g.Mis1.AL0[df1_int$M_smoking==0])
+
+g.M.AL0L1 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv + L1,
+                 family = "binomial", data = df1_int)
+g.Mis1.AL0L1 <- predict(g.M.AL0L1, type = "response")
+sw_M.denom <- rep(NA, nrow(df1_int))
+sw_M.denom[df1_int$M_smoking==1] <- g.Mis1.AL0L1[df1_int$M_smoking==1]
+sw_M.denom[df1_int$M_smoking==0] <- (1 - g.Mis1.AL0L1[df1_int$M_smoking==0])
+
+sw_msm1 <- sw_Ai * sw_M.num / sw_M.denom
+
+## 2. Estimate coefficients of the MSM1
+MSM1 <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking +
+              L0_male + L0_parent_low_educ_lv,
+            weights = sw_msm1,
+            family = "gaussian",
+            data = df1_int)
+coef(MSM1)
+# (Intercept)                A0_ace             M_smoking
+#  0.12033221            0.06381257            0.06691712
+#     L0_male L0_parent_low_educ_lv      A0_ace:M_smoking
+#  0.04671886            0.05521263            0.01652446
+
+## 3. Stabilized weight for the MSM2
+# 3a. sw_A = g(A=a_i) / g(A=a_i | L(0))
+# numerator
+g.A <- glm(A0_ace ~ 1, family = "binomial", data = df1_int)
+g.Ais1 <- predict(g.A, type = "response")
+sw_msm2.num <- rep(NA, nrow(df1_int))
+sw_msm2.num[df1_int$A0_ace==1] <- g.Ais1[df1_int$A0_ace==1]
+sw_msm2.num[df1_int$A0_ace==0] <- (1 - g.Ais1[df1_int$A0_ace==0])
+
+# denominator
+g.A.L0 <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+              family = "binomial", data = df1_int)
+g.Ais1.L0 <- predict(g.A.L0, type = "response")
+sw_msm2.denom <- rep(NA, nrow(df1_int))
+sw_msm2.denom[df1_int$A0_ace==1] <- g.Ais1.L0[df1_int$A0_ace==1]
+sw_msm2.denom[df1_int$A0_ace==0] <- (1 - g.Ais1.L0[df1_int$A0_ace==0])
+
+# stabilized weight
+sw_msm2 <- sw_msm2.num / sw_msm2.denom
+
+## 3. Estimate coefficients of the MSM2
+MSM2 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+            weights = sw_msm2,
+            family = "binomial",
+            data = df1_int)
+coef(MSM2)
+# (Intercept)                A0_ace               L0_male L0_parent_low_educ_lv
+#  -1.2723106             0.5883720             0.2566129             0.3270087
+
+## 4. Estimate PNDE conditional on L(0), and the marginal value of PNDE
+# a = 1 and a* = 0
+# PNDE|L(0) = (a - a*)[alpha_A + alpha_AM.g^-1(a^*,l(0))]
+g.minus1.A0 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_ace"] * 0 +
+                      coef(MSM2)["L0_male"] * df1_int$L0_male +
+                      coef(MSM2)["L0_parent_low_educ_lv"] * df1_int$L0_parent_low_educ_lv)
+
+# PNDE conditional on L(0)
+PNDE_L0 <- (1 - 0) * (coef(MSM1)["A0_ace"] +
+                        coef(MSM1)["A0_ace:M_smoking"] * g.minus1.A0)
+# marginal PNDE
+PNDE <- mean(PNDE_L0)
+# [1] 0.06850657
+
+## 4. Estimate TNIE conditional on L(0), and the marginal value of TNIE
+# TNIE|L(0) = [g^-1(a,l(0)) - g^-1(a^*,l(0))] * (alpha_M + alpha_AM * a)
+g.minus1.A1 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_ace"] * 1 +
+                        coef(MSM2)["L0_male"] * df1_int$L0_male +
+                        coef(MSM2)["L0_parent_low_educ_lv"] * df1_int$L0_parent_low_educ_lv)
+
+# TNIE conditional on L(0)
+TNIE_L0 <- (g.minus1.A1 - g.minus1.A0) * (coef(MSM1)["M_smoking"] +
+                                            coef(MSM1)["A0_ace:M_smoking"] * 1)
+# marginal PNDE
+TNIE <- mean(TNIE_L0)
+# [1] 0.01096799
+```
+
+In this example, the estimation of the PNDE is 6.9\% and the estimation of the TNIE is 1.1\%. Confidence intervals can be calculated by bootstrap.

@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-02-06" />
+<meta name="date" content="2024-02-14" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -182,8 +182,8 @@ div.csl-indent {
 <li class="chapter" data-level="6.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-the-average-total-effect-ate-1"><i class="fa fa-check"></i><b>6.1</b> Estimation of the Average Total Effect (ATE)</a></li>
 <li class="chapter" data-level="6.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-controlled-direct-effects-cde"><i class="fa fa-check"></i><b>6.2</b> Estimation of Controlled Direct Effects (CDE)</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.2.1</b> Parametric g-computation</a></li>
-<li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
+<li class="chapter" data-level="6.2.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-param"><i class="fa fa-check"></i><b>6.2.1</b> Parametric g-computation</a></li>
+<li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-ICE"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
 </ul></li>
@@ -206,14 +206,19 @@ div.csl-indent {
 <ul>
 <li class="chapter" data-level="8.1.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-ate-using-coefficients-of-an-msm"><i class="fa fa-check"></i><b>8.1.1</b> Expressing the ATE using coefficients of an MSM</a></li>
 <li class="chapter" data-level="8.1.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw"><i class="fa fa-check"></i><b>8.1.2</b> Estimation of the MSM coefficients by IPTW</a></li>
-<li class="chapter" data-level="8.1.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficiets-by-g-computation-imputation"><i class="fa fa-check"></i><b>8.1.3</b> Estimation of the MSM coefficiets by G-computation (imputation)</a></li>
+<li class="chapter" data-level="8.1.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-g-computation-imputation"><i class="fa fa-check"></i><b>8.1.3</b> Estimation of the MSM coefficients by G-computation (imputation)</a></li>
 </ul></li>
 <li class="chapter" data-level="8.2" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_CDE_paragraph"><i class="fa fa-check"></i><b>8.2</b> MSM for Controlled Direct Effects</a>
 <ul>
 <li class="chapter" data-level="8.2.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-cde-using-coefficients-of-an-msm"><i class="fa fa-check"></i><b>8.2.1</b> Expressing the CDE using coefficients of an MSM</a></li>
 <li class="chapter" data-level="8.2.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw-1"><i class="fa fa-check"></i><b>8.2.2</b> Estimation of the MSM coefficients by IPTW</a></li>
+<li class="chapter" data-level="8.2.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-g-computation"><i class="fa fa-check"></i><b>8.2.3</b> Estimation of the MSM coefficients by G-computation</a></li>
 </ul></li>
-<li class="chapter" data-level="8.3" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_NDE_NIE_paragraph"><i class="fa fa-check"></i><b>8.3</b> MSM for Natural Direct and Indirect Effects</a></li>
+<li class="chapter" data-level="8.3" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_NDE_NIE_paragraph"><i class="fa fa-check"></i><b>8.3</b> MSM for Natural Direct and Indirect Effects</a>
+<ul>
+<li class="chapter" data-level="8.3.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-nde-and-nie-using-coefficients-of-2-msms"><i class="fa fa-check"></i><b>8.3.1</b> Expressing the NDE and NIE using coefficients of 2 MSMs</a></li>
+<li class="chapter" data-level="8.3.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie"><i class="fa fa-check"></i><b>8.3.2</b> Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>9</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
@@ -389,8 +394,8 @@ div.csl-indent {
 <li>g-computation by iterative conditional expectation</li>
 <li>sequential g-estimator</li>
 </ul>
-<div id="parametric-g-computation" class="section level3 hasAnchor" number="6.2.1">
-<h3><span class="header-section-number">6.2.1</span> Parametric g-computation<a href="ChapGcomp.html#parametric-g-computation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="ChapGcomp-CDE-param" class="section level3 hasAnchor" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Parametric g-computation<a href="ChapGcomp.html#ChapGcomp-CDE-param" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Parametric g-computation by Monte Carlo simulation have been described by Robins <span class="citation">(<a href="#ref-robins1986">Robins 1986</a>)</span>, Taubman <em>et al.</em> <span class="citation">(<a href="#ref-taubman2009">Taubman et al. 2009</a>)</span>, or Daniel <em>et al.</em> <span class="citation">(<a href="#ref-daniel2013">Daniel et al. 2013</a>)</span>.</p>
 <ol style="list-style-type: decimal">
 <li><p>Fit a parametric model to estimate the density of the intermediate confounder <span class="math inline">\(L(1)\)</span> conditional on its parents. If <span class="math inline">\(L(1)\)</span> is a set of several variables, it is necessary to fit a model for each variable conditional on its parents.
@@ -482,8 +487,8 @@ div.csl-indent {
 <span id="cb20-71"><a href="ChapGcomp.html#cb20-71" tabindex="-1"></a>CDE.qol.m1.gcomp.param</span>
 <span id="cb20-72"><a href="ChapGcomp.html#cb20-72" tabindex="-1"></a><span class="co"># [1] -10.35059</span></span></code></pre></div>
 </div>
-<div id="g-computation-by-iterative-conditional-expectation" class="section level3 hasAnchor" number="6.2.2">
-<h3><span class="header-section-number">6.2.2</span> G-computation by iterative conditional expectation<a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="ChapGcomp-CDE-ICE" class="section level3 hasAnchor" number="6.2.2">
+<h3><span class="header-section-number">6.2.2</span> G-computation by iterative conditional expectation<a href="ChapGcomp.html#ChapGcomp-CDE-ICE" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component <span class="math inline">\(\mathbb{E}(Y_{A=a^\prime,M=m})\)</span> used in the definition of CDE <span class="math inline">\(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})\)</span>. Interestingly, there is no need to estimate or simulate <span class="math inline">\(L(1)\)</span> density with this method.</p>
 <ol style="list-style-type: decimal">
 <li><p>Fit a logistic or a linear regression of the final outcome, conditional on the exposure <span class="math inline">\(A\)</span>, the mediator <span class="math inline">\(M\)</span> and all the parents of <span class="math inline">\(Y\)</span> preceeding <span class="math inline">\(M\)</span>, to estimate <span class="math inline">\(\overline{Q}_{Y} = \mathbb{E}(Y \mid L(0),A,L(1),M)\)</span>;</p></li>

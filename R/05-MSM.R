@@ -4,11 +4,15 @@ rm(list=ls())
 
 df1 <- read.csv(file = "data/df1.csv")
 df1_int <- read.csv(file = "data/df1_int.csv")
+df2 <- read.csv(file = "data/df2.csv")
+df2_int <- read.csv(file = "data/df2_int.csv")
 
 ################################################################################
 ######################### Estimation of the Average Total Effect (ATE)
 ################################################################################
 
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
 ### MSM of ATE|L_male, estimated by IPTW ---------------------------------------
 
 ## 1. Denominator of the weight
@@ -360,6 +364,8 @@ true2
 # sans terme d'interaction, les deux effets sont les même qq soit le sexe => OK
 
 
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
 ### MSM of ATE|L_male, estimated by G-computation ------------------------------
 ## 1. Estimate Qbar
 Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
@@ -418,6 +424,8 @@ ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_ace"] +
 # (ATE | L0_male = 1) = 0.0703
 
 
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
 ### MSM of CDE, estimated by IPTW ----------------------------------------------
 ## 1. Stabilized weight for the exposure sw_{A,i}
 # 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)
@@ -470,10 +478,367 @@ msm_cde <- glm(Y_death ~ A0_ace + M_smoking + A0_ace*M_smoking,
                family = "gaussian",
                data = df1_int)
 coef(msm_cde)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
+#  0.17891689       0.06798282       0.06729724      -0.00495314
 
 ## 5. Estimate CDE for m=0 and for m=1 using the MSM's coefficients
 CDE_mis0 <- coef(msm_cde)["A0_ace"]
 # 0.06798282
 CDE_mis1 <- coef(msm_cde)["A0_ace"] + coef(msm_cde)["A0_ace:M_smoking"]
 # 0.06302968
+
+
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+### MSM of CDE, estimated by G-computation -------------------------------------
+## 1. Estimate Qbar(A,M,L0,L1)
+Q.cde.death <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking + L0_male + L0_parent_low_educ_lv + L1,
+                   family = "gaussian", data = df1_int)
+# The final result would be sligthly different if we applied a binomial family
+# The Gaussian family corresponds to the true generating model in this example.
+
+## 2. Predict an outcome for each subject, in each counterfactual scenario
+# prepare data sets used to predict the outcome under the counterfactual
+# 4 counterfactual scenarios setting (A=0,M=0), (A=1,M=0), (A=0,M=1) and (A=1,M=1)
+data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df1_int
+data.A0M0$A0_ace <- 0
+data.A0M0$M_smoking <- 0
+
+data.A1M0$A0_ace <- 1
+data.A1M0$M_smoking <- 0
+
+data.A0M1$A0_ace <- 0
+data.A0M1$M_smoking <- 1
+
+data.A1M1$A0_ace <- 1
+data.A1M1$M_smoking <- 1
+
+# predict values under the same name in the corresponding counterfactual dataset
+data.A0M0$Yam.death.pred <- predict(Q.cde.death, newdata = data.A0M0, type = "response")
+data.A1M0$Yam.death.pred <- predict(Q.cde.death, newdata = data.A1M0, type = "response")
+data.A0M1$Yam.death.pred <- predict(Q.cde.death, newdata = data.A0M1, type = "response")
+data.A1M1$Yam.death.pred <- predict(Q.cde.death, newdata = data.A1M1, type = "response")
+
+## 3. Append both counterfactual datasets in a single dataset
+# number of row is twice the initial value (we have 2 counterfactual scenarios)
+data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
+
+## 4. fit the MSM: E(Y_a|sex)
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+                     family = "gaussian", # gaussian family for risk differences
+                     data = data.4scenarios)
+coef(MSM.CDE.gcomp)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
+#  0.17968603       0.06000138       0.06757214       0.01918153
+
+## 5. Estimate the CDEm
+# CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+CDE_mis0_gcomp <- coef(MSM.CDE.gcomp)["A0_ace"]
+# 0.06000138
+
+# CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+CDE_mis1_gcomp <- (coef(MSM.CDE.gcomp)["A0_ace"] +
+                     coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+# 0.07918291
+
+# Note: Applying a binomial family for the first Qbar model would result in two
+# sligthly different values of the CDE(M=m)
+# => 0.05934409 in setting M=0
+# => 0.07537874 in setting M=1
+
+
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+### MSM of CDE, estimated by G-computation (by ICE) ----------------------------
+## 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
+Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                       M_smoking + A0_ace:M_smoking,
+                     family = "binomial", data = df2_int)
+
+## 1b) Generate predicted values by evaluating the regression setting the mediator
+##    value to M=0 or to M=1
+data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df2_int
+data.A0M0$A0_ace <- 0
+data.A0M0$M_smoking <- 0
+
+data.A1M0$A0_ace <- 1
+data.A1M0$M_smoking <- 0
+
+data.A0M1$A0_ace <- 0
+data.A0M1$M_smoking <- 1
+
+data.A1M1$A0_ace <- 1
+data.A1M1$M_smoking <- 1
+
+Q.Y.death.A0M0 <- predict(Y.death.model, newdata = data.A0M0, type = "response")
+Q.Y.death.A1M0 <- predict(Y.death.model, newdata = data.A1M0, type = "response")
+Q.Y.death.A0M1 <- predict(Y.death.model, newdata = data.A0M1, type = "response")
+Q.Y.death.A1M1 <- predict(Y.death.model, newdata = data.A1M1, type = "response")
+
+## 2a) Regress the predicted values conditional on the observed exposure A
+##    and baseline confounders L(0)
+L1.death.A0M0.model <- glm(Q.Y.death.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M0.model <- glm(Q.Y.death.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A0M1.model <- glm(Q.Y.death.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M1.model <- glm(Q.Y.death.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+
+
+## 2b) generate predicted values by evaluating the regression at exposure
+##    of interest: {A=0,M=0}, {A=1,M=0}, {A=0,M=1}, {A=1,M=1}
+data.A0M0$Yam.death.pred <- predict(L1.death.A0M0.model,
+                                    newdata = data.A0M0, type = "response")
+data.A1M0$Yam.death.pred <- predict(L1.death.A1M0.model,
+                                    newdata = data.A1M0, type = "response")
+data.A0M1$Yam.death.pred <- predict(L1.death.A0M1.model,
+                                    newdata = data.A0M1, type = "response")
+data.A1M1$Yam.death.pred <- predict(L1.death.A1M1.model,
+                                    newdata = data.A1M1, type = "response")
+
+
+## 3. Append the 4 counterfactual datasets in a single long dataset
+# number of row is 4 times the initial value (we have 4 counterfactual scenarios)
+data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
+
+## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+                     family = "gaussian", # gaussian family for risk differences
+                     data = data.4scenarios)
+coef(MSM.CDE.gcomp)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
+#  0.17974947       0.06342833       0.07366466       0.02469485
+
+## 5. Estimate the CDE(M=m)
+# CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+CDE_mis0_gcomp_ice <- coef(MSM.CDE.gcomp)["A0_ace"]
+# 0.06342833
+
+# CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+CDE_mis1_gcomp_ice <- (coef(MSM.CDE.gcomp)["A0_ace"] +
+                         coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+# 0.08812318
+
+
+##### Alternative --------------------------------------------------------------
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+### MSM of CDE, estimated by G-computation (by ICE) ----------------------------
+## 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
+Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                       M_smoking + A0_ace:M_smoking,
+                     family = "binomial", data = df2_int)
+
+## 1b) Generate predicted values by evaluating the regression setting the mediator
+##    value to M=0 or to M=1
+data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df2_int
+# data.A0M0$A0_ace <- 0
+data.A0M0$M_smoking <- 0
+
+# data.A1M0$A0_ace <- 1
+data.A1M0$M_smoking <- 0
+
+# data.A0M1$A0_ace <- 0
+data.A0M1$M_smoking <- 1
+
+# data.A1M1$A0_ace <- 1
+data.A1M1$M_smoking <- 1
+
+data.A0M0$Q.Y.death <- predict(Y.death.model, newdata = data.A0M0, type = "response")
+data.A1M0$Q.Y.death <- predict(Y.death.model, newdata = data.A1M0, type = "response")
+data.A0M1$Q.Y.death <- predict(Y.death.model, newdata = data.A0M1, type = "response")
+data.A1M1$Q.Y.death <- predict(Y.death.model, newdata = data.A1M1, type = "response")
+
+## 2a) Regress the predicted values conditional on the exposure A
+##    and baseline confounders L(0)
+L1.death.A0M0.model <- glm(Q.Y.death ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = data.A0M0)
+L1.death.A1M0.model <- glm(Q.Y.death ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = data.A1M0)
+L1.death.A0M1.model <- glm(Q.Y.death ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = data.A0M1)
+L1.death.A1M1.model <- glm(Q.Y.death ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = data.A1M1)
+
+
+## 2b) generate predicted values by evaluating the regression at exposure
+##    of interest: {A=0,M=0}, {A=1,M=0}, {A=0,M=1}, {A=1,M=1}
+data.A0M0$A0_ace <- 0
+data.A1M0$A0_ace <- 1
+data.A0M1$A0_ace <- 0
+data.A1M1$A0_ace <- 1
+data.A0M0$Yam.death.pred <- predict(L1.death.A0M0.model,
+                                    newdata = data.A0M0, type = "response")
+data.A1M0$Yam.death.pred <- predict(L1.death.A1M0.model,
+                                    newdata = data.A1M0, type = "response")
+data.A0M1$Yam.death.pred <- predict(L1.death.A0M1.model,
+                                    newdata = data.A0M1, type = "response")
+data.A1M1$Yam.death.pred <- predict(L1.death.A1M1.model,
+                                    newdata = data.A1M1, type = "response")
+
+
+## 3. Append the 4 counterfactual datasets in a single long dataset
+# number of row is 4 times the initial value (we have 4 counterfactual scenarios)
+data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
+
+## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+                     family = "gaussian", # gaussian family for risk differences
+                     data = data.4scenarios)
+coef(MSM.CDE.gcomp)
+# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
+#  0.17974978       0.06341297       0.07366464       0.02469211
+
+## 5. Estimate the CDE(M=m)
+# CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+CDE_mis0_gcomp_ice <- coef(MSM.CDE.gcomp)["A0_ace"]
+# 0.06341297
+
+# CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+CDE_mis1_gcomp_ice <- (coef(MSM.CDE.gcomp)["A0_ace"] +
+                         coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+# 0.08810508
+
+
+##### ltmle  --------------------------------------------------------------
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+library(ltmle)
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+           Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                    A0_ace * M_smoking")
+gform <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
+           "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+data_binary <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
+                                          A0_ace, L1,
+                                          M_smoking, Y_death))
+CDE_ltmle_M0_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
+                                        c(0,0)), # counterfactual intervention do(A=0,M=0)
+                            SL.library = NULL,
+                            estimate.time = FALSE, # estimate computation time?
+                            gcomp = TRUE,
+                            variance.method = "ic")
+# CDE with M=0
+summary(CDE_ltmle_M0_death)$effect.measures$ATE$estimate
+#   Parameter Estimate:  0.06342833
+
+CDE_ltmle_M1_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,1), # counterfactual intervention do(A=1,M=0)
+                                        c(0,1)), # counterfactual intervention do(A=0,M=0)
+                            SL.library = NULL,
+                            estimate.time = FALSE, # estimate computation time?
+                            gcomp = TRUE,
+                            variance.method = "ic")
+# CDE with M=1
+summary(CDE_ltmle_M1_death)$effect.measures$ATE$estimate
+#   Parameter Estimate:  0.08812318
+
+
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+### MSM of NDE & NIE, estimated by IPTW ----------------------------------------
+## 1. Stabilized weight for the MSM1
+# 1a. sw_Ai = g(A=a_i | L(0)) / g(A=a_i | L(0)) = 1
+sw_Ai <- rep(1, nrow(df1_int))
+
+# 1b. sw_Mi = g(M=m_i | A,L(0)) / g(M=m_i | A,L(0),L(1))
+g.M.AL0 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+               family = "binomial", data = df1_int)
+g.Mis1.AL0 <- predict(g.M.AL0, type = "response")
+sw_M.num <- rep(NA, nrow(df1_int))
+sw_M.num[df1_int$M_smoking==1] <- g.Mis1.AL0[df1_int$M_smoking==1]
+sw_M.num[df1_int$M_smoking==0] <- (1 - g.Mis1.AL0[df1_int$M_smoking==0])
+
+g.M.AL0L1 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv + L1,
+                 family = "binomial", data = df1_int)
+g.Mis1.AL0L1 <- predict(g.M.AL0L1, type = "response")
+sw_M.denom <- rep(NA, nrow(df1_int))
+sw_M.denom[df1_int$M_smoking==1] <- g.Mis1.AL0L1[df1_int$M_smoking==1]
+sw_M.denom[df1_int$M_smoking==0] <- (1 - g.Mis1.AL0L1[df1_int$M_smoking==0])
+
+sw_msm1 <- sw_Ai * sw_M.num / sw_M.denom
+
+## 2. Estimate coefficients of the MSM1
+MSM1 <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking +
+              L0_male + L0_parent_low_educ_lv,
+            weights = sw_msm1,
+            family = "gaussian",
+            data = df1_int)
+coef(MSM1)
+# (Intercept)                A0_ace             M_smoking
+#  0.12033221            0.06381257            0.06691712
+#     L0_male L0_parent_low_educ_lv      A0_ace:M_smoking
+#  0.04671886            0.05521263            0.01652446
+
+## 3. Stabilized weight for the MSM2
+# 3a. sw_A = g(A=a_i) / g(A=a_i | L(0))
+# numerator
+g.A <- glm(A0_ace ~ 1, family = "binomial", data = df1_int)
+g.Ais1 <- predict(g.A, type = "response")
+sw_msm2.num <- rep(NA, nrow(df1_int))
+sw_msm2.num[df1_int$A0_ace==1] <- g.Ais1[df1_int$A0_ace==1]
+sw_msm2.num[df1_int$A0_ace==0] <- (1 - g.Ais1[df1_int$A0_ace==0])
+
+# denominator
+g.A.L0 <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+              family = "binomial", data = df1_int)
+g.Ais1.L0 <- predict(g.A.L0, type = "response")
+sw_msm2.denom <- rep(NA, nrow(df1_int))
+sw_msm2.denom[df1_int$A0_ace==1] <- g.Ais1.L0[df1_int$A0_ace==1]
+sw_msm2.denom[df1_int$A0_ace==0] <- (1 - g.Ais1.L0[df1_int$A0_ace==0])
+
+# stabilized weight
+sw_msm2 <- sw_msm2.num / sw_msm2.denom
+
+## 3. Estimate coefficients of the MSM2
+MSM2 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+            weights = sw_msm2,
+            family = "binomial",
+            data = df1_int)
+coef(MSM2)
+# (Intercept)                A0_ace               L0_male L0_parent_low_educ_lv
+#  -1.2723106             0.5883720             0.2566129             0.3270087
+
+## 4. Estimate PNDE conditional on L(0), and the marginal value of PNDE
+# a = 1 and a* = 0
+# PNDE|L(0) = (a - a*)[alpha_A + alpha_AM.g^-1(a^*,l(0))]
+g.minus1.A0 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_ace"] * 0 +
+                      coef(MSM2)["L0_male"] * df1_int$L0_male +
+                      coef(MSM2)["L0_parent_low_educ_lv"] * df1_int$L0_parent_low_educ_lv)
+
+# PNDE conditional on L(0)
+PNDE_L0 <- (1 - 0) * (coef(MSM1)["A0_ace"] +
+                        coef(MSM1)["A0_ace:M_smoking"] * g.minus1.A0)
+# marginal PNDE
+PNDE <- mean(PNDE_L0)
+# [1] 0.06850657
+
+## 4. Estimate TNIE conditional on L(0), and the marginal value of TNIE
+# TNIE|L(0) = [g^-1(a,l(0)) - g^-1(a^*,l(0))] * (alpha_M + alpha_AM * a)
+g.minus1.A1 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_ace"] * 1 +
+                        coef(MSM2)["L0_male"] * df1_int$L0_male +
+                        coef(MSM2)["L0_parent_low_educ_lv"] * df1_int$L0_parent_low_educ_lv)
+
+# TNIE conditional on L(0)
+TNIE_L0 <- (g.minus1.A1 - g.minus1.A0) * (coef(MSM1)["M_smoking"] +
+                                            coef(MSM1)["A0_ace:M_smoking"] * 1)
+# marginal PNDE
+TNIE <- mean(TNIE_L0)
+# [1] 0.01096799
+
 

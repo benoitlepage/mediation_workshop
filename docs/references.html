@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-02-06" />
+<meta name="date" content="2024-02-14" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -182,8 +182,8 @@ div.csl-indent {
 <li class="chapter" data-level="6.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-the-average-total-effect-ate-1"><i class="fa fa-check"></i><b>6.1</b> Estimation of the Average Total Effect (ATE)</a></li>
 <li class="chapter" data-level="6.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-controlled-direct-effects-cde"><i class="fa fa-check"></i><b>6.2</b> Estimation of Controlled Direct Effects (CDE)</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.2.1</b> Parametric g-computation</a></li>
-<li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
+<li class="chapter" data-level="6.2.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-param"><i class="fa fa-check"></i><b>6.2.1</b> Parametric g-computation</a></li>
+<li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-ICE"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
 </ul></li>
@@ -206,14 +206,19 @@ div.csl-indent {
 <ul>
 <li class="chapter" data-level="8.1.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-ate-using-coefficients-of-an-msm"><i class="fa fa-check"></i><b>8.1.1</b> Expressing the ATE using coefficients of an MSM</a></li>
 <li class="chapter" data-level="8.1.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw"><i class="fa fa-check"></i><b>8.1.2</b> Estimation of the MSM coefficients by IPTW</a></li>
-<li class="chapter" data-level="8.1.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficiets-by-g-computation-imputation"><i class="fa fa-check"></i><b>8.1.3</b> Estimation of the MSM coefficiets by G-computation (imputation)</a></li>
+<li class="chapter" data-level="8.1.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-g-computation-imputation"><i class="fa fa-check"></i><b>8.1.3</b> Estimation of the MSM coefficients by G-computation (imputation)</a></li>
 </ul></li>
 <li class="chapter" data-level="8.2" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_CDE_paragraph"><i class="fa fa-check"></i><b>8.2</b> MSM for Controlled Direct Effects</a>
 <ul>
 <li class="chapter" data-level="8.2.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-cde-using-coefficients-of-an-msm"><i class="fa fa-check"></i><b>8.2.1</b> Expressing the CDE using coefficients of an MSM</a></li>
 <li class="chapter" data-level="8.2.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-iptw-1"><i class="fa fa-check"></i><b>8.2.2</b> Estimation of the MSM coefficients by IPTW</a></li>
+<li class="chapter" data-level="8.2.3" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-coefficients-by-g-computation"><i class="fa fa-check"></i><b>8.2.3</b> Estimation of the MSM coefficients by G-computation</a></li>
 </ul></li>
-<li class="chapter" data-level="8.3" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_NDE_NIE_paragraph"><i class="fa fa-check"></i><b>8.3</b> MSM for Natural Direct and Indirect Effects</a></li>
+<li class="chapter" data-level="8.3" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_NDE_NIE_paragraph"><i class="fa fa-check"></i><b>8.3</b> MSM for Natural Direct and Indirect Effects</a>
+<ul>
+<li class="chapter" data-level="8.3.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-nde-and-nie-using-coefficients-of-2-msms"><i class="fa fa-check"></i><b>8.3.1</b> Expressing the NDE and NIE using coefficients of 2 MSMs</a></li>
+<li class="chapter" data-level="8.3.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie"><i class="fa fa-check"></i><b>8.3.2</b> Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>9</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
@@ -299,7 +304,10 @@ Taubman, Sarah L, James M Robins, Murray A Mittleman, and Miguel A Hernán. 2009
 Valeri, Linda, and Tyler J VanderWeele. 2013. <span>“Mediation Analysis Allowing for Exposure-Mediator Interactions and Causal Interpretation: Theoretical Assumptions and Implementation with SAS and SPSS Macros.”</span> <em>Psycol Methods</em> 18 (2): 137–50.
 </div>
 <div class="csl-entry">
-VanderWeele, Tyler J. 2013. <span>“A Three-Way Decomposition of a Total Effect into Direct, Indirect, and Interactive Effects.”</span> <em>Epidemiology</em> 13: 224–32.
+VanderWeele, Tyler J. 2009. <span>“Marginal Structural Models for the Estimation of Direct and Indirect Effects.”</span> <em>Epidemiology</em> 20: 18–26.
+</div>
+<div class="csl-entry">
+———. 2013. <span>“A Three-Way Decomposition of a Total Effect into Direct, Indirect, and Interactive Effects.”</span> <em>Epidemiology</em> 13: 224–32.
 </div>
 <div class="csl-entry">
 ———. 2014. <span>“A Unification of Mediation and Interaction. A 4-Way Decomposition.”</span> <em>Epidemiology</em> 25: 749–61.

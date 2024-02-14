@@ -130,7 +130,7 @@ Below, we describe three g-computation procedures for the estimation of a CDE:
 - sequential g-estimator
 
 
-### Parametric g-computation
+### Parametric g-computation {#ChapGcomp-CDE-param}
 Parametric g-computation by Monte Carlo simulation have been described by Robins [@robins1986], Taubman _et al._ [@taubman2009], or Daniel _et al._ [@daniel2013].
 
 1. Fit a parametric model to estimate the density of the intermediate confounder $L(1)$ conditional on its parents. If $L(1)$ is a set of several variables, it is necessary to fit a model for each variable conditional on its parents. 
@@ -233,7 +233,7 @@ CDE.qol.m1.gcomp.param
 
 
 
-### G-computation by iterative conditional expectation
+### G-computation by iterative conditional expectation {#ChapGcomp-CDE-ICE}
 The following steps describe the implementation of the g-computation estimator by iterative conditional expectation for the component $\mathbb{E}(Y_{A=a^\prime,M=m})$ used in the definition of CDE $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \mathbb{E}(Y_{A=0,M=m})$. Interestingly, there is no need to estimate or simulate $L(1)$ density with this method.
                                           
 1. Fit a logistic or a linear regression of the final outcome, conditional on the exposure $A$, the mediator $M$ and all the parents of $Y$ preceeding $M$, to estimate $\overline{Q}_{Y} = \mathbb{E}(Y \mid L(0),A,L(1),M)$;

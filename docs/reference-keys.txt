@@ -9,6 +9,8 @@ eq:MSMATEmarg
 eq:MSMATEcond
 eq:MSMATEsex
 eq:MSMCDE
+eq:MSM-Indirect-model1
+eq:MSM-Indirect-model2
 introduction
 software
 data-sets
@@ -25,8 +27,8 @@ four-way-decomposition
 ChapGcomp
 estimation-of-the-average-total-effect-ate-1
 estimation-of-controlled-direct-effects-cde
-parametric-g-computation
-g-computation-by-iterative-conditional-expectation
+ChapGcomp-CDE-param
+ChapGcomp-CDE-ICE
 sequential-g-estimator
 ChapIptw
 estimation-of-the-average-total-effect
@@ -39,11 +41,14 @@ msm_chapter
 msm_ATE_paragraph
 expressing-the-ate-using-coefficients-of-an-msm
 estimation-of-the-msm-coefficients-by-iptw
-estimation-of-the-msm-coefficiets-by-g-computation-imputation
+estimation-of-the-msm-coefficients-by-g-computation-imputation
 msm_CDE_paragraph
 expressing-the-cde-using-coefficients-of-an-msm
 estimation-of-the-msm-coefficients-by-iptw-1
+estimation-of-the-msm-coefficients-by-g-computation
 msm_NDE_NIE_paragraph
+expressing-the-nde-and-nie-using-coefficients-of-2-msms
+estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie
 chap_tmle
 tmle-for-the-ate
 tmle-of-the-controlled-direct-effect-cde
