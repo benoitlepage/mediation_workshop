@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-02-14" />
+<meta name="date" content="2024-03-29" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -186,6 +186,7 @@ div.csl-indent {
 <li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-ICE"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
+<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="ChapIptw.html"><a href="ChapIptw.html"><i class="fa fa-check"></i><b>7</b> Inverse Probability of Treatment Weighting (IPTW)</a>
 <ul>
@@ -283,7 +284,7 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="ChapGcomp" class="section level1 hasAnchor" number="6">
 <h1><span class="header-section-number">Chapter 6</span> G-computation<a href="ChapGcomp.html#ChapGcomp" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>If we make the assumption that the intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is affected by the exposure <span class="math inline">\(A\)</span> (Causal model 2), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the <code>df2_int.csv</code> data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an <span class="math inline">\(A \star M\)</span> interaction effect on the outcome.</p>
+<p>If we make the assumption that the intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is affected by the exposure <span class="math inline">\(A\)</span> (Causal model 2, Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the <code>df2_int.csv</code> data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an <span class="math inline">\(A \star M\)</span> interaction effect on the outcome.</p>
 <p>G-computation can be used for the estimation of the total effect and two-way decomposition (CDE, marginal and conditional randomized direct and indirect effects).</p>
 <div id="estimation-of-the-average-total-effect-ate-1" class="section level2 hasAnchor" number="6.1">
 <h2><span class="header-section-number">6.1</span> Estimation of the Average Total Effect (ATE)<a href="ChapGcomp.html#estimation-of-the-average-total-effect-ate-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -617,8 +618,12 @@ Y_{res} = Y - \hat{\gamma}_M M - \hat{\psi}_{A \ast M} \times A \times M
 <span id="cb22-23"><a href="ChapGcomp.html#cb22-23" tabindex="-1"></a>                     <span class="dv">1</span><span class="sc">*</span>Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_ace:M_smoking&quot;</span>])</span>
 <span id="cb22-24"><a href="ChapGcomp.html#cb22-24" tabindex="-1"></a>CDE.qol.m1.seq</span>
 <span id="cb22-25"><a href="ChapGcomp.html#cb22-25" tabindex="-1"></a><span class="co"># -10.38144</span></span></code></pre></div>
-
 </div>
+</div>
+<div id="estimation-of-natural-direct-nde-and-indirect-effects-nie" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)<a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>When Natural Direct Effects and Natural Indirect Effects are identifiable (i.e. making the assumption that the confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is NOT affected by the exposure <span class="math inline">\(A\)</span> as in Causal model 1, in Figure <a href="data-sets.html#fig:figDAGM1">3.1</a>), estimation are based on traditional regression models as described in chapter <a href="ChapTradRegModels.html#ChapTradRegModels">5</a>.</p>
+
 </div>
 </div>
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>

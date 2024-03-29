@@ -30,6 +30,7 @@ estimation-of-controlled-direct-effects-cde
 ChapGcomp-CDE-param
 ChapGcomp-CDE-ICE
 sequential-g-estimator
+estimation-of-natural-direct-nde-and-indirect-effects-nie
 ChapIptw
 estimation-of-the-average-total-effect
 iptw-for-the-ate

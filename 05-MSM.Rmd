@@ -691,3 +691,5 @@ TNIE <- mean(TNIE_L0)
 ```
 
 In this example, the estimation of the PNDE is 6.9\% and the estimation of the TNIE is 1.1\%. Confidence intervals can be calculated by bootstrap.
+
+

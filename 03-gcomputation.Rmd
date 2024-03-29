@@ -1,6 +1,6 @@
 # G-computation {#ChapGcomp}
 
-If we make the assumption that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the `df2_int.csv` data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an $A \star M$ interaction effect on the outcome.
+If we make the assumption that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2, Figure \@ref(fig:figDAGM2)), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the `df2_int.csv` data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that there is an $A \star M$ interaction effect on the outcome.
 
 G-computation can be used for the estimation of the total effect and two-way decomposition (CDE, marginal and conditional randomized direct and indirect effects).
 
@@ -378,3 +378,6 @@ CDE.qol.m1.seq
 # -10.38144
 ```
 
+
+## Estimation of Natural Direct (NDE) and Indirect Effects (NIE)
+When Natural Direct Effects and Natural Indirect Effects are identifiable (i.e. making the assumption that the confounder $L(1)$ of the $M-Y$ relationship is NOT affected by the exposure $A$ as in Causal model 1, in Figure \@ref(fig:figDAGM1)), estimation are based on traditional regression models as described in chapter \@ref(ChapTradRegModels).
