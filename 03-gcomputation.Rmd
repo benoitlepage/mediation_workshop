@@ -381,3 +381,147 @@ CDE.qol.m1.seq
 
 ## Estimation of Natural Direct (NDE) and Indirect Effects (NIE)
 When Natural Direct Effects and Natural Indirect Effects are identifiable (i.e. making the assumption that the confounder $L(1)$ of the $M-Y$ relationship is NOT affected by the exposure $A$ as in Causal model 1, in Figure \@ref(fig:figDAGM1)), estimation are based on traditional regression models as described in chapter \@ref(ChapTradRegModels).
+
+
+## Estimation of "Marginal" Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)
+When we assume that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2, Figure \@ref(fig:figDAGM2)), an "interventional analogue" of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.[@vanderweele2016,@lin2017] For these effects, counterfactual scenarios are defined by setting different values for the exposure ($A = 0$ or $A=1$) and random draw in the distribution $G_{A=a^\prime \mid L(0)}$ of the mediator (conditional on baseline counfounders $L(0)$) under the counterfactual scenario setting $A=a^\prime$.
+
+An Overall (Total) Effect can be defined by the contrast $\text{OE} = \mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$.
+
+This Overall Effect can be decomposed into the sum of:
+
+  - a Marginal Randomised (or Interventional) Direct Effect: $\text{MRDE}=\mathbb{E}\left[Y_{A=1,G_{A=0\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$
+  - a Marginal Randomised (or Interventional) Interect Effect: $\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]$
+  
+For this 2-way decomposition, we have to estimate 3 causal quantities: $\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]$, $\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$ and $\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]$. 
+
+Under the identifiability conditions, in particular:
+
+  - no unmeasured exposure-outcome confounding
+  - no unmeasured mediator-outcome confounding
+  - and exposure-mediator confounding
+
+the quantity of $\mathbb{E}\left[Y_{a,G_{a^\prime\mid L(0)}} \right]$ can be estimated by the g-formula:
+\begin{multline*}
+\mathbb{E}\left[Y_{a,G_{a^\prime\mid L(0)}} \right]=\sum_{l(0),l(1),m} \mathbb{E}\left(Y \mid m,l(1),A=a,l(0),\right) \times P[L(1)=l(1) \mid a,l(0)] \\
+  \times P[M=m \mid a^\prime, l(0)] \times P(L(0)=l(0))
+\end{multline*}
+These causal effects can be estimated by g-computation, IPTW, or TMLE. G-computation approaches are described below.
+
+
+### Parametric g-computation
+The estimation using parametric g-computation is described in [@lin2017]. The approach is described as an adaptation of the parametric g-computation presented for controlled direct effects, in order to estimate causal quantities $\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})$ corresponding to a counterfactual scenario where the exposures is set to $A=a$ for all individuals and $M$ is a random draw from the distribution $G_{a^\prime \mid L(0)}$ of the mediator (conditional on $L(0)$) had the exposure been set to $A=a^\prime$.
+
+Estimation of $\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})$ relies on the following steps:
+
+1. Fit parametric models for the time-varying confounders $L(1)$, the mediator $M$ and the outcome $Y$ given the measured past;
+
+2. Estimate the joint distribution of time-varying confounders $L(1)$ and of the mediator ($M_{G_{A=0}}$ and $M_{G_{A=1}}$) under the counterfactual scenarios setting $A = 1$ or $A=0$;
+
+3. Simulate the outcomes $Y_{A=0,G_{A=0}}$, $Y_{A=1,G_{A=1}}$ and $Y_{A=1,G_{A=0}}$ in order to compute the randomized natural direct and indirect effects.
+
+```{r param_gcomp_rNDE_rNIE, echo=TRUE, eval = FALSE}
+set.seed(54321)
+
+# steps 1) to 3) will be repeated some fixed number k (for example k=25)
+# we will save the k results in a matrix of k rows and 4 columns for the randomized
+# direct and indirect effects on death (binary) and QoL (continuous outcome)
+est <- matrix(NA, nrow = 25, ncol = 4)
+colnames(est) <- c("rNDE.death", "rNIE.death", "rNDE.qol", "rNIE.qol")
+
+# repeat k=25 times the following steps 1) to 3)
+for (k in 1:25) {
+  ## 1) Fit parametric models for the time-varying confounders L(1), the mediator M
+  ##    and the outcome Y
+  ### 1a) fit parametric models of the confounders and mediators given the past
+  L1.model <- glm(L1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                  family = "binomial", data = df2_int)
+  M.model <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1,
+                 family = "binomial", data = df2_int)
+  ### 1b) fit parametric models of the outcomes given the past
+  Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                         M_smoking + A0_ace:M_smoking,
+                       family = "binomial", data = df2_int)
+  Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                       M_smoking + A0_ace:M_smoking,
+                     family = "gaussian", data = df2_int)
+
+  ## 2) Estimate the joint distribution of time-varying confounders and of the
+  ##    mediator under the counterfactual scenarios setting A0_ace = 1 or 0
+
+  # set the exposure A0_ace to 0 or 1 in two new counterfactual data sets
+  data.A0  <- data.A1 <- df2_int
+  data.A0$A0_ace <- 0
+  data.A1$A0_ace <- 1
+  # simulate L1 values under the counterfactual exposures A0_ace=0 or A0_ace=1
+  p.L1.A0 <- predict(L1.model, newdata = data.A0, type="response")
+  p.L1.A1 <- predict(L1.model, newdata = data.A1, type="response")
+  sim.L1.A0 <- rbinom(n = nrow(df2_int), size = 1, prob = p.L1.A0)
+  sim.L1.A1 <- rbinom(n = nrow(df2_int), size = 1, prob = p.L1.A1)
+
+  # replace L(1) by their counterfactual values in the data under A=0 or A=1
+  data.A0.L <- data.A0
+  data.A1.L <- data.A1
+  data.A0.L$L1 <- sim.L1.A0
+  data.A1.L$L1 <- sim.L1.A1
+
+  # simulate M values under the counterfactual exposures A0_ace=0 or A0_ace=1
+  p.M.A0 <- predict(M.model, newdata = data.A0.L, type="response")
+  p.M.A1 <- predict(M.model, newdata = data.A1.L, type="response")
+  sim.M.A0 <- rbinom(n = nrow(df2_int), size = 1, prob = p.M.A0)
+  sim.M.A1 <- rbinom(n = nrow(df2_int), size = 1, prob = p.M.A1)
+  # permute the n values of the joint mediator to obtain the random distributions
+  # of the mediator: G_{A=0} and G_{A=1}
+  marg.M.A0 <- sample(sim.M.A0, replace = FALSE)
+  marg.M.A1 <- sample(sim.M.A1, replace = FALSE)
+
+  ## 3) Simulate the outcomes Y_{A=0,G_{A=0}}
+  ### 3a) use the previous permutation to replace the mediator
+  ### in the counterfactual data sets for Y_{A=0,G_{A=0}}, Y_{A=1,G_{A=1}} and
+  ### Y_{A=1,G_{A=0}}
+  data.A0.G0 <- data.A0.G1 <- data.A0.L
+  data.A1.G0 <- data.A1.G1 <- data.A1.L
+
+  data.A0.G0$M_smoking <- marg.M.A0
+  # data.A0.G1$M_smoking <- marg.M.A1 # note: this data set will not be useful
+
+  data.A1.G0$M_smoking <- marg.M.A0
+  data.A1.G1$M_smoking <- marg.M.A1
+
+  # simulate the average outcome using the models fitted at step 1)
+  p.death.A1.G1 <- predict(Y.death.model, newdata = data.A1.G1, type="response")
+  p.death.A1.G0 <- predict(Y.death.model, newdata = data.A1.G0, type="response")
+  p.death.A0.G0 <- predict(Y.death.model, newdata = data.A0.G0, type="response")
+
+  m.qol.A1.G1 <- predict(Y.qol.model, newdata = data.A1.G1, type="response")
+  m.qol.A1.G0 <- predict(Y.qol.model, newdata = data.A1.G0, type="response")
+  m.qol.A0.G0 <- predict(Y.qol.model, newdata = data.A0.G0, type="response")
+
+  ## save the results in row k
+  # rNDE = E(Y_{A=1,G_{A=0}}) - E(Y_{A=0,G_{A=0}})
+  # rNIE = E(Y_{A=1,G_{A=1}}) - E(Y_{A=1,G_{A=0}})
+  est[k,"rNDE.death"]<- mean(p.death.A1.G0) - mean(p.death.A0.G0)
+  est[k,"rNIE.death"] <- mean(p.death.A1.G1) - mean(p.death.A1.G0)
+
+  est[k,"rNDE.qol"] <- mean(m.qol.A1.G0) - mean(m.qol.A0.G0)
+  est[k,"rNIE.qol"] <- mean(m.qol.A1.G1) - mean(m.qol.A1.G0)
+}
+
+# take empirical mean of final predicted outcomes
+rNDE.death <- mean(est[,"rNDE.death"])
+rNDE.death
+# [1] 0.07118987
+rNIE.death <- mean(est[,"rNIE.death"])
+rNIE.death
+# [1] 0.0110088
+
+rNDE.qol <- mean(est[,"rNDE.qol"])
+rNDE.qol
+# [1] -6.649923
+rNIE.qol <-  mean(est[,"rNIE.qol"])
+rNIE.qol
+# [1] -1.585373
+```
+95% confidence intervals can be calculated by repeating this algorithm in 500 bootstrap samples of the original data set.
+
+### G-computation by iterative conditional expectation

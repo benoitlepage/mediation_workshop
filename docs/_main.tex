@@ -1197,7 +1197,7 @@ For binary outcomes:
 \hypertarget{ChapGcomp}{%
 \chapter{G-computation}\label{ChapGcomp}}
 
-If we make the assumption that the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2, Figure \ref{fig:figDAGM2}), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the \texttt{df2\_int.csv} data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an \(A \star M\) interaction effect on the outcome.
+If we make the assumption that the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2, Figure \ref{fig:figDAGM2}), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the \texttt{df2\_int.csv} data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that there is an \(A \star M\) interaction effect on the outcome.
 
 G-computation can be used for the estimation of the total effect and two-way decomposition (CDE, marginal and conditional randomized direct and indirect effects).
 
@@ -1613,6 +1613,171 @@ The controlled direct effect \(\text{CDE}_m\) can then be estimated by:
 \section{Estimation of Natural Direct (NDE) and Indirect Effects (NIE)}\label{estimation-of-natural-direct-nde-and-indirect-effects-nie}}
 
 When Natural Direct Effects and Natural Indirect Effects are identifiable (i.e.~making the assumption that the confounder \(L(1)\) of the \(M-Y\) relationship is NOT affected by the exposure \(A\) as in Causal model 1, in Figure \ref{fig:figDAGM1}), estimation are based on traditional regression models as described in chapter \ref{ChapTradRegModels}.
+
+\hypertarget{estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie}{%
+\section{Estimation of ``Marginal'' Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)}\label{estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie}}
+
+When we assume that the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2, Figure \ref{fig:figDAGM2}), an ``interventional analogue'' of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.Lin et al. (\protect\hyperlink{ref-lin2017}{2017}) For these effects, counterfactual scenarios are defined by setting different values for the exposure (\(A = 0\) or \(A=1\)) and random draw in the distribution \(G_{A=a^\prime \mid L(0)}\) of the mediator (conditional on baseline counfounders \(L(0)\)) under the counterfactual scenario setting \(A=a^\prime\).
+
+An Overall (Total) Effect can be defined by the contrast \(\text{OE} = \mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\).
+
+This Overall Effect can be decomposed into the sum of:
+
+\begin{itemize}
+\tightlist
+\item
+  a Marginal Randomised (or Interventional) Direct Effect: \(\text{MRDE}=\mathbb{E}\left[Y_{A=1,G_{A=0\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\)
+\item
+  a Marginal Randomised (or Interventional) Interect Effect: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\)
+\end{itemize}
+
+For this 2-way decomposition, we have to estimate 3 causal quantities: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]\), \(\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\) and \(\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\).
+
+Under the identifiability conditions, in particular:
+
+\begin{itemize}
+\tightlist
+\item
+  no unmeasured exposure-outcome confounding
+\item
+  no unmeasured mediator-outcome confounding
+\item
+  and exposure-mediator confounding
+\end{itemize}
+
+the quantity of \(\mathbb{E}\left[Y_{a,G_{a^\prime\mid L(0)}} \right]\) can be estimated by the g-formula:
+\begin{multline*}
+\mathbb{E}\left[Y_{a,G_{a^\prime\mid L(0)}} \right]=\sum_{l(0),l(1),m} \mathbb{E}\left(Y \mid m,l(1),A=a,l(0),\right) \times P[L(1)=l(1) \mid a,l(0)] \\
+  \times P[M=m \mid a^\prime, l(0)] \times P(L(0)=l(0))
+\end{multline*}
+These causal effects can be estimated by g-computation, IPTW, or TMLE. G-computation approaches are described below.
+
+\hypertarget{parametric-g-computation}{%
+\subsection{Parametric g-computation}\label{parametric-g-computation}}
+
+The estimation using parametric g-computation is described in (\protect\hyperlink{ref-lin2017}{Lin et al. 2017}). The approach is described as an adaptation of the parametric g-computation presented for controlled direct effects, in order to estimate causal quantities \(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\) corresponding to a counterfactual scenario where the exposures is set to \(A=a\) for all individuals and \(M\) is a random draw from the distribution \(G_{a^\prime \mid L(0)}\) of the mediator (conditional on \(L(0)\)) had the exposure been set to \(A=a^\prime\).
+
+Estimation of \(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\) relies on the following steps:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Fit parametric models for the time-varying confounders \(L(1)\), the mediator \(M\) and the outcome \(Y\) given the measured past;
+\item
+  Estimate the joint distribution of time-varying confounders \(L(1)\) and of the mediator (\(M_{G_{A=0}}\) and \(M_{G_{A=1}}\)) under the counterfactual scenarios setting \(A = 1\) or \(A=0\);
+\item
+  Simulate the outcomes \(Y_{A=0,G_{A=0}}\), \(Y_{A=1,G_{A=1}}\) and \(Y_{A=1,G_{A=0}}\) in order to compute the randomized natural direct and indirect effects.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{54321}\NormalTok{)}
+
+\CommentTok{\# steps 1) to 3) will be repeated some fixed number k (for example k=25)}
+\CommentTok{\# we will save the k results in a matrix of k rows and 4 columns for the randomized}
+\CommentTok{\# direct and indirect effects on death (binary) and QoL (continuous outcome)}
+\NormalTok{est }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\AttributeTok{nrow =} \DecValTok{25}\NormalTok{, }\AttributeTok{ncol =} \DecValTok{4}\NormalTok{)}
+\FunctionTok{colnames}\NormalTok{(est) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"rNDE.death"}\NormalTok{, }\StringTok{"rNIE.death"}\NormalTok{, }\StringTok{"rNDE.qol"}\NormalTok{, }\StringTok{"rNIE.qol"}\NormalTok{)}
+
+\CommentTok{\# repeat k=25 times the following steps 1) to 3)}
+\ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{25}\NormalTok{) \{}
+  \DocumentationTok{\#\# 1) Fit parametric models for the time{-}varying confounders L(1), the mediator M}
+  \DocumentationTok{\#\#    and the outcome Y}
+  \DocumentationTok{\#\#\# 1a) fit parametric models of the confounders and mediators given the past}
+\NormalTok{  L1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                  \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{  M.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1,}
+                 \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+  \DocumentationTok{\#\#\# 1b) fit parametric models of the outcomes given the past}
+\NormalTok{  Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                         M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+                       \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{  Y.qol.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                       M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+                     \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+  \DocumentationTok{\#\# 2) Estimate the joint distribution of time{-}varying confounders and of the}
+  \DocumentationTok{\#\#    mediator under the counterfactual scenarios setting A0\_ace = 1 or 0}
+
+  \CommentTok{\# set the exposure A0\_ace to 0 or 1 in two new counterfactual data sets}
+\NormalTok{  data.A0  }\OtherTok{\textless{}{-}}\NormalTok{ data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
+\NormalTok{  data.A0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{  data.A1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
+  \CommentTok{\# simulate L1 values under the counterfactual exposures A0\_ace=0 or A0\_ace=1}
+\NormalTok{  p.L1.A0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model, }\AttributeTok{newdata =}\NormalTok{ data.A0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  p.L1.A1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  sim.L1.A0 }\OtherTok{\textless{}{-}} \FunctionTok{rbinom}\NormalTok{(}\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(df2\_int), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{prob =}\NormalTok{ p.L1.A0)}
+\NormalTok{  sim.L1.A1 }\OtherTok{\textless{}{-}} \FunctionTok{rbinom}\NormalTok{(}\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(df2\_int), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{prob =}\NormalTok{ p.L1.A1)}
+
+  \CommentTok{\# replace L(1) by their counterfactual values in the data under A=0 or A=1}
+\NormalTok{  data.A0.L }\OtherTok{\textless{}{-}}\NormalTok{ data.A0}
+\NormalTok{  data.A1.L }\OtherTok{\textless{}{-}}\NormalTok{ data.A1}
+\NormalTok{  data.A0.L}\SpecialCharTok{$}\NormalTok{L1 }\OtherTok{\textless{}{-}}\NormalTok{ sim.L1.A0}
+\NormalTok{  data.A1.L}\SpecialCharTok{$}\NormalTok{L1 }\OtherTok{\textless{}{-}}\NormalTok{ sim.L1.A1}
+
+  \CommentTok{\# simulate M values under the counterfactual exposures A0\_ace=0 or A0\_ace=1}
+\NormalTok{  p.M.A0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M.model, }\AttributeTok{newdata =}\NormalTok{ data.A0.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  p.M.A1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M.model, }\AttributeTok{newdata =}\NormalTok{ data.A1.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  sim.M.A0 }\OtherTok{\textless{}{-}} \FunctionTok{rbinom}\NormalTok{(}\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(df2\_int), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{prob =}\NormalTok{ p.M.A0)}
+\NormalTok{  sim.M.A1 }\OtherTok{\textless{}{-}} \FunctionTok{rbinom}\NormalTok{(}\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(df2\_int), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{prob =}\NormalTok{ p.M.A1)}
+  \CommentTok{\# permute the n values of the joint mediator to obtain the random distributions}
+  \CommentTok{\# of the mediator: G\_\{A=0\} and G\_\{A=1\}}
+\NormalTok{  marg.M.A0 }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(sim.M.A0, }\AttributeTok{replace =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  marg.M.A1 }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(sim.M.A1, }\AttributeTok{replace =} \ConstantTok{FALSE}\NormalTok{)}
+
+  \DocumentationTok{\#\# 3) Simulate the outcomes Y\_\{A=0,G\_\{A=0\}\}}
+  \DocumentationTok{\#\#\# 3a) use the previous permutation to replace the mediator}
+  \DocumentationTok{\#\#\# in the counterfactual data sets for Y\_\{A=0,G\_\{A=0\}\}, Y\_\{A=1,G\_\{A=1\}\} and}
+  \DocumentationTok{\#\#\# Y\_\{A=1,G\_\{A=0\}\}}
+\NormalTok{  data.A0.G0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0.G1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0.L}
+\NormalTok{  data.A1.G0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1.G1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1.L}
+
+\NormalTok{  data.A0.G0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}}\NormalTok{ marg.M.A0}
+  \CommentTok{\# data.A0.G1$M\_smoking \textless{}{-} marg.M.A1 \# note: this data set will not be useful}
+
+\NormalTok{  data.A1.G0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}}\NormalTok{ marg.M.A0}
+\NormalTok{  data.A1.G1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}}\NormalTok{ marg.M.A1}
+
+  \CommentTok{\# simulate the average outcome using the models fitted at step 1)}
+\NormalTok{  p.death.A1.G1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.A1.G1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  p.death.A1.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.A1.G0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  p.death.A0.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.A0.G0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\NormalTok{  m.qol.A1.G1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.A1.G1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  m.qol.A1.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.A1.G0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{  m.qol.A0.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.A0.G0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+  \DocumentationTok{\#\# save the results in row k}
+  \CommentTok{\# rNDE = E(Y\_\{A=1,G\_\{A=0\}\}) {-} E(Y\_\{A=0,G\_\{A=0\}\})}
+  \CommentTok{\# rNIE = E(Y\_\{A=1,G\_\{A=1\}\}) {-} E(Y\_\{A=1,G\_\{A=0\}\})}
+\NormalTok{  est[k,}\StringTok{"rNDE.death"}\NormalTok{]}\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(p.death.A1.G0) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(p.death.A0.G0)}
+\NormalTok{  est[k,}\StringTok{"rNIE.death"}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(p.death.A1.G1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(p.death.A1.G0)}
+
+\NormalTok{  est[k,}\StringTok{"rNDE.qol"}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(m.qol.A1.G0) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(m.qol.A0.G0)}
+\NormalTok{  est[k,}\StringTok{"rNIE.qol"}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(m.qol.A1.G1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(m.qol.A1.G0)}
+\NormalTok{\}}
+
+\CommentTok{\# take empirical mean of final predicted outcomes}
+\NormalTok{rNDE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(est[,}\StringTok{"rNDE.death"}\NormalTok{])}
+\NormalTok{rNDE.death}
+\CommentTok{\# [1] 0.07118987}
+\NormalTok{rNIE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(est[,}\StringTok{"rNIE.death"}\NormalTok{])}
+\NormalTok{rNIE.death}
+\CommentTok{\# [1] 0.0110088}
+
+\NormalTok{rNDE.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(est[,}\StringTok{"rNDE.qol"}\NormalTok{])}
+\NormalTok{rNDE.qol}
+\CommentTok{\# [1] {-}6.649923}
+\NormalTok{rNIE.qol }\OtherTok{\textless{}{-}}  \FunctionTok{mean}\NormalTok{(est[,}\StringTok{"rNIE.qol"}\NormalTok{])}
+\NormalTok{rNIE.qol}
+\CommentTok{\# [1] {-}1.585373}
+\end{Highlighting}
+\end{Shaded}
+
+95\% confidence intervals can be calculated by repeating this algorithm in 500 bootstrap samples of the original data set.
+
+\hypertarget{g-computation-by-iterative-conditional-expectation}{%
+\subsection{G-computation by iterative conditional expectation}\label{g-computation-by-iterative-conditional-expectation}}
 
 \hypertarget{ChapIptw}{%
 \chapter{Inverse Probability of Treatment Weighting (IPTW)}\label{ChapIptw}}
@@ -6352,6 +6517,9 @@ Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. {
 \leavevmode\vadjust pre{\hypertarget{ref-vanderlaan_book2011}{}}%
 Laan, Mark J. van der, and Sherri Rose. 2011. \emph{Targeted Learning: Causal Inference for Observational and Experimental Data.} 1st ed. Springer Series in Statistics. New York, NY: Springer.
 
+\leavevmode\vadjust pre{\hypertarget{ref-lin2017}{}}%
+Lin, Sheng-Hsuan, Jessica Young, Roger Logan, Eric J. Tchetgen Tchetgen, and Tyler J VanderWeele. 2017. {``Parametric Mediational g-Formula Approach to Mediation Analysis with Time-Varying Exposures, Mediators, and Confounders.''} \emph{Epidemiology} 28 (2): 266--74.
+
 \leavevmode\vadjust pre{\hypertarget{ref-naimi2020}{}}%
 Naimi, Ashley I, and Brian W Whitcomb. 2020. {``Estimating Risk Ratios and Risk Differences Using Regression.''} \emph{American Journal of Epidemiology} 189 (6): 508--10.
 
@@ -6372,6 +6540,9 @@ VanderWeele, Tyler J. 2009. {``Marginal Structural Models for the Estimation of 
 
 \leavevmode\vadjust pre{\hypertarget{ref-vanderweele2014}{}}%
 ---------. 2014. {``A Unification of Mediation and Interaction. A 4-Way Decomposition.''} \emph{Epidemiology} 25: 749--61.
+
+\leavevmode\vadjust pre{\hypertarget{ref-vanderweele2016}{}}%
+VanderWeele, Tyler J, and Eric J Tchetgen Tchetgen. 2017. {``Mediation Analysis with Time Varying Exposures and Mediators.''} \emph{J R Stat Soc Series B Stat Methodol} 79 (3): 917--38.
 
 \end{CSLReferences}
 

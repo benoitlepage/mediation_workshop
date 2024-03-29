@@ -31,6 +31,9 @@ ChapGcomp-CDE-param
 ChapGcomp-CDE-ICE
 sequential-g-estimator
 estimation-of-natural-direct-nde-and-indirect-effects-nie
+estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie
+parametric-g-computation
+g-computation-by-iterative-conditional-expectation
 ChapIptw
 estimation-of-the-average-total-effect
 iptw-for-the-ate

@@ -187,6 +187,11 @@ div.csl-indent {
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
 <li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a></li>
+<li class="chapter" data-level="6.4" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.4</b> Estimation of “Marginal” Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)</a>
+<ul>
+<li class="chapter" data-level="6.4.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.4.1</b> Parametric g-computation</a></li>
+<li class="chapter" data-level="6.4.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation"><i class="fa fa-check"></i><b>6.4.2</b> G-computation by iterative conditional expectation</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="ChapIptw.html"><a href="ChapIptw.html"><i class="fa fa-check"></i><b>7</b> Inverse Probability of Treatment Weighting (IPTW)</a>
 <ul>
@@ -284,7 +289,7 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="ChapGcomp" class="section level1 hasAnchor" number="6">
 <h1><span class="header-section-number">Chapter 6</span> G-computation<a href="ChapGcomp.html#ChapGcomp" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>If we make the assumption that the intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is affected by the exposure <span class="math inline">\(A\)</span> (Causal model 2, Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the <code>df2_int.csv</code> data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that their is an <span class="math inline">\(A \star M\)</span> interaction effect on the outcome.</p>
+<p>If we make the assumption that the intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is affected by the exposure <span class="math inline">\(A\)</span> (Causal model 2, Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>), it is necessary to use other methods than traditional regressions models. To illustrate g-computation estimators, we will use the <code>df2_int.csv</code> data set, which was generated from a system corresponding to this assumption. Moreover, we will assume that there is an <span class="math inline">\(A \star M\)</span> interaction effect on the outcome.</p>
 <p>G-computation can be used for the estimation of the total effect and two-way decomposition (CDE, marginal and conditional randomized direct and indirect effects).</p>
 <div id="estimation-of-the-average-total-effect-ate-1" class="section level2 hasAnchor" number="6.1">
 <h2><span class="header-section-number">6.1</span> Estimation of the Average Total Effect (ATE)<a href="ChapGcomp.html#estimation-of-the-average-total-effect-ate-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -623,13 +628,153 @@ Y_{res} = Y - \hat{\gamma}_M M - \hat{\psi}_{A \ast M} \times A \times M
 <div id="estimation-of-natural-direct-nde-and-indirect-effects-nie" class="section level2 hasAnchor" number="6.3">
 <h2><span class="header-section-number">6.3</span> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)<a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>When Natural Direct Effects and Natural Indirect Effects are identifiable (i.e. making the assumption that the confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is NOT affected by the exposure <span class="math inline">\(A\)</span> as in Causal model 1, in Figure <a href="data-sets.html#fig:figDAGM1">3.1</a>), estimation are based on traditional regression models as described in chapter <a href="ChapTradRegModels.html#ChapTradRegModels">5</a>.</p>
+</div>
+<div id="estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie" class="section level2 hasAnchor" number="6.4">
+<h2><span class="header-section-number">6.4</span> Estimation of “Marginal” Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)<a href="ChapGcomp.html#estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>When we assume that the intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is affected by the exposure <span class="math inline">\(A\)</span> (Causal model 2, Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>), an “interventional analogue” of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.<span class="citation">Lin et al. (<a href="#ref-lin2017">2017</a>)</span> For these effects, counterfactual scenarios are defined by setting different values for the exposure (<span class="math inline">\(A = 0\)</span> or <span class="math inline">\(A=1\)</span>) and random draw in the distribution <span class="math inline">\(G_{A=a^\prime \mid L(0)}\)</span> of the mediator (conditional on baseline counfounders <span class="math inline">\(L(0)\)</span>) under the counterfactual scenario setting <span class="math inline">\(A=a^\prime\)</span>.</p>
+<p>An Overall (Total) Effect can be defined by the contrast <span class="math inline">\(\text{OE} = \mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\)</span>.</p>
+<p>This Overall Effect can be decomposed into the sum of:</p>
+<ul>
+<li>a Marginal Randomised (or Interventional) Direct Effect: <span class="math inline">\(\text{MRDE}=\mathbb{E}\left[Y_{A=1,G_{A=0\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\)</span></li>
+<li>a Marginal Randomised (or Interventional) Interect Effect: <span class="math inline">\(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\)</span></li>
+</ul>
+<p>For this 2-way decomposition, we have to estimate 3 causal quantities: <span class="math inline">\(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]\)</span>, <span class="math inline">\(\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\)</span> and <span class="math inline">\(\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\)</span>.</p>
+<p>Under the identifiability conditions, in particular:</p>
+<ul>
+<li>no unmeasured exposure-outcome confounding</li>
+<li>no unmeasured mediator-outcome confounding</li>
+<li>and exposure-mediator confounding</li>
+</ul>
+<p>the quantity of <span class="math inline">\(\mathbb{E}\left[Y_{a,G_{a^\prime\mid L(0)}} \right]\)</span> can be estimated by the g-formula:
+<span class="math display">\[\begin{multline*}
+\mathbb{E}\left[Y_{a,G_{a^\prime\mid L(0)}} \right]=\sum_{l(0),l(1),m} \mathbb{E}\left(Y \mid m,l(1),A=a,l(0),\right) \times P[L(1)=l(1) \mid a,l(0)] \\
+  \times P[M=m \mid a^\prime, l(0)] \times P(L(0)=l(0))
+\end{multline*}\]</span>
+These causal effects can be estimated by g-computation, IPTW, or TMLE. G-computation approaches are described below.</p>
+<div id="parametric-g-computation" class="section level3 hasAnchor" number="6.4.1">
+<h3><span class="header-section-number">6.4.1</span> Parametric g-computation<a href="ChapGcomp.html#parametric-g-computation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The estimation using parametric g-computation is described in <span class="citation">(<a href="#ref-lin2017">Lin et al. 2017</a>)</span>. The approach is described as an adaptation of the parametric g-computation presented for controlled direct effects, in order to estimate causal quantities <span class="math inline">\(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\)</span> corresponding to a counterfactual scenario where the exposures is set to <span class="math inline">\(A=a\)</span> for all individuals and <span class="math inline">\(M\)</span> is a random draw from the distribution <span class="math inline">\(G_{a^\prime \mid L(0)}\)</span> of the mediator (conditional on <span class="math inline">\(L(0)\)</span>) had the exposure been set to <span class="math inline">\(A=a^\prime\)</span>.</p>
+<p>Estimation of <span class="math inline">\(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\)</span> relies on the following steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Fit parametric models for the time-varying confounders <span class="math inline">\(L(1)\)</span>, the mediator <span class="math inline">\(M\)</span> and the outcome <span class="math inline">\(Y\)</span> given the measured past;</p></li>
+<li><p>Estimate the joint distribution of time-varying confounders <span class="math inline">\(L(1)\)</span> and of the mediator (<span class="math inline">\(M_{G_{A=0}}\)</span> and <span class="math inline">\(M_{G_{A=1}}\)</span>) under the counterfactual scenarios setting <span class="math inline">\(A = 1\)</span> or <span class="math inline">\(A=0\)</span>;</p></li>
+<li><p>Simulate the outcomes <span class="math inline">\(Y_{A=0,G_{A=0}}\)</span>, <span class="math inline">\(Y_{A=1,G_{A=1}}\)</span> and <span class="math inline">\(Y_{A=1,G_{A=0}}\)</span> in order to compute the randomized natural direct and indirect effects.</p></li>
+</ol>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="ChapGcomp.html#cb23-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
+<span id="cb23-2"><a href="ChapGcomp.html#cb23-2" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="ChapGcomp.html#cb23-3" tabindex="-1"></a><span class="co"># steps 1) to 3) will be repeated some fixed number k (for example k=25)</span></span>
+<span id="cb23-4"><a href="ChapGcomp.html#cb23-4" tabindex="-1"></a><span class="co"># we will save the k results in a matrix of k rows and 4 columns for the randomized</span></span>
+<span id="cb23-5"><a href="ChapGcomp.html#cb23-5" tabindex="-1"></a><span class="co"># direct and indirect effects on death (binary) and QoL (continuous outcome)</span></span>
+<span id="cb23-6"><a href="ChapGcomp.html#cb23-6" tabindex="-1"></a>est <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="at">nrow =</span> <span class="dv">25</span>, <span class="at">ncol =</span> <span class="dv">4</span>)</span>
+<span id="cb23-7"><a href="ChapGcomp.html#cb23-7" tabindex="-1"></a><span class="fu">colnames</span>(est) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;rNDE.death&quot;</span>, <span class="st">&quot;rNIE.death&quot;</span>, <span class="st">&quot;rNDE.qol&quot;</span>, <span class="st">&quot;rNIE.qol&quot;</span>)</span>
+<span id="cb23-8"><a href="ChapGcomp.html#cb23-8" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="ChapGcomp.html#cb23-9" tabindex="-1"></a><span class="co"># repeat k=25 times the following steps 1) to 3)</span></span>
+<span id="cb23-10"><a href="ChapGcomp.html#cb23-10" tabindex="-1"></a><span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>) {</span>
+<span id="cb23-11"><a href="ChapGcomp.html#cb23-11" tabindex="-1"></a>  <span class="do">## 1) Fit parametric models for the time-varying confounders L(1), the mediator M</span></span>
+<span id="cb23-12"><a href="ChapGcomp.html#cb23-12" tabindex="-1"></a>  <span class="do">##    and the outcome Y</span></span>
+<span id="cb23-13"><a href="ChapGcomp.html#cb23-13" tabindex="-1"></a>  <span class="do">### 1a) fit parametric models of the confounders and mediators given the past</span></span>
+<span id="cb23-14"><a href="ChapGcomp.html#cb23-14" tabindex="-1"></a>  L1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(L1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb23-15"><a href="ChapGcomp.html#cb23-15" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb23-16"><a href="ChapGcomp.html#cb23-16" tabindex="-1"></a>  M.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1,</span>
+<span id="cb23-17"><a href="ChapGcomp.html#cb23-17" tabindex="-1"></a>                 <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb23-18"><a href="ChapGcomp.html#cb23-18" tabindex="-1"></a>  <span class="do">### 1b) fit parametric models of the outcomes given the past</span></span>
+<span id="cb23-19"><a href="ChapGcomp.html#cb23-19" tabindex="-1"></a>  Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb23-20"><a href="ChapGcomp.html#cb23-20" tabindex="-1"></a>                         M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb23-21"><a href="ChapGcomp.html#cb23-21" tabindex="-1"></a>                       <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb23-22"><a href="ChapGcomp.html#cb23-22" tabindex="-1"></a>  Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb23-23"><a href="ChapGcomp.html#cb23-23" tabindex="-1"></a>                       M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb23-24"><a href="ChapGcomp.html#cb23-24" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb23-25"><a href="ChapGcomp.html#cb23-25" tabindex="-1"></a></span>
+<span id="cb23-26"><a href="ChapGcomp.html#cb23-26" tabindex="-1"></a>  <span class="do">## 2) Estimate the joint distribution of time-varying confounders and of the</span></span>
+<span id="cb23-27"><a href="ChapGcomp.html#cb23-27" tabindex="-1"></a>  <span class="do">##    mediator under the counterfactual scenarios setting A0_ace = 1 or 0</span></span>
+<span id="cb23-28"><a href="ChapGcomp.html#cb23-28" tabindex="-1"></a></span>
+<span id="cb23-29"><a href="ChapGcomp.html#cb23-29" tabindex="-1"></a>  <span class="co"># set the exposure A0_ace to 0 or 1 in two new counterfactual data sets</span></span>
+<span id="cb23-30"><a href="ChapGcomp.html#cb23-30" tabindex="-1"></a>  data.A0  <span class="ot">&lt;-</span> data.A1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb23-31"><a href="ChapGcomp.html#cb23-31" tabindex="-1"></a>  data.A0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb23-32"><a href="ChapGcomp.html#cb23-32" tabindex="-1"></a>  data.A1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb23-33"><a href="ChapGcomp.html#cb23-33" tabindex="-1"></a>  <span class="co"># simulate L1 values under the counterfactual exposures A0_ace=0 or A0_ace=1</span></span>
+<span id="cb23-34"><a href="ChapGcomp.html#cb23-34" tabindex="-1"></a>  p.L1.A0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.model, <span class="at">newdata =</span> data.A0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-35"><a href="ChapGcomp.html#cb23-35" tabindex="-1"></a>  p.L1.A1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.model, <span class="at">newdata =</span> data.A1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-36"><a href="ChapGcomp.html#cb23-36" tabindex="-1"></a>  sim.L1.A0 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A0)</span>
+<span id="cb23-37"><a href="ChapGcomp.html#cb23-37" tabindex="-1"></a>  sim.L1.A1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A1)</span>
+<span id="cb23-38"><a href="ChapGcomp.html#cb23-38" tabindex="-1"></a></span>
+<span id="cb23-39"><a href="ChapGcomp.html#cb23-39" tabindex="-1"></a>  <span class="co"># replace L(1) by their counterfactual values in the data under A=0 or A=1</span></span>
+<span id="cb23-40"><a href="ChapGcomp.html#cb23-40" tabindex="-1"></a>  data.A0.L <span class="ot">&lt;-</span> data.A0</span>
+<span id="cb23-41"><a href="ChapGcomp.html#cb23-41" tabindex="-1"></a>  data.A1.L <span class="ot">&lt;-</span> data.A1</span>
+<span id="cb23-42"><a href="ChapGcomp.html#cb23-42" tabindex="-1"></a>  data.A0.L<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A0</span>
+<span id="cb23-43"><a href="ChapGcomp.html#cb23-43" tabindex="-1"></a>  data.A1.L<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A1</span>
+<span id="cb23-44"><a href="ChapGcomp.html#cb23-44" tabindex="-1"></a></span>
+<span id="cb23-45"><a href="ChapGcomp.html#cb23-45" tabindex="-1"></a>  <span class="co"># simulate M values under the counterfactual exposures A0_ace=0 or A0_ace=1</span></span>
+<span id="cb23-46"><a href="ChapGcomp.html#cb23-46" tabindex="-1"></a>  p.M.A0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(M.model, <span class="at">newdata =</span> data.A0.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-47"><a href="ChapGcomp.html#cb23-47" tabindex="-1"></a>  p.M.A1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(M.model, <span class="at">newdata =</span> data.A1.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-48"><a href="ChapGcomp.html#cb23-48" tabindex="-1"></a>  sim.M.A0 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.M.A0)</span>
+<span id="cb23-49"><a href="ChapGcomp.html#cb23-49" tabindex="-1"></a>  sim.M.A1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.M.A1)</span>
+<span id="cb23-50"><a href="ChapGcomp.html#cb23-50" tabindex="-1"></a>  <span class="co"># permute the n values of the joint mediator to obtain the random distributions</span></span>
+<span id="cb23-51"><a href="ChapGcomp.html#cb23-51" tabindex="-1"></a>  <span class="co"># of the mediator: G_{A=0} and G_{A=1}</span></span>
+<span id="cb23-52"><a href="ChapGcomp.html#cb23-52" tabindex="-1"></a>  marg.M.A0 <span class="ot">&lt;-</span> <span class="fu">sample</span>(sim.M.A0, <span class="at">replace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb23-53"><a href="ChapGcomp.html#cb23-53" tabindex="-1"></a>  marg.M.A1 <span class="ot">&lt;-</span> <span class="fu">sample</span>(sim.M.A1, <span class="at">replace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb23-54"><a href="ChapGcomp.html#cb23-54" tabindex="-1"></a></span>
+<span id="cb23-55"><a href="ChapGcomp.html#cb23-55" tabindex="-1"></a>  <span class="do">## 3) Simulate the outcomes Y_{A=0,G_{A=0}}</span></span>
+<span id="cb23-56"><a href="ChapGcomp.html#cb23-56" tabindex="-1"></a>  <span class="do">### 3a) use the previous permutation to replace the mediator</span></span>
+<span id="cb23-57"><a href="ChapGcomp.html#cb23-57" tabindex="-1"></a>  <span class="do">### in the counterfactual data sets for Y_{A=0,G_{A=0}}, Y_{A=1,G_{A=1}} and</span></span>
+<span id="cb23-58"><a href="ChapGcomp.html#cb23-58" tabindex="-1"></a>  <span class="do">### Y_{A=1,G_{A=0}}</span></span>
+<span id="cb23-59"><a href="ChapGcomp.html#cb23-59" tabindex="-1"></a>  data.A0.G0 <span class="ot">&lt;-</span> data.A0.G1 <span class="ot">&lt;-</span> data.A0.L</span>
+<span id="cb23-60"><a href="ChapGcomp.html#cb23-60" tabindex="-1"></a>  data.A1.G0 <span class="ot">&lt;-</span> data.A1.G1 <span class="ot">&lt;-</span> data.A1.L</span>
+<span id="cb23-61"><a href="ChapGcomp.html#cb23-61" tabindex="-1"></a></span>
+<span id="cb23-62"><a href="ChapGcomp.html#cb23-62" tabindex="-1"></a>  data.A0.G0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> marg.M.A0</span>
+<span id="cb23-63"><a href="ChapGcomp.html#cb23-63" tabindex="-1"></a>  <span class="co"># data.A0.G1$M_smoking &lt;- marg.M.A1 # note: this data set will not be useful</span></span>
+<span id="cb23-64"><a href="ChapGcomp.html#cb23-64" tabindex="-1"></a></span>
+<span id="cb23-65"><a href="ChapGcomp.html#cb23-65" tabindex="-1"></a>  data.A1.G0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> marg.M.A0</span>
+<span id="cb23-66"><a href="ChapGcomp.html#cb23-66" tabindex="-1"></a>  data.A1.G1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> marg.M.A1</span>
+<span id="cb23-67"><a href="ChapGcomp.html#cb23-67" tabindex="-1"></a></span>
+<span id="cb23-68"><a href="ChapGcomp.html#cb23-68" tabindex="-1"></a>  <span class="co"># simulate the average outcome using the models fitted at step 1)</span></span>
+<span id="cb23-69"><a href="ChapGcomp.html#cb23-69" tabindex="-1"></a>  p.death.A1.G1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1.G1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-70"><a href="ChapGcomp.html#cb23-70" tabindex="-1"></a>  p.death.A1.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1.G0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-71"><a href="ChapGcomp.html#cb23-71" tabindex="-1"></a>  p.death.A0.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0.G0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-72"><a href="ChapGcomp.html#cb23-72" tabindex="-1"></a></span>
+<span id="cb23-73"><a href="ChapGcomp.html#cb23-73" tabindex="-1"></a>  m.qol.A1.G1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.G1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-74"><a href="ChapGcomp.html#cb23-74" tabindex="-1"></a>  m.qol.A1.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.G0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-75"><a href="ChapGcomp.html#cb23-75" tabindex="-1"></a>  m.qol.A0.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A0.G0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb23-76"><a href="ChapGcomp.html#cb23-76" tabindex="-1"></a></span>
+<span id="cb23-77"><a href="ChapGcomp.html#cb23-77" tabindex="-1"></a>  <span class="do">## save the results in row k</span></span>
+<span id="cb23-78"><a href="ChapGcomp.html#cb23-78" tabindex="-1"></a>  <span class="co"># rNDE = E(Y_{A=1,G_{A=0}}) - E(Y_{A=0,G_{A=0}})</span></span>
+<span id="cb23-79"><a href="ChapGcomp.html#cb23-79" tabindex="-1"></a>  <span class="co"># rNIE = E(Y_{A=1,G_{A=1}}) - E(Y_{A=1,G_{A=0}})</span></span>
+<span id="cb23-80"><a href="ChapGcomp.html#cb23-80" tabindex="-1"></a>  est[k,<span class="st">&quot;rNDE.death&quot;</span>]<span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.G0) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A0.G0)</span>
+<span id="cb23-81"><a href="ChapGcomp.html#cb23-81" tabindex="-1"></a>  est[k,<span class="st">&quot;rNIE.death&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.G1) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A1.G0)</span>
+<span id="cb23-82"><a href="ChapGcomp.html#cb23-82" tabindex="-1"></a></span>
+<span id="cb23-83"><a href="ChapGcomp.html#cb23-83" tabindex="-1"></a>  est[k,<span class="st">&quot;rNDE.qol&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">mean</span>(m.qol.A1.G0) <span class="sc">-</span> <span class="fu">mean</span>(m.qol.A0.G0)</span>
+<span id="cb23-84"><a href="ChapGcomp.html#cb23-84" tabindex="-1"></a>  est[k,<span class="st">&quot;rNIE.qol&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">mean</span>(m.qol.A1.G1) <span class="sc">-</span> <span class="fu">mean</span>(m.qol.A1.G0)</span>
+<span id="cb23-85"><a href="ChapGcomp.html#cb23-85" tabindex="-1"></a>}</span>
+<span id="cb23-86"><a href="ChapGcomp.html#cb23-86" tabindex="-1"></a></span>
+<span id="cb23-87"><a href="ChapGcomp.html#cb23-87" tabindex="-1"></a><span class="co"># take empirical mean of final predicted outcomes</span></span>
+<span id="cb23-88"><a href="ChapGcomp.html#cb23-88" tabindex="-1"></a>rNDE.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(est[,<span class="st">&quot;rNDE.death&quot;</span>])</span>
+<span id="cb23-89"><a href="ChapGcomp.html#cb23-89" tabindex="-1"></a>rNDE.death</span>
+<span id="cb23-90"><a href="ChapGcomp.html#cb23-90" tabindex="-1"></a><span class="co"># [1] 0.07118987</span></span>
+<span id="cb23-91"><a href="ChapGcomp.html#cb23-91" tabindex="-1"></a>rNIE.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(est[,<span class="st">&quot;rNIE.death&quot;</span>])</span>
+<span id="cb23-92"><a href="ChapGcomp.html#cb23-92" tabindex="-1"></a>rNIE.death</span>
+<span id="cb23-93"><a href="ChapGcomp.html#cb23-93" tabindex="-1"></a><span class="co"># [1] 0.0110088</span></span>
+<span id="cb23-94"><a href="ChapGcomp.html#cb23-94" tabindex="-1"></a></span>
+<span id="cb23-95"><a href="ChapGcomp.html#cb23-95" tabindex="-1"></a>rNDE.qol <span class="ot">&lt;-</span> <span class="fu">mean</span>(est[,<span class="st">&quot;rNDE.qol&quot;</span>])</span>
+<span id="cb23-96"><a href="ChapGcomp.html#cb23-96" tabindex="-1"></a>rNDE.qol</span>
+<span id="cb23-97"><a href="ChapGcomp.html#cb23-97" tabindex="-1"></a><span class="co"># [1] -6.649923</span></span>
+<span id="cb23-98"><a href="ChapGcomp.html#cb23-98" tabindex="-1"></a>rNIE.qol <span class="ot">&lt;-</span>  <span class="fu">mean</span>(est[,<span class="st">&quot;rNIE.qol&quot;</span>])</span>
+<span id="cb23-99"><a href="ChapGcomp.html#cb23-99" tabindex="-1"></a>rNIE.qol</span>
+<span id="cb23-100"><a href="ChapGcomp.html#cb23-100" tabindex="-1"></a><span class="co"># [1] -1.585373</span></span></code></pre></div>
+<p>95% confidence intervals can be calculated by repeating this algorithm in 500 bootstrap samples of the original data set.</p>
+</div>
+<div id="g-computation-by-iterative-conditional-expectation" class="section level3 hasAnchor" number="6.4.2">
+<h3><span class="header-section-number">6.4.2</span> G-computation by iterative conditional expectation<a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 
+</div>
 </div>
 </div>
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-daniel2013" class="csl-entry">
 Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. <span>“Methods for Dealing with Time-Dependent Confounding.”</span> <em>Statistics in Medicine</em> 32 (9): 1584–1618.
+</div>
+<div id="ref-lin2017" class="csl-entry">
+Lin, Sheng-Hsuan, Jessica Young, Roger Logan, Eric J. Tchetgen Tchetgen, and Tyler J VanderWeele. 2017. <span>“Parametric Mediational g-Formula Approach to Mediation Analysis with Time-Varying Exposures, Mediators, and Confounders.”</span> <em>Epidemiology</em> 28 (2): 266–74.
 </div>
 <div id="ref-robins1986" class="csl-entry">
 Robins, James. 1986. <span>“A New Approach to Causal Inference in Mortality Studies with a Sustained Exposure Period—Application to Control of the Healthy Worker Survivor Effect.”</span> <em>Mathematical Modelling</em> 7 (9): 1393–1512.
