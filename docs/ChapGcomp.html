@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-03-29" />
+<meta name="date" content="2024-04-02" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -506,6 +506,7 @@ div.csl-indent {
 \hat{\Psi}^{\text{CDE}_m}_{\text{gcomp}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\overline{Q}}_{L(1)}(A=1)_i - \hat{\overline{Q}}_{L(1)}(A=0)_i \right]
 \end{equation}\]</span></p></li>
 </ol>
+<p>Note that G-computation by iterative expectation is preferable if the set of intermediate confounders <span class="math inline">\(L(1)\)</span> is high-dimensional as we only need to fit 1 model by counterfactual scenario (for a whole set of <span class="math inline">\(L(1)\)</span> variables) in the procedure described below, whereas at least 1 model by <span class="math inline">\(L(1)\)</span> variable and by counterfactual scenario are needed with parametric g-computation.</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="ChapGcomp.html#cb21-1" tabindex="-1"></a><span class="do">## 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
 <span id="cb21-2"><a href="ChapGcomp.html#cb21-2" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
 <span id="cb21-3"><a href="ChapGcomp.html#cb21-3" tabindex="-1"></a>                                  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
@@ -657,14 +658,14 @@ These causal effects can be estimated by g-computation, IPTW, or TMLE. G-computa
 <p>Estimation of <span class="math inline">\(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\)</span> relies on the following steps:</p>
 <ol style="list-style-type: decimal">
 <li><p>Fit parametric models for the time-varying confounders <span class="math inline">\(L(1)\)</span>, the mediator <span class="math inline">\(M\)</span> and the outcome <span class="math inline">\(Y\)</span> given the measured past;</p></li>
-<li><p>Estimate the joint distribution of time-varying confounders <span class="math inline">\(L(1)\)</span> and of the mediator (<span class="math inline">\(M_{G_{A=0}}\)</span> and <span class="math inline">\(M_{G_{A=1}}\)</span>) under the counterfactual scenarios setting <span class="math inline">\(A = 1\)</span> or <span class="math inline">\(A=0\)</span>;</p></li>
+<li><p>Estimate the joint distribution of time-varying confounders (<span class="math inline">\(L(1)_{A=1}\)</span> and <span class="math inline">\(L(1)_{A=0}\)</span>) and of the mediator (<span class="math inline">\(M_{G_{A=0}}\)</span> and <span class="math inline">\(M_{G_{A=1}}\)</span>) under the counterfactual scenarios setting <span class="math inline">\(A = 1\)</span> or <span class="math inline">\(A=0\)</span>;</p></li>
 <li><p>Simulate the outcomes <span class="math inline">\(Y_{A=0,G_{A=0}}\)</span>, <span class="math inline">\(Y_{A=1,G_{A=1}}\)</span> and <span class="math inline">\(Y_{A=1,G_{A=0}}\)</span> in order to compute the randomized natural direct and indirect effects.</p></li>
 </ol>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="ChapGcomp.html#cb23-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
 <span id="cb23-2"><a href="ChapGcomp.html#cb23-2" tabindex="-1"></a></span>
 <span id="cb23-3"><a href="ChapGcomp.html#cb23-3" tabindex="-1"></a><span class="co"># steps 1) to 3) will be repeated some fixed number k (for example k=25)</span></span>
 <span id="cb23-4"><a href="ChapGcomp.html#cb23-4" tabindex="-1"></a><span class="co"># we will save the k results in a matrix of k rows and 4 columns for the randomized</span></span>
-<span id="cb23-5"><a href="ChapGcomp.html#cb23-5" tabindex="-1"></a><span class="co"># direct and indirect effects on death (binary) and QoL (continuous outcome)</span></span>
+<span id="cb23-5"><a href="ChapGcomp.html#cb23-5" tabindex="-1"></a><span class="co"># direct and indirect effects on death (binary) and QoL (continuous) outcomes</span></span>
 <span id="cb23-6"><a href="ChapGcomp.html#cb23-6" tabindex="-1"></a>est <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="at">nrow =</span> <span class="dv">25</span>, <span class="at">ncol =</span> <span class="dv">4</span>)</span>
 <span id="cb23-7"><a href="ChapGcomp.html#cb23-7" tabindex="-1"></a><span class="fu">colnames</span>(est) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;rNDE.death&quot;</span>, <span class="st">&quot;rNIE.death&quot;</span>, <span class="st">&quot;rNDE.qol&quot;</span>, <span class="st">&quot;rNIE.qol&quot;</span>)</span>
 <span id="cb23-8"><a href="ChapGcomp.html#cb23-8" tabindex="-1"></a></span>
@@ -760,10 +761,148 @@ These causal effects can be estimated by g-computation, IPTW, or TMLE. G-computa
 <span id="cb23-98"><a href="ChapGcomp.html#cb23-98" tabindex="-1"></a>rNIE.qol <span class="ot">&lt;-</span>  <span class="fu">mean</span>(est[,<span class="st">&quot;rNIE.qol&quot;</span>])</span>
 <span id="cb23-99"><a href="ChapGcomp.html#cb23-99" tabindex="-1"></a>rNIE.qol</span>
 <span id="cb23-100"><a href="ChapGcomp.html#cb23-100" tabindex="-1"></a><span class="co"># [1] -1.585373</span></span></code></pre></div>
-<p>95% confidence intervals can be calculated by repeating this algorithm in 500 bootstrap samples of the original data set.</p>
+<p>In this example,</p>
+<ul>
+<li>the marginal “randomized” Natural Direct and Indirect effect on death are a <span class="math inline">\(MRDE \approx +7.1\%\)</span> and <span class="math inline">\(MRIE \approx +1.1\%\)</span>;</li>
+<li>the marginal “randomized” Natural Direct and Indirect effect on quality of life are a <span class="math inline">\(MRDE \approx -6.6\)</span> and <span class="math inline">\(MRIE \approx -1.6\)</span>;</li>
+</ul>
+<p>95% confidence intervals can be calculated by repeating the algorithm in 500 bootstrap samples of the original data set.</p>
 </div>
 <div id="g-computation-by-iterative-conditional-expectation" class="section level3 hasAnchor" number="6.4.2">
 <h3><span class="header-section-number">6.4.2</span> G-computation by iterative conditional expectation<a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We describe below the g-computation algorithm which is used in the <a href="https://github.com/romainkp/stremr">stremr package</a> (“Streamlined Causal Inference for Static, Dynamic and Stochastic Regimes in Longitudinal Data”).</p>
+<p>Note that G-computation by iterative expectation is preferable if the set of intermediate confounders <span class="math inline">\(L(1)\)</span> is high-dimensional as we only need to fit 1 model by counterfactual scenario in the procedure described below (whatever the dimensionaly of the set <span class="math inline">\(L(1)\)</span>), whereas at least 1 model by <span class="math inline">\(L(1)\)</span> variable and by counterfactual scenario are needed with parametric g-computation.</p>
+<p>The following 4 steps are applied:</p>
+<ol style="list-style-type: decimal">
+<li><p>Fit a parametric model for the mediator conditional on <span class="math inline">\(A\)</span> and <span class="math inline">\(L(0)\)</span>. This model will be used to predict the probabilities <span class="math inline">\(G_{A=0|L(0)}=P(M=1|A=0,L(0))\)</span> and <span class="math inline">\(G_{A=1|L(0)}=P(M=1|A=1,L(0))\)</span> under the counterfactual scenarios setting <span class="math inline">\(A=0\)</span> and <span class="math inline">\(A=1\)</span>.</p></li>
+<li><p>Fit parametric models for the outcome <span class="math inline">\(Y\)</span> given the past and generate predicted values <span class="math inline">\(\bar{Q}_{L(2)}(M=0)\)</span> and <span class="math inline">\(\bar{Q}_{L(2)}(M=1)\)</span> by evaluating the regression setting the mediator value to <span class="math inline">\(M=0\)</span> or to <span class="math inline">\(M=1\)</span>.</p></li>
+</ol>
+<p>Then calculate a weighted sum of the predicted <span class="math inline">\(\bar{Q}_{L(2)}(M)\)</span>, with weights given by <span class="math inline">\(G_{A=1|L(0)}\)</span> or <span class="math inline">\(G_{A=0|L(0)}\)</span>:
+<span class="math display">\[\begin{align*}
+  \bar{Q}_{L(2),G_{A=0 \mid L(0)}} &amp;= \bar{Q}_{L(2)}(M=1) \times G_{A=0|L(0)} + \bar{Q}_{L(2)}(M=0) \times \left[1 - G_{A=0 \mid L(0)} \right] \\
+  \bar{Q}_{L(2),G_{A=1 \mid L(0)}} &amp;= \bar{Q}_{L(2)}(M=1) \times G_{A=1|L(0)} + \bar{Q}_{L(2)}(M=0) \times \left[1 - G_{A=1 \mid L(0)} \right]
+\end{align*}\]</span></p>
+<ol start="3" style="list-style-type: decimal">
+<li><p>Fit parametric models for the predicted values <span class="math inline">\(\bar{Q}_{L(2),G_{A=a \mid L(0)}}\)</span> conditional on the exposure <span class="math inline">\(A\)</span> and baseline confounders <span class="math inline">\(L(0)\)</span>, and generate predicted values <span class="math inline">\(\bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=0)\)</span>, <span class="math inline">\(\bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=1)\)</span> and <span class="math inline">\(\bar{Q}_{L(1),G_{A=1 \mid L(0)}}(A=1)\)</span>.</p></li>
+<li><p>Estimate the marginal randomized natural direct and indirect effects, using the means of the <span class="math inline">\(\bar{Q}_{L(1),G_{A=a^\prime \mid L(0)}}(A=a)\)</span> calculated at the previous step</p></li>
+</ol>
+<p><span class="math display">\[\begin{align*}
+\text{MRDE}_\text{ICE.gcomp} &amp;= \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=1) \right] - \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=0) \right] \\
+\text{MRIE}_\text{ICE.gcomp} &amp;= \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=1 \mid L(0)}}(A=1) \right] - \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=1) \right] \\
+\end{align*}\]</span></p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="ChapGcomp.html#cb24-1" tabindex="-1"></a><span class="do">## 1) Fit a parametric model for the mediator conditional on A and L(0)</span></span>
+<span id="cb24-2"><a href="ChapGcomp.html#cb24-2" tabindex="-1"></a><span class="do">##    and generate predicted values by evaluating the regression setting the exposure</span></span>
+<span id="cb24-3"><a href="ChapGcomp.html#cb24-3" tabindex="-1"></a><span class="do">##    value to A=0 or A=1</span></span>
+<span id="cb24-4"><a href="ChapGcomp.html#cb24-4" tabindex="-1"></a><span class="do">### 1a) Fit parametric models for the mediator M, conditional on the exposure A and</span></span>
+<span id="cb24-5"><a href="ChapGcomp.html#cb24-5" tabindex="-1"></a><span class="do">###    baseline confounder Pr(M=1|A,L(0)) (but not conditional on L(1))</span></span>
+<span id="cb24-6"><a href="ChapGcomp.html#cb24-6" tabindex="-1"></a>G.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-7"><a href="ChapGcomp.html#cb24-7" tabindex="-1"></a>               <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-8"><a href="ChapGcomp.html#cb24-8" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="ChapGcomp.html#cb24-9" tabindex="-1"></a><span class="do">### 1b) generate predicted probabilites by evaluating the regression setting the</span></span>
+<span id="cb24-10"><a href="ChapGcomp.html#cb24-10" tabindex="-1"></a><span class="do">###     exposure value to A=0 or to A=1</span></span>
+<span id="cb24-11"><a href="ChapGcomp.html#cb24-11" tabindex="-1"></a><span class="co"># create datasets corresponding to the counterfactual scenarios setting A=0 and A=1</span></span>
+<span id="cb24-12"><a href="ChapGcomp.html#cb24-12" tabindex="-1"></a>data.Ais0  <span class="ot">&lt;-</span> data.Ais1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb24-13"><a href="ChapGcomp.html#cb24-13" tabindex="-1"></a>data.Ais0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb24-14"><a href="ChapGcomp.html#cb24-14" tabindex="-1"></a>data.Ais1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb24-15"><a href="ChapGcomp.html#cb24-15" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="ChapGcomp.html#cb24-16" tabindex="-1"></a><span class="co"># estimate G_{A=0|L(0)} = Pr(M=1|A=0,L(0)) and G_{A=1|L(0)} = Pr(M=1|A=1,L(0))</span></span>
+<span id="cb24-17"><a href="ChapGcomp.html#cb24-17" tabindex="-1"></a>G.Ais0.L0 <span class="ot">&lt;-</span><span class="fu">predict</span>(G.model, <span class="at">newdata =</span> data.Ais0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-18"><a href="ChapGcomp.html#cb24-18" tabindex="-1"></a>G.Ais1.L0 <span class="ot">&lt;-</span><span class="fu">predict</span>(G.model, <span class="at">newdata =</span> data.Ais1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-19"><a href="ChapGcomp.html#cb24-19" tabindex="-1"></a></span>
+<span id="cb24-20"><a href="ChapGcomp.html#cb24-20" tabindex="-1"></a><span class="do">## 2) Fit parametric models for the observed data for the outcome Y given the past</span></span>
+<span id="cb24-21"><a href="ChapGcomp.html#cb24-21" tabindex="-1"></a><span class="do">##    and generate predicted values by evaluating the regression setting the mediator</span></span>
+<span id="cb24-22"><a href="ChapGcomp.html#cb24-22" tabindex="-1"></a><span class="do">##    value to M=0 or to M=1</span></span>
+<span id="cb24-23"><a href="ChapGcomp.html#cb24-23" tabindex="-1"></a><span class="do">##    then calculate a weighted sum of the predicted Q.L2, with weights given by G</span></span>
+<span id="cb24-24"><a href="ChapGcomp.html#cb24-24" tabindex="-1"></a><span class="do">### 2a) fit parametric models of the outcomes given the past</span></span>
+<span id="cb24-25"><a href="ChapGcomp.html#cb24-25" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb24-26"><a href="ChapGcomp.html#cb24-26" tabindex="-1"></a>                       M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb24-27"><a href="ChapGcomp.html#cb24-27" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-28"><a href="ChapGcomp.html#cb24-28" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb24-29"><a href="ChapGcomp.html#cb24-29" tabindex="-1"></a>                     M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb24-30"><a href="ChapGcomp.html#cb24-30" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-31"><a href="ChapGcomp.html#cb24-31" tabindex="-1"></a></span>
+<span id="cb24-32"><a href="ChapGcomp.html#cb24-32" tabindex="-1"></a><span class="do">### 2b) generate predicted values by evaluating the regression setting the mediator</span></span>
+<span id="cb24-33"><a href="ChapGcomp.html#cb24-33" tabindex="-1"></a><span class="do">###     value to M=0 or to M=1</span></span>
+<span id="cb24-34"><a href="ChapGcomp.html#cb24-34" tabindex="-1"></a>data.Mis0  <span class="ot">&lt;-</span> data.Mis1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb24-35"><a href="ChapGcomp.html#cb24-35" tabindex="-1"></a>data.Mis0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb24-36"><a href="ChapGcomp.html#cb24-36" tabindex="-1"></a>data.Mis1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb24-37"><a href="ChapGcomp.html#cb24-37" tabindex="-1"></a></span>
+<span id="cb24-38"><a href="ChapGcomp.html#cb24-38" tabindex="-1"></a>Q.L2.death.Mis0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-39"><a href="ChapGcomp.html#cb24-39" tabindex="-1"></a>Q.L2.death.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-40"><a href="ChapGcomp.html#cb24-40" tabindex="-1"></a></span>
+<span id="cb24-41"><a href="ChapGcomp.html#cb24-41" tabindex="-1"></a>Q.L2.qol.Mis0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-42"><a href="ChapGcomp.html#cb24-42" tabindex="-1"></a>Q.L2.qol.Mis1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-43"><a href="ChapGcomp.html#cb24-43" tabindex="-1"></a></span>
+<span id="cb24-44"><a href="ChapGcomp.html#cb24-44" tabindex="-1"></a><span class="do">### 2c) calculate a weighted sum of the predicted Q.L2, with weights given by the</span></span>
+<span id="cb24-45"><a href="ChapGcomp.html#cb24-45" tabindex="-1"></a><span class="do">###     predicted probabilities of the mediator G_{A=0|L(0)} or G_{A=1|L(0)}</span></span>
+<span id="cb24-46"><a href="ChapGcomp.html#cb24-46" tabindex="-1"></a><span class="co"># calculate barQ.L2_{A=0,G_{A=0|L(0)}}</span></span>
+<span id="cb24-47"><a href="ChapGcomp.html#cb24-47" tabindex="-1"></a>Q.L2.death.A0.G0 <span class="ot">&lt;-</span> Q.L2.death.Mis1 <span class="sc">*</span> G.Ais0.L0 <span class="sc">+</span> Q.L2.death.Mis0 <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> G.Ais0.L0)</span>
+<span id="cb24-48"><a href="ChapGcomp.html#cb24-48" tabindex="-1"></a>Q.L2.qol.A0.G0 <span class="ot">&lt;-</span> Q.L2.qol.Mis1 <span class="sc">*</span> G.Ais0.L0 <span class="sc">+</span> Q.L2.qol.Mis0 <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> G.Ais0.L0)</span>
+<span id="cb24-49"><a href="ChapGcomp.html#cb24-49" tabindex="-1"></a></span>
+<span id="cb24-50"><a href="ChapGcomp.html#cb24-50" tabindex="-1"></a><span class="co"># calculate barQ.L2_{A=1,G_{A=0|L(0)}}</span></span>
+<span id="cb24-51"><a href="ChapGcomp.html#cb24-51" tabindex="-1"></a><span class="co"># note at this step, quantities are similar to barQ.L2_{A=0,G_{A=0|L(0)}}</span></span>
+<span id="cb24-52"><a href="ChapGcomp.html#cb24-52" tabindex="-1"></a>Q.L2.death.A1.G0 <span class="ot">&lt;-</span> Q.L2.death.Mis1 <span class="sc">*</span> G.Ais0.L0 <span class="sc">+</span> Q.L2.death.Mis0 <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> G.Ais0.L0)</span>
+<span id="cb24-53"><a href="ChapGcomp.html#cb24-53" tabindex="-1"></a>Q.L2.qol.A1.G0 <span class="ot">&lt;-</span> Q.L2.qol.Mis1 <span class="sc">*</span> G.Ais0.L0 <span class="sc">+</span> Q.L2.qol.Mis0 <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> G.Ais0.L0)</span>
+<span id="cb24-54"><a href="ChapGcomp.html#cb24-54" tabindex="-1"></a></span>
+<span id="cb24-55"><a href="ChapGcomp.html#cb24-55" tabindex="-1"></a><span class="co"># calculate barQ.L2_{A=1,G_{A=1|L(0)}}</span></span>
+<span id="cb24-56"><a href="ChapGcomp.html#cb24-56" tabindex="-1"></a>Q.L2.death.A1.G1 <span class="ot">&lt;-</span> Q.L2.death.Mis1 <span class="sc">*</span> G.Ais1.L0 <span class="sc">+</span> Q.L2.death.Mis0 <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> G.Ais1.L0)</span>
+<span id="cb24-57"><a href="ChapGcomp.html#cb24-57" tabindex="-1"></a>Q.L2.qol.A1.G1 <span class="ot">&lt;-</span> Q.L2.qol.Mis1 <span class="sc">*</span> G.Ais1.L0 <span class="sc">+</span> Q.L2.qol.Mis0 <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> G.Ais1.L0)</span>
+<span id="cb24-58"><a href="ChapGcomp.html#cb24-58" tabindex="-1"></a></span>
+<span id="cb24-59"><a href="ChapGcomp.html#cb24-59" tabindex="-1"></a><span class="do">## 3) Fit parametric models for the predicted values barQ.L2 conditional on the</span></span>
+<span id="cb24-60"><a href="ChapGcomp.html#cb24-60" tabindex="-1"></a><span class="do">##    exposure A and baseline confounders L(0)</span></span>
+<span id="cb24-61"><a href="ChapGcomp.html#cb24-61" tabindex="-1"></a><span class="do">##    and generate predicted values by evaluating the regression setting the exposure</span></span>
+<span id="cb24-62"><a href="ChapGcomp.html#cb24-62" tabindex="-1"></a><span class="do">##    value to A=0 or to A=1</span></span>
+<span id="cb24-63"><a href="ChapGcomp.html#cb24-63" tabindex="-1"></a><span class="do">### 3a) Fit parametric models for the predicted values barQ.L2 conditional on the</span></span>
+<span id="cb24-64"><a href="ChapGcomp.html#cb24-64" tabindex="-1"></a><span class="do">###    exposure A and baseline confounders L(0)</span></span>
+<span id="cb24-65"><a href="ChapGcomp.html#cb24-65" tabindex="-1"></a>L1.death.A0.G0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A0.G0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-66"><a href="ChapGcomp.html#cb24-66" tabindex="-1"></a>                            <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-67"><a href="ChapGcomp.html#cb24-67" tabindex="-1"></a>L1.death.A1.G0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A1.G0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-68"><a href="ChapGcomp.html#cb24-68" tabindex="-1"></a>                            <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-69"><a href="ChapGcomp.html#cb24-69" tabindex="-1"></a>L1.death.A1.G1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A1.G1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-70"><a href="ChapGcomp.html#cb24-70" tabindex="-1"></a>                            <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-71"><a href="ChapGcomp.html#cb24-71" tabindex="-1"></a></span>
+<span id="cb24-72"><a href="ChapGcomp.html#cb24-72" tabindex="-1"></a>L1.qol.A0.G0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A0.G0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-73"><a href="ChapGcomp.html#cb24-73" tabindex="-1"></a>                          <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-74"><a href="ChapGcomp.html#cb24-74" tabindex="-1"></a>L1.qol.A1.G0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A1.G0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-75"><a href="ChapGcomp.html#cb24-75" tabindex="-1"></a>                          <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-76"><a href="ChapGcomp.html#cb24-76" tabindex="-1"></a>L1.qol.A1.G1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A1.G1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb24-77"><a href="ChapGcomp.html#cb24-77" tabindex="-1"></a>                          <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb24-78"><a href="ChapGcomp.html#cb24-78" tabindex="-1"></a></span>
+<span id="cb24-79"><a href="ChapGcomp.html#cb24-79" tabindex="-1"></a><span class="do">### 3b) generate predicted values by evaluating the regression setting the exposure</span></span>
+<span id="cb24-80"><a href="ChapGcomp.html#cb24-80" tabindex="-1"></a><span class="do">###     value to A=0 or to A=1</span></span>
+<span id="cb24-81"><a href="ChapGcomp.html#cb24-81" tabindex="-1"></a>Q.L1.death.A0.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0.G0.model, <span class="at">newdata =</span> data.Ais0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-82"><a href="ChapGcomp.html#cb24-82" tabindex="-1"></a>Q.L1.death.A1.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1.G0.model, <span class="at">newdata =</span> data.Ais1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-83"><a href="ChapGcomp.html#cb24-83" tabindex="-1"></a>Q.L1.death.A1.G1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1.G1.model, <span class="at">newdata =</span> data.Ais1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-84"><a href="ChapGcomp.html#cb24-84" tabindex="-1"></a></span>
+<span id="cb24-85"><a href="ChapGcomp.html#cb24-85" tabindex="-1"></a>Q.L1.qol.A0.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A0.G0.model, <span class="at">newdata =</span> data.Ais0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-86"><a href="ChapGcomp.html#cb24-86" tabindex="-1"></a>Q.L1.qol.A1.G0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A1.G0.model, <span class="at">newdata =</span> data.Ais1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-87"><a href="ChapGcomp.html#cb24-87" tabindex="-1"></a>Q.L1.qol.A1.G1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A1.G1.model, <span class="at">newdata =</span> data.Ais1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb24-88"><a href="ChapGcomp.html#cb24-88" tabindex="-1"></a></span>
+<span id="cb24-89"><a href="ChapGcomp.html#cb24-89" tabindex="-1"></a><span class="do">## 4) Estimate the marginal randomized natural direct and indirect effects</span></span>
+<span id="cb24-90"><a href="ChapGcomp.html#cb24-90" tabindex="-1"></a><span class="do">### MRDE = E(Y_{A=1,G_{A=0|L(0)}}) - E(Y_{A=0,G_{A=0|L(0)}})</span></span>
+<span id="cb24-91"><a href="ChapGcomp.html#cb24-91" tabindex="-1"></a><span class="do">### MRIE = E(Y_{A=1,G_{A=1|L(0)}}) - E(Y_{A=1,G_{A=0|L(0)}})</span></span>
+<span id="cb24-92"><a href="ChapGcomp.html#cb24-92" tabindex="-1"></a></span>
+<span id="cb24-93"><a href="ChapGcomp.html#cb24-93" tabindex="-1"></a><span class="do">### for deaths:</span></span>
+<span id="cb24-94"><a href="ChapGcomp.html#cb24-94" tabindex="-1"></a>MRDE.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.A1.G0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.A0.G0)</span>
+<span id="cb24-95"><a href="ChapGcomp.html#cb24-95" tabindex="-1"></a>MRDE.death</span>
+<span id="cb24-96"><a href="ChapGcomp.html#cb24-96" tabindex="-1"></a><span class="co"># [1] 0.0714693</span></span>
+<span id="cb24-97"><a href="ChapGcomp.html#cb24-97" tabindex="-1"></a>MRIE.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.A1.G1) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.A1.G0)</span>
+<span id="cb24-98"><a href="ChapGcomp.html#cb24-98" tabindex="-1"></a>MRIE.death</span>
+<span id="cb24-99"><a href="ChapGcomp.html#cb24-99" tabindex="-1"></a><span class="co"># [1] 0.01130057</span></span>
+<span id="cb24-100"><a href="ChapGcomp.html#cb24-100" tabindex="-1"></a></span>
+<span id="cb24-101"><a href="ChapGcomp.html#cb24-101" tabindex="-1"></a><span class="do">### for quality of life</span></span>
+<span id="cb24-102"><a href="ChapGcomp.html#cb24-102" tabindex="-1"></a>MRDE.qol <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.qol.A1.G0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.qol.A0.G0)</span>
+<span id="cb24-103"><a href="ChapGcomp.html#cb24-103" tabindex="-1"></a>MRDE.qol</span>
+<span id="cb24-104"><a href="ChapGcomp.html#cb24-104" tabindex="-1"></a><span class="co"># [1] -6.719193</span></span>
+<span id="cb24-105"><a href="ChapGcomp.html#cb24-105" tabindex="-1"></a>MRIE.qol <span class="ot">&lt;-</span>  <span class="fu">mean</span>(Q.L1.qol.A1.G1) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.qol.A1.G0)</span>
+<span id="cb24-106"><a href="ChapGcomp.html#cb24-106" tabindex="-1"></a>MRIE.qol</span>
+<span id="cb24-107"><a href="ChapGcomp.html#cb24-107" tabindex="-1"></a><span class="co"># [1] -1.624645</span></span></code></pre></div>
+<p>Results are close to the estimations obtained previously with parametric g-computation.</p>
+<ul>
+<li>the marginal “randomized” Natural Direct and Indirect effect on death are a <span class="math inline">\(MRDE \approx +7.1\%\)</span> and <span class="math inline">\(MRIE \approx +1.1\%\)</span>;</li>
+<li>the marginal “randomized” Natural Direct and Indirect effect on quality of life are a <span class="math inline">\(MRDE \approx -6.6\)</span> and <span class="math inline">\(MRIE \approx -1.6\)</span>;</li>
+</ul>
+<p>95% confidence intervals can be calculated by bootstrap.</p>
 
 </div>
 </div>

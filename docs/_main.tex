@@ -141,7 +141,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-03-29}
+\date{2024-04-02}
 
 \begin{document}
 \maketitle
@@ -1474,6 +1474,8 @@ The following steps describe the implementation of the g-computation estimator b
   \end{equation}
 \end{enumerate}
 
+Note that G-computation by iterative expectation is preferable if the set of intermediate confounders \(L(1)\) is high-dimensional as we only need to fit 1 model by counterfactual scenario (for a whole set of \(L(1)\) variables) in the procedure described below, whereas at least 1 model by \(L(1)\) variable and by counterfactual scenario are needed with parametric g-computation.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \DocumentationTok{\#\# 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)}
@@ -1664,7 +1666,7 @@ Estimation of \(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\) relies on the followin
 \item
   Fit parametric models for the time-varying confounders \(L(1)\), the mediator \(M\) and the outcome \(Y\) given the measured past;
 \item
-  Estimate the joint distribution of time-varying confounders \(L(1)\) and of the mediator (\(M_{G_{A=0}}\) and \(M_{G_{A=1}}\)) under the counterfactual scenarios setting \(A = 1\) or \(A=0\);
+  Estimate the joint distribution of time-varying confounders (\(L(1)_{A=1}\) and \(L(1)_{A=0}\)) and of the mediator (\(M_{G_{A=0}}\) and \(M_{G_{A=1}}\)) under the counterfactual scenarios setting \(A = 1\) or \(A=0\);
 \item
   Simulate the outcomes \(Y_{A=0,G_{A=0}}\), \(Y_{A=1,G_{A=1}}\) and \(Y_{A=1,G_{A=0}}\) in order to compute the randomized natural direct and indirect effects.
 \end{enumerate}
@@ -1675,7 +1677,7 @@ Estimation of \(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\) relies on the followin
 
 \CommentTok{\# steps 1) to 3) will be repeated some fixed number k (for example k=25)}
 \CommentTok{\# we will save the k results in a matrix of k rows and 4 columns for the randomized}
-\CommentTok{\# direct and indirect effects on death (binary) and QoL (continuous outcome)}
+\CommentTok{\# direct and indirect effects on death (binary) and QoL (continuous) outcomes}
 \NormalTok{est }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\AttributeTok{nrow =} \DecValTok{25}\NormalTok{, }\AttributeTok{ncol =} \DecValTok{4}\NormalTok{)}
 \FunctionTok{colnames}\NormalTok{(est) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"rNDE.death"}\NormalTok{, }\StringTok{"rNIE.death"}\NormalTok{, }\StringTok{"rNDE.qol"}\NormalTok{, }\StringTok{"rNIE.qol"}\NormalTok{)}
 
@@ -1774,10 +1776,178 @@ Estimation of \(\mathbb{E}(Y_{a,G_{a^\prime\mid L(0)}})\) relies on the followin
 \end{Highlighting}
 \end{Shaded}
 
-95\% confidence intervals can be calculated by repeating this algorithm in 500 bootstrap samples of the original data set.
+In this example,
+
+\begin{itemize}
+\tightlist
+\item
+  the marginal ``randomized'' Natural Direct and Indirect effect on death are a \(MRDE \approx +7.1\%\) and \(MRIE \approx +1.1\%\);
+\item
+  the marginal ``randomized'' Natural Direct and Indirect effect on quality of life are a \(MRDE \approx -6.6\) and \(MRIE \approx -1.6\);
+\end{itemize}
+
+95\% confidence intervals can be calculated by repeating the algorithm in 500 bootstrap samples of the original data set.
 
 \hypertarget{g-computation-by-iterative-conditional-expectation}{%
 \subsection{G-computation by iterative conditional expectation}\label{g-computation-by-iterative-conditional-expectation}}
+
+We describe below the g-computation algorithm which is used in the \href{https://github.com/romainkp/stremr}{stremr package} (``Streamlined Causal Inference for Static, Dynamic and Stochastic Regimes in Longitudinal Data'').
+
+Note that G-computation by iterative expectation is preferable if the set of intermediate confounders \(L(1)\) is high-dimensional as we only need to fit 1 model by counterfactual scenario in the procedure described below (whatever the dimensionaly of the set \(L(1)\)), whereas at least 1 model by \(L(1)\) variable and by counterfactual scenario are needed with parametric g-computation.
+
+The following 4 steps are applied:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Fit a parametric model for the mediator conditional on \(A\) and \(L(0)\). This model will be used to predict the probabilities \(G_{A=0|L(0)}=P(M=1|A=0,L(0))\) and \(G_{A=1|L(0)}=P(M=1|A=1,L(0))\) under the counterfactual scenarios setting \(A=0\) and \(A=1\).
+\item
+  Fit parametric models for the outcome \(Y\) given the past and generate predicted values \(\bar{Q}_{L(2)}(M=0)\) and \(\bar{Q}_{L(2)}(M=1)\) by evaluating the regression setting the mediator value to \(M=0\) or to \(M=1\).
+\end{enumerate}
+
+Then calculate a weighted sum of the predicted \(\bar{Q}_{L(2)}(M)\), with weights given by \(G_{A=1|L(0)}\) or \(G_{A=0|L(0)}\):
+\begin{align*}
+  \bar{Q}_{L(2),G_{A=0 \mid L(0)}} &= \bar{Q}_{L(2)}(M=1) \times G_{A=0|L(0)} + \bar{Q}_{L(2)}(M=0) \times \left[1 - G_{A=0 \mid L(0)} \right] \\
+  \bar{Q}_{L(2),G_{A=1 \mid L(0)}} &= \bar{Q}_{L(2)}(M=1) \times G_{A=1|L(0)} + \bar{Q}_{L(2)}(M=0) \times \left[1 - G_{A=1 \mid L(0)} \right]
+\end{align*}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  Fit parametric models for the predicted values \(\bar{Q}_{L(2),G_{A=a \mid L(0)}}\) conditional on the exposure \(A\) and baseline confounders \(L(0)\), and generate predicted values \(\bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=0)\), \(\bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=1)\) and \(\bar{Q}_{L(1),G_{A=1 \mid L(0)}}(A=1)\).
+\item
+  Estimate the marginal randomized natural direct and indirect effects, using the means of the \(\bar{Q}_{L(1),G_{A=a^\prime \mid L(0)}}(A=a)\) calculated at the previous step
+\end{enumerate}
+
+\begin{align*}
+\text{MRDE}_\text{ICE.gcomp} &= \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=1) \right] - \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=0) \right] \\
+\text{MRIE}_\text{ICE.gcomp} &= \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=1 \mid L(0)}}(A=1) \right] - \frac{1}{n} \sum_{i=1}^n \left[ \bar{Q}_{L(1),G_{A=0 \mid L(0)}}(A=1) \right] \\
+\end{align*}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# 1) Fit a parametric model for the mediator conditional on A and L(0)}
+\DocumentationTok{\#\#    and generate predicted values by evaluating the regression setting the exposure}
+\DocumentationTok{\#\#    value to A=0 or A=1}
+\DocumentationTok{\#\#\# 1a) Fit parametric models for the mediator M, conditional on the exposure A and}
+\DocumentationTok{\#\#\#    baseline confounder Pr(M=1|A,L(0)) (but not conditional on L(1))}
+\NormalTok{G.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+               \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\DocumentationTok{\#\#\# 1b) generate predicted probabilites by evaluating the regression setting the}
+\DocumentationTok{\#\#\#     exposure value to A=0 or to A=1}
+\CommentTok{\# create datasets corresponding to the counterfactual scenarios setting A=0 and A=1}
+\NormalTok{data.Ais0  }\OtherTok{\textless{}{-}}\NormalTok{ data.Ais1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
+\NormalTok{data.Ais0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.Ais1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
+
+\CommentTok{\# estimate G\_\{A=0|L(0)\} = Pr(M=1|A=0,L(0)) and G\_\{A=1|L(0)\} = Pr(M=1|A=1,L(0))}
+\NormalTok{G.Ais0.L0 }\OtherTok{\textless{}{-}}\FunctionTok{predict}\NormalTok{(G.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{G.Ais1.L0 }\OtherTok{\textless{}{-}}\FunctionTok{predict}\NormalTok{(G.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\# 2) Fit parametric models for the observed data for the outcome Y given the past}
+\DocumentationTok{\#\#    and generate predicted values by evaluating the regression setting the mediator}
+\DocumentationTok{\#\#    value to M=0 or to M=1}
+\DocumentationTok{\#\#    then calculate a weighted sum of the predicted Q.L2, with weights given by G}
+\DocumentationTok{\#\#\# 2a) fit parametric models of the outcomes given the past}
+\NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                       M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+                     \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{Y.qol.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                     M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+                   \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\DocumentationTok{\#\#\# 2b) generate predicted values by evaluating the regression setting the mediator}
+\DocumentationTok{\#\#\#     value to M=0 or to M=1}
+\NormalTok{data.Mis0  }\OtherTok{\textless{}{-}}\NormalTok{ data.Mis1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
+\NormalTok{data.Mis0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.Mis1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{1}
+
+\NormalTok{Q.L2.death.Mis0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.L2.death.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\NormalTok{Q.L2.qol.Mis0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.L2.qol.Mis1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.qol.model, }\AttributeTok{newdata =}\NormalTok{ data.Mis1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\#\# 2c) calculate a weighted sum of the predicted Q.L2, with weights given by the}
+\DocumentationTok{\#\#\#     predicted probabilities of the mediator G\_\{A=0|L(0)\} or G\_\{A=1|L(0)\}}
+\CommentTok{\# calculate barQ.L2\_\{A=0,G\_\{A=0|L(0)\}\}}
+\NormalTok{Q.L2.death.A0.G0 }\OtherTok{\textless{}{-}}\NormalTok{ Q.L2.death.Mis1 }\SpecialCharTok{*}\NormalTok{ G.Ais0.L0 }\SpecialCharTok{+}\NormalTok{ Q.L2.death.Mis0 }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ G.Ais0.L0)}
+\NormalTok{Q.L2.qol.A0.G0 }\OtherTok{\textless{}{-}}\NormalTok{ Q.L2.qol.Mis1 }\SpecialCharTok{*}\NormalTok{ G.Ais0.L0 }\SpecialCharTok{+}\NormalTok{ Q.L2.qol.Mis0 }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ G.Ais0.L0)}
+
+\CommentTok{\# calculate barQ.L2\_\{A=1,G\_\{A=0|L(0)\}\}}
+\CommentTok{\# note at this step, quantities are similar to barQ.L2\_\{A=0,G\_\{A=0|L(0)\}\}}
+\NormalTok{Q.L2.death.A1.G0 }\OtherTok{\textless{}{-}}\NormalTok{ Q.L2.death.Mis1 }\SpecialCharTok{*}\NormalTok{ G.Ais0.L0 }\SpecialCharTok{+}\NormalTok{ Q.L2.death.Mis0 }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ G.Ais0.L0)}
+\NormalTok{Q.L2.qol.A1.G0 }\OtherTok{\textless{}{-}}\NormalTok{ Q.L2.qol.Mis1 }\SpecialCharTok{*}\NormalTok{ G.Ais0.L0 }\SpecialCharTok{+}\NormalTok{ Q.L2.qol.Mis0 }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ G.Ais0.L0)}
+
+\CommentTok{\# calculate barQ.L2\_\{A=1,G\_\{A=1|L(0)\}\}}
+\NormalTok{Q.L2.death.A1.G1 }\OtherTok{\textless{}{-}}\NormalTok{ Q.L2.death.Mis1 }\SpecialCharTok{*}\NormalTok{ G.Ais1.L0 }\SpecialCharTok{+}\NormalTok{ Q.L2.death.Mis0 }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ G.Ais1.L0)}
+\NormalTok{Q.L2.qol.A1.G1 }\OtherTok{\textless{}{-}}\NormalTok{ Q.L2.qol.Mis1 }\SpecialCharTok{*}\NormalTok{ G.Ais1.L0 }\SpecialCharTok{+}\NormalTok{ Q.L2.qol.Mis0 }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ G.Ais1.L0)}
+
+\DocumentationTok{\#\# 3) Fit parametric models for the predicted values barQ.L2 conditional on the}
+\DocumentationTok{\#\#    exposure A and baseline confounders L(0)}
+\DocumentationTok{\#\#    and generate predicted values by evaluating the regression setting the exposure}
+\DocumentationTok{\#\#    value to A=0 or to A=1}
+\DocumentationTok{\#\#\# 3a) Fit parametric models for the predicted values barQ.L2 conditional on the}
+\DocumentationTok{\#\#\#    exposure A and baseline confounders L(0)}
+\NormalTok{L1.death.A0.G0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.death.A0.G0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{L1.death.A1.G0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.death.A1.G0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{L1.death.A1.G1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.death.A1.G1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\NormalTok{L1.qol.A0.G0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.qol.A0.G0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                          \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{L1.qol.A1.G0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.qol.A1.G0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                          \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{L1.qol.A1.G1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.L2.qol.A1.G1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+                          \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\DocumentationTok{\#\#\# 3b) generate predicted values by evaluating the regression setting the exposure}
+\DocumentationTok{\#\#\#     value to A=0 or to A=1}
+\NormalTok{Q.L1.death.A0.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.death.A0.G0.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.L1.death.A1.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.death.A1.G0.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.L1.death.A1.G1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.death.A1.G1.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\NormalTok{Q.L1.qol.A0.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.qol.A0.G0.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.L1.qol.A1.G0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.qol.A1.G0.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+\NormalTok{Q.L1.qol.A1.G1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.qol.A1.G1.model, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\# 4) Estimate the marginal randomized natural direct and indirect effects}
+\DocumentationTok{\#\#\# MRDE = E(Y\_\{A=1,G\_\{A=0|L(0)\}\}) {-} E(Y\_\{A=0,G\_\{A=0|L(0)\}\})}
+\DocumentationTok{\#\#\# MRIE = E(Y\_\{A=1,G\_\{A=1|L(0)\}\}) {-} E(Y\_\{A=1,G\_\{A=0|L(0)\}\})}
+
+\DocumentationTok{\#\#\# for deaths:}
+\NormalTok{MRDE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q.L1.death.A1.G0) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q.L1.death.A0.G0)}
+\NormalTok{MRDE.death}
+\CommentTok{\# [1] 0.0714693}
+\NormalTok{MRIE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q.L1.death.A1.G1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q.L1.death.A1.G0)}
+\NormalTok{MRIE.death}
+\CommentTok{\# [1] 0.01130057}
+
+\DocumentationTok{\#\#\# for quality of life}
+\NormalTok{MRDE.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q.L1.qol.A1.G0) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q.L1.qol.A0.G0)}
+\NormalTok{MRDE.qol}
+\CommentTok{\# [1] {-}6.719193}
+\NormalTok{MRIE.qol }\OtherTok{\textless{}{-}}  \FunctionTok{mean}\NormalTok{(Q.L1.qol.A1.G1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q.L1.qol.A1.G0)}
+\NormalTok{MRIE.qol}
+\CommentTok{\# [1] {-}1.624645}
+\end{Highlighting}
+\end{Shaded}
+
+Results are close to the estimations obtained previously with parametric g-computation.
+
+\begin{itemize}
+\tightlist
+\item
+  the marginal ``randomized'' Natural Direct and Indirect effect on death are a \(MRDE \approx +7.1\%\) and \(MRIE \approx +1.1\%\);
+\item
+  the marginal ``randomized'' Natural Direct and Indirect effect on quality of life are a \(MRDE \approx -6.6\) and \(MRIE \approx -1.6\);
+\end{itemize}
+
+95\% confidence intervals can be calculated by bootstrap.
 
 \hypertarget{ChapIptw}{%
 \chapter{Inverse Probability of Treatment Weighting (IPTW)}\label{ChapIptw}}

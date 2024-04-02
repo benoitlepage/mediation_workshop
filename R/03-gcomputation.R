@@ -386,3 +386,124 @@ rNIE.qol
 
 # 95% confidence intervals can be calculated by repeating this algorithm in 500
 # bootstrap samples of the original data set.
+
+# ---------------------------------------------------------------------------- #
+# III.2) G-computation by iterative conditional expectation---------------------
+# ---------------------------------------------------------------------------- #
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
+# We apply the g-computation algorithm used in the stremr package
+# http://github.com/osofr/stremr
+
+## The following steps are applied:
+
+## 1) Fit a parametric model for the mediator conditional on A and L(0)
+##    and generate predicted values by evaluating the regression setting the exposure
+##    value to A=0 or A=1
+### 1a) Fit parametric models for the mediator M, conditional on the exposure A and
+###    baseline confounder Pr(M=1|A,L(0)) (but not conditional on L(1))
+G.model <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+               family = "binomial", data = df2_int)
+
+### 1b) generate predicted probabilites by evaluating the regression setting the
+###     exposure value to A=0 or to A=1
+# create datasets corresponding to the counterfactual scenarios setting A=0 and A=1
+data.Ais0  <- data.Ais1 <- df2_int
+data.Ais0$A0_ace <- 0
+data.Ais1$A0_ace <- 1
+
+# estimate G_{A=0|L(0)} = Pr(M=1|A=0,L(0)) and G_{A=1|L(0)} = Pr(M=1|A=1,L(0))
+G.Ais0.L0 <-predict(G.model, newdata = data.Ais0, type="response")
+G.Ais1.L0 <-predict(G.model, newdata = data.Ais1, type="response")
+
+
+## 2) Fit parametric models for the observed data for the outcome Y given the past
+##    and generate predicted values by evaluating the regression setting the mediator
+##    value to M=0 or to M=1
+##    then calculate a weighted sum of the predicted Q.L2, with weights given by G
+### 2a) fit parametric models of the outcomes given the past
+Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                       M_smoking + A0_ace:M_smoking,
+                     family = "binomial", data = df2_int)
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
+                     M_smoking + A0_ace:M_smoking,
+                   family = "gaussian", data = df2_int)
+
+### 2b) generate predicted values by evaluating the regression setting the mediator
+###     value to M=0 or to M=1
+data.Mis0  <- data.Mis1 <- df2_int
+data.Mis0$M_smoking <- 0
+data.Mis1$M_smoking <- 1
+
+Q.L2.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
+Q.L2.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
+
+Q.L2.qol.Mis0 <- predict(Y.qol.model, newdata = data.Mis0, type="response")
+Q.L2.qol.Mis1 <- predict(Y.qol.model, newdata = data.Mis1, type="response")
+
+### 2c) calculate a weighted sum of the predicted Q.L2, with weights given by the
+###     predicted probabilities of the mediator G_{A=0|L(0)} or G_{A=1|L(0)}
+# calculate barQ.L2_{A=0,G_{A=0|L(0)}}
+Q.L2.death.A0.G0 <- Q.L2.death.Mis1 * G.Ais0.L0 + Q.L2.death.Mis0 * (1 - G.Ais0.L0)
+Q.L2.qol.A0.G0 <- Q.L2.qol.Mis1 * G.Ais0.L0 + Q.L2.qol.Mis0 * (1 - G.Ais0.L0)
+
+# calculate barQ.L2_{A=1,G_{A=0|L(0)}}
+# note at this step, quantities are similar to barQ.L2_{A=0,G_{A=0|L(0)}}
+Q.L2.death.A1.G0 <- Q.L2.death.Mis1 * G.Ais0.L0 + Q.L2.death.Mis0 * (1 - G.Ais0.L0)
+Q.L2.qol.A1.G0 <- Q.L2.qol.Mis1 * G.Ais0.L0 + Q.L2.qol.Mis0 * (1 - G.Ais0.L0)
+
+# calculate barQ.L2_{A=1,G_{A=1|L(0)}}
+Q.L2.death.A1.G1 <- Q.L2.death.Mis1 * G.Ais1.L0 + Q.L2.death.Mis0 * (1 - G.Ais1.L0)
+Q.L2.qol.A1.G1 <- Q.L2.qol.Mis1 * G.Ais1.L0 + Q.L2.qol.Mis0 * (1 - G.Ais1.L0)
+
+
+## 3) Fit parametric models for the predicted values barQ.L2 conditional on the
+##    exposure A and baseline confounders L(0)
+##    and generate predicted values by evaluating the regression setting the exposure
+##    value to A=0 or to A=1
+### 3a) Fit parametric models for the predicted values barQ.L2 conditional on the
+###    exposure A and baseline confounders L(0)
+L1.death.A0.G0.model <- glm(Q.L2.death.A0.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                            family = "quasibinomial", data = df2_int)
+L1.death.A1.G0.model <- glm(Q.L2.death.A1.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                            family = "quasibinomial", data = df2_int)
+L1.death.A1.G1.model <- glm(Q.L2.death.A1.G1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                            family = "quasibinomial", data = df2_int)
+
+L1.qol.A0.G0.model <- glm(Q.L2.qol.A0.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                          family = "gaussian", data = df2_int)
+L1.qol.A1.G0.model <- glm(Q.L2.qol.A1.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                          family = "gaussian", data = df2_int)
+L1.qol.A1.G1.model <- glm(Q.L2.qol.A1.G1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                          family = "gaussian", data = df2_int)
+
+### 3b) generate predicted values by evaluating the regression setting the exposure
+###     value to A=0 or to A=1
+Q.L1.death.A0.G0 <- predict(L1.death.A0.G0.model, newdata = data.Ais0, type="response")
+Q.L1.death.A1.G0 <- predict(L1.death.A1.G0.model, newdata = data.Ais1, type="response")
+Q.L1.death.A1.G1 <- predict(L1.death.A1.G1.model, newdata = data.Ais1, type="response")
+
+Q.L1.qol.A0.G0 <- predict(L1.qol.A0.G0.model, newdata = data.Ais0, type="response")
+Q.L1.qol.A1.G0 <- predict(L1.qol.A1.G0.model, newdata = data.Ais1, type="response")
+Q.L1.qol.A1.G1 <- predict(L1.qol.A1.G1.model, newdata = data.Ais1, type="response")
+
+## 4) Estimate the marginal randomized natural direct and indirect effects
+### MRDE = E(Y_{A=1,G_{A=0|L(0)}}) - E(Y_{A=0,G_{A=0|L(0)}})
+### MRIE = E(Y_{A=1,G_{A=1|L(0)}}) - E(Y_{A=1,G_{A=0|L(0)}})
+
+### for deaths:
+MRDE.death <- mean(Q.L1.death.A1.G0) - mean(Q.L1.death.A0.G0)
+MRDE.death
+# [1] 0.0714693
+MRIE.death <- mean(Q.L1.death.A1.G1) - mean(Q.L1.death.A1.G0)
+MRIE.death
+# [1] 0.01130057
+
+### for quality of life
+MRDE.qol <- mean(Q.L1.qol.A1.G0) - mean(Q.L1.qol.A0.G0)
+MRDE.qol
+# [1] -6.719193
+MRIE.qol <-  mean(Q.L1.qol.A1.G1) - mean(Q.L1.qol.A1.G0)
+MRIE.qol
+# [1] -1.624645
