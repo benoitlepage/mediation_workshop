@@ -18,7 +18,7 @@ github-repo: mediation_workshop
 
 # Introduction
 
-The objective of this document is to provide practical examples for the Expanse report _"Mediation Analysis: a Starting Guide for Epidemiologists"_ with R scripts corresponding to the different estimation methods presented in the report.
+The objective of this document is to provide practical examples for the Expanse report [_"Mediation Analysis: a Starting Guide for Epidemiologists"_](https://github.com/benoitlepage/mediation_workshop/blob/main/Expanse%20report/Mediation_BL-2024-03-29.pdf) with R scripts corresponding to the different estimation methods presented in the report.
 
 # Software 
 The examples given in this workshop have been elaborated for R (version 4.2.2).
@@ -48,22 +48,22 @@ Four data sets have been simulated, each containing 7 variables:
 The 4 data generating mechanisms used to simulate the data sets are described in chapter 4 of the _Expanse "Mediation analysis" report_:
 
 - The first two data sets are simulated from a causal model where confounders of the mediator-outcome relationship ($L(1)$) are not affected by the exposure $A$ (Figure \@ref(fig:figDAGM1)),
-    - The data set `df1.csv` is simulated from the statistical model $\mathcal{M}_1$, which does not contain any $A \ast M$ interaction effect on the outcome $Y$.
-    - The data set `df1_int.csv` is simulated from the statistical model $\mathcal{M}_{1 \ast}$, which contains an $A \ast M$ interaction effect on the outcome $Y$.
+    - The data set [`df1.csv`](https://github.com/benoitlepage/mediation_workshop/blob/main/data/df1.csv) is simulated from the statistical model $\mathcal{M}_1$, which does not contain any $A \ast M$ interaction effect on the outcome $Y$.
+    - The data set [`df1_int.csv`](https://github.com/benoitlepage/mediation_workshop/blob/main/data/df1_int.csv) is simulated from the statistical model $\mathcal{M}_{1 \ast}$, which contains an $A \ast M$ interaction effect on the outcome $Y$.
 
 ```{r figDAGM1, echo=FALSE, out.width="50%", fig.align="center", fig.cap="Causal model 1"}
 knitr::include_graphics("./figures/DAG_M1.jpg")    
 ```
 
-- The next two data set are simulated from a causal model where confounders of the mediator-outcome relationship ($L(1)$) are affected by the exposure $A$ (Figure \@ref(fig:figDAGM2)),
-    - The data set `df2.csv` is simulated from the statistical model $\mathcal{M}_2$, which does not contain any $A \ast M$ interaction effect on the outcome $Y$.
-    - The data set `df2_int.csv` is simulated from the statistical model $\mathcal{M}_{2 \ast}$, which contains an $A \ast M$ interaction effect on the outcome $Y$.
+- The next two data sets are simulated from a causal model where confounders of the mediator-outcome relationship ($L(1)$) are affected by the exposure $A$ (Figure \@ref(fig:figDAGM2)),
+    - The data set [`df2.csv`](https://github.com/benoitlepage/mediation_workshop/blob/main/data/df2.csv) is simulated from the statistical model $\mathcal{M}_2$, which does not contain any $A \ast M$ interaction effect on the outcome $Y$.
+    - The data set [`df2_int.csv`](https://github.com/benoitlepage/mediation_workshop/blob/main/data/df2_int.csv) is simulated from the statistical model $\mathcal{M}_{2 \ast}$, which contains an $A \ast M$ interaction effect on the outcome $Y$.
     
 ```{r figDAGM2, echo=FALSE, out.width="50%", fig.align="center", fig.cap="Causal model 2"}
 knitr::include_graphics("./figures/DAG_M2.jpg")    
 ```
 
-The R functions used to simulate these 4 data sets are given in the Appendix A.
+The R functions used to simulate these 4 data sets are given in the Appendix A \@ref(appendix_a).
 
-The Appendix B describes how the true values for the estimands of the causal quantities of interest given in Table 2 of the _Expanse "Mediation analysis" report_ were calculated. Those true values are the theoretical values expected under the causal and statistical models $\mathcal{M}_1$, $\mathcal{M}_{1 \ast}$, $\mathcal{M}_2$ and $\mathcal{M}_{2 \ast}$. Estimations that will be obtained from the data sets `df1.csv`, `df1_int.csv`, `df2.csv`, and `df2_int.csv` will be slightly different from the true values because of sample variability.
+The Appendix B \@ref(appendix_b) describes how the true values for the estimands of the causal quantities of interest given in Table 2 of the _Expanse "Mediation analysis" report_ were calculated. Those true values are the theoretical values expected under the causal and statistical models $\mathcal{M}_1$, $\mathcal{M}_{1 \ast}$, $\mathcal{M}_2$ and $\mathcal{M}_{2 \ast}$. Estimations that will be obtained from the data sets `df1.csv`, `df1_int.csv`, `df2.csv`, and `df2_int.csv` will be slightly different from the true values because of sample variability.
 

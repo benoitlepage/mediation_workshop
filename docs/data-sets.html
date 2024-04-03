@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-04-02" />
+<meta name="date" content="2024-04-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -323,8 +323,8 @@ div.csl-indent {
 <ul>
 <li>The first two data sets are simulated from a causal model where confounders of the mediator-outcome relationship (<span class="math inline">\(L(1)\)</span>) are not affected by the exposure <span class="math inline">\(A\)</span> (Figure <a href="data-sets.html#fig:figDAGM1">3.1</a>),
 <ul>
-<li>The data set <code>df1.csv</code> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_1\)</span>, which does not contain any <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
-<li>The data set <code>df1_int.csv</code> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_{1 \ast}\)</span>, which contains an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
+<li>The data set <a href="https://github.com/benoitlepage/mediation_workshop/blob/main/data/df1.csv"><code>df1.csv</code></a> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_1\)</span>, which does not contain any <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
+<li>The data set <a href="https://github.com/benoitlepage/mediation_workshop/blob/main/data/df1_int.csv"><code>df1_int.csv</code></a> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_{1 \ast}\)</span>, which contains an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
 </ul></li>
 </ul>
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:figDAGM1"></span>
@@ -334,10 +334,10 @@ Figure 3.1: Causal model 1
 </p>
 </div>
 <ul>
-<li>The next two data set are simulated from a causal model where confounders of the mediator-outcome relationship (<span class="math inline">\(L(1)\)</span>) are affected by the exposure <span class="math inline">\(A\)</span> (Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>),
+<li>The next two data sets are simulated from a causal model where confounders of the mediator-outcome relationship (<span class="math inline">\(L(1)\)</span>) are affected by the exposure <span class="math inline">\(A\)</span> (Figure <a href="data-sets.html#fig:figDAGM2">3.2</a>),
 <ul>
-<li>The data set <code>df2.csv</code> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_2\)</span>, which does not contain any <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
-<li>The data set <code>df2_int.csv</code> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_{2 \ast}\)</span>, which contains an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
+<li>The data set <a href="https://github.com/benoitlepage/mediation_workshop/blob/main/data/df2.csv"><code>df2.csv</code></a> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_2\)</span>, which does not contain any <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
+<li>The data set <a href="https://github.com/benoitlepage/mediation_workshop/blob/main/data/df2_int.csv"><code>df2_int.csv</code></a> is simulated from the statistical model <span class="math inline">\(\mathcal{M}_{2 \ast}\)</span>, which contains an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome <span class="math inline">\(Y\)</span>.</li>
 </ul></li>
 </ul>
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:figDAGM2"></span>
@@ -346,8 +346,8 @@ Figure 3.1: Causal model 1
 Figure 3.2: Causal model 2
 </p>
 </div>
-<p>The R functions used to simulate these 4 data sets are given in the Appendix A.</p>
-<p>The Appendix B describes how the true values for the estimands of the causal quantities of interest given in Table 2 of the <em>Expanse “Mediation analysis” report</em> were calculated. Those true values are the theoretical values expected under the causal and statistical models <span class="math inline">\(\mathcal{M}_1\)</span>, <span class="math inline">\(\mathcal{M}_{1 \ast}\)</span>, <span class="math inline">\(\mathcal{M}_2\)</span> and <span class="math inline">\(\mathcal{M}_{2 \ast}\)</span>. Estimations that will be obtained from the data sets <code>df1.csv</code>, <code>df1_int.csv</code>, <code>df2.csv</code>, and <code>df2_int.csv</code> will be slightly different from the true values because of sample variability.</p>
+<p>The R functions used to simulate these 4 data sets are given in the Appendix A @ref(appendix_a).</p>
+<p>The Appendix B @ref(appendix_b) describes how the true values for the estimands of the causal quantities of interest given in Table 2 of the <em>Expanse “Mediation analysis” report</em> were calculated. Those true values are the theoretical values expected under the causal and statistical models <span class="math inline">\(\mathcal{M}_1\)</span>, <span class="math inline">\(\mathcal{M}_{1 \ast}\)</span>, <span class="math inline">\(\mathcal{M}_2\)</span> and <span class="math inline">\(\mathcal{M}_{2 \ast}\)</span>. Estimations that will be obtained from the data sets <code>df1.csv</code>, <code>df1_int.csv</code>, <code>df2.csv</code>, and <code>df2_int.csv</code> will be slightly different from the true values because of sample variability.</p>
 
 </div>
 </div>
