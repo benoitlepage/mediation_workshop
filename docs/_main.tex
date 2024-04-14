@@ -141,7 +141,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-04-03}
+\date{2024-04-14}
 
 \begin{document}
 \maketitle
@@ -281,6 +281,203 @@ The Appendix B @ref(appendix\_b) describes how the true values for the estimands
 
 \hypertarget{ChapBaronKennySem}{%
 \chapter{Baron and Kenny, structural equation models}\label{ChapBaronKennySem}}
+
+The Baron and Kenny approach can be applied if we make the assumption that no confounder of the \(M \rightarrow Y\) relationship is affected by the exposure \(A\). As a consequence we will use the \texttt{df1.csv} data set simulated from the Causal model 1 (Figure \ref{fig:figDAGM1}). We will also assume that there is no \(A \ast M\) interaction effect on the outcome \(Y\) in the following examples. Such interaction effects can be dealt with using traditional regression models in very similar approaches described in chapter \ref{ChapTradRegModels}.
+
+\hypertarget{baron-and-kenny-approach}{%
+\section{Baron and Kenny approach}\label{baron-and-kenny-approach}}
+
+The Baron \& Kenny approach relies on sequential and step-wise estimation of linear regression models:
+
+\begin{itemize}
+\tightlist
+\item
+  A model for the total effect of the exposure \(A\) on the outcome \(Y\) (conditional on baseline confounders \(L(0)\))
+\end{itemize}
+
+\begin{equation*}
+    \mathbb{E}(Y \mid A,L(0)) = \theta_0 + \theta_A A + \theta_{L(0)} L(0)
+  \end{equation*}
+
+\begin{itemize}
+\tightlist
+\item
+  A model to test if the exposure \(A\) has an effect on the mediator \(M\) (conditional on baseline confounders \(L(0)\) of the \(A-M\) relationship)
+\end{itemize}
+
+\begin{equation*}
+    \mathbb{E}(M \mid A,L(0)) = \beta_0 + \beta_A A + \beta_{L(0)} L(0)
+  \end{equation*}
+
+\begin{itemize}
+\tightlist
+\item
+  A model to estimate the direct effect of the exposure \(A\) on the outcome \(Y\) as well as the effect of the mediator \(M\) on the outcome, adjusted for baseline confounders \(L(0)\) and confounders of the \(M-Y\) relationship \(L(1)\)
+\end{itemize}
+
+\begin{equation*}
+    \mathbb{E}(Y \mid A,M,L(1),L(0)) = \gamma_0 + \gamma_A A + \gamma_M M + \gamma_{L(0)} L(0) + \gamma_{L(1)} L(1)
+  \end{equation*}
+
+The total effect is given by the \(\theta_A\) coefficient from the 1st model.
+
+The direct effect is given by the \(\gamma_A\) coefficient from the 3rd model.
+
+The indirect effect can be calculated using:
+
+\begin{itemize}
+\tightlist
+\item
+  the ``difference in coefficient'' method based on the 1st and 3rd models: \(\theta_A - \gamma_A\),
+\item
+  or the ``product of coefficient'' method based on the 2nd and 3rd models: \(\beta_A \times \gamma_M\).
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Model 1 to estimate the total effect:}
+\NormalTok{model.tot.A.QoL }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                      \AttributeTok{data =}\NormalTok{ df1)}
+\FunctionTok{summary}\NormalTok{(model.tot.A.QoL)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)            71.8820     0.2155 333.565  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                 {-}5.0961     0.3486 {-}14.617  \textless{} 2e{-}16 *** \textless{}{-} Total effect}
+\CommentTok{\#   L0\_male                {-}1.1486     0.2194  {-}5.235 1.68e{-}07 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv  {-}3.4441     0.2295 {-}15.005  \textless{} 2e{-}16 ***}
+
+\CommentTok{\# The total effect of ACE on Quality of life is approximately equal to {-}5.1,}
+\CommentTok{\# given by the A0\_ace coefficient:}
+\NormalTok{model.tot.A.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# {-}5.096057}
+
+\DocumentationTok{\#\# Model 2 to estimate the effect of the exposure on the mediator}
+\DocumentationTok{\#\# because the mediator is binary, we might want to use a logistic or probit regression}
+\DocumentationTok{\#\# for example}
+\NormalTok{logit.model.A.M }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                       \AttributeTok{data =}\NormalTok{ df1, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(logit.model.A.M)}
+\CommentTok{\# effects estimated on the logit scale:}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error z value Pr(\textgreater{}|z|)}
+\CommentTok{\#   (Intercept)           {-}1.27152    0.04584 {-}27.736  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                 0.56168    0.06537   8.592  \textless{} 2e{-}16 *** \textless{}{-} effect of A on M}
+\CommentTok{\#   L0\_male                0.25455    0.04425   5.753 8.77e{-}09 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv  0.32683    0.04731   6.908 4.91e{-}12 ***}
+\FunctionTok{exp}\NormalTok{(}\FunctionTok{coefficients}\NormalTok{(logit.model.A.M)[}\StringTok{"A0\_ace"}\NormalTok{])}
+\CommentTok{\# Odds ratio = 1.753609  for the effect of ACE on the mediator (probability of smoking)}
+
+\DocumentationTok{\#\# Model 3 to estimate the direct effect of the exposure (conditional on the outcome) and}
+\DocumentationTok{\#\# the effect of M on Y, adjusted for confounders of the A{-}Y and M{-}Y relationships}
+\NormalTok{model.A.M.QoL }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                    \AttributeTok{data =}\NormalTok{ df1)}
+\FunctionTok{summary}\NormalTok{(model.A.M.QoL)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)            74.7858     0.2130 351.178  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                 {-}3.9650     0.3212 {-}12.345  \textless{} 2e{-}16 *** \textless{}{-} Direct effect}
+\CommentTok{\#   M\_smoking              {-}8.7138     0.2221 {-}39.237  \textless{} 2e{-}16 *** \textless{}{-} effect of M on Y}
+\CommentTok{\#   L1                     {-}3.4252     0.2212 {-}15.483  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male                {-}0.7193     0.2017  {-}3.566 0.000364 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv  {-}2.8876     0.2112 {-}13.674  \textless{} 2e{-}16 ***}
+
+\CommentTok{\# The direct effect is approximately {-}4.0 given by the A0\_ace coefficient}
+\NormalTok{model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# {-}3.965038}
+
+\DocumentationTok{\#\# Following the Baron \& Kenny Steps, we would conclude that :}
+\CommentTok{\# {-} There is a significant total effect of ACEs on Quality of Life (Model 1)}
+\CommentTok{\# {-} There is a significant effect of ACEs on the mediator (smoking) (Model 2)}
+\CommentTok{\# {-} There is a significant effect of the mediator (smoking) on Qol (model 3)}
+\CommentTok{\# {-} The direct effect is significantly non{-}null}
+\CommentTok{\# =\textgreater{} Conclusion: Smoking partially mediates the relationship between ACEs and QoL}
+
+\DocumentationTok{\#\#\# Estimation of the indirect effect:}
+\DocumentationTok{\#\#\# We can apply the difference in coefficient method to estimate the indirect effect:}
+\DocumentationTok{\#\#\# substract the direct effect from the Total effect:}
+\NormalTok{ind.effect.dif.meth }\OtherTok{\textless{}{-}}\NormalTok{ (model.tot.A.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{{-}}
+\NormalTok{                          model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{])}
+
+\CommentTok{\# {-}1.131019}
+\CommentTok{\# the indirect effect is approximately {-}1.1}
+\CommentTok{\# The confidence interval of the indirect effect can be computed by bootstrap.}
+
+\CommentTok{\# Because the mediator is binary and we applied a logistic regression for Model 2,}
+\CommentTok{\# we cannot apply the product of coefficients combining a coefficient from}
+\CommentTok{\# Model 2 (logit scale) and from Model 3 (difference scale)}
+
+\DocumentationTok{\#\#\# Model 2bis}
+\CommentTok{\# Surprisingly, another possibility is to run a linear model of the binary mediator}
+\CommentTok{\# instead of the logistic regression to apply the "product of coefficient method"}
+\CommentTok{\# in order to estimate the indirect effect:}
+\NormalTok{linear.model.A.M }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                       \AttributeTok{data =}\NormalTok{ df1)}
+\FunctionTok{summary}\NormalTok{(linear.model.A.M)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)           0.215398   0.008929  24.123  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                0.127180   0.014446   8.804  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male               0.052363   0.009091   5.760 8.67e{-}09 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv 0.065806   0.009511   6.919 4.83e{-}12 ***}
+
+\DocumentationTok{\#\# product of coefficient method:}
+\NormalTok{ind.effect.prod.meth }\OtherTok{\textless{}{-}}\NormalTok{ (linear.model.A.M}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{*}
+\NormalTok{                           model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_smoking"}\NormalTok{])}
+\CommentTok{\# {-}1.108213}
+\CommentTok{\# which also gives an indirect effect of approximately {-}1.1}
+\end{Highlighting}
+\end{Shaded}
+
+The Baron \& Kenny approach is usually applied for continuous outcomes, using linear regressions. It is less adapted for binary outcomes.
+
+However, as for the binary mediator, some authors suggested that using linear regressions of the mediator and the outcome could still give some results.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\# Baron \& Kenny approach for binary outcomes:}
+\DocumentationTok{\#\# Model 1: linear model of the probability of death to estimate the total effect:}
+\NormalTok{model.tot.A.death }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                        \AttributeTok{data =}\NormalTok{ df1)}
+\FunctionTok{summary}\NormalTok{(model.tot.A.death)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)           0.135282   0.007909  17.104  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                0.060247   0.012796   4.708 2.53e{-}06 *** \textless{}{-} Total effect}
+\CommentTok{\#   L0\_male               0.050285   0.008053   6.244 4.43e{-}10 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv 0.059565   0.008425   7.070 1.65e{-}12 ***}
+\CommentTok{\# On a risk difference scale the total effect of ACE on the probability of death is}
+\CommentTok{\# approximately +6.0\%}
+
+\DocumentationTok{\#\# Model 3: linear model to estimate the direct effect of the exposure (conditional on}
+\DocumentationTok{\#\# the outcome) and the effect of M on Y, adjusted for confounders of the A{-}Y}
+\DocumentationTok{\#\# and M{-}Y relationships}
+\NormalTok{model.A.M.death }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+                      \AttributeTok{data =}\NormalTok{ df1)}
+\FunctionTok{summary}\NormalTok{(model.A.M.death)}
+\CommentTok{\#   Coefficients:}
+\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)           0.098691   0.008460  11.666  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                0.051509   0.012759   4.037 5.45e{-}05 *** \textless{}{-} Direct effect}
+\CommentTok{\#   M\_smoking             0.064751   0.008822   7.340 2.31e{-}13 *** \textless{}{-} effect of M on Y}
+\CommentTok{\#   L1                    0.075533   0.008788   8.595  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male               0.047490   0.008013   5.927 3.19e{-}09 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv 0.055676   0.008389   6.637 3.36e{-}11 ***}
+
+
+\CommentTok{\# The direct effect is approximately +5.2\% given by the A0\_ace coefficient}
+\NormalTok{model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# 0.05150901}
+
+\CommentTok{\# The indirect effect can be calculated by the "difference in coefficient" method}
+\CommentTok{\# using coefficients from models 1 and 3}
+\NormalTok{model.tot.A.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# 0.008737889, i.e. approximately 0.9\%}
+
+\CommentTok{\# or the product of coefficients using the previous model 2bis and model 3:}
+\NormalTok{linear.model.A.M}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_smoking"}\NormalTok{]}
+\CommentTok{\# 0.008234978, i.e. approximately 0.8\%}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{ChapTradRegModels}{%
 \chapter{Traditional regression models}\label{ChapTradRegModels}}

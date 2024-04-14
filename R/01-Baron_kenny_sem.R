@@ -1,39 +1,12 @@
-# Baron and Kenny, structural equation models {#ChapBaronKennySem}
+###
 
-The Baron and Kenny approach can be applied if we make the assumption that no confounder of the $M \rightarrow Y$ relationship is affected by the exposure $A$. As a consequence we will use the `df1.csv` data set simulated from the Causal model 1 (Figure \@ref(fig:figDAGM1)). We will also assume that there is no $A \ast M$ interaction effect on the outcome $Y$ in the following examples. Such interaction effects can be dealt with using traditional regression models in very similar approaches described in chapter \@ref(ChapTradRegModels).
+rm(list=ls())
 
-## Baron and Kenny approach
+df1 <- read.csv(file = "data/df1.csv")
 
-The Baron & Kenny approach relies on sequential and step-wise estimation of linear regression models:
 
-  - A model for the total effect of the exposure $A$ on the outcome $Y$ (conditional on baseline confounders $L(0)$)
-  
-  \begin{equation*}
-    \mathbb{E}(Y \mid A,L(0)) = \theta_0 + \theta_A A + \theta_{L(0)} L(0)
-  \end{equation*}
-  
-  - A model to test if the exposure $A$ has an effect on the mediator $M$ (conditional on baseline confounders $L(0)$ of the $A-M$ relationship)
-  
-  \begin{equation*}
-    \mathbb{E}(M \mid A,L(0)) = \beta_0 + \beta_A A + \beta_{L(0)} L(0)
-  \end{equation*}
-  
-  - A model to estimate the direct effect of the exposure $A$ on the outcome $Y$ as well as the effect of the mediator $M$ on the outcome, adjusted for baseline confounders $L(0)$ and confounders of the $M-Y$ relationship $L(1)$
-  
-  \begin{equation*}
-    \mathbb{E}(Y \mid A,M,L(1),L(0)) = \gamma_0 + \gamma_A A + \gamma_M M + \gamma_{L(0)} L(0) + \gamma_{L(1)} L(1)
-  \end{equation*}
+### Baron & Kenny
 
-The total effect is given by the $\theta_A$ coefficient from the 1st model.
-
-The direct effect is given by the $\gamma_A$ coefficient from the 3rd model.
-
-The indirect effect can be calculated using: 
-
-  - the "difference in coefficient" method based on the 1st and 3rd models: $\theta_A - \gamma_A$,
-  - or the "product of coefficient" method based on the 2nd and 3rd models: $\beta_A \times \gamma_M$.
-
-```{r Baron_and_Kenny, echo=TRUE, eval = FALSE}
 ## Model 1 to estimate the total effect:
 model.tot.A.QoL <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
                       data = df1)
@@ -124,14 +97,13 @@ ind.effect.prod.meth <- (linear.model.A.M$coefficients["A0_ace"] *
                            model.A.M.QoL$coefficients["M_smoking"])
 # -1.108213
 # which also gives an indirect effect of approximately -1.1
-```
 
-The Baron & Kenny approach is usually applied for continuous outcomes, using linear regressions. It is less adapted for binary outcomes.
+### The Baron & Kenny approach is usually applied for continuous outcomes,
+### using linear regressions. It is less adapted for binary outcomes.
+### However, as for the binary mediator, using linear regression of the mediator
+### and the outcome could still give some results.
 
-However, as for the binary mediator, some authors suggested that using linear regressions of the mediator and the outcome could still give some results.
-
-```{r Baron_and_Kenny_binary, echo=TRUE, eval = FALSE}
-### Baron & Kenny approach for binary outcomes:
+### For binary outcomes, the Baron & Kenny approach
 ## Model 1: linear model of the probability of death to estimate the total effect:
 model.tot.A.death <- lm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
                         data = df1)
@@ -173,5 +145,89 @@ model.tot.A.death$coefficients["A0_ace"] - model.A.M.death$coefficients["A0_ace"
 # or the product of coefficients using the previous model 2bis and model 3:
 linear.model.A.M$coefficients["A0_ace"] * model.A.M.death$coefficients["M_smoking"]
 # 0.008234978, i.e. approximately 0.8%
-```
 
+
+#### SEM
+library(lavaan)
+library(semPlot)
+
+df1.qol.sem <- data.frame(L0_male = df1$L0_male,
+                          L0_parent_low_educ_lv = df1$L0_parent_low_educ_lv,
+                          A0_ace = df1$A0_ace, # better not to declare ordered(df1$A0_ace), #
+                          L1 = df1$L1,
+                          M_smoking = df1$M_smoking, # better not to declare ordered(df1$M_smoking),
+                          Y_qol = df1$Y_qol)
+sem.QoL <- '#SEM for quantitative outcome (QoL)
+A0_ace ~ a.01 * L0_male
+A0_ace ~ a.02 * L0_parent_low_educ_lv
+M_smoking ~ b.L01 * L0_male
+M_smoking ~ b.L02 * L0_parent_low_educ_lv
+M_smoking ~ b.A * A0_ace
+M_smoking ~ b.L1 * L1
+Y_qol ~ g.01 * L0_male
+Y_qol ~ g.02 * L0_parent_low_educ_lv
+Y_qol ~ g.A * A0_ace
+Y_qol ~ g.L1 * L1
+Y_qol ~ g.M * M_smoking
+# direct effect
+dir := g.A
+#indirect effect
+ind := b.A * g.M
+#total effect
+total := (b.A * g.M) + g.A'
+
+fit.qol <- sem(sem.QoL,
+               data = df1.qol.sem)
+summary(fit.qol)
+# Defined Parameters:
+#                Estimate  Std.Err  z-value  P(>|z|)
+# dir              -3.965    0.321  -12.349    0.000
+# ind              -1.104    0.129   -8.582    0.000
+# total            -5.069    0.344  -14.753    0.000
+# results are closer to the Baron & Kenny approach without declaring categorical variables... !
+
+# semPaths(fit.qol,
+#          what = "paths",
+#          whatLabels = "par",
+#          rotation = 2)
+
+
+### binary
+df1.death.sem <- data.frame(L0_male = df1$L0_male,
+                            L0_parent_low_educ_lv = df1$L0_parent_low_educ_lv,
+                            A0_ace = df1$A0_ace, #ordered(df1$A0_ace), #
+                            L1 = df1$L1,
+                            M_smoking = df1$M_smoking, #ordered(df1$M_smoking), #
+                            Y_death = df1$Y_death) # ordered(df1$Y_death))
+
+sem.death <- '#SEM for quantitative outcome (QoL)
+A0_ace ~ a.01 * L0_male
+A0_ace ~ a.02 * L0_parent_low_educ_lv
+M_smoking ~ b.L01 * L0_male
+M_smoking ~ b.L02 * L0_parent_low_educ_lv
+M_smoking ~ b.A * A0_ace
+M_smoking ~ b.L1 * L1
+Y_death ~ g.01 * L0_male
+Y_death ~ g.02 * L0_parent_low_educ_lv
+Y_death ~ g.A * A0_ace
+Y_death ~ g.L1 * L1
+Y_death ~ g.M * M_smoking
+# direct effect
+dir := g.A
+#indirect effect
+ind := b.A * g.M
+#total effect
+total := (b.A * g.M) + g.A'
+
+fit.death <- sem(sem.death,
+                 data = df1.death.sem)
+summary(fit.death)
+# Defined Parameters:
+#                Estimate  Std.Err  z-value  P(>|z|)
+# dir               0.080    0.024    3.363    0.001
+# ind               0.023    0.004    5.419    0.000
+# total             0.103    0.023    4.465    0.000
+
+# for binary variables => better to not declared them as ordered variables
+# ordered variables are probably good for multicatogorical (>2) ordered variables,
+# but not for binary variables

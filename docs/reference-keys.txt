@@ -17,6 +17,7 @@ data-sets
 general-presentation-of-the-data-used-in-our-examples
 data-generating-mechanisms
 ChapBaronKennySem
+baron-and-kenny-approach
 ChapTradRegModels
 estimation-of-the-average-total-effect-ate
 trad2way
