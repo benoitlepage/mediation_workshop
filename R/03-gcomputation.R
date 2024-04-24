@@ -514,237 +514,19 @@ MRIE.qol
 # IV) CMAverse -----------
 # ---------------------------------------------------------------------------- #
 # The DAG for this scientific setting is:
+# devtools::install_github("BS1125/CMAverse")
 library(CMAverse)
 rm(list=ls())
 df2_int <- read.csv(file = "data/df2_int.csv")
 cmdag(outcome = "Y_death", exposure = "A0_ace", mediator = "M_smoking",
       basec = c("L0_male", "L0_parent_low_educ_lv"), postc = "L1", node = TRUE, text_col = "white")
-# In this setting, we can use the marginal structural model and the $g$-formula approach. The results are shown below.
-
-## The Marginal Structural Model
-res_msm <- cmest(data = df2_int,
-                 model = "msm",
-                 outcome = "Y_death",
-                 exposure = "A0_ace",
-                 mediator = "M_smoking",
-                 basec = c("L0_male", "L0_parent_low_educ_lv"),
-                 postc = "L1",
-                 EMint = TRUE, # E*M interaction
-                 ereg = "logistic",
-                 yreg = "logistic",
-                 mreg = list("logistic"),
-                 wmnomreg = list("logistic"),
-                 wmdenomreg = list("logistic"),
-                 astar = 0, #E(Y_{A=0,M=1})
-                 a = 1,  #E(Y_{A=1,M=1})
-                 mval = list(1), # mediator value at which the variable is controlled
-                 estimation = "imputation",
-                 inference = "bootstrap",
-                 nboot = 2)
-summary(res_msm)
-# Causal Mediation Analysis
-#
-# # Outcome regression:
-#
-# Call:
-#   glm(formula = Y_death ~ A0_ace + M_smoking + A0_ace * M_smoking,
-#       family = binomial(), data = getCall(x$reg.output$yreg)$data,
-#       weights = getCall(x$reg.output$yreg)$weights)
-#
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -1.6420  -0.6975  -0.5999  -0.5638   2.6288
-#
-# Coefficients:
-#   Estimate Std. Error z value Pr(>|z|)
-# (Intercept)      -1.52095    0.03362 -45.238  < 2e-16 ***
-#   A0_ace            0.36526    0.10056   3.632 0.000281 ***
-#   M_smoking         0.43148    0.05470   7.888 3.08e-15 ***
-#   A0_ace:M_smoking  0.06991    0.14299   0.489 0.624927
-# ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Dispersion parameter for binomial family taken to be 1)
-#
-# Null deviance: 10335  on 9999  degrees of freedom
-# Residual deviance: 10219  on 9996  degrees of freedom
-# AIC: 10340
-#
-# Number of Fisher Scoring iterations: 4
-#
-#
-# # Mediator regressions:
-#
-# Call:
-#   glm(formula = M_smoking ~ A0_ace, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
-#       weights = getCall(x$reg.output$mreg[[1L]])$weights)
-#
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -1.4730  -0.8841  -0.8739   1.4592   1.7251
-#
-# Coefficients:
-#   Estimate Std. Error z value Pr(>|z|)
-# (Intercept) -0.73432    0.02268 -32.384  < 2e-16 ***
-#   A0_ace       0.51531    0.06422   8.024 1.02e-15 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Dispersion parameter for binomial family taken to be 1)
-#
-# Null deviance: 12789  on 9999  degrees of freedom
-# Residual deviance: 12726  on 9998  degrees of freedom
-# AIC: 12847
-#
-# Number of Fisher Scoring iterations: 4
-#
-#
-# # Mediator regressions for weighting (denominator):
-#
-# Call:
-#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +
-#         L1, family = binomial(), data = getCall(x$reg.output$wmdenomreg[[1L]])$data,
-#       weights = getCall(x$reg.output$wmdenomreg[[1L]])$weights)
-#
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -1.3340  -0.8581  -0.7529   1.2616   1.7835
-#
-# Coefficients:
-#   Estimate Std. Error z value Pr(>|z|)
-# (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
-#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
-#   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
-#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
-#   L1                     0.86045    0.04493  19.152  < 2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Dispersion parameter for binomial family taken to be 1)
-#
-# Null deviance: 12783  on 9999  degrees of freedom
-# Residual deviance: 12260  on 9995  degrees of freedom
-# AIC: 12270
-#
-# Number of Fisher Scoring iterations: 4
-#
-#
-# # Mediator regressions for weighting (nominator):
-#
-# Call:
-#   glm(formula = M_smoking ~ A0_ace, family = binomial(), data = getCall(x$reg.output$wmnomreg[[1L]])$data,
-#       weights = getCall(x$reg.output$wmnomreg[[1L]])$weights)
-#
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -1.0982  -0.8825  -0.8825   1.5043   1.5043
-#
-# Coefficients:
-#   Estimate Std. Error z value Pr(>|z|)
-# (Intercept) -0.74205    0.02271 -32.680   <2e-16 ***
-#   A0_ace       0.55288    0.06408   8.628   <2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Dispersion parameter for binomial family taken to be 1)
-#
-# Null deviance: 12783  on 9999  degrees of freedom
-# Residual deviance: 12710  on 9998  degrees of freedom
-# AIC: 12714
-#
-# Number of Fisher Scoring iterations: 4
-#
-#
-# # Exposure regression for weighting:
-#
-# Call:
-#   glm(formula = A0_ace ~ L0_male + L0_parent_low_educ_lv, family = binomial(),
-#       data = getCall(x$reg.output$ereg)$data, weights = getCall(x$reg.output$ereg)$weights)
-#
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -0.5830  -0.5830  -0.4825  -0.3550   2.3645
-#
-# Coefficients:
-#   Estimate Std. Error z value Pr(>|z|)
-# (Intercept)           -2.73244    0.07425 -36.799  < 2e-16 ***
-#   L0_male                0.40580    0.06447   6.294 3.09e-10 ***
-#   L0_parent_low_educ_lv  0.64060    0.07350   8.716  < 2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Dispersion parameter for binomial family taken to be 1)
-#
-# Null deviance: 7030.1  on 9999  degrees of freedom
-# Residual deviance: 6909.0  on 9997  degrees of freedom
-# AIC: 6915
-#
-# Number of Fisher Scoring iterations: 5
-#
-#
-# # Effect decomposition on the odds ratio scale via the marginal structural model
-#
-# Direct counterfactual imputation estimation with
-# bootstrap standard errors, percentile confidence intervals and p-values
-#
-#                   Estimate Std.error  95% CIL 95% CIU  P.val
-#   Rcde            1.545217  0.055313 1.629922   1.704 <2e-16 ***
-#   rRpnde          1.473363  0.103755 1.627216   1.767 <2e-16 ***
-#   rRtnde          1.486793  0.071520 1.640039   1.736 <2e-16 ***
-#   rRpnie          1.059492  0.012056 1.047202   1.063 <2e-16 ***
-#   rRtnie          1.069150  0.007743 1.045052   1.055 <2e-16 ***
-#   Rte             1.575246  0.095828 1.717453   1.846 <2e-16 ***
-#   ERcde           0.446294  0.020216 0.520256   0.547 <2e-16 ***
-#   rERintref       0.027069  0.123971 0.079953   0.247 <2e-16 ***
-#   rERintmed       0.042391  0.019983 0.016156   0.043 <2e-16 ***
-#   rERpnie         0.059492  0.012056 0.047206   0.063 <2e-16 ***
-#   ERcde(prop)     0.775832  0.110347 0.615334   0.764 <2e-16 ***
-#   rERintref(prop) 0.047056  0.133964 0.110548   0.291 <2e-16 ***
-#   rERintmed(prop) 0.073692  0.030419 0.019257   0.060 <2e-16 ***
-#   rERpnie(prop)   0.103420  0.006802 0.065741   0.075 <2e-16 ***
-#   rpm             0.177112  0.023618 0.094136   0.126 <2e-16 ***
-#   rint            0.120748  0.103545 0.170674   0.310 <2e-16 ***
-#   rpe             0.224168  0.110347 0.236415   0.385 <2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-# (Rcde: controlled direct effect odds ratio;
-#  rRpnde: randomized analogue of pure natural direct effect odds ratio;
-#  rRtnde: randomized analogue of total natural direct effect odds ratio;
-#  rRpnie: randomized analogue of pure natural indirect effect odds ratio;
-#  rRtnie: randomized analogue of total natural indirect effect odds ratio;
-#  Rte: total effect odds ratio;
-#  ERcde: excess relative risk due to controlled direct effect;
-#  rERintref: randomized analogue of excess relative risk due to reference interaction;
-#  rERintmed: randomized analogue of excess relative risk due to mediated interaction;
-#  rERpnie: randomized analogue of excess relative risk due to pure natural indirect effect;
-#  ERcde(prop): proportion ERcde;
-#  rERintref(prop): proportion rERintref;
-#  rERintmed(prop): proportion rERintmed;
-#  rERpnie(prop): proportion rERpnie;
-#  rpm: randomized analogue of overall proportion mediated;
-#  rint: randomized analogue of overall proportion attributable to interaction;
-#  rpe: randomized analogue of overall proportion eliminated)
-#
-# Relevant variable values:
-#   $a
-# [1] 1
-#
-# $astar
-# [1] 0
-#
-# $yval
-# [1] "1"
-#
-# $mval
-# $mval[[1]]
-# [1] 1
-
-# can we get risk differences ?
+# The CMAverse package can be used to estimate CDE, rNDE and rNIE by parametric g-computation
+# (using the 'gformula' option in the )
 
 
 ## The g-formula Approach
-res_gformula <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+set.seed(1234)
+res_gformula_OR <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
                                         L1=as.factor(df2_int$L1),
                                         df2_int[,c("M_smoking","Y_death")]),
                       model = "gformula",
@@ -754,28 +536,27 @@ res_gformula <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ
                       basec = c("L0_male", "L0_parent_low_educ_lv"),
                       postc = "L1",
                       EMint = TRUE,
-                      mreg = list("logistic"),
-                      yreg = "logistic",#  "linear", to get risk differences
-                      postcreg = list("logistic"),
+                      mreg = list("logistic"), # g(M=1|L1,A,L0)
+                      yreg = "logistic",# Qbar.L2 = P(Y=1|M,L1,A,L0)
+                      postcreg = list("logistic"), # Qbar.L1 = P(L1=1|A,L0)
                       astar = 0,
                       a = 1,
-                      mval = list(1), # mediator value at which the variable is controlled
-                      estimation = "imputation",
+                      mval = list(0), # do(M=0) to estimate CDE_m
+                      estimation = "imputation", # parametric g-comp if model= gformula
                       inference = "bootstrap",
-                      yval = 1, #the value of the outcome at which causal effects on the risk/odds ratio scale are estimated (used when the outcome is categorical)
-                      nboot = 2)
-summary(res_gformula)
-# Causal Mediation Analysis
-#
+                      boot.ci.type = "per", # forpercentile, other option: "bca"
+                      # yval = 1, #the value of the outcome at which causal effects on the risk/odds ratio scale are estimated (used when the outcome is categorical)
+                      nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_OR)
+### Causal Mediation Analysis
+
+## 1) Estimation of Qbar.L2 = P(Y=1|M,L1,A,L0) with A*M interaction, model of the outcome
 # # Outcome regression:
+#
 # Call:
 #   glm(formula = Y_death ~ A0_ace + M_smoking + A0_ace * M_smoking +
 #         L0_male + L0_parent_low_educ_lv + L1, family = binomial(),
 #       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
-#
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -1.0859  -0.7097  -0.6033  -0.4944   2.0797
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
@@ -784,7 +565,7 @@ summary(res_gformula)
 #   M_smoking              0.44406    0.05569   7.974 1.53e-15 ***
 #   L0_male                0.26913    0.04996   5.387 7.15e-08 ***
 #   L0_parent_low_educ_lv  0.34603    0.05432   6.370 1.89e-10 ***
-#   L1                     0.42894    0.05195   8.257  < 2e-16 ***
+#   L11                    0.42894    0.05195   8.257  < 2e-16 ***
 #   A0_ace:M_smoking       0.04387    0.14311   0.307  0.75919
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
@@ -797,7 +578,8 @@ summary(res_gformula)
 #
 # Number of Fisher Scoring iterations: 4
 #
-#
+
+## 2) Estimation of g(M=1|L1,A,L0), model of the mediator
 # # Mediator regressions:
 #
 # Call:
@@ -805,17 +587,13 @@ summary(res_gformula)
 #         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
 #       weights = getCall(x$reg.output$mreg[[1L]])$weights)
 #
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -1.3340  -0.8581  -0.7529   1.2616   1.7835
-#
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 #   (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
 #   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
 #   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
 #   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
-#   L1                     0.86045    0.04493  19.152  < 2e-16 ***
+#   L11                    0.86045    0.04493  19.152  < 2e-16 ***
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
@@ -827,88 +605,336 @@ summary(res_gformula)
 #
 # Number of Fisher Scoring iterations: 4
 #
-#
+
+## 3) Estimation of Qbar.L1 = P(L1=1|A,L0), model of intermediate confounder
 # # Regressions for mediator-outcome confounders affected by the exposure:
 #
 # Call:
 #   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,
-#       family = gaussian(), data = getCall(x$reg.output$postcreg[[1L]])$data,
+#       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,
 #       weights = getCall(x$reg.output$postcreg[[1L]])$weights)
 #
-# Deviance Residuals:
-#   Min       1Q   Median       3Q      Max
-# -0.5919  -0.3224  -0.2966   0.6342   0.7469
-#
 # Coefficients:
-#   Estimate Std. Error t value Pr(>|t|)
-#   (Intercept)            0.296590   0.009214  32.190  < 2e-16 ***
-#   A0_ace                 0.226072   0.014906  15.167  < 2e-16 ***
-#   L0_male               -0.043457   0.009381  -4.632 3.66e-06 ***
-#   L0_parent_low_educ_lv  0.069221   0.009814   7.053 1.86e-12 ***
+#   Estimate Std. Error z value Pr(>|z|)
+#   (Intercept)           -0.86983    0.04292 -20.267  < 2e-16 ***
+#   A0_ace                 0.94354    0.06475  14.572  < 2e-16 ***
+#   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***
+#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
-# (Dispersion parameter for gaussian family taken to be 0.2190925)
+# (Dispersion parameter for binomial family taken to be 1)
 #
-# Null deviance: 2259.1  on 9999  degrees of freedom
-# Residual deviance: 2190.0  on 9996  degrees of freedom
-# AIC: 13202
+# Null deviance: 12883  on 9999  degrees of freedom
+# Residual deviance: 12587  on 9996  degrees of freedom
+# AIC: 12595
 #
-# Number of Fisher Scoring iterations: 2
+# Number of Fisher Scoring iterations: 4
 #
-#
-# # Effect decomposition on the odds ratio scale via the g-formula approach
+
+
+## 4) Effect decomposition on the odds ratio scale via the g-formula approach
 #
 # Direct counterfactual imputation estimation with
 # bootstrap standard errors, percentile confidence intervals and p-values
 #
-#                   Estimate Std.error  95% CIL 95% CIU  P.val
-#   Rcde            1.525902  0.060467 1.398987   1.480 <2e-16 ***
-#   rRpnde          1.481091  0.039678 1.478889   1.532 <2e-16 ***
-#   rRtnde          1.487634  0.040141 1.465710   1.520 <2e-16 ***
-#   rRpnie          1.050494  0.018867 1.037797   1.063 <2e-16 ***
-#   rRtnie          1.055135  0.019266 1.028549   1.054 <2e-16 ***
-#   Rte             1.562751  0.070331 1.521109   1.616 <2e-16 ***
-#   ERcde           0.432152  0.054697 0.330836   0.404 <2e-16 ***
-#   rERintref       0.048939  0.015019 0.127900   0.148 <2e-16 ***
-#   rERintmed       0.031165  0.011786 0.004466   0.020 <2e-16 ***
-#   rERpnie         0.050494  0.018867 0.037805   0.063 <2e-16 ***
-#   ERcde(prop)     0.767928  0.016340 0.634669   0.657 <2e-16 ***
-#   rERintref(prop) 0.086965  0.056893 0.208055   0.284 <2e-16 ***
-#   rERintmed(prop) 0.055380  0.018177 0.008450   0.033 <2e-16 ***
-#   rERpnie(prop)   0.089727  0.022376 0.072390   0.102 <2e-16 ***
-#   rpm             0.145108  0.040553 0.080839   0.135 <2e-16 ***
-#   rint            0.142345  0.038716 0.240926   0.293 <2e-16 ***
-#   rpe             0.232072  0.016340 0.343378   0.365 <2e-16 ***
+# Estimate Std.error  95% CIL 95% CIU  P.val
+#   Rcde            1.592115  0.121242 1.401748   1.565 <2e-16 ***
+#   rRpnde          1.610141  0.064880 1.458433   1.546 <2e-16 ***
+#   rRtnde          1.621371  0.046720 1.479227   1.542 <2e-16 ***
+#   rRpnie          1.076471  0.001714 1.036683   1.039 <2e-16 ***
+#   rRtnie          1.083979  0.014539 1.034267   1.054 <2e-16 ***
+#   Rte             1.745359  0.045898 1.536897   1.599 <2e-16 ***
+#   ERcde           0.392219  0.073776 0.277167   0.376 <2e-16 ***
+#   rERintref       0.217921  0.008895 0.169383   0.181 <2e-16 ***
+#   rERintmed       0.058747  0.017268 0.016243   0.039 <2e-16 ***
+#   rERpnie         0.076471  0.001714 0.036684   0.039 <2e-16 ***
+#   ERcde(prop)     0.526216  0.083694 0.515858   0.628 <2e-16 ***
+#   rERintref(prop) 0.292371  0.040769 0.283120   0.338 <2e-16 ***
+#   rERintmed(prop) 0.078817  0.034491 0.027264   0.074 <2e-16 ***
+#   rERpnie(prop)   0.102596  0.008434 0.061314   0.073 <2e-16 ***
+#   rpm             0.181413  0.042925 0.088578   0.146 <2e-16 ***
+#   rint            0.371188  0.075260 0.310384   0.411 <2e-16 ***
+#   rpe             0.473784  0.083694 0.371698   0.484 <2e-16 ***
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
-# (Rcde: controlled direct effect odds ratio;
+# Rcde: controlled direct effect odds ratio;
 # rRpnde: randomized analogue of pure natural direct effect odds ratio;
 # rRtnde: randomized analogue of total natural direct effect odds ratio;
 # rRpnie: randomized analogue of pure natural indirect effect odds ratio;
 # rRtnie: randomized analogue of total natural indirect effect odds ratio;
-# Rte: total effect odds ratio; ERcde: excess relative risk due to controlled direct effect;
+# Rte: total effect odds ratio;
+# ERcde: excess relative risk due to controlled direct effect;
 # rERintref: randomized analogue of excess relative risk due to reference interaction;
 # rERintmed: randomized analogue of excess relative risk due to mediated interaction;
 # rERpnie: randomized analogue of excess relative risk due to pure natural indirect effect;
-# ERcde(prop): proportion ERcde; rERintref(prop): proportion rERintref;
+# ERcde(prop): proportion ERcde;
+# rERintref(prop): proportion rERintref;
 # rERintmed(prop): proportion rERintmed;
 # rERpnie(prop): proportion rERpnie;
 # rpm: randomized analogue of overall proportion mediated;
-# rint: randomized analogue of overall proportion attributable to interaction; rpe: randomized analogue of overall proportion eliminated)
-#
-# Relevant variable values:
-#   $a
-# [1] 1
-#
-# $astar
-# [1] 0
-#
-# $yval
-# [1] "1"
-#
-# $mval
-# $mval[[1]]
-# [1] 1
+# rint: randomized analogue of overall proportion attributable to interaction;
+# rpe: randomized analogue of overall proportion eliminated)
 
+
+## How to get risk differences ? apply a gaussian glm for the Qbar.L2 model
+# setting do(M=0) for the controlled direct effect
+set.seed(12345)
+res_gformula_RD_M0 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                                              L1=as.factor(df2_int$L1),
+                                              df2_int[,c("M_smoking","Y_death")]),
+                            model = "gformula",
+                            outcome = "Y_death",
+                            exposure = "A0_ace",
+                            mediator = "M_smoking",
+                            basec = c("L0_male", "L0_parent_low_educ_lv"),
+                            postc = "L1",
+                            EMint = TRUE,
+                            mreg = list("logistic"),
+                            yreg = "linear",#  instead of "logistic" to get risk differences
+                            postcreg = list("logistic"),
+                            astar = 0,
+                            a = 1,
+                            mval = list(0), # mediator value at which the variable is controlled
+                            estimation = "imputation",
+                            inference = "bootstrap",
+                            boot.ci.type = "per", # forpercentile, other option: "bca"
+                            #yval = 1, # not necessary here
+                            nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_RD_M0)
+## 1) Outcome regression: Qbar.L2 = P(Y=1|M,L1,A,L0) with A*M interaction
+# Call:
+#   glm(formula = Y_death ~ A0_ace + M_smoking + A0_ace * M_smoking +
+#         L0_male + L0_parent_low_educ_lv + L1, family = gaussian(),
+#       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
+#
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)
+#   (Intercept)           0.100674   0.008574  11.742  < 2e-16 ***
+#   A0_ace                0.046456   0.017268   2.690  0.00715 **
+#   M_smoking             0.074378   0.009370   7.938 2.27e-15 ***
+#   L0_male               0.043661   0.008117   5.379 7.67e-08 ***
+#   L0_parent_low_educ_lv 0.053711   0.008508   6.313 2.86e-10 ***
+#   L11                   0.073753   0.008798   8.383  < 2e-16 ***
+#   A0_ace:M_smoking      0.030159   0.025887   1.165  0.24404
+
+## 2) Mediator regressions:  g(M=1|L1,A,L0)
+# Call:
+#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +
+#         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
+#       weights = getCall(x$reg.output$mreg[[1L]])$weights)
+#
+# Coefficients:
+#   Estimate Std. Error z value Pr(>|z|)
+#   (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
+#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
+#   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
+#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
+#   L11                    0.86045    0.04493  19.152  < 2e-16 ***
+
+## 3) Regressions for mediator-outcome confounders affected by the exposure: Qbar.L1 = P(L1=1|A,L0)
+# Call:
+#   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+#       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,
+#       weights = getCall(x$reg.output$postcreg[[1L]])$weights)
+#
+# Coefficients:
+#   Estimate Std. Error z value Pr(>|z|)
+#   (Intercept)           -0.86983    0.04292 -20.267  < 2e-16 ***
+#   A0_ace                 0.94354    0.06475  14.572  < 2e-16 ***
+#   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***
+#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***
+
+## 4) Effect decomposition on the mean difference scale via the g-formula approach
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+#                  Estimate Std.error   95% CIL 95% CIU  P.val
+#   cde           0.0638914 0.0158641 0.0467659   0.068 <2e-16 *** CDE=0.06289087 by previous parametric g-comp
+#   rpnde         0.0734700 0.0307357 0.0598528   0.101 <2e-16 *** rPNDE = 0.07118987 by previous parametric g-comp
+#   rtnde         0.0771555 0.0333264 0.0647151   0.109 <2e-16 ***
+#   rpnie         0.0090890 0.0033498 0.0050769   0.010 <2e-16 ***
+#   rtnie         0.0127744 0.0007591 0.0134198   0.014 <2e-16 *** rTNIE = 0.0110088 by previous parametric g-comp
+#   te            0.0862445 0.0299766 0.0742924   0.115 <2e-16 ***
+#   rintref       0.0095786 0.0148716 0.0130869   0.033 <2e-16 ***
+#   rintmed       0.0036855 0.0025907 0.0048623   0.008 <2e-16 ***
+#   cde(prop)     0.7408176 0.0263715 0.5945733   0.630 <2e-16 ***
+#   rintref(prop) 0.1110634 0.0841501 0.1744983   0.288 <2e-16 ***
+#   rintmed(prop) 0.0427328 0.0055167 0.0653396   0.073 <2e-16 ***
+#   rpnie(prop)   0.1053862 0.0632953 0.0451212   0.130 <2e-16 ***
+#   rpm           0.1481190 0.0577786 0.1178726   0.195 <2e-16 ***
+#   rint          0.1537963 0.0896668 0.2398378   0.360 <2e-16 ***
+#   rpe           0.2591824 0.0263715 0.3699965   0.405 <2e-16 ***
+# cde: controlled direct effect;
+# rpnde: randomized analogue of pure natural direct effect;
+# rtnde: randomized analogue of total natural direct effect;
+# rpnie: randomized analogue of pure natural indirect effect;
+# rtnie: randomized analogue of total natural indirect effect;
+# te: total effect;
+# rintref: randomized analogue of reference interaction;
+# rintmed: randomized analogue of mediated interaction;
+# cde(prop): proportion cde;
+# rintref(prop): proportion rintref;
+# rintmed(prop): proportion rintmed;
+# rpnie(prop): proportion rpnie;
+# rpm: randomized analogue of overall proportion mediated;
+# rint: randomized analogue of overall proportion attributable to interaction;
+# rpe: randomized analogue of overall proportion eliminated
+
+### How to find analogues for the 3-way and 4-way decomposition?
+## TE
+res_gformula_RD_M0$effect.pe["te"]
+## rPNDE
+res_gformula_RD_M0$effect.pe["rpnde"]
+## rPNIE
+res_gformula_RD_M0$effect.pe["rpnie"]
+## CDE
+res_gformula_RD_M0$effect.pe["cde"]
+
+
+## MI= TE - rPNDE - rPNIE
+res_gformula_RD_M0$effect.pe["te"] - res_gformula_RD_M0$effect.pe["rpnde"] - res_gformula_RD_M0$effect.pe["rpnie"]
+# 0.003685471
+res_gformula_RD_M0$effect.pe["rintmed"]
+# 0.003685471 # This is how the mediated interaction is calculated
+
+## RE = PNDE - CDE_{M=0}
+res_gformula_RD_M0$effect.pe["rpnde"] - res_gformula_RD_M0$effect.pe["cde"]
+# 0.009578606
+res_gformula_RD_M0$effect.pe["rintref"]
+# 0.009578606 # This is how the reference interaction is calculated
+
+
+### setting do(M=1) for the controlled direct effect
+set.seed(12345)
+res_gformula_RD_M1 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                                              L1=as.factor(df2_int$L1),
+                                              df2_int[,c("M_smoking","Y_death")]),
+                            model = "gformula",
+                            outcome = "Y_death",
+                            exposure = "A0_ace",
+                            mediator = "M_smoking",
+                            basec = c("L0_male", "L0_parent_low_educ_lv"),
+                            postc = "L1",
+                            EMint = TRUE,
+                            mreg = list("logistic"),
+                            yreg = "linear",#  instead of "logistic" to get risk differences
+                            postcreg = list("logistic"),
+                            astar = 0,
+                            a = 1,
+                            mval = list(1), # mediator value at which the variable is controlled
+                            estimation = "imputation",
+                            inference = "bootstrap",
+                            #yval = 1, #the value of the outcome at which causal effects on the risk/odds ratio scale are estimated (used when the outcome is categorical)
+                            nboot = 2)
+summary(res_gformula_RD_M1)
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+# Estimate  Std.error    95% CIL 95% CIU  P.val
+#   cde            0.0940507  0.0623648  0.0863933   0.170 <2e-16 *** CDE_{M=1}=0.08751016 by previous parametric g-comp
+#   rpnde          0.0734700  0.0307357  0.0598528   0.101 <2e-16 *** rPNDE = 0.07118987 by previous parametric g-comp
+#   rtnde          0.0771555  0.0333264  0.0647151   0.109 <2e-16 ***
+#   rpnie          0.0090890  0.0033498  0.0050769   0.010 <2e-16 ***
+#   rtnie          0.0127744  0.0007591  0.0134198   0.014 <2e-16 *** rTNIE = 0.0110088 by previous parametric g-comp
+#   te             0.0862445  0.0299766  0.0742924   0.115 <2e-16 ***
+#   rintref       -0.0205807  0.0316291 -0.0690343  -0.027 <2e-16 ***
+#   rintmed        0.0036855  0.0025907  0.0048623   0.008 <2e-16 ***
+#   cde(prop)      1.0905135  0.2413267  1.1581348   1.482 <2e-16 ***
+#   rintref(prop) -0.2386325  0.1835481 -0.6002305  -0.354 <2e-16 ***
+#   rintmed(prop)  0.0427328  0.0055167  0.0653396   0.073 <2e-16 ***
+#   rpnie(prop)    0.1053862  0.0632953  0.0451212   0.130 <2e-16 ***
+#   rpm            0.1481190  0.0577786  0.1178726   0.195 <2e-16 ***
+#   rint          -0.1958997  0.1780314 -0.5274792  -0.288 <2e-16 ***
+#   rpe           -0.0905135  0.2413267 -0.4823579  -0.158 <2e-16 ***
+
+
+### For quantitative outcomes
+set.seed(12345)
+res_gformula_QoL_M0 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                                              L1=as.factor(df2_int$L1),
+                                              df2_int[,c("M_smoking","Y_qol")]),
+                            model = "gformula",
+                            outcome = "Y_qol",
+                            exposure = "A0_ace",
+                            mediator = "M_smoking",
+                            basec = c("L0_male", "L0_parent_low_educ_lv"),
+                            postc = "L1",
+                            EMint = TRUE,
+                            mreg = list("logistic"),
+                            yreg = "linear",#
+                            postcreg = list("logistic"),
+                            astar = 0,
+                            a = 1,
+                            mval = list(0), # mediator value at which the variable is controlled
+                            estimation = "imputation",
+                            inference = "bootstrap",
+                            boot.ci.type = "per", # forpercentile, other option: "bca"
+                            #yval = 1, # not necessary here
+                            nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_QoL_M0)
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+# Estimate Std.error   95% CIL 95% CIU  P.val
+#   cde           -4.922873  0.284894 -5.116411  -4.734 <2e-16 *** CDE_{M=0} = -4.838654 by previous parametric g-comp
+#   rpnde         -6.673463  0.394323 -7.086829  -6.557 <2e-16 *** rPNDE = -6.649923 by previous parametric g-comp
+#   rtnde         -7.347022  0.601495 -7.829339  -7.021 <2e-16 ***
+#   rpnie         -1.055023  0.242564 -1.054962  -0.729 <2e-16 ***
+#   rtnie         -1.728582  0.449736 -1.797472  -1.193 <2e-16 *** rTNIE = -1.585373 by previous parametric g-comp
+#   te            -8.402045  0.844058 -8.884301  -7.750 <2e-16 ***
+#   rintref       -1.750590  0.109429 -1.970417  -1.823 <2e-16 ***
+#   rintmed       -0.673558  0.207172 -0.742510  -0.464 <2e-16 ***
+#   cde(prop)      0.585914  0.025973  0.576014   0.611 <2e-16 ***
+#   rintref(prop)  0.208353  0.010040  0.221833   0.235 <2e-16 ***
+#   rintmed(prop)  0.080166  0.017638  0.059797   0.083 <2e-16 ***
+#   rpnie(prop)    0.125567  0.018375  0.093973   0.119 <2e-16 ***
+#   rpm            0.205733  0.036012  0.153771   0.202 <2e-16 ***
+#   rint           0.288519  0.007598  0.295119   0.305 <2e-16 ***
+#   rpe            0.414086  0.025973  0.389092   0.424 <2e-16 ***
+
+set.seed(12345)
+res_gformula_QoL_M1 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                                               L1=as.factor(df2_int$L1),
+                                               df2_int[,c("M_smoking","Y_qol")]),
+                             model = "gformula",
+                             outcome = "Y_qol",
+                             exposure = "A0_ace",
+                             mediator = "M_smoking",
+                             basec = c("L0_male", "L0_parent_low_educ_lv"),
+                             postc = "L1",
+                             EMint = TRUE,
+                             mreg = list("logistic"),
+                             yreg = "linear",#
+                             postcreg = list("logistic"),
+                             astar = 0,
+                             a = 1,
+                             mval = list(1), # mediator value at which the variable is controlled
+                             estimation = "imputation",
+                             inference = "bootstrap",
+                             boot.ci.type = "per", # forpercentile, other option: "bca"
+                             #yval = 1, # not necessary here
+                             nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_QoL_M1)
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+# Estimate Std.error   95% CIL 95% CIU  P.val
+#   cde           -10.43481   0.53289 -11.07766 -10.362 <2e-16 *** CDE_{M=1} = -10.35059 by previous parametric g-comp
+#   rpnde          -6.67346   0.39432  -7.08683  -6.557 <2e-16 *** rPNDE = -6.649923 by previous parametric g-comp
+#   rtnde          -7.34702   0.60149  -7.82934  -7.021 <2e-16 ***
+#   rpnie          -1.05502   0.24256  -1.05496  -0.729 <2e-16 ***
+#   rtnie          -1.72858   0.44974  -1.79747  -1.193 <2e-16 *** rTNIE = -1.585373 by previous parametric g-comp
+#   te             -8.40205   0.84406  -8.88430  -7.750 <2e-16 ***
+#   rintref         3.76134   0.13857   3.80467   3.991 <2e-16 ***
+#   rintmed        -0.67356   0.20717  -0.74251  -0.464 <2e-16 ***
+#   cde(prop)       1.24194   0.06707   1.24719   1.337 <2e-16 ***
+#   rintref(prop)  -0.44767   0.03106  -0.49107  -0.449 <2e-16 ***
+#   rintmed(prop)   0.08017   0.01764   0.05980   0.083 <2e-16 ***
+#   rpnie(prop)     0.12557   0.01837   0.09397   0.119 <2e-16 ***
+#   rpm             0.20573   0.03601   0.15377   0.202 <2e-16 ***
+#   rint           -0.36750   0.04870  -0.43127  -0.366 <2e-16 ***
+#   rpe            -0.24194   0.06707  -0.33730  -0.247 <2e-16 ***

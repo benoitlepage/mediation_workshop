@@ -153,9 +153,9 @@ library(semPlot)
 
 df1.qol.sem <- data.frame(L0_male = df1$L0_male,
                           L0_parent_low_educ_lv = df1$L0_parent_low_educ_lv,
-                          A0_ace = df1$A0_ace, # better not to declare ordered(df1$A0_ace), #
+                          A0_ace = ordered(df1$A0_ace), #df1$A0_ace, # better not to declare
                           L1 = df1$L1,
-                          M_smoking = df1$M_smoking, # better not to declare ordered(df1$M_smoking),
+                          M_smoking = ordered(df1$M_smoking), #df1$M_smoking, # better not to declare
                           Y_qol = df1$Y_qol)
 sem.QoL <- '#SEM for quantitative outcome (QoL)
 A0_ace ~ a.01 * L0_male
@@ -195,10 +195,10 @@ summary(fit.qol)
 ### binary
 df1.death.sem <- data.frame(L0_male = df1$L0_male,
                             L0_parent_low_educ_lv = df1$L0_parent_low_educ_lv,
-                            A0_ace = df1$A0_ace, #ordered(df1$A0_ace), #
+                            A0_ace = rdered(df1$A0_ace), #df1$A0_ace, #o
                             L1 = df1$L1,
-                            M_smoking = df1$M_smoking, #ordered(df1$M_smoking), #
-                            Y_death = df1$Y_death) # ordered(df1$Y_death))
+                            M_smoking = ordered(df1$M_smoking), #df1$M_smoking, #
+                            Y_death = ordered(df1$Y_death)) #df1$Y_death) #
 
 sem.death <- '#SEM for quantitative outcome (QoL)
 A0_ace ~ a.01 * L0_male
