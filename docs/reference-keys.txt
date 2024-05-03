@@ -35,6 +35,7 @@ estimation-of-natural-direct-nde-and-indirect-effects-nie
 estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie
 parametric-g-computation
 g-computation-by-iterative-conditional-expectation
+using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition
 ChapIptw
 estimation-of-the-average-total-effect
 iptw-for-the-ate

@@ -141,7 +141,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-04-14}
+\date{2024-05-03}
 
 \begin{document}
 \maketitle
@@ -2145,6 +2145,154 @@ Results are close to the estimations obtained previously with parametric g-compu
 \end{itemize}
 
 95\% confidence intervals can be calculated by bootstrap.
+
+\hypertarget{using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition}{%
+\section{\texorpdfstring{Using the \texttt{CMAverse} package for 2-way, 3-way and 4-way decomposition}{Using the CMAverse package for 2-way, 3-way and 4-way decomposition}}\label{using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition}}
+
+The \texttt{CMAverse} package can be used to estimate the 2-way, 3-way and 4-way decompositions of a total effect by parametric g-computation, whether the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) or not.
+
+Here is an example with a continuous outcome using the \texttt{cmest} function. Note that :
+
+\begin{itemize}
+\tightlist
+\item
+  parametric g-computation is applied by specifying \texttt{model\ =\ "gformula"}. The \texttt{estimation} argument should be set to \texttt{imputation} (as the counterfactual values will be imputed).
+\item
+  the presence of intermediate confounder \(L(1)\) of the \(M-Y\) relationship affected by the exposure \(A\) can be specified using the \texttt{postcreg} argument,
+\item
+  the presence of an \(A \ast M\) interaction effect on the outcome is indicated using the \texttt{EMint} argument,
+\item
+  for the estimation of the Controlled direct effect, the fixed value set for the mediator is indicated using the \texttt{mval} argument.
+\end{itemize}
+
+The function returns the following results:
+
+\begin{itemize}
+\tightlist
+\item
+  fit of the Outcome regression \(\overline{Q}_Y = \mathbb{E}(Y \mid L(0),A,L(1),M)\),
+\item
+  fit of the Mediator regression \(g_A = P(M=1 \mid L(0),A,L(1))\),
+\item
+  fit of the intermediate confounder regression \(\overline{Q}_{L(1)} = P(L(1)=1\mid L(0),A)\),
+\item
+  the 2-way, 3-way and 4-way decompositions.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(CMAverse)}
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
+\NormalTok{res\_gformula\_Qol }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df2\_int, }\CommentTok{\#data.frame(df2\_int[,c("L0\_male",}
+                                                       \CommentTok{\#"L0\_parent\_low\_educ\_lv",}
+                                                       \CommentTok{\#"A0\_ace")],}
+                                           \CommentTok{\#L1=as.factor(df2\_int$L1),}
+                                           \CommentTok{\#df2\_int[,c("M\_smoking","Y\_qol")]),}
+                         \AttributeTok{model =} \StringTok{"gformula"}\NormalTok{, }\CommentTok{\# for parametric g{-}computation}
+                         \AttributeTok{outcome =} \StringTok{"Y\_qol"}\NormalTok{, }\CommentTok{\# outcome variable}
+                         \AttributeTok{exposure =} \StringTok{"A0\_ace"}\NormalTok{, }\CommentTok{\# exposure variable}
+                         \AttributeTok{mediator =} \StringTok{"M\_smoking"}\NormalTok{, }\CommentTok{\# mediator}
+                         \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,}
+                                   \StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{), }\CommentTok{\# confounders}
+                         \AttributeTok{postc =} \StringTok{"L1"}\NormalTok{, }\CommentTok{\# intermediate confounder (post{-}exposure)}
+                         \AttributeTok{EMint =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# exposures*mediator interaction}
+                         \AttributeTok{mreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{), }\CommentTok{\# g(M=1|L1,A,L0)}
+                         \AttributeTok{yreg =} \StringTok{"linear"}\NormalTok{,}\CommentTok{\# Qbar.L2 = P(Y=1|M,L1,A,L0)}
+                         \AttributeTok{postcreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{), }\CommentTok{\# Qbar.L1 = P(L1=1|A,L0)}
+                         \AttributeTok{astar =} \DecValTok{0}\NormalTok{,}
+                         \AttributeTok{a =} \DecValTok{1}\NormalTok{,}
+                         \AttributeTok{mval =} \FunctionTok{list}\NormalTok{(}\DecValTok{0}\NormalTok{), }\CommentTok{\# do(M=0) to estimate CDE\_m}
+                         \AttributeTok{estimation =} \StringTok{"imputation"}\NormalTok{, }\CommentTok{\# if model= gformula}
+                         \AttributeTok{inference =} \StringTok{"bootstrap"}\NormalTok{,}
+                         \AttributeTok{boot.ci.type =} \StringTok{"per"}\NormalTok{, }\CommentTok{\# forpercentile, other option: "bca"}
+                         \AttributeTok{nboot =} \DecValTok{2}\NormalTok{) }\CommentTok{\# we should use a large number of bootstrap samples}
+\FunctionTok{summary}\NormalTok{(res\_gformula\_Qol)}
+
+\DocumentationTok{\#\#\# 1) Estimation of Qbar.Y = P(Y=1|M,L1,A,L0) with A*M interaction,}
+\DocumentationTok{\#\#\# Outcome regression:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = Y\_qol \textasciitilde{} A0\_ace + M\_smoking + A0\_ace * M\_smoking +}
+\CommentTok{\#         L0\_male + L0\_parent\_low\_educ\_lv + L1, family = gaussian(),}
+\CommentTok{\#       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)            74.8247     0.2133 350.823  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                 {-}3.7014     0.4295  {-}8.617  \textless{} 2e{-}16 ***}
+\CommentTok{\#   M\_smoking              {-}8.6336     0.2331 {-}37.042  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male                {-}0.7280     0.2019  {-}3.605 0.000313 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv  {-}2.8828     0.2116 {-}13.621  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L1                     {-}5.1668     0.2189 {-}23.608  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace:M\_smoking       {-}5.5119     0.6440  {-}8.559  \textless{} 2e{-}16 ***}
+
+\DocumentationTok{\#\#\# 2) Estimation of g(M=1|L1,A,L0), model of the mediator}
+\DocumentationTok{\#\#\# Mediator regressions:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = M\_smoking \textasciitilde{} A0\_ace + L0\_male + L0\_parent\_low\_educ\_lv +}
+\CommentTok{\#         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,}
+\CommentTok{\#       weights = getCall(x$reg.output$mreg[[1L]])$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error z value Pr(\textgreater{}|z|)}
+\CommentTok{\#   (Intercept)           {-}1.36249    0.04783 {-}28.488  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                 0.30994    0.06668   4.648 3.35e{-}06 ***}
+\CommentTok{\#   L0\_male                0.24661    0.04369   5.644 1.66e{-}08 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv  0.30628    0.04650   6.587 4.50e{-}11 ***}
+\CommentTok{\#   L1                     0.86045    0.04493  19.152  \textless{} 2e{-}16 ***}
+
+\DocumentationTok{\#\#\# 3) Estimation of Qbar.L1 = P(L1=1|A,L0), model of intermediate confounder}
+\DocumentationTok{\#\#\# Regressions for mediator{-}outcome confounders affected by the exposure:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = L1 \textasciitilde{} A0\_ace + L0\_male + L0\_parent\_low\_educ\_lv,}
+\CommentTok{\#       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,}
+\CommentTok{\#       weights = getCall(x$reg.output$postcreg[[1L]])$weights)}
+\CommentTok{\#}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                         Estimate Std. Error z value Pr(\textgreater{}|z|)}
+\CommentTok{\#   (Intercept)           {-}0.86983    0.04292 {-}20.267  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_ace                 0.94354    0.06475  14.572  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male               {-}0.19827    0.04289  {-}4.622 3.80e{-}06 ***}
+\CommentTok{\#   L0\_parent\_low\_educ\_lv  0.32047    0.04556   7.034 2.01e{-}12 ***}
+
+\DocumentationTok{\#\#\# 4) Effect decomposition on the mean difference scale via the g{-}formula approach}
+\CommentTok{\#}
+\CommentTok{\# Direct counterfactual imputation estimation with}
+\CommentTok{\# bootstrap standard errors, percentile confidence intervals and p{-}values}
+\CommentTok{\#}
+\CommentTok{\#                  Estimate Std.error   95\% CIL 95\% CIU  P.val}
+\CommentTok{\#   cde           {-}5.863750  0.233488 {-}4.933234  {-}4.620 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpnde         {-}7.565835  0.199867 {-}6.689581  {-}6.421 \textless{}2e{-}16 ***}
+\CommentTok{\#   rtnde         {-}8.463729  0.157383 {-}7.266085  {-}7.055 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpnie         {-}1.406410  0.021876 {-}0.971101  {-}0.942 \textless{}2e{-}16 ***}
+\CommentTok{\#   rtnie         {-}2.304304  0.064359 {-}1.604682  {-}1.518 \textless{}2e{-}16 ***}
+\CommentTok{\#   te            {-}9.870139  0.135507 {-}8.207796  {-}8.026 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintref       {-}1.702085  0.033622 {-}1.801518  {-}1.756 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintmed       {-}0.897894  0.042484 {-}0.633581  {-}0.577 \textless{}2e{-}16 ***}
+\CommentTok{\#   cde(prop)      0.594090  0.018945  0.575575   0.601 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintref(prop)  0.172448  0.007802  0.213991   0.224 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintmed(prop)  0.090971  0.006479  0.070244   0.079 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpnie(prop)    0.142491  0.004663  0.114737   0.121 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpm            0.233462  0.011142  0.184981   0.200 \textless{}2e{-}16 ***}
+\CommentTok{\#   rint           0.263419  0.014282  0.284235   0.303 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpe            0.405910  0.018945  0.398973   0.424 \textless{}2e{-}16 ***}
+\CommentTok{\#   {-}{-}{-}}
+\CommentTok{\#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1}
+\CommentTok{\#}
+\CommentTok{\# cde: controlled direct effect;}
+\CommentTok{\# rpnde: randomized analogue of pure natural direct effect;}
+\CommentTok{\# rtnde: randomized analogue of total natural direct effect;}
+\CommentTok{\# rpnie: randomized analogue of pure natural indirect effect;}
+\CommentTok{\# rtnie: randomized analogue of total natural indirect effect;}
+\CommentTok{\# te: total effect; rintref: randomized analogue of reference interaction;}
+\CommentTok{\# rintmed: randomized analogue of mediated interaction;}
+\CommentTok{\# cde(prop): proportion cde;}
+\CommentTok{\# rintref(prop): proportion rintref;}
+\CommentTok{\# rintmed(prop): proportion rintmed;}
+\CommentTok{\# rpnie(prop): proportion rpnie;}
+\CommentTok{\# rpm: randomized analogue of overall proportion mediated;}
+\CommentTok{\# rint: randomized analogue of overall proportion attributable to interaction;}
+\CommentTok{\# rpe: randomized analogue of overall proportion eliminated}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{ChapIptw}{%
 \chapter{Inverse Probability of Treatment Weighting (IPTW)}\label{ChapIptw}}

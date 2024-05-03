@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-04-14" />
+<meta name="date" content="2024-05-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -199,6 +199,7 @@ div.csl-indent {
 <li class="chapter" data-level="6.4.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.4.1</b> Parametric g-computation</a></li>
 <li class="chapter" data-level="6.4.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#g-computation-by-iterative-conditional-expectation"><i class="fa fa-check"></i><b>6.4.2</b> G-computation by iterative conditional expectation</a></li>
 </ul></li>
+<li class="chapter" data-level="6.5" data-path="ChapGcomp.html"><a href="ChapGcomp.html#using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition"><i class="fa fa-check"></i><b>6.5</b> Using the <code>CMAverse</code> package for 2-way, 3-way and 4-way decomposition</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="ChapIptw.html"><a href="ChapIptw.html"><i class="fa fa-check"></i><b>7</b> Inverse Probability of Treatment Weighting (IPTW)</a>
 <ul>
@@ -910,8 +911,136 @@ These causal effects can be estimated by g-computation, IPTW, or TMLE. G-computa
 <li>the marginal “randomized” Natural Direct and Indirect effect on quality of life are a <span class="math inline">\(MRDE \approx -6.6\)</span> and <span class="math inline">\(MRIE \approx -1.6\)</span>;</li>
 </ul>
 <p>95% confidence intervals can be calculated by bootstrap.</p>
-
 </div>
+</div>
+<div id="using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition" class="section level2 hasAnchor" number="6.5">
+<h2><span class="header-section-number">6.5</span> Using the <code>CMAverse</code> package for 2-way, 3-way and 4-way decomposition<a href="ChapGcomp.html#using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The <code>CMAverse</code> package can be used to estimate the 2-way, 3-way and 4-way decompositions of a total effect by parametric g-computation, whether the intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship is affected by the exposure <span class="math inline">\(A\)</span> or not.</p>
+<p>Here is an example with a continuous outcome using the <code>cmest</code> function. Note that :</p>
+<ul>
+<li>parametric g-computation is applied by specifying <code>model = "gformula"</code>. The <code>estimation</code> argument should be set to <code>imputation</code> (as the counterfactual values will be imputed).</li>
+<li>the presence of intermediate confounder <span class="math inline">\(L(1)\)</span> of the <span class="math inline">\(M-Y\)</span> relationship affected by the exposure <span class="math inline">\(A\)</span> can be specified using the <code>postcreg</code> argument,</li>
+<li>the presence of an <span class="math inline">\(A \ast M\)</span> interaction effect on the outcome is indicated using the <code>EMint</code> argument,</li>
+<li>for the estimation of the Controlled direct effect, the fixed value set for the mediator is indicated using the <code>mval</code> argument.</li>
+</ul>
+<p>The function returns the following results:</p>
+<ul>
+<li>fit of the Outcome regression <span class="math inline">\(\overline{Q}_Y = \mathbb{E}(Y \mid L(0),A,L(1),M)\)</span>,</li>
+<li>fit of the Mediator regression <span class="math inline">\(g_A = P(M=1 \mid L(0),A,L(1))\)</span>,</li>
+<li>fit of the intermediate confounder regression <span class="math inline">\(\overline{Q}_{L(1)} = P(L(1)=1\mid L(0),A)\)</span>,</li>
+<li>the 2-way, 3-way and 4-way decompositions.</li>
+</ul>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="ChapGcomp.html#cb27-1" tabindex="-1"></a><span class="fu">library</span>(CMAverse)</span>
+<span id="cb27-2"><a href="ChapGcomp.html#cb27-2" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="ChapGcomp.html#cb27-3" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb27-4"><a href="ChapGcomp.html#cb27-4" tabindex="-1"></a>res_gformula_Qol <span class="ot">&lt;-</span> <span class="fu">cmest</span>(<span class="at">data =</span> df2_int, <span class="co">#data.frame(df2_int[,c(&quot;L0_male&quot;,</span></span>
+<span id="cb27-5"><a href="ChapGcomp.html#cb27-5" tabindex="-1"></a>                                                       <span class="co">#&quot;L0_parent_low_educ_lv&quot;,</span></span>
+<span id="cb27-6"><a href="ChapGcomp.html#cb27-6" tabindex="-1"></a>                                                       <span class="co">#&quot;A0_ace&quot;)],</span></span>
+<span id="cb27-7"><a href="ChapGcomp.html#cb27-7" tabindex="-1"></a>                                           <span class="co">#L1=as.factor(df2_int$L1),</span></span>
+<span id="cb27-8"><a href="ChapGcomp.html#cb27-8" tabindex="-1"></a>                                           <span class="co">#df2_int[,c(&quot;M_smoking&quot;,&quot;Y_qol&quot;)]),</span></span>
+<span id="cb27-9"><a href="ChapGcomp.html#cb27-9" tabindex="-1"></a>                         <span class="at">model =</span> <span class="st">&quot;gformula&quot;</span>, <span class="co"># for parametric g-computation</span></span>
+<span id="cb27-10"><a href="ChapGcomp.html#cb27-10" tabindex="-1"></a>                         <span class="at">outcome =</span> <span class="st">&quot;Y_qol&quot;</span>, <span class="co"># outcome variable</span></span>
+<span id="cb27-11"><a href="ChapGcomp.html#cb27-11" tabindex="-1"></a>                         <span class="at">exposure =</span> <span class="st">&quot;A0_ace&quot;</span>, <span class="co"># exposure variable</span></span>
+<span id="cb27-12"><a href="ChapGcomp.html#cb27-12" tabindex="-1"></a>                         <span class="at">mediator =</span> <span class="st">&quot;M_smoking&quot;</span>, <span class="co"># mediator</span></span>
+<span id="cb27-13"><a href="ChapGcomp.html#cb27-13" tabindex="-1"></a>                         <span class="at">basec =</span> <span class="fu">c</span>(<span class="st">&quot;L0_male&quot;</span>,</span>
+<span id="cb27-14"><a href="ChapGcomp.html#cb27-14" tabindex="-1"></a>                                   <span class="st">&quot;L0_parent_low_educ_lv&quot;</span>), <span class="co"># confounders</span></span>
+<span id="cb27-15"><a href="ChapGcomp.html#cb27-15" tabindex="-1"></a>                         <span class="at">postc =</span> <span class="st">&quot;L1&quot;</span>, <span class="co"># intermediate confounder (post-exposure)</span></span>
+<span id="cb27-16"><a href="ChapGcomp.html#cb27-16" tabindex="-1"></a>                         <span class="at">EMint =</span> <span class="cn">TRUE</span>, <span class="co"># exposures*mediator interaction</span></span>
+<span id="cb27-17"><a href="ChapGcomp.html#cb27-17" tabindex="-1"></a>                         <span class="at">mreg =</span> <span class="fu">list</span>(<span class="st">&quot;logistic&quot;</span>), <span class="co"># g(M=1|L1,A,L0)</span></span>
+<span id="cb27-18"><a href="ChapGcomp.html#cb27-18" tabindex="-1"></a>                         <span class="at">yreg =</span> <span class="st">&quot;linear&quot;</span>,<span class="co"># Qbar.L2 = P(Y=1|M,L1,A,L0)</span></span>
+<span id="cb27-19"><a href="ChapGcomp.html#cb27-19" tabindex="-1"></a>                         <span class="at">postcreg =</span> <span class="fu">list</span>(<span class="st">&quot;logistic&quot;</span>), <span class="co"># Qbar.L1 = P(L1=1|A,L0)</span></span>
+<span id="cb27-20"><a href="ChapGcomp.html#cb27-20" tabindex="-1"></a>                         <span class="at">astar =</span> <span class="dv">0</span>,</span>
+<span id="cb27-21"><a href="ChapGcomp.html#cb27-21" tabindex="-1"></a>                         <span class="at">a =</span> <span class="dv">1</span>,</span>
+<span id="cb27-22"><a href="ChapGcomp.html#cb27-22" tabindex="-1"></a>                         <span class="at">mval =</span> <span class="fu">list</span>(<span class="dv">0</span>), <span class="co"># do(M=0) to estimate CDE_m</span></span>
+<span id="cb27-23"><a href="ChapGcomp.html#cb27-23" tabindex="-1"></a>                         <span class="at">estimation =</span> <span class="st">&quot;imputation&quot;</span>, <span class="co"># if model= gformula</span></span>
+<span id="cb27-24"><a href="ChapGcomp.html#cb27-24" tabindex="-1"></a>                         <span class="at">inference =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
+<span id="cb27-25"><a href="ChapGcomp.html#cb27-25" tabindex="-1"></a>                         <span class="at">boot.ci.type =</span> <span class="st">&quot;per&quot;</span>, <span class="co"># forpercentile, other option: &quot;bca&quot;</span></span>
+<span id="cb27-26"><a href="ChapGcomp.html#cb27-26" tabindex="-1"></a>                         <span class="at">nboot =</span> <span class="dv">2</span>) <span class="co"># we should use a large number of bootstrap samples</span></span>
+<span id="cb27-27"><a href="ChapGcomp.html#cb27-27" tabindex="-1"></a><span class="fu">summary</span>(res_gformula_Qol)</span>
+<span id="cb27-28"><a href="ChapGcomp.html#cb27-28" tabindex="-1"></a></span>
+<span id="cb27-29"><a href="ChapGcomp.html#cb27-29" tabindex="-1"></a><span class="do">### 1) Estimation of Qbar.Y = P(Y=1|M,L1,A,L0) with A*M interaction,</span></span>
+<span id="cb27-30"><a href="ChapGcomp.html#cb27-30" tabindex="-1"></a><span class="do">### Outcome regression:</span></span>
+<span id="cb27-31"><a href="ChapGcomp.html#cb27-31" tabindex="-1"></a><span class="co"># Call:</span></span>
+<span id="cb27-32"><a href="ChapGcomp.html#cb27-32" tabindex="-1"></a><span class="co">#   glm(formula = Y_qol ~ A0_ace + M_smoking + A0_ace * M_smoking +</span></span>
+<span id="cb27-33"><a href="ChapGcomp.html#cb27-33" tabindex="-1"></a><span class="co">#         L0_male + L0_parent_low_educ_lv + L1, family = gaussian(),</span></span>
+<span id="cb27-34"><a href="ChapGcomp.html#cb27-34" tabindex="-1"></a><span class="co">#       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)</span></span>
+<span id="cb27-35"><a href="ChapGcomp.html#cb27-35" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb27-36"><a href="ChapGcomp.html#cb27-36" tabindex="-1"></a><span class="co">#                         Estimate Std. Error t value Pr(&gt;|t|)</span></span>
+<span id="cb27-37"><a href="ChapGcomp.html#cb27-37" tabindex="-1"></a><span class="co">#   (Intercept)            74.8247     0.2133 350.823  &lt; 2e-16 ***</span></span>
+<span id="cb27-38"><a href="ChapGcomp.html#cb27-38" tabindex="-1"></a><span class="co">#   A0_ace                 -3.7014     0.4295  -8.617  &lt; 2e-16 ***</span></span>
+<span id="cb27-39"><a href="ChapGcomp.html#cb27-39" tabindex="-1"></a><span class="co">#   M_smoking              -8.6336     0.2331 -37.042  &lt; 2e-16 ***</span></span>
+<span id="cb27-40"><a href="ChapGcomp.html#cb27-40" tabindex="-1"></a><span class="co">#   L0_male                -0.7280     0.2019  -3.605 0.000313 ***</span></span>
+<span id="cb27-41"><a href="ChapGcomp.html#cb27-41" tabindex="-1"></a><span class="co">#   L0_parent_low_educ_lv  -2.8828     0.2116 -13.621  &lt; 2e-16 ***</span></span>
+<span id="cb27-42"><a href="ChapGcomp.html#cb27-42" tabindex="-1"></a><span class="co">#   L1                     -5.1668     0.2189 -23.608  &lt; 2e-16 ***</span></span>
+<span id="cb27-43"><a href="ChapGcomp.html#cb27-43" tabindex="-1"></a><span class="co">#   A0_ace:M_smoking       -5.5119     0.6440  -8.559  &lt; 2e-16 ***</span></span>
+<span id="cb27-44"><a href="ChapGcomp.html#cb27-44" tabindex="-1"></a></span>
+<span id="cb27-45"><a href="ChapGcomp.html#cb27-45" tabindex="-1"></a><span class="do">### 2) Estimation of g(M=1|L1,A,L0), model of the mediator</span></span>
+<span id="cb27-46"><a href="ChapGcomp.html#cb27-46" tabindex="-1"></a><span class="do">### Mediator regressions:</span></span>
+<span id="cb27-47"><a href="ChapGcomp.html#cb27-47" tabindex="-1"></a><span class="co"># Call:</span></span>
+<span id="cb27-48"><a href="ChapGcomp.html#cb27-48" tabindex="-1"></a><span class="co">#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +</span></span>
+<span id="cb27-49"><a href="ChapGcomp.html#cb27-49" tabindex="-1"></a><span class="co">#         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,</span></span>
+<span id="cb27-50"><a href="ChapGcomp.html#cb27-50" tabindex="-1"></a><span class="co">#       weights = getCall(x$reg.output$mreg[[1L]])$weights)</span></span>
+<span id="cb27-51"><a href="ChapGcomp.html#cb27-51" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb27-52"><a href="ChapGcomp.html#cb27-52" tabindex="-1"></a><span class="co">#                         Estimate Std. Error z value Pr(&gt;|z|)</span></span>
+<span id="cb27-53"><a href="ChapGcomp.html#cb27-53" tabindex="-1"></a><span class="co">#   (Intercept)           -1.36249    0.04783 -28.488  &lt; 2e-16 ***</span></span>
+<span id="cb27-54"><a href="ChapGcomp.html#cb27-54" tabindex="-1"></a><span class="co">#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***</span></span>
+<span id="cb27-55"><a href="ChapGcomp.html#cb27-55" tabindex="-1"></a><span class="co">#   L0_male                0.24661    0.04369   5.644 1.66e-08 ***</span></span>
+<span id="cb27-56"><a href="ChapGcomp.html#cb27-56" tabindex="-1"></a><span class="co">#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***</span></span>
+<span id="cb27-57"><a href="ChapGcomp.html#cb27-57" tabindex="-1"></a><span class="co">#   L1                     0.86045    0.04493  19.152  &lt; 2e-16 ***</span></span>
+<span id="cb27-58"><a href="ChapGcomp.html#cb27-58" tabindex="-1"></a></span>
+<span id="cb27-59"><a href="ChapGcomp.html#cb27-59" tabindex="-1"></a><span class="do">### 3) Estimation of Qbar.L1 = P(L1=1|A,L0), model of intermediate confounder</span></span>
+<span id="cb27-60"><a href="ChapGcomp.html#cb27-60" tabindex="-1"></a><span class="do">### Regressions for mediator-outcome confounders affected by the exposure:</span></span>
+<span id="cb27-61"><a href="ChapGcomp.html#cb27-61" tabindex="-1"></a><span class="co"># Call:</span></span>
+<span id="cb27-62"><a href="ChapGcomp.html#cb27-62" tabindex="-1"></a><span class="co">#   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,</span></span>
+<span id="cb27-63"><a href="ChapGcomp.html#cb27-63" tabindex="-1"></a><span class="co">#       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,</span></span>
+<span id="cb27-64"><a href="ChapGcomp.html#cb27-64" tabindex="-1"></a><span class="co">#       weights = getCall(x$reg.output$postcreg[[1L]])$weights)</span></span>
+<span id="cb27-65"><a href="ChapGcomp.html#cb27-65" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb27-66"><a href="ChapGcomp.html#cb27-66" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb27-67"><a href="ChapGcomp.html#cb27-67" tabindex="-1"></a><span class="co">#                         Estimate Std. Error z value Pr(&gt;|z|)</span></span>
+<span id="cb27-68"><a href="ChapGcomp.html#cb27-68" tabindex="-1"></a><span class="co">#   (Intercept)           -0.86983    0.04292 -20.267  &lt; 2e-16 ***</span></span>
+<span id="cb27-69"><a href="ChapGcomp.html#cb27-69" tabindex="-1"></a><span class="co">#   A0_ace                 0.94354    0.06475  14.572  &lt; 2e-16 ***</span></span>
+<span id="cb27-70"><a href="ChapGcomp.html#cb27-70" tabindex="-1"></a><span class="co">#   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***</span></span>
+<span id="cb27-71"><a href="ChapGcomp.html#cb27-71" tabindex="-1"></a><span class="co">#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***</span></span>
+<span id="cb27-72"><a href="ChapGcomp.html#cb27-72" tabindex="-1"></a></span>
+<span id="cb27-73"><a href="ChapGcomp.html#cb27-73" tabindex="-1"></a><span class="do">### 4) Effect decomposition on the mean difference scale via the g-formula approach</span></span>
+<span id="cb27-74"><a href="ChapGcomp.html#cb27-74" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb27-75"><a href="ChapGcomp.html#cb27-75" tabindex="-1"></a><span class="co"># Direct counterfactual imputation estimation with</span></span>
+<span id="cb27-76"><a href="ChapGcomp.html#cb27-76" tabindex="-1"></a><span class="co"># bootstrap standard errors, percentile confidence intervals and p-values</span></span>
+<span id="cb27-77"><a href="ChapGcomp.html#cb27-77" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb27-78"><a href="ChapGcomp.html#cb27-78" tabindex="-1"></a><span class="co">#                  Estimate Std.error   95% CIL 95% CIU  P.val</span></span>
+<span id="cb27-79"><a href="ChapGcomp.html#cb27-79" tabindex="-1"></a><span class="co">#   cde           -5.863750  0.233488 -4.933234  -4.620 &lt;2e-16 ***</span></span>
+<span id="cb27-80"><a href="ChapGcomp.html#cb27-80" tabindex="-1"></a><span class="co">#   rpnde         -7.565835  0.199867 -6.689581  -6.421 &lt;2e-16 ***</span></span>
+<span id="cb27-81"><a href="ChapGcomp.html#cb27-81" tabindex="-1"></a><span class="co">#   rtnde         -8.463729  0.157383 -7.266085  -7.055 &lt;2e-16 ***</span></span>
+<span id="cb27-82"><a href="ChapGcomp.html#cb27-82" tabindex="-1"></a><span class="co">#   rpnie         -1.406410  0.021876 -0.971101  -0.942 &lt;2e-16 ***</span></span>
+<span id="cb27-83"><a href="ChapGcomp.html#cb27-83" tabindex="-1"></a><span class="co">#   rtnie         -2.304304  0.064359 -1.604682  -1.518 &lt;2e-16 ***</span></span>
+<span id="cb27-84"><a href="ChapGcomp.html#cb27-84" tabindex="-1"></a><span class="co">#   te            -9.870139  0.135507 -8.207796  -8.026 &lt;2e-16 ***</span></span>
+<span id="cb27-85"><a href="ChapGcomp.html#cb27-85" tabindex="-1"></a><span class="co">#   rintref       -1.702085  0.033622 -1.801518  -1.756 &lt;2e-16 ***</span></span>
+<span id="cb27-86"><a href="ChapGcomp.html#cb27-86" tabindex="-1"></a><span class="co">#   rintmed       -0.897894  0.042484 -0.633581  -0.577 &lt;2e-16 ***</span></span>
+<span id="cb27-87"><a href="ChapGcomp.html#cb27-87" tabindex="-1"></a><span class="co">#   cde(prop)      0.594090  0.018945  0.575575   0.601 &lt;2e-16 ***</span></span>
+<span id="cb27-88"><a href="ChapGcomp.html#cb27-88" tabindex="-1"></a><span class="co">#   rintref(prop)  0.172448  0.007802  0.213991   0.224 &lt;2e-16 ***</span></span>
+<span id="cb27-89"><a href="ChapGcomp.html#cb27-89" tabindex="-1"></a><span class="co">#   rintmed(prop)  0.090971  0.006479  0.070244   0.079 &lt;2e-16 ***</span></span>
+<span id="cb27-90"><a href="ChapGcomp.html#cb27-90" tabindex="-1"></a><span class="co">#   rpnie(prop)    0.142491  0.004663  0.114737   0.121 &lt;2e-16 ***</span></span>
+<span id="cb27-91"><a href="ChapGcomp.html#cb27-91" tabindex="-1"></a><span class="co">#   rpm            0.233462  0.011142  0.184981   0.200 &lt;2e-16 ***</span></span>
+<span id="cb27-92"><a href="ChapGcomp.html#cb27-92" tabindex="-1"></a><span class="co">#   rint           0.263419  0.014282  0.284235   0.303 &lt;2e-16 ***</span></span>
+<span id="cb27-93"><a href="ChapGcomp.html#cb27-93" tabindex="-1"></a><span class="co">#   rpe            0.405910  0.018945  0.398973   0.424 &lt;2e-16 ***</span></span>
+<span id="cb27-94"><a href="ChapGcomp.html#cb27-94" tabindex="-1"></a><span class="co">#   ---</span></span>
+<span id="cb27-95"><a href="ChapGcomp.html#cb27-95" tabindex="-1"></a><span class="co">#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span></span>
+<span id="cb27-96"><a href="ChapGcomp.html#cb27-96" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb27-97"><a href="ChapGcomp.html#cb27-97" tabindex="-1"></a><span class="co"># cde: controlled direct effect;</span></span>
+<span id="cb27-98"><a href="ChapGcomp.html#cb27-98" tabindex="-1"></a><span class="co"># rpnde: randomized analogue of pure natural direct effect;</span></span>
+<span id="cb27-99"><a href="ChapGcomp.html#cb27-99" tabindex="-1"></a><span class="co"># rtnde: randomized analogue of total natural direct effect;</span></span>
+<span id="cb27-100"><a href="ChapGcomp.html#cb27-100" tabindex="-1"></a><span class="co"># rpnie: randomized analogue of pure natural indirect effect;</span></span>
+<span id="cb27-101"><a href="ChapGcomp.html#cb27-101" tabindex="-1"></a><span class="co"># rtnie: randomized analogue of total natural indirect effect;</span></span>
+<span id="cb27-102"><a href="ChapGcomp.html#cb27-102" tabindex="-1"></a><span class="co"># te: total effect; rintref: randomized analogue of reference interaction;</span></span>
+<span id="cb27-103"><a href="ChapGcomp.html#cb27-103" tabindex="-1"></a><span class="co"># rintmed: randomized analogue of mediated interaction;</span></span>
+<span id="cb27-104"><a href="ChapGcomp.html#cb27-104" tabindex="-1"></a><span class="co"># cde(prop): proportion cde;</span></span>
+<span id="cb27-105"><a href="ChapGcomp.html#cb27-105" tabindex="-1"></a><span class="co"># rintref(prop): proportion rintref;</span></span>
+<span id="cb27-106"><a href="ChapGcomp.html#cb27-106" tabindex="-1"></a><span class="co"># rintmed(prop): proportion rintmed;</span></span>
+<span id="cb27-107"><a href="ChapGcomp.html#cb27-107" tabindex="-1"></a><span class="co"># rpnie(prop): proportion rpnie;</span></span>
+<span id="cb27-108"><a href="ChapGcomp.html#cb27-108" tabindex="-1"></a><span class="co"># rpm: randomized analogue of overall proportion mediated;</span></span>
+<span id="cb27-109"><a href="ChapGcomp.html#cb27-109" tabindex="-1"></a><span class="co"># rint: randomized analogue of overall proportion attributable to interaction;</span></span>
+<span id="cb27-110"><a href="ChapGcomp.html#cb27-110" tabindex="-1"></a><span class="co"># rpe: randomized analogue of overall proportion eliminated</span></span></code></pre></div>
+
 </div>
 </div>
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>

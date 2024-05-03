@@ -523,6 +523,116 @@ cmdag(outcome = "Y_death", exposure = "A0_ace", mediator = "M_smoking",
 # The CMAverse package can be used to estimate CDE, rNDE and rNIE by parametric g-computation
 # (using the 'gformula' option in the )
 
+### Continuous outcome
+## The g-formula Approach
+set.seed(1234)
+res_gformula_Qol <- cmest(data = df2_int, #data.frame(df2_int[,c("L0_male",
+                                                       #"L0_parent_low_educ_lv",
+                                                       #"A0_ace")],
+                                           #L1=as.factor(df2_int$L1),
+                                           #df2_int[,c("M_smoking","Y_qol")]),
+                         model = "gformula", # for parametric g-computation
+                         outcome = "Y_qol", # outcome variable
+                         exposure = "A0_ace", # exposure variable
+                         mediator = "M_smoking", # mediator
+                         basec = c("L0_male",
+                                   "L0_parent_low_educ_lv"), # confounders
+                         postc = "L1", # intermediate confounder (post-exposure)
+                         EMint = TRUE, # exposures*mediator interaction
+                         mreg = list("logistic"), # g(M=1|L1,A,L0)
+                         yreg = "linear",# Qbar.L2 = P(Y=1|M,L1,A,L0)
+                         postcreg = list("logistic"), # Qbar.L1 = P(L1=1|A,L0)
+                         astar = 0,
+                         a = 1,
+                         mval = list(0), # do(M=0) to estimate CDE_m
+                         estimation = "imputation", # if model= gformula
+                         inference = "bootstrap",
+                         boot.ci.type = "per", # forpercentile, other option: "bca"
+                         nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_Qol)
+
+### 1) Estimation of Qbar.Y = P(Y=1|M,L1,A,L0) with A*M interaction,
+### Outcome regression:
+# Call:
+#   glm(formula = Y_qol ~ A0_ace + M_smoking + A0_ace * M_smoking +
+#         L0_male + L0_parent_low_educ_lv + L1, family = gaussian(),
+#       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)
+# (Intercept)            74.8247     0.2133 350.823  < 2e-16 ***
+#   A0_ace                 -3.7014     0.4295  -8.617  < 2e-16 ***
+#   M_smoking              -8.6336     0.2331 -37.042  < 2e-16 ***
+#   L0_male                -0.7280     0.2019  -3.605 0.000313 ***
+#   L0_parent_low_educ_lv  -2.8828     0.2116 -13.621  < 2e-16 ***
+#   L1                     -5.1668     0.2189 -23.608  < 2e-16 ***
+#   A0_ace:M_smoking       -5.5119     0.6440  -8.559  < 2e-16 ***
+
+### 2) Estimation of g(M=1|L1,A,L0), model of the mediator
+### Mediator regressions:
+# Call:
+#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +
+#         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
+#       weights = getCall(x$reg.output$mreg[[1L]])$weights)
+# Coefficients:
+#   Estimate Std. Error z value Pr(>|z|)
+# (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
+#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
+#   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
+#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
+#   L1                     0.86045    0.04493  19.152  < 2e-16 ***
+
+### 3) Estimation of Qbar.L1 = P(L1=1|A,L0), model of intermediate confounder
+### Regressions for mediator-outcome confounders affected by the exposure:
+# Call:
+#   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+#       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,
+#       weights = getCall(x$reg.output$postcreg[[1L]])$weights)
+#
+# Coefficients:
+#   Estimate Std. Error z value Pr(>|z|)
+# (Intercept)           -0.86983    0.04292 -20.267  < 2e-16 ***
+#   A0_ace                 0.94354    0.06475  14.572  < 2e-16 ***
+#   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***
+#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***
+
+### 4) Effect decomposition on the mean difference scale via the g-formula approach
+#
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+# Estimate Std.error   95% CIL 95% CIU  P.val
+#   cde           -5.863750  0.233488 -4.933234  -4.620 <2e-16 ***
+#   rpnde         -7.565835  0.199867 -6.689581  -6.421 <2e-16 ***
+#   rtnde         -8.463729  0.157383 -7.266085  -7.055 <2e-16 ***
+#   rpnie         -1.406410  0.021876 -0.971101  -0.942 <2e-16 ***
+#   rtnie         -2.304304  0.064359 -1.604682  -1.518 <2e-16 ***
+#   te            -9.870139  0.135507 -8.207796  -8.026 <2e-16 ***
+#   rintref       -1.702085  0.033622 -1.801518  -1.756 <2e-16 ***
+#   rintmed       -0.897894  0.042484 -0.633581  -0.577 <2e-16 ***
+#   cde(prop)      0.594090  0.018945  0.575575   0.601 <2e-16 ***
+#   rintref(prop)  0.172448  0.007802  0.213991   0.224 <2e-16 ***
+#   rintmed(prop)  0.090971  0.006479  0.070244   0.079 <2e-16 ***
+#   rpnie(prop)    0.142491  0.004663  0.114737   0.121 <2e-16 ***
+#   rpm            0.233462  0.011142  0.184981   0.200 <2e-16 ***
+#   rint           0.263419  0.014282  0.284235   0.303 <2e-16 ***
+#   rpe            0.405910  0.018945  0.398973   0.424 <2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#
+# cde: controlled direct effect;
+# rpnde: randomized analogue of pure natural direct effect;
+# rtnde: randomized analogue of total natural direct effect;
+# rpnie: randomized analogue of pure natural indirect effect;
+# rtnie: randomized analogue of total natural indirect effect;
+# te: total effect; rintref: randomized analogue of reference interaction;
+# rintmed: randomized analogue of mediated interaction;
+# cde(prop): proportion cde;
+# rintref(prop): proportion rintref;
+# rintmed(prop): proportion rintmed;
+# rpnie(prop): proportion rpnie;
+# rpm: randomized analogue of overall proportion mediated;
+# rint: randomized analogue of overall proportion attributable to interaction;
+# rpe: randomized analogue of overall proportion eliminated
 
 ## The g-formula Approach
 set.seed(1234)
