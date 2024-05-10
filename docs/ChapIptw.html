@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-05-03" />
+<meta name="date" content="2024-05-10" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -312,33 +312,33 @@ div.csl-indent {
 <li><p>Apply weights corresponding to the inverse of the predicted probability <span class="math inline">\(w_i = \frac{1}{\hat{g}(A = a_i \mid L(0)_i)}\)</span></p></li>
 <li><p>Use the empirical mean of the weighted outcome <span class="math inline">\(Y\)</span>: <span class="math inline">\(\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A=a_i \mid L(0)_i)} Y_i\)</span></p></li>
 </ol>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="ChapIptw.html#cb28-1" tabindex="-1"></a><span class="do">## 1. Estimate g</span></span>
-<span id="cb28-2"><a href="ChapIptw.html#cb28-2" tabindex="-1"></a>g.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
-<span id="cb28-3"><a href="ChapIptw.html#cb28-3" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-4"><a href="ChapIptw.html#cb28-4" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="ChapIptw.html#cb28-5" tabindex="-1"></a><span class="do">## 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb28-6"><a href="ChapIptw.html#cb28-6" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
-<span id="cb28-7"><a href="ChapIptw.html#cb28-7" tabindex="-1"></a>pred.g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-8"><a href="ChapIptw.html#cb28-8" tabindex="-1"></a>pred.g0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.L</span>
-<span id="cb28-9"><a href="ChapIptw.html#cb28-9" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment A=a_i is :</span></span>
-<span id="cb28-10"><a href="ChapIptw.html#cb28-10" tabindex="-1"></a>gA.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
-<span id="cb28-11"><a href="ChapIptw.html#cb28-11" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>]</span>
-<span id="cb28-12"><a href="ChapIptw.html#cb28-12" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>]</span>
-<span id="cb28-13"><a href="ChapIptw.html#cb28-13" tabindex="-1"></a></span>
-<span id="cb28-14"><a href="ChapIptw.html#cb28-14" tabindex="-1"></a><span class="do">## 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
-<span id="cb28-15"><a href="ChapIptw.html#cb28-15" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gA.L</span>
-<span id="cb28-16"><a href="ChapIptw.html#cb28-16" tabindex="-1"></a></span>
-<span id="cb28-17"><a href="ChapIptw.html#cb28-17" tabindex="-1"></a><span class="do">## 4. Use the empirical mean of the weighted outcome</span></span>
-<span id="cb28-18"><a href="ChapIptw.html#cb28-18" tabindex="-1"></a><span class="co"># point estimates:</span></span>
-<span id="cb28-19"><a href="ChapIptw.html#cb28-19" tabindex="-1"></a>IPTW.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
-<span id="cb28-20"><a href="ChapIptw.html#cb28-20" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death)</span>
-<span id="cb28-21"><a href="ChapIptw.html#cb28-21" tabindex="-1"></a>IPTW.death</span>
-<span id="cb28-22"><a href="ChapIptw.html#cb28-22" tabindex="-1"></a><span class="co"># [1] 0.08224947</span></span>
-<span id="cb28-23"><a href="ChapIptw.html#cb28-23" tabindex="-1"></a></span>
-<span id="cb28-24"><a href="ChapIptw.html#cb28-24" tabindex="-1"></a>IPTW.qol <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
-<span id="cb28-25"><a href="ChapIptw.html#cb28-25" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol)</span>
-<span id="cb28-26"><a href="ChapIptw.html#cb28-26" tabindex="-1"></a>IPTW.qol</span>
-<span id="cb28-27"><a href="ChapIptw.html#cb28-27" tabindex="-1"></a><span class="co"># [1] -8.436797</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="ChapIptw.html#cb32-1" tabindex="-1"></a><span class="do">## 1. Estimate g</span></span>
+<span id="cb32-2"><a href="ChapIptw.html#cb32-2" tabindex="-1"></a>g.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
+<span id="cb32-3"><a href="ChapIptw.html#cb32-3" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb32-4"><a href="ChapIptw.html#cb32-4" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="ChapIptw.html#cb32-5" tabindex="-1"></a><span class="do">## 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb32-6"><a href="ChapIptw.html#cb32-6" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
+<span id="cb32-7"><a href="ChapIptw.html#cb32-7" tabindex="-1"></a>pred.g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb32-8"><a href="ChapIptw.html#cb32-8" tabindex="-1"></a>pred.g0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.L</span>
+<span id="cb32-9"><a href="ChapIptw.html#cb32-9" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment A=a_i is :</span></span>
+<span id="cb32-10"><a href="ChapIptw.html#cb32-10" tabindex="-1"></a>gA.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
+<span id="cb32-11"><a href="ChapIptw.html#cb32-11" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>]</span>
+<span id="cb32-12"><a href="ChapIptw.html#cb32-12" tabindex="-1"></a>gA.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>]</span>
+<span id="cb32-13"><a href="ChapIptw.html#cb32-13" tabindex="-1"></a></span>
+<span id="cb32-14"><a href="ChapIptw.html#cb32-14" tabindex="-1"></a><span class="do">## 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
+<span id="cb32-15"><a href="ChapIptw.html#cb32-15" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gA.L</span>
+<span id="cb32-16"><a href="ChapIptw.html#cb32-16" tabindex="-1"></a></span>
+<span id="cb32-17"><a href="ChapIptw.html#cb32-17" tabindex="-1"></a><span class="do">## 4. Use the empirical mean of the weighted outcome</span></span>
+<span id="cb32-18"><a href="ChapIptw.html#cb32-18" tabindex="-1"></a><span class="co"># point estimates:</span></span>
+<span id="cb32-19"><a href="ChapIptw.html#cb32-19" tabindex="-1"></a>IPTW.death <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
+<span id="cb32-20"><a href="ChapIptw.html#cb32-20" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death)</span>
+<span id="cb32-21"><a href="ChapIptw.html#cb32-21" tabindex="-1"></a>IPTW.death</span>
+<span id="cb32-22"><a href="ChapIptw.html#cb32-22" tabindex="-1"></a><span class="co"># [1] 0.08224947</span></span>
+<span id="cb32-23"><a href="ChapIptw.html#cb32-23" tabindex="-1"></a></span>
+<span id="cb32-24"><a href="ChapIptw.html#cb32-24" tabindex="-1"></a>IPTW.qol <span class="ot">&lt;-</span> <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
+<span id="cb32-25"><a href="ChapIptw.html#cb32-25" tabindex="-1"></a>  <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol)</span>
+<span id="cb32-26"><a href="ChapIptw.html#cb32-26" tabindex="-1"></a>IPTW.qol</span>
+<span id="cb32-27"><a href="ChapIptw.html#cb32-27" tabindex="-1"></a><span class="co"># [1] -8.436797</span></span></code></pre></div>
 <p>The ATE estimates using IPTW for death probability and mean quality of life are respectively +8.2% and -8.44.</p>
 </div>
 <div id="stabilized-iptw-for-the-ate" class="section level3 hasAnchor" number="7.1.2">
@@ -348,22 +348,22 @@ div.csl-indent {
 \hat{\mathbb{E}}(Y_1) - \hat{\mathbb{E}}(Y_0) =  \frac{\frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=1)\hat{g}^*(A_i=1)}{\hat{g}(A_i=1 \mid L(0)_i)} Y_i}{ \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=1)\hat{g}^*(A_i=1)}{\hat{g}(A_i=1 \mid L(0)_i)}} - \frac{\frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=0)\hat{g}^*(A_i=0)}{\hat{g}(A_i=0 \mid L(0)_i)} Y_i}{ \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=0)\hat{g}^*(A_i=0)}{\hat{g}(A_i=0 \mid L(0)_i)}}
 \end{equation}\]</span>
 The estimation algorithm is the same as for IPTW, but taking into account any non-null function of <span class="math inline">\(A\)</span> (<span class="math inline">\(g^*(A_i=a)\)</span>) in the denominator of the weight in step 3, and applying the stabilized estimator in step 4.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="ChapIptw.html#cb29-1" tabindex="-1"></a><span class="do">## 3. For example, applying g^*(A) = 1</span></span>
-<span id="cb29-2"><a href="ChapIptw.html#cb29-2" tabindex="-1"></a><span class="do">## 4. Applying the stabilized estimator</span></span>
-<span id="cb29-3"><a href="ChapIptw.html#cb29-3" tabindex="-1"></a><span class="co"># point estimates:</span></span>
-<span id="cb29-4"><a href="ChapIptw.html#cb29-4" tabindex="-1"></a>s.IPTW.death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
-<span id="cb29-5"><a href="ChapIptw.html#cb29-5" tabindex="-1"></a>                   <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
-<span id="cb29-6"><a href="ChapIptw.html#cb29-6" tabindex="-1"></a>  (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
-<span id="cb29-7"><a href="ChapIptw.html#cb29-7" tabindex="-1"></a>     <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>)))</span>
-<span id="cb29-8"><a href="ChapIptw.html#cb29-8" tabindex="-1"></a>s.IPTW.death</span>
-<span id="cb29-9"><a href="ChapIptw.html#cb29-9" tabindex="-1"></a><span class="co"># [1] 0.08294185</span></span>
-<span id="cb29-10"><a href="ChapIptw.html#cb29-10" tabindex="-1"></a></span>
-<span id="cb29-11"><a href="ChapIptw.html#cb29-11" tabindex="-1"></a>s.IPTW.qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span></span>
-<span id="cb29-12"><a href="ChapIptw.html#cb29-12" tabindex="-1"></a>                 <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
-<span id="cb29-13"><a href="ChapIptw.html#cb29-13" tabindex="-1"></a>  (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span></span>
-<span id="cb29-14"><a href="ChapIptw.html#cb29-14" tabindex="-1"></a>     <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>)))</span>
-<span id="cb29-15"><a href="ChapIptw.html#cb29-15" tabindex="-1"></a>s.IPTW.qol</span>
-<span id="cb29-16"><a href="ChapIptw.html#cb29-16" tabindex="-1"></a><span class="co"># [1] -8.291992</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="ChapIptw.html#cb33-1" tabindex="-1"></a><span class="do">## 3. For example, applying g^*(A) = 1</span></span>
+<span id="cb33-2"><a href="ChapIptw.html#cb33-2" tabindex="-1"></a><span class="do">## 4. Applying the stabilized estimator</span></span>
+<span id="cb33-3"><a href="ChapIptw.html#cb33-3" tabindex="-1"></a><span class="co"># point estimates:</span></span>
+<span id="cb33-4"><a href="ChapIptw.html#cb33-4" tabindex="-1"></a>s.IPTW.death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
+<span id="cb33-5"><a href="ChapIptw.html#cb33-5" tabindex="-1"></a>                   <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
+<span id="cb33-6"><a href="ChapIptw.html#cb33-6" tabindex="-1"></a>  (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span></span>
+<span id="cb33-7"><a href="ChapIptw.html#cb33-7" tabindex="-1"></a>     <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>)))</span>
+<span id="cb33-8"><a href="ChapIptw.html#cb33-8" tabindex="-1"></a>s.IPTW.death</span>
+<span id="cb33-9"><a href="ChapIptw.html#cb33-9" tabindex="-1"></a><span class="co"># [1] 0.08294185</span></span>
+<span id="cb33-10"><a href="ChapIptw.html#cb33-10" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="ChapIptw.html#cb33-11" tabindex="-1"></a>s.IPTW.qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span></span>
+<span id="cb33-12"><a href="ChapIptw.html#cb33-12" tabindex="-1"></a>                 <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
+<span id="cb33-13"><a href="ChapIptw.html#cb33-13" tabindex="-1"></a>  (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span></span>
+<span id="cb33-14"><a href="ChapIptw.html#cb33-14" tabindex="-1"></a>     <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>)))</span>
+<span id="cb33-15"><a href="ChapIptw.html#cb33-15" tabindex="-1"></a>s.IPTW.qol</span>
+<span id="cb33-16"><a href="ChapIptw.html#cb33-16" tabindex="-1"></a><span class="co"># [1] -8.291992</span></span></code></pre></div>
 <p>The ATE estimates using stabilized IPTW for death probability and mean quality of life are respectively +8.3% and -8.29.</p>
 </div>
 </div>
@@ -383,72 +383,72 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 <li><p>Apply weights corresponding to the inverse of the predicted probability <span class="math inline">\(w_{A_i} = \frac{1}{\hat{g}(A = a_i \mid L(0)_i)}\)</span> and <span class="math inline">\(w_{M_i} = \frac{1}{\hat{g}(M = m_i \mid L(0)_i,A_i,L(1)_i)}\)</span></p></li>
 <li><p>Use the empirical mean of the weighted outcome <span class="math inline">\(Y\)</span>: <span class="math inline">\(\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A=a_i \mid L(0)_i) \times \hat{g}(M=m_i \mid L(0)_i,A_i,L(1)_i)} Y_i\)</span></p></li>
 </ol>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="ChapIptw.html#cb30-1" tabindex="-1"></a><span class="do">## 1. Estimate gA and gM</span></span>
-<span id="cb30-2"><a href="ChapIptw.html#cb30-2" tabindex="-1"></a>gA.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
-<span id="cb30-3"><a href="ChapIptw.html#cb30-3" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb30-4"><a href="ChapIptw.html#cb30-4" tabindex="-1"></a>gM.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1, </span>
-<span id="cb30-5"><a href="ChapIptw.html#cb30-5" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb30-6"><a href="ChapIptw.html#cb30-6" tabindex="-1"></a></span>
-<span id="cb30-7"><a href="ChapIptw.html#cb30-7" tabindex="-1"></a><span class="do">## 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb30-8"><a href="ChapIptw.html#cb30-8" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
-<span id="cb30-9"><a href="ChapIptw.html#cb30-9" tabindex="-1"></a>pred.gA1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(gA.L, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb30-10"><a href="ChapIptw.html#cb30-10" tabindex="-1"></a>pred.gA0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.gA1.L</span>
-<span id="cb30-11"><a href="ChapIptw.html#cb30-11" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment A_i=a is :</span></span>
-<span id="cb30-12"><a href="ChapIptw.html#cb30-12" tabindex="-1"></a>gAobs.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
-<span id="cb30-13"><a href="ChapIptw.html#cb30-13" tabindex="-1"></a>gAobs.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.gA1.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>]</span>
-<span id="cb30-14"><a href="ChapIptw.html#cb30-14" tabindex="-1"></a>gAobs.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.gA0.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>]</span>
-<span id="cb30-15"><a href="ChapIptw.html#cb30-15" tabindex="-1"></a></span>
-<span id="cb30-16"><a href="ChapIptw.html#cb30-16" tabindex="-1"></a><span class="co"># predict the probabilities P(M=1|L(0),A,L(1)) &amp; P(M=0|L(0),A,L(1))</span></span>
-<span id="cb30-17"><a href="ChapIptw.html#cb30-17" tabindex="-1"></a>pred.gM1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(gM.L, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb30-18"><a href="ChapIptw.html#cb30-18" tabindex="-1"></a>pred.gM0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.gM1.L</span>
-<span id="cb30-19"><a href="ChapIptw.html#cb30-19" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment M_i=m is :</span></span>
-<span id="cb30-20"><a href="ChapIptw.html#cb30-20" tabindex="-1"></a>gMobs.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
-<span id="cb30-21"><a href="ChapIptw.html#cb30-21" tabindex="-1"></a>gMobs.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.gM1.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>]</span>
-<span id="cb30-22"><a href="ChapIptw.html#cb30-22" tabindex="-1"></a>gMobs.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.gM0.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>]</span>
-<span id="cb30-23"><a href="ChapIptw.html#cb30-23" tabindex="-1"></a></span>
-<span id="cb30-24"><a href="ChapIptw.html#cb30-24" tabindex="-1"></a><span class="do">## 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
-<span id="cb30-25"><a href="ChapIptw.html#cb30-25" tabindex="-1"></a>wt_A <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gAobs.L</span>
-<span id="cb30-26"><a href="ChapIptw.html#cb30-26" tabindex="-1"></a>wt_M <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gMobs.L</span>
-<span id="cb30-27"><a href="ChapIptw.html#cb30-27" tabindex="-1"></a>wt <span class="ot">&lt;-</span> wt_A <span class="sc">*</span> wt_M</span>
-<span id="cb30-28"><a href="ChapIptw.html#cb30-28" tabindex="-1"></a></span>
-<span id="cb30-29"><a href="ChapIptw.html#cb30-29" tabindex="-1"></a><span class="do">## 4. Use the empirical mean of the weighted outcome</span></span>
-<span id="cb30-30"><a href="ChapIptw.html#cb30-30" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=0</span></span>
-<span id="cb30-31"><a href="ChapIptw.html#cb30-31" tabindex="-1"></a>CDE_IPTW_m0_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-32"><a href="ChapIptw.html#cb30-32" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb30-33"><a href="ChapIptw.html#cb30-33" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
-<span id="cb30-34"><a href="ChapIptw.html#cb30-34" tabindex="-1"></a>                        <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-35"><a href="ChapIptw.html#cb30-35" tabindex="-1"></a>                                               df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb30-36"><a href="ChapIptw.html#cb30-36" tabindex="-1"></a>                               df2_int<span class="sc">$</span>Y_death))</span>
-<span id="cb30-37"><a href="ChapIptw.html#cb30-37" tabindex="-1"></a>CDE_IPTW_m0_death</span>
-<span id="cb30-38"><a href="ChapIptw.html#cb30-38" tabindex="-1"></a><span class="co"># [1] 0.05874684</span></span>
-<span id="cb30-39"><a href="ChapIptw.html#cb30-39" tabindex="-1"></a></span>
-<span id="cb30-40"><a href="ChapIptw.html#cb30-40" tabindex="-1"></a>CDE_IPTW_m0_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-41"><a href="ChapIptw.html#cb30-41" tabindex="-1"></a>                                           df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb30-42"><a href="ChapIptw.html#cb30-42" tabindex="-1"></a>                           df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
-<span id="cb30-43"><a href="ChapIptw.html#cb30-43" tabindex="-1"></a>                      <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-44"><a href="ChapIptw.html#cb30-44" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb30-45"><a href="ChapIptw.html#cb30-45" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_qol))</span>
-<span id="cb30-46"><a href="ChapIptw.html#cb30-46" tabindex="-1"></a>CDE_IPTW_m0_qol</span>
-<span id="cb30-47"><a href="ChapIptw.html#cb30-47" tabindex="-1"></a><span class="co"># [1] -5.341138</span></span>
-<span id="cb30-48"><a href="ChapIptw.html#cb30-48" tabindex="-1"></a></span>
-<span id="cb30-49"><a href="ChapIptw.html#cb30-49" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=1</span></span>
-<span id="cb30-50"><a href="ChapIptw.html#cb30-50" tabindex="-1"></a>CDE_IPTW_m1_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-51"><a href="ChapIptw.html#cb30-51" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb30-52"><a href="ChapIptw.html#cb30-52" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
-<span id="cb30-53"><a href="ChapIptw.html#cb30-53" tabindex="-1"></a>                        <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-54"><a href="ChapIptw.html#cb30-54" tabindex="-1"></a>                                               df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb30-55"><a href="ChapIptw.html#cb30-55" tabindex="-1"></a>                               df2_int<span class="sc">$</span>Y_death))</span>
-<span id="cb30-56"><a href="ChapIptw.html#cb30-56" tabindex="-1"></a>CDE_IPTW_m1_death</span>
-<span id="cb30-57"><a href="ChapIptw.html#cb30-57" tabindex="-1"></a><span class="co"># [1] 0.101733</span></span>
-<span id="cb30-58"><a href="ChapIptw.html#cb30-58" tabindex="-1"></a></span>
-<span id="cb30-59"><a href="ChapIptw.html#cb30-59" tabindex="-1"></a>CDE_IPTW_m1_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-60"><a href="ChapIptw.html#cb30-60" tabindex="-1"></a>                                           df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb30-61"><a href="ChapIptw.html#cb30-61" tabindex="-1"></a>                           df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
-<span id="cb30-62"><a href="ChapIptw.html#cb30-62" tabindex="-1"></a>                      <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb30-63"><a href="ChapIptw.html#cb30-63" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb30-64"><a href="ChapIptw.html#cb30-64" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_qol))</span>
-<span id="cb30-65"><a href="ChapIptw.html#cb30-65" tabindex="-1"></a>CDE_IPTW_m1_qol</span>
-<span id="cb30-66"><a href="ChapIptw.html#cb30-66" tabindex="-1"></a><span class="co"># [1] -8.185866</span></span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="ChapIptw.html#cb34-1" tabindex="-1"></a><span class="do">## 1. Estimate gA and gM</span></span>
+<span id="cb34-2"><a href="ChapIptw.html#cb34-2" tabindex="-1"></a>gA.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv, </span>
+<span id="cb34-3"><a href="ChapIptw.html#cb34-3" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb34-4"><a href="ChapIptw.html#cb34-4" tabindex="-1"></a>gM.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1, </span>
+<span id="cb34-5"><a href="ChapIptw.html#cb34-5" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb34-6"><a href="ChapIptw.html#cb34-6" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="ChapIptw.html#cb34-7" tabindex="-1"></a><span class="do">## 2. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb34-8"><a href="ChapIptw.html#cb34-8" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1|L(0)) &amp; P(A0_ace=0|L(0))</span></span>
+<span id="cb34-9"><a href="ChapIptw.html#cb34-9" tabindex="-1"></a>pred.gA1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(gA.L, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb34-10"><a href="ChapIptw.html#cb34-10" tabindex="-1"></a>pred.gA0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.gA1.L</span>
+<span id="cb34-11"><a href="ChapIptw.html#cb34-11" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment A_i=a is :</span></span>
+<span id="cb34-12"><a href="ChapIptw.html#cb34-12" tabindex="-1"></a>gAobs.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
+<span id="cb34-13"><a href="ChapIptw.html#cb34-13" tabindex="-1"></a>gAobs.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.gA1.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>]</span>
+<span id="cb34-14"><a href="ChapIptw.html#cb34-14" tabindex="-1"></a>gAobs.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.gA0.L[df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span>]</span>
+<span id="cb34-15"><a href="ChapIptw.html#cb34-15" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="ChapIptw.html#cb34-16" tabindex="-1"></a><span class="co"># predict the probabilities P(M=1|L(0),A,L(1)) &amp; P(M=0|L(0),A,L(1))</span></span>
+<span id="cb34-17"><a href="ChapIptw.html#cb34-17" tabindex="-1"></a>pred.gM1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(gM.L, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb34-18"><a href="ChapIptw.html#cb34-18" tabindex="-1"></a>pred.gM0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.gM1.L</span>
+<span id="cb34-19"><a href="ChapIptw.html#cb34-19" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment M_i=m is :</span></span>
+<span id="cb34-20"><a href="ChapIptw.html#cb34-20" tabindex="-1"></a>gMobs.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df2_int))</span>
+<span id="cb34-21"><a href="ChapIptw.html#cb34-21" tabindex="-1"></a>gMobs.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> pred.gM1.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>]</span>
+<span id="cb34-22"><a href="ChapIptw.html#cb34-22" tabindex="-1"></a>gMobs.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> pred.gM0.L[df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>]</span>
+<span id="cb34-23"><a href="ChapIptw.html#cb34-23" tabindex="-1"></a></span>
+<span id="cb34-24"><a href="ChapIptw.html#cb34-24" tabindex="-1"></a><span class="do">## 3. Apply weights corresponding to the inverse of the predicted probability</span></span>
+<span id="cb34-25"><a href="ChapIptw.html#cb34-25" tabindex="-1"></a>wt_A <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gAobs.L</span>
+<span id="cb34-26"><a href="ChapIptw.html#cb34-26" tabindex="-1"></a>wt_M <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gMobs.L</span>
+<span id="cb34-27"><a href="ChapIptw.html#cb34-27" tabindex="-1"></a>wt <span class="ot">&lt;-</span> wt_A <span class="sc">*</span> wt_M</span>
+<span id="cb34-28"><a href="ChapIptw.html#cb34-28" tabindex="-1"></a></span>
+<span id="cb34-29"><a href="ChapIptw.html#cb34-29" tabindex="-1"></a><span class="do">## 4. Use the empirical mean of the weighted outcome</span></span>
+<span id="cb34-30"><a href="ChapIptw.html#cb34-30" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=0</span></span>
+<span id="cb34-31"><a href="ChapIptw.html#cb34-31" tabindex="-1"></a>CDE_IPTW_m0_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-32"><a href="ChapIptw.html#cb34-32" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb34-33"><a href="ChapIptw.html#cb34-33" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
+<span id="cb34-34"><a href="ChapIptw.html#cb34-34" tabindex="-1"></a>                        <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-35"><a href="ChapIptw.html#cb34-35" tabindex="-1"></a>                                               df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb34-36"><a href="ChapIptw.html#cb34-36" tabindex="-1"></a>                               df2_int<span class="sc">$</span>Y_death))</span>
+<span id="cb34-37"><a href="ChapIptw.html#cb34-37" tabindex="-1"></a>CDE_IPTW_m0_death</span>
+<span id="cb34-38"><a href="ChapIptw.html#cb34-38" tabindex="-1"></a><span class="co"># [1] 0.05874684</span></span>
+<span id="cb34-39"><a href="ChapIptw.html#cb34-39" tabindex="-1"></a></span>
+<span id="cb34-40"><a href="ChapIptw.html#cb34-40" tabindex="-1"></a>CDE_IPTW_m0_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-41"><a href="ChapIptw.html#cb34-41" tabindex="-1"></a>                                           df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb34-42"><a href="ChapIptw.html#cb34-42" tabindex="-1"></a>                           df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
+<span id="cb34-43"><a href="ChapIptw.html#cb34-43" tabindex="-1"></a>                      <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-44"><a href="ChapIptw.html#cb34-44" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb34-45"><a href="ChapIptw.html#cb34-45" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_qol))</span>
+<span id="cb34-46"><a href="ChapIptw.html#cb34-46" tabindex="-1"></a>CDE_IPTW_m0_qol</span>
+<span id="cb34-47"><a href="ChapIptw.html#cb34-47" tabindex="-1"></a><span class="co"># [1] -5.341138</span></span>
+<span id="cb34-48"><a href="ChapIptw.html#cb34-48" tabindex="-1"></a></span>
+<span id="cb34-49"><a href="ChapIptw.html#cb34-49" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=1</span></span>
+<span id="cb34-50"><a href="ChapIptw.html#cb34-50" tabindex="-1"></a>CDE_IPTW_m1_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-51"><a href="ChapIptw.html#cb34-51" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb34-52"><a href="ChapIptw.html#cb34-52" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_death) <span class="sc">-</span></span>
+<span id="cb34-53"><a href="ChapIptw.html#cb34-53" tabindex="-1"></a>                        <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-54"><a href="ChapIptw.html#cb34-54" tabindex="-1"></a>                                               df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb34-55"><a href="ChapIptw.html#cb34-55" tabindex="-1"></a>                               df2_int<span class="sc">$</span>Y_death))</span>
+<span id="cb34-56"><a href="ChapIptw.html#cb34-56" tabindex="-1"></a>CDE_IPTW_m1_death</span>
+<span id="cb34-57"><a href="ChapIptw.html#cb34-57" tabindex="-1"></a><span class="co"># [1] 0.101733</span></span>
+<span id="cb34-58"><a href="ChapIptw.html#cb34-58" tabindex="-1"></a></span>
+<span id="cb34-59"><a href="ChapIptw.html#cb34-59" tabindex="-1"></a>CDE_IPTW_m1_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-60"><a href="ChapIptw.html#cb34-60" tabindex="-1"></a>                                           df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb34-61"><a href="ChapIptw.html#cb34-61" tabindex="-1"></a>                           df2_int<span class="sc">$</span>Y_qol) <span class="sc">-</span></span>
+<span id="cb34-62"><a href="ChapIptw.html#cb34-62" tabindex="-1"></a>                      <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb34-63"><a href="ChapIptw.html#cb34-63" tabindex="-1"></a>                                             df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb34-64"><a href="ChapIptw.html#cb34-64" tabindex="-1"></a>                             df2_int<span class="sc">$</span>Y_qol))</span>
+<span id="cb34-65"><a href="ChapIptw.html#cb34-65" tabindex="-1"></a>CDE_IPTW_m1_qol</span>
+<span id="cb34-66"><a href="ChapIptw.html#cb34-66" tabindex="-1"></a><span class="co"># [1] -8.185866</span></span></code></pre></div>
 </div>
 <div id="stabilized-iptw-for-the-cde" class="section level3 hasAnchor" number="7.2.2">
 <h3><span class="header-section-number">7.2.2</span> Stabilized IPTW for the CDE<a href="ChapIptw.html#stabilized-iptw-for-the-cde" class="anchor-section" aria-label="Anchor link to header"></a></h3>
@@ -458,60 +458,60 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 \hat{\mathbb{E}}(Y_{1,m}) - \hat{\mathbb{E}}(Y_{0,m}) =  \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{\sum_{i=1}^n \frac{\mathbb{I}(A_i=1 \cap M_i=m)}{\hat{g}(A_i=1 \mid L(0)_i) \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}} - \frac{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)} Y_i}{ \sum_{i=1}^n \frac{\mathbb{I}(A_i=0 \cap M_i=m)}{\hat{g}(A_i=0 \mid L(0)_i) \times \hat{g}(M_i=m \mid L(0)_i,A_i,L(1)_i)}}
 \end{equation}\]</span>
 The estimation algorithm is the same as for IPTW, but applying the stabilized estimator in step 4.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="ChapIptw.html#cb31-1" tabindex="-1"></a><span class="do">## 4. Applying the stabilized estimator</span></span>
-<span id="cb31-2"><a href="ChapIptw.html#cb31-2" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=0:</span></span>
-<span id="cb31-3"><a href="ChapIptw.html#cb31-3" tabindex="-1"></a>CDE_sIPTW_m0_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-4"><a href="ChapIptw.html#cb31-4" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb31-5"><a href="ChapIptw.html#cb31-5" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
-<span id="cb31-6"><a href="ChapIptw.html#cb31-6" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-7"><a href="ChapIptw.html#cb31-7" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>))) <span class="sc">-</span></span>
-<span id="cb31-8"><a href="ChapIptw.html#cb31-8" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-9"><a href="ChapIptw.html#cb31-9" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb31-10"><a href="ChapIptw.html#cb31-10" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
-<span id="cb31-11"><a href="ChapIptw.html#cb31-11" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-12"><a href="ChapIptw.html#cb31-12" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>)))</span>
-<span id="cb31-13"><a href="ChapIptw.html#cb31-13" tabindex="-1"></a>CDE_sIPTW_m0_death</span>
-<span id="cb31-14"><a href="ChapIptw.html#cb31-14" tabindex="-1"></a><span class="co"># [1] 0.0601292</span></span>
-<span id="cb31-15"><a href="ChapIptw.html#cb31-15" tabindex="-1"></a></span>
-<span id="cb31-16"><a href="ChapIptw.html#cb31-16" tabindex="-1"></a>CDE_sIPTW_m0_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-17"><a href="ChapIptw.html#cb31-17" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb31-18"><a href="ChapIptw.html#cb31-18" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
-<span id="cb31-19"><a href="ChapIptw.html#cb31-19" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-20"><a href="ChapIptw.html#cb31-20" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>))) <span class="sc">-</span></span>
-<span id="cb31-21"><a href="ChapIptw.html#cb31-21" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-22"><a href="ChapIptw.html#cb31-22" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
-<span id="cb31-23"><a href="ChapIptw.html#cb31-23" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
-<span id="cb31-24"><a href="ChapIptw.html#cb31-24" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-25"><a href="ChapIptw.html#cb31-25" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>)))</span>
-<span id="cb31-26"><a href="ChapIptw.html#cb31-26" tabindex="-1"></a>CDE_sIPTW_m0_qol</span>
-<span id="cb31-27"><a href="ChapIptw.html#cb31-27" tabindex="-1"></a><span class="co"># [1] -4.966328</span></span>
-<span id="cb31-28"><a href="ChapIptw.html#cb31-28" tabindex="-1"></a></span>
-<span id="cb31-29"><a href="ChapIptw.html#cb31-29" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=1:</span></span>
-<span id="cb31-30"><a href="ChapIptw.html#cb31-30" tabindex="-1"></a>CDE_sIPTW_m1_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-31"><a href="ChapIptw.html#cb31-31" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb31-32"><a href="ChapIptw.html#cb31-32" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
-<span id="cb31-33"><a href="ChapIptw.html#cb31-33" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-34"><a href="ChapIptw.html#cb31-34" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
-<span id="cb31-35"><a href="ChapIptw.html#cb31-35" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-36"><a href="ChapIptw.html#cb31-36" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb31-37"><a href="ChapIptw.html#cb31-37" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
-<span id="cb31-38"><a href="ChapIptw.html#cb31-38" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-39"><a href="ChapIptw.html#cb31-39" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>)))</span>
-<span id="cb31-40"><a href="ChapIptw.html#cb31-40" tabindex="-1"></a>CDE_sIPTW_m1_death</span>
-<span id="cb31-41"><a href="ChapIptw.html#cb31-41" tabindex="-1"></a><span class="co"># [1] 0.09030186</span></span>
-<span id="cb31-42"><a href="ChapIptw.html#cb31-42" tabindex="-1"></a></span>
-<span id="cb31-43"><a href="ChapIptw.html#cb31-43" tabindex="-1"></a>CDE_sIPTW_m1_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-44"><a href="ChapIptw.html#cb31-44" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb31-45"><a href="ChapIptw.html#cb31-45" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
-<span id="cb31-46"><a href="ChapIptw.html#cb31-46" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-47"><a href="ChapIptw.html#cb31-47" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
-<span id="cb31-48"><a href="ChapIptw.html#cb31-48" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-49"><a href="ChapIptw.html#cb31-49" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
-<span id="cb31-50"><a href="ChapIptw.html#cb31-50" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
-<span id="cb31-51"><a href="ChapIptw.html#cb31-51" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
-<span id="cb31-52"><a href="ChapIptw.html#cb31-52" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>)))</span>
-<span id="cb31-53"><a href="ChapIptw.html#cb31-53" tabindex="-1"></a>CDE_sIPTW_m1_qol</span>
-<span id="cb31-54"><a href="ChapIptw.html#cb31-54" tabindex="-1"></a><span class="co"># [1] -10.03045</span></span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="ChapIptw.html#cb35-1" tabindex="-1"></a><span class="do">## 4. Applying the stabilized estimator</span></span>
+<span id="cb35-2"><a href="ChapIptw.html#cb35-2" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=0:</span></span>
+<span id="cb35-3"><a href="ChapIptw.html#cb35-3" tabindex="-1"></a>CDE_sIPTW_m0_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-4"><a href="ChapIptw.html#cb35-4" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb35-5"><a href="ChapIptw.html#cb35-5" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
+<span id="cb35-6"><a href="ChapIptw.html#cb35-6" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-7"><a href="ChapIptw.html#cb35-7" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>))) <span class="sc">-</span></span>
+<span id="cb35-8"><a href="ChapIptw.html#cb35-8" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-9"><a href="ChapIptw.html#cb35-9" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb35-10"><a href="ChapIptw.html#cb35-10" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
+<span id="cb35-11"><a href="ChapIptw.html#cb35-11" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-12"><a href="ChapIptw.html#cb35-12" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>)))</span>
+<span id="cb35-13"><a href="ChapIptw.html#cb35-13" tabindex="-1"></a>CDE_sIPTW_m0_death</span>
+<span id="cb35-14"><a href="ChapIptw.html#cb35-14" tabindex="-1"></a><span class="co"># [1] 0.0601292</span></span>
+<span id="cb35-15"><a href="ChapIptw.html#cb35-15" tabindex="-1"></a></span>
+<span id="cb35-16"><a href="ChapIptw.html#cb35-16" tabindex="-1"></a>CDE_sIPTW_m0_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-17"><a href="ChapIptw.html#cb35-17" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb35-18"><a href="ChapIptw.html#cb35-18" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
+<span id="cb35-19"><a href="ChapIptw.html#cb35-19" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-20"><a href="ChapIptw.html#cb35-20" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>))) <span class="sc">-</span></span>
+<span id="cb35-21"><a href="ChapIptw.html#cb35-21" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-22"><a href="ChapIptw.html#cb35-22" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">*</span> </span>
+<span id="cb35-23"><a href="ChapIptw.html#cb35-23" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
+<span id="cb35-24"><a href="ChapIptw.html#cb35-24" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-25"><a href="ChapIptw.html#cb35-25" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">0</span>)))</span>
+<span id="cb35-26"><a href="ChapIptw.html#cb35-26" tabindex="-1"></a>CDE_sIPTW_m0_qol</span>
+<span id="cb35-27"><a href="ChapIptw.html#cb35-27" tabindex="-1"></a><span class="co"># [1] -4.966328</span></span>
+<span id="cb35-28"><a href="ChapIptw.html#cb35-28" tabindex="-1"></a></span>
+<span id="cb35-29"><a href="ChapIptw.html#cb35-29" tabindex="-1"></a><span class="co"># point estimates of CDE, setting M=1:</span></span>
+<span id="cb35-30"><a href="ChapIptw.html#cb35-30" tabindex="-1"></a>CDE_sIPTW_m1_death <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-31"><a href="ChapIptw.html#cb35-31" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb35-32"><a href="ChapIptw.html#cb35-32" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
+<span id="cb35-33"><a href="ChapIptw.html#cb35-33" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-34"><a href="ChapIptw.html#cb35-34" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
+<span id="cb35-35"><a href="ChapIptw.html#cb35-35" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-36"><a href="ChapIptw.html#cb35-36" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb35-37"><a href="ChapIptw.html#cb35-37" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_death) <span class="sc">/</span> </span>
+<span id="cb35-38"><a href="ChapIptw.html#cb35-38" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-39"><a href="ChapIptw.html#cb35-39" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>)))</span>
+<span id="cb35-40"><a href="ChapIptw.html#cb35-40" tabindex="-1"></a>CDE_sIPTW_m1_death</span>
+<span id="cb35-41"><a href="ChapIptw.html#cb35-41" tabindex="-1"></a><span class="co"># [1] 0.09030186</span></span>
+<span id="cb35-42"><a href="ChapIptw.html#cb35-42" tabindex="-1"></a></span>
+<span id="cb35-43"><a href="ChapIptw.html#cb35-43" tabindex="-1"></a>CDE_sIPTW_m1_qol <span class="ot">&lt;-</span> (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-44"><a href="ChapIptw.html#cb35-44" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb35-45"><a href="ChapIptw.html#cb35-45" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
+<span id="cb35-46"><a href="ChapIptw.html#cb35-46" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-47"><a href="ChapIptw.html#cb35-47" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>))) <span class="sc">-</span></span>
+<span id="cb35-48"><a href="ChapIptw.html#cb35-48" tabindex="-1"></a>                         (<span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-49"><a href="ChapIptw.html#cb35-49" tabindex="-1"></a>                                              df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> </span>
+<span id="cb35-50"><a href="ChapIptw.html#cb35-50" tabindex="-1"></a>                              df2_int<span class="sc">$</span>Y_qol) <span class="sc">/</span> </span>
+<span id="cb35-51"><a href="ChapIptw.html#cb35-51" tabindex="-1"></a>                         <span class="fu">mean</span>(wt <span class="sc">*</span> <span class="fu">as.numeric</span>(df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> </span>
+<span id="cb35-52"><a href="ChapIptw.html#cb35-52" tabindex="-1"></a>                                                df2_int<span class="sc">$</span>M_smoking <span class="sc">==</span> <span class="dv">1</span>)))</span>
+<span id="cb35-53"><a href="ChapIptw.html#cb35-53" tabindex="-1"></a>CDE_sIPTW_m1_qol</span>
+<span id="cb35-54"><a href="ChapIptw.html#cb35-54" tabindex="-1"></a><span class="co"># [1] -10.03045</span></span></code></pre></div>
 
 </div>
 </div>

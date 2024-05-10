@@ -30,6 +30,7 @@ estimation-of-the-average-total-effect-ate-1
 estimation-of-controlled-direct-effects-cde
 ChapGcomp-CDE-param
 ChapGcomp-CDE-ICE
+g-computation-by-ice-using-the-ltmle-package
 sequential-g-estimator
 estimation-of-natural-direct-nde-and-indirect-effects-nie
 estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie

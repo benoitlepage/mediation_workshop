@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-05-03" />
+<meta name="date" content="2024-05-10" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -334,145 +334,145 @@ D^*(Q_0,g_0) = \frac{I(A=1)}{g_0(A=1 \mid L(0))}(Y - \bar{Q}_0(A,L(O))) + \bar{Q
 <span class="math display">\[\begin{equation*}
 \text{var} \hat{\Psi}(A=1)_\text{TMLE} = \frac{\text{var} \hat{D}^*}{n}
 \end{equation*}\]</span></p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="chap_tmle.html#cb39-1" tabindex="-1"></a><span class="do">## 1) Estimate Qbar and predict Qbar when A0_ace is set to 1</span></span>
-<span id="cb39-2"><a href="chap_tmle.html#cb39-2" tabindex="-1"></a>Q.fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb39-3"><a href="chap_tmle.html#cb39-3" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb39-4"><a href="chap_tmle.html#cb39-4" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> df2_int</span>
-<span id="cb39-5"><a href="chap_tmle.html#cb39-5" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb39-6"><a href="chap_tmle.html#cb39-6" tabindex="-1"></a></span>
-<span id="cb39-7"><a href="chap_tmle.html#cb39-7" tabindex="-1"></a><span class="co"># predict the Qvar function when setting the exposure to A=1, on the logit scale</span></span>
-<span id="cb39-8"><a href="chap_tmle.html#cb39-8" tabindex="-1"></a>logit_Qbar_Ais1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.fit, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;link&quot;</span>)</span>
-<span id="cb39-9"><a href="chap_tmle.html#cb39-9" tabindex="-1"></a></span>
-<span id="cb39-10"><a href="chap_tmle.html#cb39-10" tabindex="-1"></a><span class="do">## 2) Estimate the treatment mechanism</span></span>
-<span id="cb39-11"><a href="chap_tmle.html#cb39-11" tabindex="-1"></a>g.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb39-12"><a href="chap_tmle.html#cb39-12" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb39-13"><a href="chap_tmle.html#cb39-13" tabindex="-1"></a><span class="co"># predict the probabilities g(A=1 | L(0)) = P(A0_ace=1|L(0))</span></span>
-<span id="cb39-14"><a href="chap_tmle.html#cb39-14" tabindex="-1"></a>g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb39-15"><a href="chap_tmle.html#cb39-15" tabindex="-1"></a></span>
-<span id="cb39-16"><a href="chap_tmle.html#cb39-16" tabindex="-1"></a><span class="fu">head</span>(g1.L)</span>
-<span id="cb39-17"><a href="chap_tmle.html#cb39-17" tabindex="-1"></a><span class="co">#          1          2          3          4          5          6</span></span>
-<span id="cb39-18"><a href="chap_tmle.html#cb39-18" tabindex="-1"></a><span class="co"># 0.10989220 0.15629749 0.15629749 0.08894074 0.15629749 0.15629749</span></span>
-<span id="cb39-19"><a href="chap_tmle.html#cb39-19" tabindex="-1"></a></span>
-<span id="cb39-20"><a href="chap_tmle.html#cb39-20" tabindex="-1"></a><span class="co"># It is useful to check the distribution of gA.L, as values close to 0 or 1 are </span></span>
-<span id="cb39-21"><a href="chap_tmle.html#cb39-21" tabindex="-1"></a><span class="co"># indicators of near positivity violation and can result in large variance for the </span></span>
-<span id="cb39-22"><a href="chap_tmle.html#cb39-22" tabindex="-1"></a><span class="co"># estimation. </span></span>
-<span id="cb39-23"><a href="chap_tmle.html#cb39-23" tabindex="-1"></a><span class="co"># In case of near positivity violation, gA.L values can be truncated to decrease</span></span>
-<span id="cb39-24"><a href="chap_tmle.html#cb39-24" tabindex="-1"></a><span class="co"># the variance (at the cost a increased bias).</span></span>
-<span id="cb39-25"><a href="chap_tmle.html#cb39-25" tabindex="-1"></a><span class="fu">summary</span>(g1.L)</span>
-<span id="cb39-26"><a href="chap_tmle.html#cb39-26" tabindex="-1"></a><span class="co">#     Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span id="cb39-27"><a href="chap_tmle.html#cb39-27" tabindex="-1"></a><span class="co"># 0.06109 0.08894 0.10989 0.11240 0.15630 0.15630</span></span>
-<span id="cb39-28"><a href="chap_tmle.html#cb39-28" tabindex="-1"></a><span class="co"># there is no positivity issues in this example.</span></span>
-<span id="cb39-29"><a href="chap_tmle.html#cb39-29" tabindex="-1"></a></span>
-<span id="cb39-30"><a href="chap_tmle.html#cb39-30" tabindex="-1"></a><span class="do">## 3) Determine a parametric family of fluctuations of Qbar. </span></span>
-<span id="cb39-31"><a href="chap_tmle.html#cb39-31" tabindex="-1"></a><span class="co"># The fluctuation model is a model of logitQbar and g(A=1|L(0)) </span></span>
-<span id="cb39-32"><a href="chap_tmle.html#cb39-32" tabindex="-1"></a></span>
-<span id="cb39-33"><a href="chap_tmle.html#cb39-33" tabindex="-1"></a><span class="co"># The clever covariate H(A,L(0)) depends on g(A=1|L(0)):</span></span>
-<span id="cb39-34"><a href="chap_tmle.html#cb39-34" tabindex="-1"></a>H <span class="ot">&lt;-</span> (df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> g1.L</span>
-<span id="cb39-35"><a href="chap_tmle.html#cb39-35" tabindex="-1"></a></span>
-<span id="cb39-36"><a href="chap_tmle.html#cb39-36" tabindex="-1"></a><span class="co"># Update the initial fit Qbar from step 1.</span></span>
-<span id="cb39-37"><a href="chap_tmle.html#cb39-37" tabindex="-1"></a><span class="co"># This is achieved by holding Qbar fixed (as intercept) while estimating the</span></span>
-<span id="cb39-38"><a href="chap_tmle.html#cb39-38" tabindex="-1"></a><span class="co"># coefficient epsilon for H</span></span>
-<span id="cb39-39"><a href="chap_tmle.html#cb39-39" tabindex="-1"></a></span>
-<span id="cb39-40"><a href="chap_tmle.html#cb39-40" tabindex="-1"></a><span class="co"># for example we could use the following fluctuation model (from the &quot;Targeted </span></span>
-<span id="cb39-41"><a href="chap_tmle.html#cb39-41" tabindex="-1"></a><span class="co"># Learning&quot; book)</span></span>
-<span id="cb39-42"><a href="chap_tmle.html#cb39-42" tabindex="-1"></a>update.fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(df2_int<span class="sc">$</span>Y_death <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> <span class="fu">offset</span>(logitQ) <span class="sc">+</span> H,</span>
-<span id="cb39-43"><a href="chap_tmle.html#cb39-43" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>)</span>
-<span id="cb39-44"><a href="chap_tmle.html#cb39-44" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb39-45"><a href="chap_tmle.html#cb39-45" tabindex="-1"></a><span class="co">#   H</span></span>
-<span id="cb39-46"><a href="chap_tmle.html#cb39-46" tabindex="-1"></a><span class="co"># -0.0001756</span></span>
-<span id="cb39-47"><a href="chap_tmle.html#cb39-47" tabindex="-1"></a></span>
-<span id="cb39-48"><a href="chap_tmle.html#cb39-48" tabindex="-1"></a><span class="co"># In the ltmle package, the fluctuation parametric model is slightly different</span></span>
-<span id="cb39-49"><a href="chap_tmle.html#cb39-49" tabindex="-1"></a><span class="co"># (but with the same purpose). The &quot;clever covariate&quot; H is scaled and used as a </span></span>
-<span id="cb39-50"><a href="chap_tmle.html#cb39-50" tabindex="-1"></a><span class="co"># weight in the parametric quasi-logistic regression</span></span>
-<span id="cb39-51"><a href="chap_tmle.html#cb39-51" tabindex="-1"></a>S1 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(df2_int))</span>
-<span id="cb39-52"><a href="chap_tmle.html#cb39-52" tabindex="-1"></a>update.fit.ltmle <span class="ot">&lt;-</span> <span class="fu">glm</span>(df2_int<span class="sc">$</span>Y_death <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> S1 <span class="sc">+</span> <span class="fu">offset</span>(logitQ),</span>
-<span id="cb39-53"><a href="chap_tmle.html#cb39-53" tabindex="-1"></a>                        <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>,</span>
-<span id="cb39-54"><a href="chap_tmle.html#cb39-54" tabindex="-1"></a>                        <span class="at">weights =</span> <span class="fu">scale</span>(H, <span class="at">center =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb39-55"><a href="chap_tmle.html#cb39-55" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb39-56"><a href="chap_tmle.html#cb39-56" tabindex="-1"></a><span class="co">#   S1</span></span>
-<span id="cb39-57"><a href="chap_tmle.html#cb39-57" tabindex="-1"></a><span class="co"># -0.001667</span></span>
-<span id="cb39-58"><a href="chap_tmle.html#cb39-58" tabindex="-1"></a></span>
-<span id="cb39-59"><a href="chap_tmle.html#cb39-59" tabindex="-1"></a><span class="do">## 4) Update the initial estimate of Qbar using the fluctuation parametric model</span></span>
-<span id="cb39-60"><a href="chap_tmle.html#cb39-60" tabindex="-1"></a>Qstar.tmle <span class="ot">&lt;-</span> <span class="fu">predict</span>(update.fit.ltmle, </span>
-<span id="cb39-61"><a href="chap_tmle.html#cb39-61" tabindex="-1"></a>                      <span class="at">data =</span> <span class="fu">data.frame</span>(logitQ, H), </span>
-<span id="cb39-62"><a href="chap_tmle.html#cb39-62" tabindex="-1"></a>                      <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb39-63"><a href="chap_tmle.html#cb39-63" tabindex="-1"></a></span>
-<span id="cb39-64"><a href="chap_tmle.html#cb39-64" tabindex="-1"></a><span class="fu">head</span>(Qstar.tmle)</span>
-<span id="cb39-65"><a href="chap_tmle.html#cb39-65" tabindex="-1"></a><span class="co">#         1         2         3         4         5         6 </span></span>
-<span id="cb39-66"><a href="chap_tmle.html#cb39-66" tabindex="-1"></a><span class="co"># 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344</span></span>
-<span id="cb39-67"><a href="chap_tmle.html#cb39-67" tabindex="-1"></a></span>
-<span id="cb39-68"><a href="chap_tmle.html#cb39-68" tabindex="-1"></a><span class="do">## 5) Obtain the substition estimator of Psi_Ais1</span></span>
-<span id="cb39-69"><a href="chap_tmle.html#cb39-69" tabindex="-1"></a>Psi_Ais1 <span class="ot">&lt;-</span> <span class="fu">mean</span>(Qstar.tmle)</span>
-<span id="cb39-70"><a href="chap_tmle.html#cb39-70" tabindex="-1"></a><span class="co"># [1] 0.2871408</span></span>
-<span id="cb39-71"><a href="chap_tmle.html#cb39-71" tabindex="-1"></a></span>
-<span id="cb39-72"><a href="chap_tmle.html#cb39-72" tabindex="-1"></a><span class="do">## 5) Calculate standard errors based on the influence curve of the TMLE</span></span>
-<span id="cb39-73"><a href="chap_tmle.html#cb39-73" tabindex="-1"></a>IC <span class="ot">&lt;-</span> H <span class="sc">*</span> (df2_int<span class="sc">$</span>Y_death <span class="sc">-</span> Qstar.tmle) <span class="sc">+</span> Qstar.tmle <span class="sc">-</span> Psi_Ais1</span>
-<span id="cb39-74"><a href="chap_tmle.html#cb39-74" tabindex="-1"></a><span class="fu">head</span>(IC)</span>
-<span id="cb39-75"><a href="chap_tmle.html#cb39-75" tabindex="-1"></a><span class="co"># 0.0001003559  4.2532581791  0.0569935644 -0.0280052148  0.0569935644  0.056993564</span></span>
-<span id="cb39-76"><a href="chap_tmle.html#cb39-76" tabindex="-1"></a></span>
-<span id="cb39-77"><a href="chap_tmle.html#cb39-77" tabindex="-1"></a><span class="co"># Teh standard error of the target parameter Psi(A=1) can be estimated by :</span></span>
-<span id="cb39-78"><a href="chap_tmle.html#cb39-78" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">var</span>(IC)<span class="sc">/</span><span class="fu">nrow</span>(df2_int))</span>
-<span id="cb39-79"><a href="chap_tmle.html#cb39-79" tabindex="-1"></a><span class="co"># [1] 0.01383821</span></span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="chap_tmle.html#cb43-1" tabindex="-1"></a><span class="do">## 1) Estimate Qbar and predict Qbar when A0_ace is set to 1</span></span>
+<span id="cb43-2"><a href="chap_tmle.html#cb43-2" tabindex="-1"></a>Q.fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb43-3"><a href="chap_tmle.html#cb43-3" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-4"><a href="chap_tmle.html#cb43-4" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb43-5"><a href="chap_tmle.html#cb43-5" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb43-6"><a href="chap_tmle.html#cb43-6" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="chap_tmle.html#cb43-7" tabindex="-1"></a><span class="co"># predict the Qvar function when setting the exposure to A=1, on the logit scale</span></span>
+<span id="cb43-8"><a href="chap_tmle.html#cb43-8" tabindex="-1"></a>logit_Qbar_Ais1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.fit, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;link&quot;</span>)</span>
+<span id="cb43-9"><a href="chap_tmle.html#cb43-9" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="chap_tmle.html#cb43-10" tabindex="-1"></a><span class="do">## 2) Estimate the treatment mechanism</span></span>
+<span id="cb43-11"><a href="chap_tmle.html#cb43-11" tabindex="-1"></a>g.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb43-12"><a href="chap_tmle.html#cb43-12" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-13"><a href="chap_tmle.html#cb43-13" tabindex="-1"></a><span class="co"># predict the probabilities g(A=1 | L(0)) = P(A0_ace=1|L(0))</span></span>
+<span id="cb43-14"><a href="chap_tmle.html#cb43-14" tabindex="-1"></a>g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-15"><a href="chap_tmle.html#cb43-15" tabindex="-1"></a></span>
+<span id="cb43-16"><a href="chap_tmle.html#cb43-16" tabindex="-1"></a><span class="fu">head</span>(g1.L)</span>
+<span id="cb43-17"><a href="chap_tmle.html#cb43-17" tabindex="-1"></a><span class="co">#          1          2          3          4          5          6</span></span>
+<span id="cb43-18"><a href="chap_tmle.html#cb43-18" tabindex="-1"></a><span class="co"># 0.10989220 0.15629749 0.15629749 0.08894074 0.15629749 0.15629749</span></span>
+<span id="cb43-19"><a href="chap_tmle.html#cb43-19" tabindex="-1"></a></span>
+<span id="cb43-20"><a href="chap_tmle.html#cb43-20" tabindex="-1"></a><span class="co"># It is useful to check the distribution of gA.L, as values close to 0 or 1 are </span></span>
+<span id="cb43-21"><a href="chap_tmle.html#cb43-21" tabindex="-1"></a><span class="co"># indicators of near positivity violation and can result in large variance for the </span></span>
+<span id="cb43-22"><a href="chap_tmle.html#cb43-22" tabindex="-1"></a><span class="co"># estimation. </span></span>
+<span id="cb43-23"><a href="chap_tmle.html#cb43-23" tabindex="-1"></a><span class="co"># In case of near positivity violation, gA.L values can be truncated to decrease</span></span>
+<span id="cb43-24"><a href="chap_tmle.html#cb43-24" tabindex="-1"></a><span class="co"># the variance (at the cost a increased bias).</span></span>
+<span id="cb43-25"><a href="chap_tmle.html#cb43-25" tabindex="-1"></a><span class="fu">summary</span>(g1.L)</span>
+<span id="cb43-26"><a href="chap_tmle.html#cb43-26" tabindex="-1"></a><span class="co">#     Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span id="cb43-27"><a href="chap_tmle.html#cb43-27" tabindex="-1"></a><span class="co"># 0.06109 0.08894 0.10989 0.11240 0.15630 0.15630</span></span>
+<span id="cb43-28"><a href="chap_tmle.html#cb43-28" tabindex="-1"></a><span class="co"># there is no positivity issues in this example.</span></span>
+<span id="cb43-29"><a href="chap_tmle.html#cb43-29" tabindex="-1"></a></span>
+<span id="cb43-30"><a href="chap_tmle.html#cb43-30" tabindex="-1"></a><span class="do">## 3) Determine a parametric family of fluctuations of Qbar. </span></span>
+<span id="cb43-31"><a href="chap_tmle.html#cb43-31" tabindex="-1"></a><span class="co"># The fluctuation model is a model of logitQbar and g(A=1|L(0)) </span></span>
+<span id="cb43-32"><a href="chap_tmle.html#cb43-32" tabindex="-1"></a></span>
+<span id="cb43-33"><a href="chap_tmle.html#cb43-33" tabindex="-1"></a><span class="co"># The clever covariate H(A,L(0)) depends on g(A=1|L(0)):</span></span>
+<span id="cb43-34"><a href="chap_tmle.html#cb43-34" tabindex="-1"></a>H <span class="ot">&lt;-</span> (df2_int<span class="sc">$</span>A0_ace <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">/</span> g1.L</span>
+<span id="cb43-35"><a href="chap_tmle.html#cb43-35" tabindex="-1"></a></span>
+<span id="cb43-36"><a href="chap_tmle.html#cb43-36" tabindex="-1"></a><span class="co"># Update the initial fit Qbar from step 1.</span></span>
+<span id="cb43-37"><a href="chap_tmle.html#cb43-37" tabindex="-1"></a><span class="co"># This is achieved by holding Qbar fixed (as intercept) while estimating the</span></span>
+<span id="cb43-38"><a href="chap_tmle.html#cb43-38" tabindex="-1"></a><span class="co"># coefficient epsilon for H</span></span>
+<span id="cb43-39"><a href="chap_tmle.html#cb43-39" tabindex="-1"></a></span>
+<span id="cb43-40"><a href="chap_tmle.html#cb43-40" tabindex="-1"></a><span class="co"># for example we could use the following fluctuation model (from the &quot;Targeted </span></span>
+<span id="cb43-41"><a href="chap_tmle.html#cb43-41" tabindex="-1"></a><span class="co"># Learning&quot; book)</span></span>
+<span id="cb43-42"><a href="chap_tmle.html#cb43-42" tabindex="-1"></a>update.fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(df2_int<span class="sc">$</span>Y_death <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> <span class="fu">offset</span>(logitQ) <span class="sc">+</span> H,</span>
+<span id="cb43-43"><a href="chap_tmle.html#cb43-43" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>)</span>
+<span id="cb43-44"><a href="chap_tmle.html#cb43-44" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb43-45"><a href="chap_tmle.html#cb43-45" tabindex="-1"></a><span class="co">#   H</span></span>
+<span id="cb43-46"><a href="chap_tmle.html#cb43-46" tabindex="-1"></a><span class="co"># -0.0001756</span></span>
+<span id="cb43-47"><a href="chap_tmle.html#cb43-47" tabindex="-1"></a></span>
+<span id="cb43-48"><a href="chap_tmle.html#cb43-48" tabindex="-1"></a><span class="co"># In the ltmle package, the fluctuation parametric model is slightly different</span></span>
+<span id="cb43-49"><a href="chap_tmle.html#cb43-49" tabindex="-1"></a><span class="co"># (but with the same purpose). The &quot;clever covariate&quot; H is scaled and used as a </span></span>
+<span id="cb43-50"><a href="chap_tmle.html#cb43-50" tabindex="-1"></a><span class="co"># weight in the parametric quasi-logistic regression</span></span>
+<span id="cb43-51"><a href="chap_tmle.html#cb43-51" tabindex="-1"></a>S1 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(df2_int))</span>
+<span id="cb43-52"><a href="chap_tmle.html#cb43-52" tabindex="-1"></a>update.fit.ltmle <span class="ot">&lt;-</span> <span class="fu">glm</span>(df2_int<span class="sc">$</span>Y_death <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> S1 <span class="sc">+</span> <span class="fu">offset</span>(logitQ),</span>
+<span id="cb43-53"><a href="chap_tmle.html#cb43-53" tabindex="-1"></a>                        <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>,</span>
+<span id="cb43-54"><a href="chap_tmle.html#cb43-54" tabindex="-1"></a>                        <span class="at">weights =</span> <span class="fu">scale</span>(H, <span class="at">center =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb43-55"><a href="chap_tmle.html#cb43-55" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb43-56"><a href="chap_tmle.html#cb43-56" tabindex="-1"></a><span class="co">#   S1</span></span>
+<span id="cb43-57"><a href="chap_tmle.html#cb43-57" tabindex="-1"></a><span class="co"># -0.001667</span></span>
+<span id="cb43-58"><a href="chap_tmle.html#cb43-58" tabindex="-1"></a></span>
+<span id="cb43-59"><a href="chap_tmle.html#cb43-59" tabindex="-1"></a><span class="do">## 4) Update the initial estimate of Qbar using the fluctuation parametric model</span></span>
+<span id="cb43-60"><a href="chap_tmle.html#cb43-60" tabindex="-1"></a>Qstar.tmle <span class="ot">&lt;-</span> <span class="fu">predict</span>(update.fit.ltmle, </span>
+<span id="cb43-61"><a href="chap_tmle.html#cb43-61" tabindex="-1"></a>                      <span class="at">data =</span> <span class="fu">data.frame</span>(logitQ, H), </span>
+<span id="cb43-62"><a href="chap_tmle.html#cb43-62" tabindex="-1"></a>                      <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-63"><a href="chap_tmle.html#cb43-63" tabindex="-1"></a></span>
+<span id="cb43-64"><a href="chap_tmle.html#cb43-64" tabindex="-1"></a><span class="fu">head</span>(Qstar.tmle)</span>
+<span id="cb43-65"><a href="chap_tmle.html#cb43-65" tabindex="-1"></a><span class="co">#         1         2         3         4         5         6 </span></span>
+<span id="cb43-66"><a href="chap_tmle.html#cb43-66" tabindex="-1"></a><span class="co"># 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344</span></span>
+<span id="cb43-67"><a href="chap_tmle.html#cb43-67" tabindex="-1"></a></span>
+<span id="cb43-68"><a href="chap_tmle.html#cb43-68" tabindex="-1"></a><span class="do">## 5) Obtain the substition estimator of Psi_Ais1</span></span>
+<span id="cb43-69"><a href="chap_tmle.html#cb43-69" tabindex="-1"></a>Psi_Ais1 <span class="ot">&lt;-</span> <span class="fu">mean</span>(Qstar.tmle)</span>
+<span id="cb43-70"><a href="chap_tmle.html#cb43-70" tabindex="-1"></a><span class="co"># [1] 0.2871408</span></span>
+<span id="cb43-71"><a href="chap_tmle.html#cb43-71" tabindex="-1"></a></span>
+<span id="cb43-72"><a href="chap_tmle.html#cb43-72" tabindex="-1"></a><span class="do">## 5) Calculate standard errors based on the influence curve of the TMLE</span></span>
+<span id="cb43-73"><a href="chap_tmle.html#cb43-73" tabindex="-1"></a>IC <span class="ot">&lt;-</span> H <span class="sc">*</span> (df2_int<span class="sc">$</span>Y_death <span class="sc">-</span> Qstar.tmle) <span class="sc">+</span> Qstar.tmle <span class="sc">-</span> Psi_Ais1</span>
+<span id="cb43-74"><a href="chap_tmle.html#cb43-74" tabindex="-1"></a><span class="fu">head</span>(IC)</span>
+<span id="cb43-75"><a href="chap_tmle.html#cb43-75" tabindex="-1"></a><span class="co"># 0.0001003559  4.2532581791  0.0569935644 -0.0280052148  0.0569935644  0.056993564</span></span>
+<span id="cb43-76"><a href="chap_tmle.html#cb43-76" tabindex="-1"></a></span>
+<span id="cb43-77"><a href="chap_tmle.html#cb43-77" tabindex="-1"></a><span class="co"># Teh standard error of the target parameter Psi(A=1) can be estimated by :</span></span>
+<span id="cb43-78"><a href="chap_tmle.html#cb43-78" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">var</span>(IC)<span class="sc">/</span><span class="fu">nrow</span>(df2_int))</span>
+<span id="cb43-79"><a href="chap_tmle.html#cb43-79" tabindex="-1"></a><span class="co"># [1] 0.01383821</span></span></code></pre></div>
 <p>We can see that we can get the same output using the <code>ltmle</code> package:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="chap_tmle.html#cb40-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
-<span id="cb40-2"><a href="chap_tmle.html#cb40-2" tabindex="-1"></a>?ltmle</span>
-<span id="cb40-3"><a href="chap_tmle.html#cb40-3" tabindex="-1"></a></span>
-<span id="cb40-4"><a href="chap_tmle.html#cb40-4" tabindex="-1"></a><span class="co"># The Qform and gform arguments are defined from the DAG</span></span>
-<span id="cb40-5"><a href="chap_tmle.html#cb40-5" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Y_death=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>)</span>
-<span id="cb40-6"><a href="chap_tmle.html#cb40-6" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>)</span>
-<span id="cb40-7"><a href="chap_tmle.html#cb40-7" tabindex="-1"></a></span>
-<span id="cb40-8"><a href="chap_tmle.html#cb40-8" tabindex="-1"></a><span class="co"># in the ltmle package, the data set should be formated so that the order of the </span></span>
-<span id="cb40-9"><a href="chap_tmle.html#cb40-9" tabindex="-1"></a><span class="co"># columns corresponds to the time-ordering of the model</span></span>
-<span id="cb40-10"><a href="chap_tmle.html#cb40-10" tabindex="-1"></a>data_ltmle <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male,L0_parent_low_educ_lv,</span>
-<span id="cb40-11"><a href="chap_tmle.html#cb40-11" tabindex="-1"></a>                                         A0_ace,</span>
-<span id="cb40-12"><a href="chap_tmle.html#cb40-12" tabindex="-1"></a>                                         Y_death))</span>
-<span id="cb40-13"><a href="chap_tmle.html#cb40-13" tabindex="-1"></a></span>
-<span id="cb40-14"><a href="chap_tmle.html#cb40-14" tabindex="-1"></a><span class="co"># the counterfactual intervention is defined in the abar argument</span></span>
-<span id="cb40-15"><a href="chap_tmle.html#cb40-15" tabindex="-1"></a>abar <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb40-16"><a href="chap_tmle.html#cb40-16" tabindex="-1"></a></span>
-<span id="cb40-17"><a href="chap_tmle.html#cb40-17" tabindex="-1"></a>Psi_Ais1 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_ltmle,</span>
-<span id="cb40-18"><a href="chap_tmle.html#cb40-18" tabindex="-1"></a>                  <span class="at">Anodes =</span> <span class="st">&quot;A0_ace&quot;</span>,</span>
-<span id="cb40-19"><a href="chap_tmle.html#cb40-19" tabindex="-1"></a>                  <span class="at">Ynodes =</span> <span class="st">&quot;Y_death&quot;</span>,</span>
-<span id="cb40-20"><a href="chap_tmle.html#cb40-20" tabindex="-1"></a>                  <span class="at">Qform =</span> Qform,</span>
-<span id="cb40-21"><a href="chap_tmle.html#cb40-21" tabindex="-1"></a>                  <span class="at">gform =</span> gform,</span>
-<span id="cb40-22"><a href="chap_tmle.html#cb40-22" tabindex="-1"></a>                  <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>), <span class="co"># by default, g function are truncated at 0.01</span></span>
-<span id="cb40-23"><a href="chap_tmle.html#cb40-23" tabindex="-1"></a>                  <span class="at">abar =</span> abar,</span>
-<span id="cb40-24"><a href="chap_tmle.html#cb40-24" tabindex="-1"></a>                  <span class="at">SL.library =</span> <span class="st">&quot;glm&quot;</span>,</span>
-<span id="cb40-25"><a href="chap_tmle.html#cb40-25" tabindex="-1"></a>                  <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb40-26"><a href="chap_tmle.html#cb40-26" tabindex="-1"></a></span>
-<span id="cb40-27"><a href="chap_tmle.html#cb40-27" tabindex="-1"></a><span class="co"># from the ltmle() function, we can get the point estimate, its standard error, </span></span>
-<span id="cb40-28"><a href="chap_tmle.html#cb40-28" tabindex="-1"></a><span class="co"># 95% confidence interval and the p-value for the null hypothesis.</span></span>
-<span id="cb40-29"><a href="chap_tmle.html#cb40-29" tabindex="-1"></a><span class="fu">summary</span>(Psi_Ais1, <span class="st">&quot;tmle&quot;</span>)</span>
-<span id="cb40-30"><a href="chap_tmle.html#cb40-30" tabindex="-1"></a><span class="co"># Parameter Estimate:  0.28714</span></span>
-<span id="cb40-31"><a href="chap_tmle.html#cb40-31" tabindex="-1"></a><span class="co">#  Estimated Std Err:  0.013838</span></span>
-<span id="cb40-32"><a href="chap_tmle.html#cb40-32" tabindex="-1"></a><span class="co">#            p-value:  &lt;2e-16</span></span>
-<span id="cb40-33"><a href="chap_tmle.html#cb40-33" tabindex="-1"></a><span class="co">#  95% Conf Interval: (0.26002, 0.31426)</span></span>
-<span id="cb40-34"><a href="chap_tmle.html#cb40-34" tabindex="-1"></a></span>
-<span id="cb40-35"><a href="chap_tmle.html#cb40-35" tabindex="-1"></a><span class="co"># The ltmle() function returns an object with several outputs.</span></span>
-<span id="cb40-36"><a href="chap_tmle.html#cb40-36" tabindex="-1"></a><span class="co"># We can see that g functions are the same as in the previous manual calculation</span></span>
-<span id="cb40-37"><a href="chap_tmle.html#cb40-37" tabindex="-1"></a><span class="fu">head</span>(Psi_Ais1<span class="sc">$</span>cum.g)</span>
-<span id="cb40-38"><a href="chap_tmle.html#cb40-38" tabindex="-1"></a><span class="co">#            [,1]</span></span>
-<span id="cb40-39"><a href="chap_tmle.html#cb40-39" tabindex="-1"></a><span class="co"># [1,] 0.10989220</span></span>
-<span id="cb40-40"><a href="chap_tmle.html#cb40-40" tabindex="-1"></a><span class="co"># [2,] 0.15629749</span></span>
-<span id="cb40-41"><a href="chap_tmle.html#cb40-41" tabindex="-1"></a><span class="co"># [3,] 0.15629749</span></span>
-<span id="cb40-42"><a href="chap_tmle.html#cb40-42" tabindex="-1"></a><span class="co"># [4,] 0.08894074</span></span>
-<span id="cb40-43"><a href="chap_tmle.html#cb40-43" tabindex="-1"></a><span class="co"># [5,] 0.15629749</span></span>
-<span id="cb40-44"><a href="chap_tmle.html#cb40-44" tabindex="-1"></a><span class="co"># [6,] 0.15629749</span></span>
-<span id="cb40-45"><a href="chap_tmle.html#cb40-45" tabindex="-1"></a></span>
-<span id="cb40-46"><a href="chap_tmle.html#cb40-46" tabindex="-1"></a><span class="co"># we can get the estimation of the epsilon parameter from the fluctuation model</span></span>
-<span id="cb40-47"><a href="chap_tmle.html#cb40-47" tabindex="-1"></a>Psi_Ais1<span class="sc">$</span>fit<span class="sc">$</span>Qstar</span>
-<span id="cb40-48"><a href="chap_tmle.html#cb40-48" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb40-49"><a href="chap_tmle.html#cb40-49" tabindex="-1"></a><span class="co">#   S1</span></span>
-<span id="cb40-50"><a href="chap_tmle.html#cb40-50" tabindex="-1"></a><span class="co"># -0.001667</span></span>
-<span id="cb40-51"><a href="chap_tmle.html#cb40-51" tabindex="-1"></a><span class="co"># Degrees of Freedom: 1124 Total (i.e. Null);  1123 Residual</span></span>
-<span id="cb40-52"><a href="chap_tmle.html#cb40-52" tabindex="-1"></a></span>
-<span id="cb40-53"><a href="chap_tmle.html#cb40-53" tabindex="-1"></a><span class="co"># we can get the updated Qbar functions:</span></span>
-<span id="cb40-54"><a href="chap_tmle.html#cb40-54" tabindex="-1"></a><span class="fu">head</span>(Psi_Ais1<span class="sc">$</span>Qstar)</span>
-<span id="cb40-55"><a href="chap_tmle.html#cb40-55" tabindex="-1"></a><span class="co"># [1] 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344</span></span>
-<span id="cb40-56"><a href="chap_tmle.html#cb40-56" tabindex="-1"></a></span>
-<span id="cb40-57"><a href="chap_tmle.html#cb40-57" tabindex="-1"></a><span class="co"># we can get the influence curve </span></span>
-<span id="cb40-58"><a href="chap_tmle.html#cb40-58" tabindex="-1"></a><span class="fu">head</span>(Psi_Ais1<span class="sc">$</span>IC<span class="sc">$</span>tmle)</span>
-<span id="cb40-59"><a href="chap_tmle.html#cb40-59" tabindex="-1"></a><span class="co"># [1]  0.0001003559  4.2532581791  0.0569935644 -0.0280052148  0.0569935644  0.0569935644</span></span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="chap_tmle.html#cb44-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
+<span id="cb44-2"><a href="chap_tmle.html#cb44-2" tabindex="-1"></a>?ltmle</span>
+<span id="cb44-3"><a href="chap_tmle.html#cb44-3" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="chap_tmle.html#cb44-4" tabindex="-1"></a><span class="co"># The Qform and gform arguments are defined from the DAG</span></span>
+<span id="cb44-5"><a href="chap_tmle.html#cb44-5" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Y_death=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>)</span>
+<span id="cb44-6"><a href="chap_tmle.html#cb44-6" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>)</span>
+<span id="cb44-7"><a href="chap_tmle.html#cb44-7" tabindex="-1"></a></span>
+<span id="cb44-8"><a href="chap_tmle.html#cb44-8" tabindex="-1"></a><span class="co"># in the ltmle package, the data set should be formated so that the order of the </span></span>
+<span id="cb44-9"><a href="chap_tmle.html#cb44-9" tabindex="-1"></a><span class="co"># columns corresponds to the time-ordering of the model</span></span>
+<span id="cb44-10"><a href="chap_tmle.html#cb44-10" tabindex="-1"></a>data_ltmle <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male,L0_parent_low_educ_lv,</span>
+<span id="cb44-11"><a href="chap_tmle.html#cb44-11" tabindex="-1"></a>                                         A0_ace,</span>
+<span id="cb44-12"><a href="chap_tmle.html#cb44-12" tabindex="-1"></a>                                         Y_death))</span>
+<span id="cb44-13"><a href="chap_tmle.html#cb44-13" tabindex="-1"></a></span>
+<span id="cb44-14"><a href="chap_tmle.html#cb44-14" tabindex="-1"></a><span class="co"># the counterfactual intervention is defined in the abar argument</span></span>
+<span id="cb44-15"><a href="chap_tmle.html#cb44-15" tabindex="-1"></a>abar <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb44-16"><a href="chap_tmle.html#cb44-16" tabindex="-1"></a></span>
+<span id="cb44-17"><a href="chap_tmle.html#cb44-17" tabindex="-1"></a>Psi_Ais1 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_ltmle,</span>
+<span id="cb44-18"><a href="chap_tmle.html#cb44-18" tabindex="-1"></a>                  <span class="at">Anodes =</span> <span class="st">&quot;A0_ace&quot;</span>,</span>
+<span id="cb44-19"><a href="chap_tmle.html#cb44-19" tabindex="-1"></a>                  <span class="at">Ynodes =</span> <span class="st">&quot;Y_death&quot;</span>,</span>
+<span id="cb44-20"><a href="chap_tmle.html#cb44-20" tabindex="-1"></a>                  <span class="at">Qform =</span> Qform,</span>
+<span id="cb44-21"><a href="chap_tmle.html#cb44-21" tabindex="-1"></a>                  <span class="at">gform =</span> gform,</span>
+<span id="cb44-22"><a href="chap_tmle.html#cb44-22" tabindex="-1"></a>                  <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>), <span class="co"># by default, g function are truncated at 0.01</span></span>
+<span id="cb44-23"><a href="chap_tmle.html#cb44-23" tabindex="-1"></a>                  <span class="at">abar =</span> abar,</span>
+<span id="cb44-24"><a href="chap_tmle.html#cb44-24" tabindex="-1"></a>                  <span class="at">SL.library =</span> <span class="st">&quot;glm&quot;</span>,</span>
+<span id="cb44-25"><a href="chap_tmle.html#cb44-25" tabindex="-1"></a>                  <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb44-26"><a href="chap_tmle.html#cb44-26" tabindex="-1"></a></span>
+<span id="cb44-27"><a href="chap_tmle.html#cb44-27" tabindex="-1"></a><span class="co"># from the ltmle() function, we can get the point estimate, its standard error, </span></span>
+<span id="cb44-28"><a href="chap_tmle.html#cb44-28" tabindex="-1"></a><span class="co"># 95% confidence interval and the p-value for the null hypothesis.</span></span>
+<span id="cb44-29"><a href="chap_tmle.html#cb44-29" tabindex="-1"></a><span class="fu">summary</span>(Psi_Ais1, <span class="st">&quot;tmle&quot;</span>)</span>
+<span id="cb44-30"><a href="chap_tmle.html#cb44-30" tabindex="-1"></a><span class="co"># Parameter Estimate:  0.28714</span></span>
+<span id="cb44-31"><a href="chap_tmle.html#cb44-31" tabindex="-1"></a><span class="co">#  Estimated Std Err:  0.013838</span></span>
+<span id="cb44-32"><a href="chap_tmle.html#cb44-32" tabindex="-1"></a><span class="co">#            p-value:  &lt;2e-16</span></span>
+<span id="cb44-33"><a href="chap_tmle.html#cb44-33" tabindex="-1"></a><span class="co">#  95% Conf Interval: (0.26002, 0.31426)</span></span>
+<span id="cb44-34"><a href="chap_tmle.html#cb44-34" tabindex="-1"></a></span>
+<span id="cb44-35"><a href="chap_tmle.html#cb44-35" tabindex="-1"></a><span class="co"># The ltmle() function returns an object with several outputs.</span></span>
+<span id="cb44-36"><a href="chap_tmle.html#cb44-36" tabindex="-1"></a><span class="co"># We can see that g functions are the same as in the previous manual calculation</span></span>
+<span id="cb44-37"><a href="chap_tmle.html#cb44-37" tabindex="-1"></a><span class="fu">head</span>(Psi_Ais1<span class="sc">$</span>cum.g)</span>
+<span id="cb44-38"><a href="chap_tmle.html#cb44-38" tabindex="-1"></a><span class="co">#            [,1]</span></span>
+<span id="cb44-39"><a href="chap_tmle.html#cb44-39" tabindex="-1"></a><span class="co"># [1,] 0.10989220</span></span>
+<span id="cb44-40"><a href="chap_tmle.html#cb44-40" tabindex="-1"></a><span class="co"># [2,] 0.15629749</span></span>
+<span id="cb44-41"><a href="chap_tmle.html#cb44-41" tabindex="-1"></a><span class="co"># [3,] 0.15629749</span></span>
+<span id="cb44-42"><a href="chap_tmle.html#cb44-42" tabindex="-1"></a><span class="co"># [4,] 0.08894074</span></span>
+<span id="cb44-43"><a href="chap_tmle.html#cb44-43" tabindex="-1"></a><span class="co"># [5,] 0.15629749</span></span>
+<span id="cb44-44"><a href="chap_tmle.html#cb44-44" tabindex="-1"></a><span class="co"># [6,] 0.15629749</span></span>
+<span id="cb44-45"><a href="chap_tmle.html#cb44-45" tabindex="-1"></a></span>
+<span id="cb44-46"><a href="chap_tmle.html#cb44-46" tabindex="-1"></a><span class="co"># we can get the estimation of the epsilon parameter from the fluctuation model</span></span>
+<span id="cb44-47"><a href="chap_tmle.html#cb44-47" tabindex="-1"></a>Psi_Ais1<span class="sc">$</span>fit<span class="sc">$</span>Qstar</span>
+<span id="cb44-48"><a href="chap_tmle.html#cb44-48" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb44-49"><a href="chap_tmle.html#cb44-49" tabindex="-1"></a><span class="co">#   S1</span></span>
+<span id="cb44-50"><a href="chap_tmle.html#cb44-50" tabindex="-1"></a><span class="co"># -0.001667</span></span>
+<span id="cb44-51"><a href="chap_tmle.html#cb44-51" tabindex="-1"></a><span class="co"># Degrees of Freedom: 1124 Total (i.e. Null);  1123 Residual</span></span>
+<span id="cb44-52"><a href="chap_tmle.html#cb44-52" tabindex="-1"></a></span>
+<span id="cb44-53"><a href="chap_tmle.html#cb44-53" tabindex="-1"></a><span class="co"># we can get the updated Qbar functions:</span></span>
+<span id="cb44-54"><a href="chap_tmle.html#cb44-54" tabindex="-1"></a><span class="fu">head</span>(Psi_Ais1<span class="sc">$</span>Qstar)</span>
+<span id="cb44-55"><a href="chap_tmle.html#cb44-55" tabindex="-1"></a><span class="co"># [1] 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344</span></span>
+<span id="cb44-56"><a href="chap_tmle.html#cb44-56" tabindex="-1"></a></span>
+<span id="cb44-57"><a href="chap_tmle.html#cb44-57" tabindex="-1"></a><span class="co"># we can get the influence curve </span></span>
+<span id="cb44-58"><a href="chap_tmle.html#cb44-58" tabindex="-1"></a><span class="fu">head</span>(Psi_Ais1<span class="sc">$</span>IC<span class="sc">$</span>tmle)</span>
+<span id="cb44-59"><a href="chap_tmle.html#cb44-59" tabindex="-1"></a><span class="co"># [1]  0.0001003559  4.2532581791  0.0569935644 -0.0280052148  0.0569935644  0.0569935644</span></span></code></pre></div>
 <p>In practice, it is recommended to apply data-adaptive algorithms to estimate <span class="math inline">\(\bar{Q}\)</span> and <span class="math inline">\(g\)</span> functions: the <code>ltmle</code> package relies on the <code>SuperLearner</code> package. As indicated in the <a href="https://cran.r-project.org/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html">Guide to SuperLearner</a>,
 The <code>SuperLearner</code> is “an algorithm that uses cross-validation to estimate the performance of multiple machine learning models, or the same model with different settings. It then creates an optimal weighted average of those models (ensemble learning) using the test data performance.”</p>
 <p>Here is an example for our estimation of the Average Total Effect (ATE).</p>
@@ -483,135 +483,135 @@ The <code>SuperLearner</code> is “an algorithm that uses cross-validation to e
 <li><code>SL.interaction.back</code>, a step-by-step backward GLM prodecure (based on the AIC), starting with all <span class="math inline">\(2 \times 2\)</span> interactions between main terms. Interaction terms might be useful to estimate the <span class="math inline">\(\bar{Q}(A,L(0))\)</span> function because the dataset was generated from and additive model, where as the function is estimated below using a logistic (multiplicative) model.</li>
 <li><code>SL.xgboost.custom</code> a customized xgboost algorithm from the initial <code>SL.xgboost</code> algorithm, showing how we can modify some default arguments.</li>
 </ul>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="chap_tmle.html#cb41-1" tabindex="-1"></a><span class="fu">library</span>(SuperLearner)</span>
-<span id="cb41-2"><a href="chap_tmle.html#cb41-2" tabindex="-1"></a><span class="fu">library</span>(xgboost)</span>
-<span id="cb41-3"><a href="chap_tmle.html#cb41-3" tabindex="-1"></a><span class="co"># Below, we use the same ltmle() function than previously, </span></span>
-<span id="cb41-4"><a href="chap_tmle.html#cb41-4" tabindex="-1"></a><span class="co"># and specify a family of algorithms to be used with the SuperLearner</span></span>
-<span id="cb41-5"><a href="chap_tmle.html#cb41-5" tabindex="-1"></a></span>
-<span id="cb41-6"><a href="chap_tmle.html#cb41-6" tabindex="-1"></a><span class="do">## we can change the default argument of the SL.xgboost algorithm and the </span></span>
-<span id="cb41-7"><a href="chap_tmle.html#cb41-7" tabindex="-1"></a><span class="do">## SL.step.interaction algorithm</span></span>
-<span id="cb41-8"><a href="chap_tmle.html#cb41-8" tabindex="-1"></a></span>
-<span id="cb41-9"><a href="chap_tmle.html#cb41-9" tabindex="-1"></a><span class="co"># We can check how arguments are used in the pre-specified algorithms</span></span>
-<span id="cb41-10"><a href="chap_tmle.html#cb41-10" tabindex="-1"></a>SL.step.interaction</span>
-<span id="cb41-11"><a href="chap_tmle.html#cb41-11" tabindex="-1"></a><span class="co"># function (Y, X, newX, family, direction = &quot;both&quot;, trace = 0, </span></span>
-<span id="cb41-12"><a href="chap_tmle.html#cb41-12" tabindex="-1"></a><span class="co">#     k = 2, ...) </span></span>
-<span id="cb41-13"><a href="chap_tmle.html#cb41-13" tabindex="-1"></a><span class="co"># {</span></span>
-<span id="cb41-14"><a href="chap_tmle.html#cb41-14" tabindex="-1"></a><span class="co">#     fit.glm &lt;- glm(Y ~ ., data = X, family = family)</span></span>
-<span id="cb41-15"><a href="chap_tmle.html#cb41-15" tabindex="-1"></a><span class="co">#     fit.step &lt;- step(fit.glm, scope = Y ~ .^2, direction = direction, </span></span>
-<span id="cb41-16"><a href="chap_tmle.html#cb41-16" tabindex="-1"></a><span class="co">#         trace = trace, k = k)</span></span>
-<span id="cb41-17"><a href="chap_tmle.html#cb41-17" tabindex="-1"></a><span class="co">#     pred &lt;- predict(fit.step, newdata = newX, type = &quot;response&quot;)</span></span>
-<span id="cb41-18"><a href="chap_tmle.html#cb41-18" tabindex="-1"></a><span class="co">#     fit &lt;- list(object = fit.step)</span></span>
-<span id="cb41-19"><a href="chap_tmle.html#cb41-19" tabindex="-1"></a><span class="co">#     out &lt;- list(pred = pred, fit = fit)</span></span>
-<span id="cb41-20"><a href="chap_tmle.html#cb41-20" tabindex="-1"></a><span class="co">#     class(out$fit) &lt;- c(&quot;SL.step&quot;)</span></span>
-<span id="cb41-21"><a href="chap_tmle.html#cb41-21" tabindex="-1"></a><span class="co">#     return(out)</span></span>
-<span id="cb41-22"><a href="chap_tmle.html#cb41-22" tabindex="-1"></a><span class="co"># }</span></span>
-<span id="cb41-23"><a href="chap_tmle.html#cb41-23" tabindex="-1"></a><span class="co"># &lt;bytecode: 0x000001b965ed0dc0&gt;</span></span>
-<span id="cb41-24"><a href="chap_tmle.html#cb41-24" tabindex="-1"></a><span class="co"># &lt;environment: namespace:SuperLearner&gt;</span></span>
-<span id="cb41-25"><a href="chap_tmle.html#cb41-25" tabindex="-1"></a></span>
-<span id="cb41-26"><a href="chap_tmle.html#cb41-26" tabindex="-1"></a><span class="co"># The pre-specified algorithm can be easily modified to obtain a step-by-step backward </span></span>
-<span id="cb41-27"><a href="chap_tmle.html#cb41-27" tabindex="-1"></a><span class="co"># selection.</span></span>
-<span id="cb41-28"><a href="chap_tmle.html#cb41-28" tabindex="-1"></a>SL.interaction.back <span class="ot">=</span> <span class="cf">function</span>(...) {</span>
-<span id="cb41-29"><a href="chap_tmle.html#cb41-29" tabindex="-1"></a>  <span class="fu">SL.step.interaction</span>(..., <span class="at">direction =</span> <span class="st">&quot;backward&quot;</span>)</span>
-<span id="cb41-30"><a href="chap_tmle.html#cb41-30" tabindex="-1"></a>}</span>
-<span id="cb41-31"><a href="chap_tmle.html#cb41-31" tabindex="-1"></a></span>
-<span id="cb41-32"><a href="chap_tmle.html#cb41-32" tabindex="-1"></a><span class="co"># The same principle can be applied to modify the SL.xgboost default algorithm</span></span>
-<span id="cb41-33"><a href="chap_tmle.html#cb41-33" tabindex="-1"></a>SL.xgboost</span>
-<span id="cb41-34"><a href="chap_tmle.html#cb41-34" tabindex="-1"></a>SL.xgboost.custom <span class="ot">=</span> <span class="cf">function</span>(...) {</span>
-<span id="cb41-35"><a href="chap_tmle.html#cb41-35" tabindex="-1"></a>  <span class="fu">SL.xgboost</span>(..., <span class="at">ntrees =</span> <span class="dv">50</span>)</span>
-<span id="cb41-36"><a href="chap_tmle.html#cb41-36" tabindex="-1"></a>}</span>
-<span id="cb41-37"><a href="chap_tmle.html#cb41-37" tabindex="-1"></a></span>
-<span id="cb41-38"><a href="chap_tmle.html#cb41-38" tabindex="-1"></a></span>
-<span id="cb41-39"><a href="chap_tmle.html#cb41-39" tabindex="-1"></a><span class="do">## the algorithms we would like to use can be specified separately for the Q and </span></span>
-<span id="cb41-40"><a href="chap_tmle.html#cb41-40" tabindex="-1"></a><span class="co"># g functions</span></span>
-<span id="cb41-41"><a href="chap_tmle.html#cb41-41" tabindex="-1"></a>SL.library <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">Q=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.interaction.back&quot;</span>, <span class="st">&quot;SL.xgboost.custom&quot;</span>),</span>
-<span id="cb41-42"><a href="chap_tmle.html#cb41-42" tabindex="-1"></a>                   <span class="at">g=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.interaction.back&quot;</span>, <span class="st">&quot;SL.xgboost.custom&quot;</span>))</span>
-<span id="cb41-43"><a href="chap_tmle.html#cb41-43" tabindex="-1"></a></span>
-<span id="cb41-44"><a href="chap_tmle.html#cb41-44" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-45"><a href="chap_tmle.html#cb41-45" tabindex="-1"></a>Psi_ATE_tmle <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_ltmle,</span>
-<span id="cb41-46"><a href="chap_tmle.html#cb41-46" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="st">&quot;A0_ace&quot;</span>,</span>
-<span id="cb41-47"><a href="chap_tmle.html#cb41-47" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="st">&quot;Y_death&quot;</span>,</span>
-<span id="cb41-48"><a href="chap_tmle.html#cb41-48" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
-<span id="cb41-49"><a href="chap_tmle.html#cb41-49" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
-<span id="cb41-50"><a href="chap_tmle.html#cb41-50" tabindex="-1"></a>                      <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>),</span>
-<span id="cb41-51"><a href="chap_tmle.html#cb41-51" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># vector of the counterfactual treatment </span></span>
-<span id="cb41-52"><a href="chap_tmle.html#cb41-52" tabindex="-1"></a>                      <span class="at">SL.library =</span> SL.library,</span>
-<span id="cb41-53"><a href="chap_tmle.html#cb41-53" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb41-54"><a href="chap_tmle.html#cb41-54" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle, <span class="at">estimator =</span> <span class="st">&quot;tmle&quot;</span>)</span>
-<span id="cb41-55"><a href="chap_tmle.html#cb41-55" tabindex="-1"></a><span class="co"># The function give the ATE on the difference scale (as well, as RR and OR)</span></span>
-<span id="cb41-56"><a href="chap_tmle.html#cb41-56" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb41-57"><a href="chap_tmle.html#cb41-57" tabindex="-1"></a>   <span class="co"># Parameter Estimate:  0.081832 </span></span>
-<span id="cb41-58"><a href="chap_tmle.html#cb41-58" tabindex="-1"></a>   <span class="co">#  Estimated Std Err:  0.014291 </span></span>
-<span id="cb41-59"><a href="chap_tmle.html#cb41-59" tabindex="-1"></a>   <span class="co">#            p-value:  1.0275e-08 </span></span>
-<span id="cb41-60"><a href="chap_tmle.html#cb41-60" tabindex="-1"></a>   <span class="co">#  95% Conf Interval: (0.053822, 0.10984) </span></span>
-<span id="cb41-61"><a href="chap_tmle.html#cb41-61" tabindex="-1"></a></span>
-<span id="cb41-62"><a href="chap_tmle.html#cb41-62" tabindex="-1"></a><span class="do">## We can see how the SuperLearner used the algorithms for the g function</span></span>
-<span id="cb41-63"><a href="chap_tmle.html#cb41-63" tabindex="-1"></a>Psi_ATE_tmle<span class="sc">$</span>fit<span class="sc">$</span>g</span>
-<span id="cb41-64"><a href="chap_tmle.html#cb41-64" tabindex="-1"></a><span class="co"># [[1]]$A0_ace</span></span>
-<span id="cb41-65"><a href="chap_tmle.html#cb41-65" tabindex="-1"></a><span class="co">#                               Risk        Coef</span></span>
-<span id="cb41-66"><a href="chap_tmle.html#cb41-66" tabindex="-1"></a><span class="co"># SL.mean_All             0.09976892 0.003545569 # risk is higher for the bad model</span></span>
-<span id="cb41-67"><a href="chap_tmle.html#cb41-67" tabindex="-1"></a><span class="co"># SL.glm_All              0.09865424 0.416238369</span></span>
-<span id="cb41-68"><a href="chap_tmle.html#cb41-68" tabindex="-1"></a><span class="co"># SL.interaction.back_All 0.09865424 0.000000000</span></span>
-<span id="cb41-69"><a href="chap_tmle.html#cb41-69" tabindex="-1"></a><span class="co"># SL.xgboost.custom_All   0.09865550 0.580216062</span></span>
-<span id="cb41-70"><a href="chap_tmle.html#cb41-70" tabindex="-1"></a></span>
-<span id="cb41-71"><a href="chap_tmle.html#cb41-71" tabindex="-1"></a><span class="co"># for the g function, the SuperLearner predicts the treatment mechanism</span></span>
-<span id="cb41-72"><a href="chap_tmle.html#cb41-72" tabindex="-1"></a><span class="co"># base on a mix between the glm and the customized xgboost algorithm.</span></span>
-<span id="cb41-73"><a href="chap_tmle.html#cb41-73" tabindex="-1"></a></span>
-<span id="cb41-74"><a href="chap_tmle.html#cb41-74" tabindex="-1"></a><span class="do">## We can see how the SuperLearner used the algorithms for the g function</span></span>
-<span id="cb41-75"><a href="chap_tmle.html#cb41-75" tabindex="-1"></a>Psi_ATE_tmle<span class="sc">$</span>fit<span class="sc">$</span>Q</span>
-<span id="cb41-76"><a href="chap_tmle.html#cb41-76" tabindex="-1"></a><span class="co">#                              Risk       Coef</span></span>
-<span id="cb41-77"><a href="chap_tmle.html#cb41-77" tabindex="-1"></a><span class="co"># SL.mean_All             0.1684737 0.02003166 # risk is higher for the bad model</span></span>
-<span id="cb41-78"><a href="chap_tmle.html#cb41-78" tabindex="-1"></a><span class="co"># SL.glm_All              0.1662241 0.00000000</span></span>
-<span id="cb41-79"><a href="chap_tmle.html#cb41-79" tabindex="-1"></a><span class="co"># SL.interaction.back_All 0.1662241 0.55956284</span></span>
-<span id="cb41-80"><a href="chap_tmle.html#cb41-80" tabindex="-1"></a><span class="co"># SL.xgboost.custom_All   0.1662422 0.42040550</span></span>
-<span id="cb41-81"><a href="chap_tmle.html#cb41-81" tabindex="-1"></a></span>
-<span id="cb41-82"><a href="chap_tmle.html#cb41-82" tabindex="-1"></a><span class="co"># The SuperLearner predicts both the treatment mechanism g and the Q function</span></span>
-<span id="cb41-83"><a href="chap_tmle.html#cb41-83" tabindex="-1"></a><span class="co"># from a mix between the backward interaction glm (or the main term glm) and the </span></span>
-<span id="cb41-84"><a href="chap_tmle.html#cb41-84" tabindex="-1"></a><span class="co"># customized xgboost algorithm. </span></span>
-<span id="cb41-85"><a href="chap_tmle.html#cb41-85" tabindex="-1"></a><span class="co"># However, the choice between the SL.glm and the SL.interaction.back </span></span>
-<span id="cb41-86"><a href="chap_tmle.html#cb41-86" tabindex="-1"></a><span class="co"># procedure was arbitrary: as we can see the Risk is exactly the same for both </span></span>
-<span id="cb41-87"><a href="chap_tmle.html#cb41-87" tabindex="-1"></a><span class="co"># algorithms. The final model from the step-by-step procedure was much probably </span></span>
-<span id="cb41-88"><a href="chap_tmle.html#cb41-88" tabindex="-1"></a><span class="co"># a main term glm.</span></span>
-<span id="cb41-89"><a href="chap_tmle.html#cb41-89" tabindex="-1"></a></span>
-<span id="cb41-90"><a href="chap_tmle.html#cb41-90" tabindex="-1"></a></span>
-<span id="cb41-91"><a href="chap_tmle.html#cb41-91" tabindex="-1"></a><span class="do">## The `ltmle` package can also be used to estimate the effect of binary exposures</span></span>
-<span id="cb41-92"><a href="chap_tmle.html#cb41-92" tabindex="-1"></a><span class="do">## on continous outcomes</span></span>
-<span id="cb41-93"><a href="chap_tmle.html#cb41-93" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Y_qol=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>)</span>
-<span id="cb41-94"><a href="chap_tmle.html#cb41-94" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>)</span>
-<span id="cb41-95"><a href="chap_tmle.html#cb41-95" tabindex="-1"></a></span>
-<span id="cb41-96"><a href="chap_tmle.html#cb41-96" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-97"><a href="chap_tmle.html#cb41-97" tabindex="-1"></a>Psi_ATE_tmle_qol <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male,L0_parent_low_educ_lv,</span>
-<span id="cb41-98"><a href="chap_tmle.html#cb41-98" tabindex="-1"></a>                                         A0_ace,</span>
-<span id="cb41-99"><a href="chap_tmle.html#cb41-99" tabindex="-1"></a>                                         Y_qol)),</span>
-<span id="cb41-100"><a href="chap_tmle.html#cb41-100" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="st">&quot;A0_ace&quot;</span>,</span>
-<span id="cb41-101"><a href="chap_tmle.html#cb41-101" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="st">&quot;Y_qol&quot;</span>,</span>
-<span id="cb41-102"><a href="chap_tmle.html#cb41-102" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
-<span id="cb41-103"><a href="chap_tmle.html#cb41-103" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
-<span id="cb41-104"><a href="chap_tmle.html#cb41-104" tabindex="-1"></a>                      <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>),</span>
-<span id="cb41-105"><a href="chap_tmle.html#cb41-105" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># vector of the counterfactual treatment </span></span>
-<span id="cb41-106"><a href="chap_tmle.html#cb41-106" tabindex="-1"></a>                      <span class="at">SL.library =</span> SL.library,</span>
-<span id="cb41-107"><a href="chap_tmle.html#cb41-107" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb41-108"><a href="chap_tmle.html#cb41-108" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle_qol, <span class="at">estimator =</span> <span class="st">&quot;tmle&quot;</span>)</span>
-<span id="cb41-109"><a href="chap_tmle.html#cb41-109" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb41-110"><a href="chap_tmle.html#cb41-110" tabindex="-1"></a><span class="co">#    Parameter Estimate:  -8.265 </span></span>
-<span id="cb41-111"><a href="chap_tmle.html#cb41-111" tabindex="-1"></a><span class="co">#     Estimated Std Err:  0.41008 </span></span>
-<span id="cb41-112"><a href="chap_tmle.html#cb41-112" tabindex="-1"></a><span class="co">#               p-value:  &lt;2e-16 </span></span>
-<span id="cb41-113"><a href="chap_tmle.html#cb41-113" tabindex="-1"></a><span class="co">#     95% Conf Interval: (-9.0687, -7.4612)</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="chap_tmle.html#cb45-1" tabindex="-1"></a><span class="fu">library</span>(SuperLearner)</span>
+<span id="cb45-2"><a href="chap_tmle.html#cb45-2" tabindex="-1"></a><span class="fu">library</span>(xgboost)</span>
+<span id="cb45-3"><a href="chap_tmle.html#cb45-3" tabindex="-1"></a><span class="co"># Below, we use the same ltmle() function than previously, </span></span>
+<span id="cb45-4"><a href="chap_tmle.html#cb45-4" tabindex="-1"></a><span class="co"># and specify a family of algorithms to be used with the SuperLearner</span></span>
+<span id="cb45-5"><a href="chap_tmle.html#cb45-5" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="chap_tmle.html#cb45-6" tabindex="-1"></a><span class="do">## we can change the default argument of the SL.xgboost algorithm and the </span></span>
+<span id="cb45-7"><a href="chap_tmle.html#cb45-7" tabindex="-1"></a><span class="do">## SL.step.interaction algorithm</span></span>
+<span id="cb45-8"><a href="chap_tmle.html#cb45-8" tabindex="-1"></a></span>
+<span id="cb45-9"><a href="chap_tmle.html#cb45-9" tabindex="-1"></a><span class="co"># We can check how arguments are used in the pre-specified algorithms</span></span>
+<span id="cb45-10"><a href="chap_tmle.html#cb45-10" tabindex="-1"></a>SL.step.interaction</span>
+<span id="cb45-11"><a href="chap_tmle.html#cb45-11" tabindex="-1"></a><span class="co"># function (Y, X, newX, family, direction = &quot;both&quot;, trace = 0, </span></span>
+<span id="cb45-12"><a href="chap_tmle.html#cb45-12" tabindex="-1"></a><span class="co">#     k = 2, ...) </span></span>
+<span id="cb45-13"><a href="chap_tmle.html#cb45-13" tabindex="-1"></a><span class="co"># {</span></span>
+<span id="cb45-14"><a href="chap_tmle.html#cb45-14" tabindex="-1"></a><span class="co">#     fit.glm &lt;- glm(Y ~ ., data = X, family = family)</span></span>
+<span id="cb45-15"><a href="chap_tmle.html#cb45-15" tabindex="-1"></a><span class="co">#     fit.step &lt;- step(fit.glm, scope = Y ~ .^2, direction = direction, </span></span>
+<span id="cb45-16"><a href="chap_tmle.html#cb45-16" tabindex="-1"></a><span class="co">#         trace = trace, k = k)</span></span>
+<span id="cb45-17"><a href="chap_tmle.html#cb45-17" tabindex="-1"></a><span class="co">#     pred &lt;- predict(fit.step, newdata = newX, type = &quot;response&quot;)</span></span>
+<span id="cb45-18"><a href="chap_tmle.html#cb45-18" tabindex="-1"></a><span class="co">#     fit &lt;- list(object = fit.step)</span></span>
+<span id="cb45-19"><a href="chap_tmle.html#cb45-19" tabindex="-1"></a><span class="co">#     out &lt;- list(pred = pred, fit = fit)</span></span>
+<span id="cb45-20"><a href="chap_tmle.html#cb45-20" tabindex="-1"></a><span class="co">#     class(out$fit) &lt;- c(&quot;SL.step&quot;)</span></span>
+<span id="cb45-21"><a href="chap_tmle.html#cb45-21" tabindex="-1"></a><span class="co">#     return(out)</span></span>
+<span id="cb45-22"><a href="chap_tmle.html#cb45-22" tabindex="-1"></a><span class="co"># }</span></span>
+<span id="cb45-23"><a href="chap_tmle.html#cb45-23" tabindex="-1"></a><span class="co"># &lt;bytecode: 0x000001b965ed0dc0&gt;</span></span>
+<span id="cb45-24"><a href="chap_tmle.html#cb45-24" tabindex="-1"></a><span class="co"># &lt;environment: namespace:SuperLearner&gt;</span></span>
+<span id="cb45-25"><a href="chap_tmle.html#cb45-25" tabindex="-1"></a></span>
+<span id="cb45-26"><a href="chap_tmle.html#cb45-26" tabindex="-1"></a><span class="co"># The pre-specified algorithm can be easily modified to obtain a step-by-step backward </span></span>
+<span id="cb45-27"><a href="chap_tmle.html#cb45-27" tabindex="-1"></a><span class="co"># selection.</span></span>
+<span id="cb45-28"><a href="chap_tmle.html#cb45-28" tabindex="-1"></a>SL.interaction.back <span class="ot">=</span> <span class="cf">function</span>(...) {</span>
+<span id="cb45-29"><a href="chap_tmle.html#cb45-29" tabindex="-1"></a>  <span class="fu">SL.step.interaction</span>(..., <span class="at">direction =</span> <span class="st">&quot;backward&quot;</span>)</span>
+<span id="cb45-30"><a href="chap_tmle.html#cb45-30" tabindex="-1"></a>}</span>
+<span id="cb45-31"><a href="chap_tmle.html#cb45-31" tabindex="-1"></a></span>
+<span id="cb45-32"><a href="chap_tmle.html#cb45-32" tabindex="-1"></a><span class="co"># The same principle can be applied to modify the SL.xgboost default algorithm</span></span>
+<span id="cb45-33"><a href="chap_tmle.html#cb45-33" tabindex="-1"></a>SL.xgboost</span>
+<span id="cb45-34"><a href="chap_tmle.html#cb45-34" tabindex="-1"></a>SL.xgboost.custom <span class="ot">=</span> <span class="cf">function</span>(...) {</span>
+<span id="cb45-35"><a href="chap_tmle.html#cb45-35" tabindex="-1"></a>  <span class="fu">SL.xgboost</span>(..., <span class="at">ntrees =</span> <span class="dv">50</span>)</span>
+<span id="cb45-36"><a href="chap_tmle.html#cb45-36" tabindex="-1"></a>}</span>
+<span id="cb45-37"><a href="chap_tmle.html#cb45-37" tabindex="-1"></a></span>
+<span id="cb45-38"><a href="chap_tmle.html#cb45-38" tabindex="-1"></a></span>
+<span id="cb45-39"><a href="chap_tmle.html#cb45-39" tabindex="-1"></a><span class="do">## the algorithms we would like to use can be specified separately for the Q and </span></span>
+<span id="cb45-40"><a href="chap_tmle.html#cb45-40" tabindex="-1"></a><span class="co"># g functions</span></span>
+<span id="cb45-41"><a href="chap_tmle.html#cb45-41" tabindex="-1"></a>SL.library <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">Q=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.interaction.back&quot;</span>, <span class="st">&quot;SL.xgboost.custom&quot;</span>),</span>
+<span id="cb45-42"><a href="chap_tmle.html#cb45-42" tabindex="-1"></a>                   <span class="at">g=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.interaction.back&quot;</span>, <span class="st">&quot;SL.xgboost.custom&quot;</span>))</span>
+<span id="cb45-43"><a href="chap_tmle.html#cb45-43" tabindex="-1"></a></span>
+<span id="cb45-44"><a href="chap_tmle.html#cb45-44" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb45-45"><a href="chap_tmle.html#cb45-45" tabindex="-1"></a>Psi_ATE_tmle <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_ltmle,</span>
+<span id="cb45-46"><a href="chap_tmle.html#cb45-46" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="st">&quot;A0_ace&quot;</span>,</span>
+<span id="cb45-47"><a href="chap_tmle.html#cb45-47" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="st">&quot;Y_death&quot;</span>,</span>
+<span id="cb45-48"><a href="chap_tmle.html#cb45-48" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
+<span id="cb45-49"><a href="chap_tmle.html#cb45-49" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
+<span id="cb45-50"><a href="chap_tmle.html#cb45-50" tabindex="-1"></a>                      <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>),</span>
+<span id="cb45-51"><a href="chap_tmle.html#cb45-51" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># vector of the counterfactual treatment </span></span>
+<span id="cb45-52"><a href="chap_tmle.html#cb45-52" tabindex="-1"></a>                      <span class="at">SL.library =</span> SL.library,</span>
+<span id="cb45-53"><a href="chap_tmle.html#cb45-53" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb45-54"><a href="chap_tmle.html#cb45-54" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle, <span class="at">estimator =</span> <span class="st">&quot;tmle&quot;</span>)</span>
+<span id="cb45-55"><a href="chap_tmle.html#cb45-55" tabindex="-1"></a><span class="co"># The function give the ATE on the difference scale (as well, as RR and OR)</span></span>
+<span id="cb45-56"><a href="chap_tmle.html#cb45-56" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb45-57"><a href="chap_tmle.html#cb45-57" tabindex="-1"></a>   <span class="co"># Parameter Estimate:  0.081832 </span></span>
+<span id="cb45-58"><a href="chap_tmle.html#cb45-58" tabindex="-1"></a>   <span class="co">#  Estimated Std Err:  0.014291 </span></span>
+<span id="cb45-59"><a href="chap_tmle.html#cb45-59" tabindex="-1"></a>   <span class="co">#            p-value:  1.0275e-08 </span></span>
+<span id="cb45-60"><a href="chap_tmle.html#cb45-60" tabindex="-1"></a>   <span class="co">#  95% Conf Interval: (0.053822, 0.10984) </span></span>
+<span id="cb45-61"><a href="chap_tmle.html#cb45-61" tabindex="-1"></a></span>
+<span id="cb45-62"><a href="chap_tmle.html#cb45-62" tabindex="-1"></a><span class="do">## We can see how the SuperLearner used the algorithms for the g function</span></span>
+<span id="cb45-63"><a href="chap_tmle.html#cb45-63" tabindex="-1"></a>Psi_ATE_tmle<span class="sc">$</span>fit<span class="sc">$</span>g</span>
+<span id="cb45-64"><a href="chap_tmle.html#cb45-64" tabindex="-1"></a><span class="co"># [[1]]$A0_ace</span></span>
+<span id="cb45-65"><a href="chap_tmle.html#cb45-65" tabindex="-1"></a><span class="co">#                               Risk        Coef</span></span>
+<span id="cb45-66"><a href="chap_tmle.html#cb45-66" tabindex="-1"></a><span class="co"># SL.mean_All             0.09976892 0.003545569 # risk is higher for the bad model</span></span>
+<span id="cb45-67"><a href="chap_tmle.html#cb45-67" tabindex="-1"></a><span class="co"># SL.glm_All              0.09865424 0.416238369</span></span>
+<span id="cb45-68"><a href="chap_tmle.html#cb45-68" tabindex="-1"></a><span class="co"># SL.interaction.back_All 0.09865424 0.000000000</span></span>
+<span id="cb45-69"><a href="chap_tmle.html#cb45-69" tabindex="-1"></a><span class="co"># SL.xgboost.custom_All   0.09865550 0.580216062</span></span>
+<span id="cb45-70"><a href="chap_tmle.html#cb45-70" tabindex="-1"></a></span>
+<span id="cb45-71"><a href="chap_tmle.html#cb45-71" tabindex="-1"></a><span class="co"># for the g function, the SuperLearner predicts the treatment mechanism</span></span>
+<span id="cb45-72"><a href="chap_tmle.html#cb45-72" tabindex="-1"></a><span class="co"># base on a mix between the glm and the customized xgboost algorithm.</span></span>
+<span id="cb45-73"><a href="chap_tmle.html#cb45-73" tabindex="-1"></a></span>
+<span id="cb45-74"><a href="chap_tmle.html#cb45-74" tabindex="-1"></a><span class="do">## We can see how the SuperLearner used the algorithms for the g function</span></span>
+<span id="cb45-75"><a href="chap_tmle.html#cb45-75" tabindex="-1"></a>Psi_ATE_tmle<span class="sc">$</span>fit<span class="sc">$</span>Q</span>
+<span id="cb45-76"><a href="chap_tmle.html#cb45-76" tabindex="-1"></a><span class="co">#                              Risk       Coef</span></span>
+<span id="cb45-77"><a href="chap_tmle.html#cb45-77" tabindex="-1"></a><span class="co"># SL.mean_All             0.1684737 0.02003166 # risk is higher for the bad model</span></span>
+<span id="cb45-78"><a href="chap_tmle.html#cb45-78" tabindex="-1"></a><span class="co"># SL.glm_All              0.1662241 0.00000000</span></span>
+<span id="cb45-79"><a href="chap_tmle.html#cb45-79" tabindex="-1"></a><span class="co"># SL.interaction.back_All 0.1662241 0.55956284</span></span>
+<span id="cb45-80"><a href="chap_tmle.html#cb45-80" tabindex="-1"></a><span class="co"># SL.xgboost.custom_All   0.1662422 0.42040550</span></span>
+<span id="cb45-81"><a href="chap_tmle.html#cb45-81" tabindex="-1"></a></span>
+<span id="cb45-82"><a href="chap_tmle.html#cb45-82" tabindex="-1"></a><span class="co"># The SuperLearner predicts both the treatment mechanism g and the Q function</span></span>
+<span id="cb45-83"><a href="chap_tmle.html#cb45-83" tabindex="-1"></a><span class="co"># from a mix between the backward interaction glm (or the main term glm) and the </span></span>
+<span id="cb45-84"><a href="chap_tmle.html#cb45-84" tabindex="-1"></a><span class="co"># customized xgboost algorithm. </span></span>
+<span id="cb45-85"><a href="chap_tmle.html#cb45-85" tabindex="-1"></a><span class="co"># However, the choice between the SL.glm and the SL.interaction.back </span></span>
+<span id="cb45-86"><a href="chap_tmle.html#cb45-86" tabindex="-1"></a><span class="co"># procedure was arbitrary: as we can see the Risk is exactly the same for both </span></span>
+<span id="cb45-87"><a href="chap_tmle.html#cb45-87" tabindex="-1"></a><span class="co"># algorithms. The final model from the step-by-step procedure was much probably </span></span>
+<span id="cb45-88"><a href="chap_tmle.html#cb45-88" tabindex="-1"></a><span class="co"># a main term glm.</span></span>
+<span id="cb45-89"><a href="chap_tmle.html#cb45-89" tabindex="-1"></a></span>
+<span id="cb45-90"><a href="chap_tmle.html#cb45-90" tabindex="-1"></a></span>
+<span id="cb45-91"><a href="chap_tmle.html#cb45-91" tabindex="-1"></a><span class="do">## The `ltmle` package can also be used to estimate the effect of binary exposures</span></span>
+<span id="cb45-92"><a href="chap_tmle.html#cb45-92" tabindex="-1"></a><span class="do">## on continous outcomes</span></span>
+<span id="cb45-93"><a href="chap_tmle.html#cb45-93" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Y_qol=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>)</span>
+<span id="cb45-94"><a href="chap_tmle.html#cb45-94" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>)</span>
+<span id="cb45-95"><a href="chap_tmle.html#cb45-95" tabindex="-1"></a></span>
+<span id="cb45-96"><a href="chap_tmle.html#cb45-96" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb45-97"><a href="chap_tmle.html#cb45-97" tabindex="-1"></a>Psi_ATE_tmle_qol <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male,L0_parent_low_educ_lv,</span>
+<span id="cb45-98"><a href="chap_tmle.html#cb45-98" tabindex="-1"></a>                                         A0_ace,</span>
+<span id="cb45-99"><a href="chap_tmle.html#cb45-99" tabindex="-1"></a>                                         Y_qol)),</span>
+<span id="cb45-100"><a href="chap_tmle.html#cb45-100" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="st">&quot;A0_ace&quot;</span>,</span>
+<span id="cb45-101"><a href="chap_tmle.html#cb45-101" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="st">&quot;Y_qol&quot;</span>,</span>
+<span id="cb45-102"><a href="chap_tmle.html#cb45-102" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
+<span id="cb45-103"><a href="chap_tmle.html#cb45-103" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
+<span id="cb45-104"><a href="chap_tmle.html#cb45-104" tabindex="-1"></a>                      <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>),</span>
+<span id="cb45-105"><a href="chap_tmle.html#cb45-105" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># vector of the counterfactual treatment </span></span>
+<span id="cb45-106"><a href="chap_tmle.html#cb45-106" tabindex="-1"></a>                      <span class="at">SL.library =</span> SL.library,</span>
+<span id="cb45-107"><a href="chap_tmle.html#cb45-107" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb45-108"><a href="chap_tmle.html#cb45-108" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle_qol, <span class="at">estimator =</span> <span class="st">&quot;tmle&quot;</span>)</span>
+<span id="cb45-109"><a href="chap_tmle.html#cb45-109" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb45-110"><a href="chap_tmle.html#cb45-110" tabindex="-1"></a><span class="co">#    Parameter Estimate:  -8.265 </span></span>
+<span id="cb45-111"><a href="chap_tmle.html#cb45-111" tabindex="-1"></a><span class="co">#     Estimated Std Err:  0.41008 </span></span>
+<span id="cb45-112"><a href="chap_tmle.html#cb45-112" tabindex="-1"></a><span class="co">#               p-value:  &lt;2e-16 </span></span>
+<span id="cb45-113"><a href="chap_tmle.html#cb45-113" tabindex="-1"></a><span class="co">#     95% Conf Interval: (-9.0687, -7.4612)</span></span></code></pre></div>
 <p>The TMLE estimation of the ATE from the <code>ltmle</code> package for death probability and mean quality of life is +8.18% (95% CI=[+5.38%, +10.98%]) and -8.27 [-9.07, -7.46].</p>
 <p>Note that the <code>ltmle</code> package can also be used to calculate the IPTW estimation of the ATE and the CDE.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="chap_tmle.html#cb42-1" tabindex="-1"></a><span class="co"># using the output from the previous ltmle() procedure</span></span>
-<span id="cb42-2"><a href="chap_tmle.html#cb42-2" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle, <span class="at">estimator =</span> <span class="st">&quot;iptw&quot;</span>)</span>
-<span id="cb42-3"><a href="chap_tmle.html#cb42-3" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb42-4"><a href="chap_tmle.html#cb42-4" tabindex="-1"></a><span class="co">#    Parameter Estimate:  0.082578 </span></span>
-<span id="cb42-5"><a href="chap_tmle.html#cb42-5" tabindex="-1"></a><span class="co">#     Estimated Std Err:  0.014415 </span></span>
-<span id="cb42-6"><a href="chap_tmle.html#cb42-6" tabindex="-1"></a><span class="co">#               p-value:  1.0135e-08 </span></span>
-<span id="cb42-7"><a href="chap_tmle.html#cb42-7" tabindex="-1"></a><span class="co">#     95% Conf Interval: (0.054325, 0.11083) </span></span>
-<span id="cb42-8"><a href="chap_tmle.html#cb42-8" tabindex="-1"></a></span>
-<span id="cb42-9"><a href="chap_tmle.html#cb42-9" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle_qol, <span class="at">estimator =</span> <span class="st">&quot;iptw&quot;</span>)</span>
-<span id="cb42-10"><a href="chap_tmle.html#cb42-10" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb42-11"><a href="chap_tmle.html#cb42-11" tabindex="-1"></a><span class="co">#    Parameter Estimate:  -8.2887 </span></span>
-<span id="cb42-12"><a href="chap_tmle.html#cb42-12" tabindex="-1"></a><span class="co">#     Estimated Std Err:  0.41799 </span></span>
-<span id="cb42-13"><a href="chap_tmle.html#cb42-13" tabindex="-1"></a><span class="co">#               p-value:  &lt;2e-16 </span></span>
-<span id="cb42-14"><a href="chap_tmle.html#cb42-14" tabindex="-1"></a><span class="co">#     95% Conf Interval: (-9.108, -7.4695) </span></span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="chap_tmle.html#cb46-1" tabindex="-1"></a><span class="co"># using the output from the previous ltmle() procedure</span></span>
+<span id="cb46-2"><a href="chap_tmle.html#cb46-2" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle, <span class="at">estimator =</span> <span class="st">&quot;iptw&quot;</span>)</span>
+<span id="cb46-3"><a href="chap_tmle.html#cb46-3" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb46-4"><a href="chap_tmle.html#cb46-4" tabindex="-1"></a><span class="co">#    Parameter Estimate:  0.082578 </span></span>
+<span id="cb46-5"><a href="chap_tmle.html#cb46-5" tabindex="-1"></a><span class="co">#     Estimated Std Err:  0.014415 </span></span>
+<span id="cb46-6"><a href="chap_tmle.html#cb46-6" tabindex="-1"></a><span class="co">#               p-value:  1.0135e-08 </span></span>
+<span id="cb46-7"><a href="chap_tmle.html#cb46-7" tabindex="-1"></a><span class="co">#     95% Conf Interval: (0.054325, 0.11083) </span></span>
+<span id="cb46-8"><a href="chap_tmle.html#cb46-8" tabindex="-1"></a></span>
+<span id="cb46-9"><a href="chap_tmle.html#cb46-9" tabindex="-1"></a><span class="fu">summary</span>(Psi_ATE_tmle_qol, <span class="at">estimator =</span> <span class="st">&quot;iptw&quot;</span>)</span>
+<span id="cb46-10"><a href="chap_tmle.html#cb46-10" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb46-11"><a href="chap_tmle.html#cb46-11" tabindex="-1"></a><span class="co">#    Parameter Estimate:  -8.2887 </span></span>
+<span id="cb46-12"><a href="chap_tmle.html#cb46-12" tabindex="-1"></a><span class="co">#     Estimated Std Err:  0.41799 </span></span>
+<span id="cb46-13"><a href="chap_tmle.html#cb46-13" tabindex="-1"></a><span class="co">#               p-value:  &lt;2e-16 </span></span>
+<span id="cb46-14"><a href="chap_tmle.html#cb46-14" tabindex="-1"></a><span class="co">#     95% Conf Interval: (-9.108, -7.4695) </span></span></code></pre></div>
 <p>The IPTW estimation of the ATE from the <code>ltmle</code> package for death probability and mean quality of life is +8.26% (95% CI=[+5.43%, +11.08%]) and -8.29 [-9.11, -7.47].</p>
 </div>
 <div id="tmle-of-the-controlled-direct-effect-cde" class="section level2 hasAnchor" number="9.2">
@@ -631,133 +631,133 @@ The <code>SuperLearner</code> is “an algorithm that uses cross-validation to e
 <p>Note: for continuous outcomes, the <code>ltmle</code> package transforms the outcome on a 0 to 1 continuous scale, <span class="math inline">\(Y_\text{transformed} = \frac{Y - \min(Y)}{\max(Y) - \min(Y)}\)</span>, so that quasi-binomial parametric models can be used in the computation procedure. Mean predictions are then back-transformed on the original scale.</p>
 <div id="for-binary-outcomes" class="section level3 hasAnchor" number="9.2.1">
 <h3><span class="header-section-number">9.2.1</span> For binary outcomes<a href="chap_tmle.html#for-binary-outcomes" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="chap_tmle.html#cb43-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
-<span id="cb43-2"><a href="chap_tmle.html#cb43-2" tabindex="-1"></a><span class="co"># Define the formulas for the estimation of the 2 barQ functions</span></span>
-<span id="cb43-3"><a href="chap_tmle.html#cb43-3" tabindex="-1"></a><span class="co"># Note that it is possible to specify the A*M interaction, if we really want to</span></span>
-<span id="cb43-4"><a href="chap_tmle.html#cb43-4" tabindex="-1"></a><span class="co"># take it into account.</span></span>
-<span id="cb43-5"><a href="chap_tmle.html#cb43-5" tabindex="-1"></a><span class="co"># Another option is to indicate prediction algorithms well adapted to the estimation</span></span>
-<span id="cb43-6"><a href="chap_tmle.html#cb43-6" tabindex="-1"></a><span class="co"># of interaction phenomena into the SuperLearner arguments.</span></span>
-<span id="cb43-7"><a href="chap_tmle.html#cb43-7" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>,</span>
-<span id="cb43-8"><a href="chap_tmle.html#cb43-8" tabindex="-1"></a>           <span class="at">Y_death=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +</span></span>
-<span id="cb43-9"><a href="chap_tmle.html#cb43-9" tabindex="-1"></a><span class="st">                    A0_ace * M_smoking&quot;</span>)</span>
-<span id="cb43-10"><a href="chap_tmle.html#cb43-10" tabindex="-1"></a></span>
-<span id="cb43-11"><a href="chap_tmle.html#cb43-11" tabindex="-1"></a><span class="co"># Define the formulas for the estimation of the 2 g function</span></span>
-<span id="cb43-12"><a href="chap_tmle.html#cb43-12" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>,</span>
-<span id="cb43-13"><a href="chap_tmle.html#cb43-13" tabindex="-1"></a>           <span class="st">&quot;M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1&quot;</span>)</span>
-<span id="cb43-14"><a href="chap_tmle.html#cb43-14" tabindex="-1"></a></span>
-<span id="cb43-15"><a href="chap_tmle.html#cb43-15" tabindex="-1"></a><span class="co"># The data frame should follow the time-ordering of the nodes</span></span>
-<span id="cb43-16"><a href="chap_tmle.html#cb43-16" tabindex="-1"></a>data_binary <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male, L0_parent_low_educ_lv,</span>
-<span id="cb43-17"><a href="chap_tmle.html#cb43-17" tabindex="-1"></a>                                          A0_ace, L1,</span>
-<span id="cb43-18"><a href="chap_tmle.html#cb43-18" tabindex="-1"></a>                                          M_smoking, Y_death))</span>
-<span id="cb43-19"><a href="chap_tmle.html#cb43-19" tabindex="-1"></a></span>
-<span id="cb43-20"><a href="chap_tmle.html#cb43-20" tabindex="-1"></a></span>
-<span id="cb43-21"><a href="chap_tmle.html#cb43-21" tabindex="-1"></a></span>
-<span id="cb43-22"><a href="chap_tmle.html#cb43-22" tabindex="-1"></a><span class="co"># Choose a family of data-adaptive algorithms from the SuperLearner package</span></span>
-<span id="cb43-23"><a href="chap_tmle.html#cb43-23" tabindex="-1"></a>SL.library <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">Q=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.step.interaction&quot;</span>,<span class="st">&quot;SL.xgboost&quot;</span>),</span>
-<span id="cb43-24"><a href="chap_tmle.html#cb43-24" tabindex="-1"></a>                   <span class="at">g=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.step.interaction&quot;</span>,<span class="st">&quot;SL.xgboost&quot;</span>))</span>
-<span id="cb43-25"><a href="chap_tmle.html#cb43-25" tabindex="-1"></a></span>
-<span id="cb43-26"><a href="chap_tmle.html#cb43-26" tabindex="-1"></a></span>
-<span id="cb43-27"><a href="chap_tmle.html#cb43-27" tabindex="-1"></a><span class="do">## CDE, setting M=0</span></span>
-<span id="cb43-28"><a href="chap_tmle.html#cb43-28" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>) <span class="co"># for reproducibility (xgboost algorithm relies on random procedures)</span></span>
-<span id="cb43-29"><a href="chap_tmle.html#cb43-29" tabindex="-1"></a>CDE_ltmle_M0_death <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
-<span id="cb43-30"><a href="chap_tmle.html#cb43-30" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
-<span id="cb43-31"><a href="chap_tmle.html#cb43-31" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
-<span id="cb43-32"><a href="chap_tmle.html#cb43-32" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
-<span id="cb43-33"><a href="chap_tmle.html#cb43-33" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
-<span id="cb43-34"><a href="chap_tmle.html#cb43-34" tabindex="-1"></a>                            <span class="at">Qform =</span> Qform,</span>
-<span id="cb43-35"><a href="chap_tmle.html#cb43-35" tabindex="-1"></a>                            <span class="at">gform =</span> gform,</span>
-<span id="cb43-36"><a href="chap_tmle.html#cb43-36" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
-<span id="cb43-37"><a href="chap_tmle.html#cb43-37" tabindex="-1"></a>                                        <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
-<span id="cb43-38"><a href="chap_tmle.html#cb43-38" tabindex="-1"></a>                            <span class="at">SL.library =</span> SL.library,</span>
-<span id="cb43-39"><a href="chap_tmle.html#cb43-39" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
-<span id="cb43-40"><a href="chap_tmle.html#cb43-40" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb43-41"><a href="chap_tmle.html#cb43-41" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>) <span class="co"># a more robust variance can</span></span>
-<span id="cb43-42"><a href="chap_tmle.html#cb43-42" tabindex="-1"></a>                                                    <span class="co"># be estimated with</span></span>
-<span id="cb43-43"><a href="chap_tmle.html#cb43-43" tabindex="-1"></a>                                                    <span class="co"># variance.method = &quot;tmle&quot;</span></span>
-<span id="cb43-44"><a href="chap_tmle.html#cb43-44" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M0_death)</span>
-<span id="cb43-45"><a href="chap_tmle.html#cb43-45" tabindex="-1"></a><span class="co"># Parameter Estimate:  0.056766</span></span>
-<span id="cb43-46"><a href="chap_tmle.html#cb43-46" tabindex="-1"></a><span class="co">#  Estimated Std Err:  0.018037</span></span>
-<span id="cb43-47"><a href="chap_tmle.html#cb43-47" tabindex="-1"></a><span class="co">#            p-value:  0.0016488</span></span>
-<span id="cb43-48"><a href="chap_tmle.html#cb43-48" tabindex="-1"></a><span class="co">#  95% Conf Interval: (0.021413, 0.092118)</span></span>
-<span id="cb43-49"><a href="chap_tmle.html#cb43-49" tabindex="-1"></a></span>
-<span id="cb43-50"><a href="chap_tmle.html#cb43-50" tabindex="-1"></a><span class="do">## CDE, setting M=1</span></span>
-<span id="cb43-51"><a href="chap_tmle.html#cb43-51" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>) <span class="co"># for reproducibility</span></span>
-<span id="cb43-52"><a href="chap_tmle.html#cb43-52" tabindex="-1"></a>CDE_ltmle_M1_death <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
-<span id="cb43-53"><a href="chap_tmle.html#cb43-53" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
-<span id="cb43-54"><a href="chap_tmle.html#cb43-54" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
-<span id="cb43-55"><a href="chap_tmle.html#cb43-55" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
-<span id="cb43-56"><a href="chap_tmle.html#cb43-56" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
-<span id="cb43-57"><a href="chap_tmle.html#cb43-57" tabindex="-1"></a>                            <span class="at">Qform =</span> Qform,</span>
-<span id="cb43-58"><a href="chap_tmle.html#cb43-58" tabindex="-1"></a>                            <span class="at">gform =</span> gform,</span>
-<span id="cb43-59"><a href="chap_tmle.html#cb43-59" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="co"># counterfactual intervention do(A=1,M=1)</span></span>
-<span id="cb43-60"><a href="chap_tmle.html#cb43-60" tabindex="-1"></a>                                        <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># counterfactual intervention do(A=0,M=1)</span></span>
-<span id="cb43-61"><a href="chap_tmle.html#cb43-61" tabindex="-1"></a>                            <span class="at">SL.library =</span> SL.library,</span>
-<span id="cb43-62"><a href="chap_tmle.html#cb43-62" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
-<span id="cb43-63"><a href="chap_tmle.html#cb43-63" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb43-64"><a href="chap_tmle.html#cb43-64" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb43-65"><a href="chap_tmle.html#cb43-65" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M1_death)</span>
-<span id="cb43-66"><a href="chap_tmle.html#cb43-66" tabindex="-1"></a><span class="co"># Parameter Estimate:  0.094776</span></span>
-<span id="cb43-67"><a href="chap_tmle.html#cb43-67" tabindex="-1"></a><span class="co">#  Estimated Std Err:  0.024</span></span>
-<span id="cb43-68"><a href="chap_tmle.html#cb43-68" tabindex="-1"></a><span class="co">#            p-value:  7.8496e-05</span></span>
-<span id="cb43-69"><a href="chap_tmle.html#cb43-69" tabindex="-1"></a><span class="co">#  95% Conf Interval: (0.047736, 0.14182)</span></span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="chap_tmle.html#cb47-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
+<span id="cb47-2"><a href="chap_tmle.html#cb47-2" tabindex="-1"></a><span class="co"># Define the formulas for the estimation of the 2 barQ functions</span></span>
+<span id="cb47-3"><a href="chap_tmle.html#cb47-3" tabindex="-1"></a><span class="co"># Note that it is possible to specify the A*M interaction, if we really want to</span></span>
+<span id="cb47-4"><a href="chap_tmle.html#cb47-4" tabindex="-1"></a><span class="co"># take it into account.</span></span>
+<span id="cb47-5"><a href="chap_tmle.html#cb47-5" tabindex="-1"></a><span class="co"># Another option is to indicate prediction algorithms well adapted to the estimation</span></span>
+<span id="cb47-6"><a href="chap_tmle.html#cb47-6" tabindex="-1"></a><span class="co"># of interaction phenomena into the SuperLearner arguments.</span></span>
+<span id="cb47-7"><a href="chap_tmle.html#cb47-7" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>,</span>
+<span id="cb47-8"><a href="chap_tmle.html#cb47-8" tabindex="-1"></a>           <span class="at">Y_death=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +</span></span>
+<span id="cb47-9"><a href="chap_tmle.html#cb47-9" tabindex="-1"></a><span class="st">                    A0_ace * M_smoking&quot;</span>)</span>
+<span id="cb47-10"><a href="chap_tmle.html#cb47-10" tabindex="-1"></a></span>
+<span id="cb47-11"><a href="chap_tmle.html#cb47-11" tabindex="-1"></a><span class="co"># Define the formulas for the estimation of the 2 g function</span></span>
+<span id="cb47-12"><a href="chap_tmle.html#cb47-12" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>,</span>
+<span id="cb47-13"><a href="chap_tmle.html#cb47-13" tabindex="-1"></a>           <span class="st">&quot;M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1&quot;</span>)</span>
+<span id="cb47-14"><a href="chap_tmle.html#cb47-14" tabindex="-1"></a></span>
+<span id="cb47-15"><a href="chap_tmle.html#cb47-15" tabindex="-1"></a><span class="co"># The data frame should follow the time-ordering of the nodes</span></span>
+<span id="cb47-16"><a href="chap_tmle.html#cb47-16" tabindex="-1"></a>data_binary <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male, L0_parent_low_educ_lv,</span>
+<span id="cb47-17"><a href="chap_tmle.html#cb47-17" tabindex="-1"></a>                                          A0_ace, L1,</span>
+<span id="cb47-18"><a href="chap_tmle.html#cb47-18" tabindex="-1"></a>                                          M_smoking, Y_death))</span>
+<span id="cb47-19"><a href="chap_tmle.html#cb47-19" tabindex="-1"></a></span>
+<span id="cb47-20"><a href="chap_tmle.html#cb47-20" tabindex="-1"></a></span>
+<span id="cb47-21"><a href="chap_tmle.html#cb47-21" tabindex="-1"></a></span>
+<span id="cb47-22"><a href="chap_tmle.html#cb47-22" tabindex="-1"></a><span class="co"># Choose a family of data-adaptive algorithms from the SuperLearner package</span></span>
+<span id="cb47-23"><a href="chap_tmle.html#cb47-23" tabindex="-1"></a>SL.library <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">Q=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.step.interaction&quot;</span>,<span class="st">&quot;SL.xgboost&quot;</span>),</span>
+<span id="cb47-24"><a href="chap_tmle.html#cb47-24" tabindex="-1"></a>                   <span class="at">g=</span><span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>,<span class="st">&quot;SL.step.interaction&quot;</span>,<span class="st">&quot;SL.xgboost&quot;</span>))</span>
+<span id="cb47-25"><a href="chap_tmle.html#cb47-25" tabindex="-1"></a></span>
+<span id="cb47-26"><a href="chap_tmle.html#cb47-26" tabindex="-1"></a></span>
+<span id="cb47-27"><a href="chap_tmle.html#cb47-27" tabindex="-1"></a><span class="do">## CDE, setting M=0</span></span>
+<span id="cb47-28"><a href="chap_tmle.html#cb47-28" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>) <span class="co"># for reproducibility (xgboost algorithm relies on random procedures)</span></span>
+<span id="cb47-29"><a href="chap_tmle.html#cb47-29" tabindex="-1"></a>CDE_ltmle_M0_death <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
+<span id="cb47-30"><a href="chap_tmle.html#cb47-30" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
+<span id="cb47-31"><a href="chap_tmle.html#cb47-31" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
+<span id="cb47-32"><a href="chap_tmle.html#cb47-32" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
+<span id="cb47-33"><a href="chap_tmle.html#cb47-33" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
+<span id="cb47-34"><a href="chap_tmle.html#cb47-34" tabindex="-1"></a>                            <span class="at">Qform =</span> Qform,</span>
+<span id="cb47-35"><a href="chap_tmle.html#cb47-35" tabindex="-1"></a>                            <span class="at">gform =</span> gform,</span>
+<span id="cb47-36"><a href="chap_tmle.html#cb47-36" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
+<span id="cb47-37"><a href="chap_tmle.html#cb47-37" tabindex="-1"></a>                                        <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
+<span id="cb47-38"><a href="chap_tmle.html#cb47-38" tabindex="-1"></a>                            <span class="at">SL.library =</span> SL.library,</span>
+<span id="cb47-39"><a href="chap_tmle.html#cb47-39" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
+<span id="cb47-40"><a href="chap_tmle.html#cb47-40" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb47-41"><a href="chap_tmle.html#cb47-41" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>) <span class="co"># a more robust variance can</span></span>
+<span id="cb47-42"><a href="chap_tmle.html#cb47-42" tabindex="-1"></a>                                                    <span class="co"># be estimated with</span></span>
+<span id="cb47-43"><a href="chap_tmle.html#cb47-43" tabindex="-1"></a>                                                    <span class="co"># variance.method = &quot;tmle&quot;</span></span>
+<span id="cb47-44"><a href="chap_tmle.html#cb47-44" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M0_death)</span>
+<span id="cb47-45"><a href="chap_tmle.html#cb47-45" tabindex="-1"></a><span class="co"># Parameter Estimate:  0.056766</span></span>
+<span id="cb47-46"><a href="chap_tmle.html#cb47-46" tabindex="-1"></a><span class="co">#  Estimated Std Err:  0.018037</span></span>
+<span id="cb47-47"><a href="chap_tmle.html#cb47-47" tabindex="-1"></a><span class="co">#            p-value:  0.0016488</span></span>
+<span id="cb47-48"><a href="chap_tmle.html#cb47-48" tabindex="-1"></a><span class="co">#  95% Conf Interval: (0.021413, 0.092118)</span></span>
+<span id="cb47-49"><a href="chap_tmle.html#cb47-49" tabindex="-1"></a></span>
+<span id="cb47-50"><a href="chap_tmle.html#cb47-50" tabindex="-1"></a><span class="do">## CDE, setting M=1</span></span>
+<span id="cb47-51"><a href="chap_tmle.html#cb47-51" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>) <span class="co"># for reproducibility</span></span>
+<span id="cb47-52"><a href="chap_tmle.html#cb47-52" tabindex="-1"></a>CDE_ltmle_M1_death <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
+<span id="cb47-53"><a href="chap_tmle.html#cb47-53" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
+<span id="cb47-54"><a href="chap_tmle.html#cb47-54" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
+<span id="cb47-55"><a href="chap_tmle.html#cb47-55" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
+<span id="cb47-56"><a href="chap_tmle.html#cb47-56" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
+<span id="cb47-57"><a href="chap_tmle.html#cb47-57" tabindex="-1"></a>                            <span class="at">Qform =</span> Qform,</span>
+<span id="cb47-58"><a href="chap_tmle.html#cb47-58" tabindex="-1"></a>                            <span class="at">gform =</span> gform,</span>
+<span id="cb47-59"><a href="chap_tmle.html#cb47-59" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="co"># counterfactual intervention do(A=1,M=1)</span></span>
+<span id="cb47-60"><a href="chap_tmle.html#cb47-60" tabindex="-1"></a>                                        <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># counterfactual intervention do(A=0,M=1)</span></span>
+<span id="cb47-61"><a href="chap_tmle.html#cb47-61" tabindex="-1"></a>                            <span class="at">SL.library =</span> SL.library,</span>
+<span id="cb47-62"><a href="chap_tmle.html#cb47-62" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
+<span id="cb47-63"><a href="chap_tmle.html#cb47-63" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb47-64"><a href="chap_tmle.html#cb47-64" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb47-65"><a href="chap_tmle.html#cb47-65" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M1_death)</span>
+<span id="cb47-66"><a href="chap_tmle.html#cb47-66" tabindex="-1"></a><span class="co"># Parameter Estimate:  0.094776</span></span>
+<span id="cb47-67"><a href="chap_tmle.html#cb47-67" tabindex="-1"></a><span class="co">#  Estimated Std Err:  0.024</span></span>
+<span id="cb47-68"><a href="chap_tmle.html#cb47-68" tabindex="-1"></a><span class="co">#            p-value:  7.8496e-05</span></span>
+<span id="cb47-69"><a href="chap_tmle.html#cb47-69" tabindex="-1"></a><span class="co">#  95% Conf Interval: (0.047736, 0.14182)</span></span></code></pre></div>
 <p>The controlled direct effect of ACE on the probability of death, had the mediator been set to 0 for every participant is 5.68%, 95%CI=[2.14%, 9.21%].</p>
 <p>The controlled direct effect of ACE on the probability of death, had the mediator been set to 1 for every participant is 9.48%, 95%CI=[4.77%, 14.18%].</p>
 </div>
 <div id="for-continuous-outcomes" class="section level3 hasAnchor" number="9.2.2">
 <h3><span class="header-section-number">9.2.2</span> For continuous outcomes<a href="chap_tmle.html#for-continuous-outcomes" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="chap_tmle.html#cb44-1" tabindex="-1"></a><span class="co"># Define the data set with the continuous outcome Y_qol</span></span>
-<span id="cb44-2"><a href="chap_tmle.html#cb44-2" tabindex="-1"></a>data_continuous <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male, L0_parent_low_educ_lv,</span>
-<span id="cb44-3"><a href="chap_tmle.html#cb44-3" tabindex="-1"></a>                                              A0_ace, L1,</span>
-<span id="cb44-4"><a href="chap_tmle.html#cb44-4" tabindex="-1"></a>                                              M_smoking, Y_qol))</span>
-<span id="cb44-5"><a href="chap_tmle.html#cb44-5" tabindex="-1"></a></span>
-<span id="cb44-6"><a href="chap_tmle.html#cb44-6" tabindex="-1"></a><span class="co"># Replace the Qbar function (the 2d formula should be named Y_qol instead of Y_death)</span></span>
-<span id="cb44-7"><a href="chap_tmle.html#cb44-7" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>,</span>
-<span id="cb44-8"><a href="chap_tmle.html#cb44-8" tabindex="-1"></a>           <span class="at">Y_qol=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +</span></span>
-<span id="cb44-9"><a href="chap_tmle.html#cb44-9" tabindex="-1"></a><span class="st">                    A0_ace * M_smoking&quot;</span>)</span>
-<span id="cb44-10"><a href="chap_tmle.html#cb44-10" tabindex="-1"></a></span>
-<span id="cb44-11"><a href="chap_tmle.html#cb44-11" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb44-12"><a href="chap_tmle.html#cb44-12" tabindex="-1"></a><span class="do">## CDE, setting M=0</span></span>
-<span id="cb44-13"><a href="chap_tmle.html#cb44-13" tabindex="-1"></a>CDE_ltmle_M0_qol <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_continuous,</span>
-<span id="cb44-14"><a href="chap_tmle.html#cb44-14" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
-<span id="cb44-15"><a href="chap_tmle.html#cb44-15" tabindex="-1"></a>                      <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline confounders</span></span>
-<span id="cb44-16"><a href="chap_tmle.html#cb44-16" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_qol&quot;</span>),</span>
-<span id="cb44-17"><a href="chap_tmle.html#cb44-17" tabindex="-1"></a>                      <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
-<span id="cb44-18"><a href="chap_tmle.html#cb44-18" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
-<span id="cb44-19"><a href="chap_tmle.html#cb44-19" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
-<span id="cb44-20"><a href="chap_tmle.html#cb44-20" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
-<span id="cb44-21"><a href="chap_tmle.html#cb44-21" tabindex="-1"></a>                                  <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
-<span id="cb44-22"><a href="chap_tmle.html#cb44-22" tabindex="-1"></a>                      <span class="at">SL.library =</span> SL.library,</span>
-<span id="cb44-23"><a href="chap_tmle.html#cb44-23" tabindex="-1"></a>                      <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
-<span id="cb44-24"><a href="chap_tmle.html#cb44-24" tabindex="-1"></a>                      <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb44-25"><a href="chap_tmle.html#cb44-25" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb44-26"><a href="chap_tmle.html#cb44-26" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M0_qol)</span>
-<span id="cb44-27"><a href="chap_tmle.html#cb44-27" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb44-28"><a href="chap_tmle.html#cb44-28" tabindex="-1"></a><span class="co">#   Parameter Estimate:  -4.8023</span></span>
-<span id="cb44-29"><a href="chap_tmle.html#cb44-29" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.43135</span></span>
-<span id="cb44-30"><a href="chap_tmle.html#cb44-30" tabindex="-1"></a><span class="co">#              p-value:  &lt;2e-16</span></span>
-<span id="cb44-31"><a href="chap_tmle.html#cb44-31" tabindex="-1"></a><span class="co">#    95% Conf Interval: (-5.6477, -3.9569)</span></span>
-<span id="cb44-32"><a href="chap_tmle.html#cb44-32" tabindex="-1"></a></span>
-<span id="cb44-33"><a href="chap_tmle.html#cb44-33" tabindex="-1"></a><span class="do">## CDE, setting M=1</span></span>
-<span id="cb44-34"><a href="chap_tmle.html#cb44-34" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb44-35"><a href="chap_tmle.html#cb44-35" tabindex="-1"></a>CDE_ltmle_M1_qol <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_continuous,</span>
-<span id="cb44-36"><a href="chap_tmle.html#cb44-36" tabindex="-1"></a>                          <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
-<span id="cb44-37"><a href="chap_tmle.html#cb44-37" tabindex="-1"></a>                          <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
-<span id="cb44-38"><a href="chap_tmle.html#cb44-38" tabindex="-1"></a>                          <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_qol&quot;</span>),</span>
-<span id="cb44-39"><a href="chap_tmle.html#cb44-39" tabindex="-1"></a>                          <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
-<span id="cb44-40"><a href="chap_tmle.html#cb44-40" tabindex="-1"></a>                          <span class="at">Qform =</span> Qform,</span>
-<span id="cb44-41"><a href="chap_tmle.html#cb44-41" tabindex="-1"></a>                          <span class="at">gform =</span> gform,</span>
-<span id="cb44-42"><a href="chap_tmle.html#cb44-42" tabindex="-1"></a>                          <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="co"># counterfactual intervention do(A=1,M=1)</span></span>
-<span id="cb44-43"><a href="chap_tmle.html#cb44-43" tabindex="-1"></a>                                      <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># counterfactual intervention do(A=0,M=1)</span></span>
-<span id="cb44-44"><a href="chap_tmle.html#cb44-44" tabindex="-1"></a>                          <span class="at">SL.library =</span> SL.library,</span>
-<span id="cb44-45"><a href="chap_tmle.html#cb44-45" tabindex="-1"></a>                          <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
-<span id="cb44-46"><a href="chap_tmle.html#cb44-46" tabindex="-1"></a>                          <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb44-47"><a href="chap_tmle.html#cb44-47" tabindex="-1"></a>                          <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb44-48"><a href="chap_tmle.html#cb44-48" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M1_qol)</span>
-<span id="cb44-49"><a href="chap_tmle.html#cb44-49" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb44-50"><a href="chap_tmle.html#cb44-50" tabindex="-1"></a><span class="co">#   Parameter Estimate:  -10.219</span></span>
-<span id="cb44-51"><a href="chap_tmle.html#cb44-51" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.544</span></span>
-<span id="cb44-52"><a href="chap_tmle.html#cb44-52" tabindex="-1"></a><span class="co">#              p-value:  &lt;2e-16</span></span>
-<span id="cb44-53"><a href="chap_tmle.html#cb44-53" tabindex="-1"></a><span class="co">#    95% Conf Interval: (-11.285, -9.1523)</span></span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="chap_tmle.html#cb48-1" tabindex="-1"></a><span class="co"># Define the data set with the continuous outcome Y_qol</span></span>
+<span id="cb48-2"><a href="chap_tmle.html#cb48-2" tabindex="-1"></a>data_continuous <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male, L0_parent_low_educ_lv,</span>
+<span id="cb48-3"><a href="chap_tmle.html#cb48-3" tabindex="-1"></a>                                              A0_ace, L1,</span>
+<span id="cb48-4"><a href="chap_tmle.html#cb48-4" tabindex="-1"></a>                                              M_smoking, Y_qol))</span>
+<span id="cb48-5"><a href="chap_tmle.html#cb48-5" tabindex="-1"></a></span>
+<span id="cb48-6"><a href="chap_tmle.html#cb48-6" tabindex="-1"></a><span class="co"># Replace the Qbar function (the 2d formula should be named Y_qol instead of Y_death)</span></span>
+<span id="cb48-7"><a href="chap_tmle.html#cb48-7" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>,</span>
+<span id="cb48-8"><a href="chap_tmle.html#cb48-8" tabindex="-1"></a>           <span class="at">Y_qol=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +</span></span>
+<span id="cb48-9"><a href="chap_tmle.html#cb48-9" tabindex="-1"></a><span class="st">                    A0_ace * M_smoking&quot;</span>)</span>
+<span id="cb48-10"><a href="chap_tmle.html#cb48-10" tabindex="-1"></a></span>
+<span id="cb48-11"><a href="chap_tmle.html#cb48-11" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb48-12"><a href="chap_tmle.html#cb48-12" tabindex="-1"></a><span class="do">## CDE, setting M=0</span></span>
+<span id="cb48-13"><a href="chap_tmle.html#cb48-13" tabindex="-1"></a>CDE_ltmle_M0_qol <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_continuous,</span>
+<span id="cb48-14"><a href="chap_tmle.html#cb48-14" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
+<span id="cb48-15"><a href="chap_tmle.html#cb48-15" tabindex="-1"></a>                      <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline confounders</span></span>
+<span id="cb48-16"><a href="chap_tmle.html#cb48-16" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_qol&quot;</span>),</span>
+<span id="cb48-17"><a href="chap_tmle.html#cb48-17" tabindex="-1"></a>                      <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
+<span id="cb48-18"><a href="chap_tmle.html#cb48-18" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
+<span id="cb48-19"><a href="chap_tmle.html#cb48-19" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
+<span id="cb48-20"><a href="chap_tmle.html#cb48-20" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
+<span id="cb48-21"><a href="chap_tmle.html#cb48-21" tabindex="-1"></a>                                  <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
+<span id="cb48-22"><a href="chap_tmle.html#cb48-22" tabindex="-1"></a>                      <span class="at">SL.library =</span> SL.library,</span>
+<span id="cb48-23"><a href="chap_tmle.html#cb48-23" tabindex="-1"></a>                      <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
+<span id="cb48-24"><a href="chap_tmle.html#cb48-24" tabindex="-1"></a>                      <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb48-25"><a href="chap_tmle.html#cb48-25" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb48-26"><a href="chap_tmle.html#cb48-26" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M0_qol)</span>
+<span id="cb48-27"><a href="chap_tmle.html#cb48-27" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb48-28"><a href="chap_tmle.html#cb48-28" tabindex="-1"></a><span class="co">#   Parameter Estimate:  -4.8023</span></span>
+<span id="cb48-29"><a href="chap_tmle.html#cb48-29" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.43135</span></span>
+<span id="cb48-30"><a href="chap_tmle.html#cb48-30" tabindex="-1"></a><span class="co">#              p-value:  &lt;2e-16</span></span>
+<span id="cb48-31"><a href="chap_tmle.html#cb48-31" tabindex="-1"></a><span class="co">#    95% Conf Interval: (-5.6477, -3.9569)</span></span>
+<span id="cb48-32"><a href="chap_tmle.html#cb48-32" tabindex="-1"></a></span>
+<span id="cb48-33"><a href="chap_tmle.html#cb48-33" tabindex="-1"></a><span class="do">## CDE, setting M=1</span></span>
+<span id="cb48-34"><a href="chap_tmle.html#cb48-34" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb48-35"><a href="chap_tmle.html#cb48-35" tabindex="-1"></a>CDE_ltmle_M1_qol <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_continuous,</span>
+<span id="cb48-36"><a href="chap_tmle.html#cb48-36" tabindex="-1"></a>                          <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
+<span id="cb48-37"><a href="chap_tmle.html#cb48-37" tabindex="-1"></a>                          <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
+<span id="cb48-38"><a href="chap_tmle.html#cb48-38" tabindex="-1"></a>                          <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_qol&quot;</span>),</span>
+<span id="cb48-39"><a href="chap_tmle.html#cb48-39" tabindex="-1"></a>                          <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
+<span id="cb48-40"><a href="chap_tmle.html#cb48-40" tabindex="-1"></a>                          <span class="at">Qform =</span> Qform,</span>
+<span id="cb48-41"><a href="chap_tmle.html#cb48-41" tabindex="-1"></a>                          <span class="at">gform =</span> gform,</span>
+<span id="cb48-42"><a href="chap_tmle.html#cb48-42" tabindex="-1"></a>                          <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="co"># counterfactual intervention do(A=1,M=1)</span></span>
+<span id="cb48-43"><a href="chap_tmle.html#cb48-43" tabindex="-1"></a>                                      <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># counterfactual intervention do(A=0,M=1)</span></span>
+<span id="cb48-44"><a href="chap_tmle.html#cb48-44" tabindex="-1"></a>                          <span class="at">SL.library =</span> SL.library,</span>
+<span id="cb48-45"><a href="chap_tmle.html#cb48-45" tabindex="-1"></a>                          <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
+<span id="cb48-46"><a href="chap_tmle.html#cb48-46" tabindex="-1"></a>                          <span class="at">gcomp =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb48-47"><a href="chap_tmle.html#cb48-47" tabindex="-1"></a>                          <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb48-48"><a href="chap_tmle.html#cb48-48" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M1_qol)</span>
+<span id="cb48-49"><a href="chap_tmle.html#cb48-49" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb48-50"><a href="chap_tmle.html#cb48-50" tabindex="-1"></a><span class="co">#   Parameter Estimate:  -10.219</span></span>
+<span id="cb48-51"><a href="chap_tmle.html#cb48-51" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.544</span></span>
+<span id="cb48-52"><a href="chap_tmle.html#cb48-52" tabindex="-1"></a><span class="co">#              p-value:  &lt;2e-16</span></span>
+<span id="cb48-53"><a href="chap_tmle.html#cb48-53" tabindex="-1"></a><span class="co">#    95% Conf Interval: (-11.285, -9.1523)</span></span></code></pre></div>
 <p>The controlled direct effect of ACE on the quality of life score, had the mediator been set to 0 for every participant is -4.8, 95%CI=[-5.6, -4.0].</p>
 <p>The controlled direct effect of ACE on the quality of life score, had the mediator been set to 1 for every participant is -10.2, 95%CI=[-11.3, -9.2].</p>
 

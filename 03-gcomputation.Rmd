@@ -238,9 +238,9 @@ The following steps describe the implementation of the g-computation estimator b
                                           
 1. Fit a logistic or a linear regression of the final outcome, conditional on the exposure $A$, the mediator $M$ and all the parents of $Y$ preceeding $M$, to estimate $\overline{Q}_{Y} = \mathbb{E}(Y \mid L(0),A,L(1),M)$;
                                             
-2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}_{Y}(M=m)_i$, by evaluating the regression fit $\overline{Q}_{Y}$ at the chosen value for the mediator $M=m$;
+2. Use this estimate to predict an outcome for each subject $\hat{\overline{Q}}_{Y}(A=a^\prime,M=m)_i$, by evaluating the regression fit $\overline{Q}_{Y}$ at the chosen value for the exposure $A=a^\prime$ and the mediator $M=m$;
 
-3. Fit a quasibinomial or a linear regression of the predicted values $\hat{\overline{Q}}_{Y}(M=m)_i$ conditional on the exposure $A$ and baseline confounders $L(0)$ to estimate $\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{Y}(M=m) \middle| L(0),A\right)$;
+3. Fit a quasibinomial or a linear regression of the predicted values $\hat{\overline{Q}}_{Y}(M=m)_i$ conditional on the exposure $A$ and baseline confounders $L(0)$ to estimate $\overline{Q}_{L(1)} = \mathbb{E}\left(\hat{\overline{Q}}_{Y}(A=a^\prime,M=m) \middle| L(0),A\right)$;
 
 4. Use this estimate to predict the outcome $\hat{\overline{Q}}_{L(1)}(A=a^\prime)_i$ for each subject, by evaluating the regression fit $\overline{Q}_{L(1)}$ at $A=a^\prime$;
                                           
@@ -260,69 +260,208 @@ Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
                               M_smoking + A0_ace:M_smoking,
                     family = "gaussian", data = df2_int)
 
-## 2) Generate predicted values by evaluating the regression setting the mediator
-##    value to M=0 or to M=1
-#    (Note: it is also possible to set A=0 or A=1 to evaluate the regression at
-#     exposure history of interest: {A0=1,M=0},{A0=0,M=0},{A0=1,M=1},{A0=0,M=1})
-data.Mis0 <- data.Mis1 <- df2_int
-data.Mis0$M_smoking <- 0
-data.Mis1$M_smoking <- 1
+# 2) Generate predicted values by evaluating the regression setting the exposure
+#    and the mediator at exposure history of interest:
+#    {A=1,M=0},{A=0,M=0},{A=1,M=1},{A=0,M=1}
+data.Ais0.Mis0 <- data.Ais0.Mis1 <- df2_int
+data.Ais1.Mis0 <- data.Ais1.Mis1 <- df2_int
 
-Q.Y.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
-Q.Y.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
+data.Ais0.Mis0$A0_ace <- 0
+data.Ais0.Mis0$M_smoking <- 0
 
-Q.Y.qol.Mis0 <- predict(Y.qol.model, newdata = data.Mis0, type="response")
-Q.Y.qol.Mis1 <- predict(Y.qol.model, newdata = data.Mis1, type="response")
+data.Ais0.Mis1$A0_ace <- 0
+data.Ais0.Mis1$M_smoking <- 1
 
+data.Ais1.Mis0$A0_ace <- 1
+data.Ais1.Mis0$M_smoking <- 0
+
+data.Ais1.Mis1$A0_ace <- 1
+data.Ais1.Mis1$M_smoking <- 1
+
+Q.L2.death.A0M0 <- predict(Y.death.model, newdata = data.Ais0.Mis0, type="response")
+Q.L2.death.A0M1 <- predict(Y.death.model, newdata = data.Ais0.Mis1, type="response")
+Q.L2.death.A1M0 <- predict(Y.death.model, newdata = data.Ais1.Mis0, type="response")
+Q.L2.death.A1M1 <- predict(Y.death.model, newdata = data.Ais1.Mis1, type="response")
+
+Q.L2.qol.A0M0 <- predict(Y.qol.model, newdata = data.Ais0.Mis0, type="response")
+Q.L2.qol.A0M1 <- predict(Y.qol.model, newdata = data.Ais0.Mis1, type="response")
+Q.L2.qol.A1M0 <- predict(Y.qol.model, newdata = data.Ais1.Mis0, type="response")
+Q.L2.qol.A1M1 <- predict(Y.qol.model, newdata = data.Ais1.Mis1, type="response")
 
 ## 3) Regress the predicted values conditional on the exposure A
 ##    and baseline confounders L(0)
-L1.death.Mis0.model <- glm(Q.Y.death.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
-                         family = "quasibinomial", data = df2_int)
-L1.death.Mis1.model <- glm(Q.Y.death.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
-                         family = "quasibinomial", data = df2_int)
+L1.death.A0M0.model <- glm(Q.L2.death.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A0M1.model <- glm(Q.L2.death.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M0.model <- glm(Q.L2.death.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M1.model <- glm(Q.L2.death.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
 
-L1.qol.Mis0.model <- glm(Q.Y.qol.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0M0.model <- glm(Q.L2.qol.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "gaussian", data = df2_int)
-L1.qol.Mis1.model <- glm(Q.Y.qol.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0M1.model <- glm(Q.L2.qol.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "gaussian", data = df2_int)
+L1.qol.A1M0.model <- glm(Q.L2.qol.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "gaussian", data = df2_int)
+L1.qol.A1M1.model <- glm(Q.L2.qol.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "gaussian", data = df2_int)
 
 ## 4) generate predicted values by evaluating the regression at exposure 
 ##    of interest: {A=1} & {A=0}
-data.Ais0 <- data.Ais1 <- df2_int
-data.Ais0$A0_ace <- 0
-data.Ais1$A0_ace <- 1
+Q.L1.death.A0M0 <- predict(L1.death.A0M0.model, newdata = data.Ais0.Mis0, type="response")
+Q.L1.death.A0M1 <- predict(L1.death.A0M1.model, newdata = data.Ais0.Mis1, type="response")
+Q.L1.death.A1M0 <- predict(L1.death.A1M0.model, newdata = data.Ais1.Mis0, type="response")
+Q.L1.death.A1M1 <- predict(L1.death.A1M1.model, newdata = data.Ais1.Mis1, type="response")
 
-Q.L1.death.Ais0.Mis0 <- predict(L1.death.Mis0.model, newdata = data.Ais0, type="response")
-Q.L1.death.Ais1.Mis0 <- predict(L1.death.Mis0.model, newdata = data.Ais1, type="response")
-Q.L1.death.Ais0.Mis1 <- predict(L1.death.Mis1.model, newdata = data.Ais0, type="response")
-Q.L1.death.Ais1.Mis1 <- predict(L1.death.Mis1.model, newdata = data.Ais1, type="response")
-
-Q.L1.qol.Ais0.Mis0 <- predict(L1.qol.Mis0.model, newdata = data.Ais0, type="response")
-Q.L1.qol.Ais1.Mis0 <- predict(L1.qol.Mis0.model, newdata = data.Ais1, type="response")
-Q.L1.qol.Ais0.Mis1 <- predict(L1.qol.Mis1.model, newdata = data.Ais0, type="response")
-Q.L1.qol.Ais1.Mis1 <- predict(L1.qol.Mis1.model, newdata = data.Ais1, type="response")
+Q.L1.qol.A0M0 <- predict(L1.qol.A0M0.model, newdata = data.Ais0.Mis0, type="response")
+Q.L1.qol.A0M1 <- predict(L1.qol.A0M1.model, newdata = data.Ais0.Mis1, type="response")
+Q.L1.qol.A1M0 <- predict(L1.qol.A1M0.model, newdata = data.Ais1.Mis0, type="response")
+Q.L1.qol.A1M1 <- predict(L1.qol.A1M1.model, newdata = data.Ais1.Mis1, type="response")
 
 ## 5) Take empirical mean of final predicted outcomes to estimate CDE
 # CDE setting M=0
-CDE.death.m0.gcomp.ice <- mean(Q.L1.death.Ais1.Mis0) - mean(Q.L1.death.Ais0.Mis0)
+CDE.death.m0.gcomp.ice <- mean(Q.L1.death.A1M0) - mean(Q.L1.death.A0M0)
 CDE.death.m0.gcomp.ice
-# [1] 0.06341297
+# [1] 0.06342833
 
-CDE.qol.m0.gcomp.ice <- mean(Q.L1.qol.Ais1.Mis0) - mean(Q.L1.qol.Ais0.Mis0)
+CDE.qol.m0.gcomp.ice <- mean(Q.L1.qol.A1M0) - mean(Q.L1.qol.A0M0)
 CDE.qol.m0.gcomp.ice
 # [1] -4.869509
 
 # CDE setting M=1
-CDE.death.m1.gcomp.ice <- mean(Q.L1.death.Ais1.Mis1) - mean(Q.L1.death.Ais0.Mis1)
+CDE.death.m1.gcomp.ice <- mean(Q.L1.death.A1M1) - mean(Q.L1.death.A0M1)
 CDE.death.m1.gcomp.ice
-# [1] 0.08810508
+# [1] 0.08812318
 
-CDE.qol.m1.gcomp.ice <- mean(Q.L1.qol.Ais1.Mis1) - mean(Q.L1.qol.Ais0.Mis1)
+CDE.qol.m1.gcomp.ice <- mean(Q.L1.qol.A1M1) - mean(Q.L1.qol.A0M1)
 CDE.qol.m1.gcomp.ice
 # [1] -10.38144
 ```
 
+#### G-computation by ICE using the `ltmle` package
+
+The `ltmle` package can be used to estimate Controlled Direct Effects by g-computation.
+
+An application is shown below.
+
+```{r gcomp_ltmle, echo=TRUE, eval = FALSE}
+library(ltmle)
+df2_int <- read.csv(file = "df2_int.csv")
+
+# the data set should be composed of continuous or binary variables,
+# ordered following the cause-effect sequence of each variables.
+# Note that within a set of exposures or intermediate confounders measured at a
+# single discrete time t, any causal sequence can be applied (for example,
+# with several L1 variable, it can be {L1.1, L1.2, L1.3} or {L1.2,L1.3,L1.1},
+# without any consequences on the estimation.
+df.death <- subset(df2_int, select = -Y_qol)
+df.qol <- subset(df2_int, select = -Y_death)
+
+## 1) Define Q formulas (Qbar_L1 and Qbar_Y functions)
+Q_formulas.death <- c(L1 = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+                      Y_death = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                                 A0_ace * M_smoking")
+Q_formulas.qol <- c(L1 = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+                    Y_qol = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                             A0_ace * M_smoking")
+## 2) Define g formulas (needed for the ltmle package) but they are not used
+#    with the g-computation estimator
+g_formulas <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
+                "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+
+## 3) Use the ltmle() function
+# arguments:
+#  - Anodes: indicate the exposure and the mediator variables
+#  - Lnodes: indicate the intermediate confounders (+/- baseline confounders)
+#  - Cnodes: censoring nodes, useless in our example
+#  - Ynodes: outcome variable
+#  - survivalOutcome = FALSE in our example
+#  - abar: list of the two values used to define counterfactual outcomes
+#          for the contrast of interest. For example, setting M=0,
+#          CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+#  - rule: to define dynamic rules (useless in our example)
+#  - gbounds = c(0.01, 1) by default. This parameter is not used with g-computation
+#  - Yrange = NULL, can be used to define range (min,max) for continuous outcomes
+#  - SL.library = "glm",  will apply main terms glm models.
+#                 The argument can be used to specify SuperLearner libraries.
+#                 However, simple glm models might be preferable as data.adaptive
+#                 algorithms rely on cross-validation, which is difficult and long to
+#                 implement with the bootstrap procedure needed for 95% confidence
+#                 intervals
+#  - stratify = FALSE by default. If TRUE, glm estimations are stratified for
+#               each counterfactual scenario defined in abar.
+#  - estimate.time = FALSE. If TRUE, print a rough estimate of computation time
+#  - iptw.only = FALSE, useless with g-computation
+#  - variance.method = "ic", computation is faster than with "tmle" which
+#  -                     is useless with g-comp: variance estimates rely on
+#                        influence curves which cannot be used with g-comp because
+#                       g-computation is not a asymptotically efficient estimator.
+#  - observation.weights = NULL, can be used to specify individual weights
+
+# With a binary outcome, CDE(M=1) = P(Y_{A=1,M=0} = 1) - P(Y_{A=0,M=0} = 1)
+ltmle.gcomp.CDE.M0 <- ltmle(data = df.death,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"),
+                            Ynodes = c("Y_death"), # binary outcome
+                            survivalOutcome = FALSE,
+                            Qform = Q_formulas.death, # Q formulas
+                            gform = g_formulas, # g formulas
+                            abar = list(c(1,0),c(0,0)), # Y_{A=1,M=0} vs Y_{A=0,M=0}
+                            rule = NULL,
+                            gbounds = c(0.01, 1), # by default
+                            Yrange = NULL,
+                            deterministic.g.function = NULL,
+                            stratify = FALSE,
+                            SL.library = "glm",
+                            SL.cvControl = list(),
+                            estimate.time = FALSE,
+                            gcomp = TRUE, # should be TRUE for g-computation
+                            iptw.only = FALSE,
+                            deterministic.Q.function = NULL,
+                            variance.method = "ic",
+                            observation.weights = NULL,
+                            id = NULL)
+summary(ltmle.gcomp.CDE.M0)
+# Additive Treatment Effect:
+#   Parameter Estimate:  0.063428 # same as manual computation
+#    Estimated Std Err:  0.018159
+#              p-value:  0.00047789
+#    95% Conf Interval: (0.027836, 0.09902) # those 95%CI should not be used
+#                      => apply a bootstrap computation instead
+
+# With a continuous outcome, CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+ltmle.gcomp.CDE.M1 <- ltmle(data = df.qol,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"),
+                            Ynodes = c("Y_qol"), # continous outcome
+                            survivalOutcome = FALSE,
+                            Qform = Q_formulas.qol, # Q formulas
+                            gform = g_formulas, # g formulas
+                            abar = list(c(1,1),c(0,1)), # Y_{A=1,M=1} vs Y_{A=0,M=1}
+                            rule = NULL,
+                            gbounds = c(0.01, 1), # by default
+                            Yrange = NULL,
+                            deterministic.g.function = NULL,
+                            stratify = FALSE,
+                            SL.library = "glm",
+                            SL.cvControl = list(),
+                            estimate.time = FALSE,
+                            gcomp = TRUE, # should be TRUE for g-computation
+                            iptw.only = FALSE,
+                            deterministic.Q.function = NULL,
+                            variance.method = "ic",
+                            observation.weights = NULL,
+                            id = NULL)
+summary(ltmle.gcomp.CDE.M1)
+# Additive Treatment Effect:
+#   Parameter Estimate:  -10.432
+#    Estimated Std Err:  0.55975
+#              p-value:  <2e-16
+#    95% Conf Interval: (-11.529, -9.335) those 95%CI should not be used
+#                      => apply a bootstrap computation instead
+```
 
 
 ### Sequential g-estimator
@@ -696,11 +835,7 @@ The function returns the following results:
 library(CMAverse)
 
 set.seed(1234)
-res_gformula_Qol <- cmest(data = df2_int, #data.frame(df2_int[,c("L0_male",
-                                                       #"L0_parent_low_educ_lv",
-                                                       #"A0_ace")],
-                                           #L1=as.factor(df2_int$L1),
-                                           #df2_int[,c("M_smoking","Y_qol")]),
+res_gformula_Qol_M0 <- cmest(data = df2_int, 
                          model = "gformula", # for parametric g-computation
                          outcome = "Y_qol", # outcome variable
                          exposure = "A0_ace", # exposure variable
@@ -719,7 +854,7 @@ res_gformula_Qol <- cmest(data = df2_int, #data.frame(df2_int[,c("L0_male",
                          inference = "bootstrap",
                          boot.ci.type = "per", # forpercentile, other option: "bca"
                          nboot = 2) # we should use a large number of bootstrap samples
-summary(res_gformula_Qol)
+summary(res_gformula_Qol_M0)
 
 ### 1) Estimation of Qbar.Y = P(Y=1|M,L1,A,L0) with A*M interaction,
 ### Outcome regression:
@@ -804,3 +939,196 @@ summary(res_gformula_Qol)
 # rint: randomized analogue of overall proportion attributable to interaction;
 # rpe: randomized analogue of overall proportion eliminated
 ```
+Using the `CMAverse` package, 
+
+  - the total effect (overall effect) on the QoL quantitative outcome is estimated to be $TE = \mathbb{E}\left(Y_{A=1,G_{A=1\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right) \approx -9.87$,
+  - the controlled direct effect ($CDE_{M=0}$), setting $M=0$ is $CDE_{M=0}=\mathbb{E}\left(Y_{A=1,M=0} \right) - \mathbb{E}\left(Y_{A=0,M=0} \right)\approx -5.86$,
+  - the randomized pure natural direct effect is $rPNDE = \mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right)\approx -7.57$
+  - the randomized total natural indirect effect is $rTNIE = \mathbb{E}\left(Y_{A=1,G_{A=1\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right)\approx -2.30$
+  
+[@vanderweele2014] defined the 3-way or 4-way decomposition in causal structures with no intermediate confounder $L(1)$ of the $M-Y$ relationship affected by the exposure $A$. In causal structures with such intermediate confounders (Causal model 2, Figure \@ref(fig:figDAGM2)), analogues of the 3-way and 4-way decomposition can still be defined. Those analogues are estimated by the `CMAverse` package. They can be calculated from the Total Effect, the controlled direct effect (setting $M=0$) and the pure Natural Direct and Indirect Effects, using the following relationships:
+
+  - We can start by estimating the Total Effect (Overall effect), the CDE (setting $M=0$), the randomized Pure Natural Direct effect and the randomized Pure Natural Indirect Effect:
+  \begin{align*}
+    TE &= \mathbb{E}\left(Y_{A=1,G_{A=1\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right) \\
+    CDE_{M=0} &=\mathbb{E}\left(Y_{A=1,M=0} \right) - \mathbb{E}\left(Y_{A=0,M=0} \right) \\
+    rPNDE &= \mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right) \\
+    rPNIE &= \mathbb{E}\left(Y_{A=0,G_{A=1\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right)
+  \end{align*}
+  - the Mediated Interaction can then be obtained by : 
+  \begin{align*}
+    MIE &= TE - rPNDE - rPNIE \\
+    MIE &= \left[ \mathbb{E}\left(Y_{A=1,G_{A=1\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right) \right] \\
+      & \quad - \left[\mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right) \right] - \left[ \mathbb{E}\left(Y_{A=0,G_{A=1\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right)\right]
+  \end{align*}
+  - and the Reference Interaction can be obtained by : 
+  \begin{align*}
+    RIE &= rPNDE - CDE_{M=0} \\
+    RIE &= \left[\mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right) - \mathbb{E}\left(Y_{A=0,G_{A=0\mid L(0)}} \right) \right] - \left[ \mathbb{E}\left(Y_{A=1,M=0} \right) - \mathbb{E}\left(Y_{A=0,M=0} \right) \right]
+  \end{align*}
+
+```{r 4waydecomp_analogues, echo=TRUE, eval = FALSE}
+## Using the previous results, we can check those equalities for the analogues 
+## of the 3-way and 4-way decomposition
+res_gformula_Qol_M0$effect.pe["te"]
+# TE = -9.870139
+res_gformula_Qol_M0$effect.pe["cde"]
+# CDE(M=0) = -5.86375
+res_gformula_Qol_M0$effect.pe["rpnde"]
+# rPNDE = -7.565835
+res_gformula_Qol_M0$effect.pe["rpnie"]
+# rPNIE = -1.40641
+
+## Check that MI = TE - rPNDE - rPNIE
+(res_gformula_Qol_M0$effect.pe["te"] - res_gformula_Qol_M0$effect.pe["rpnde"] -
+    res_gformula_Qol_M0$effect.pe["rpnie"])
+# -0.897894
+res_gformula_Qol_M0$effect.pe["rintmed"]
+# -0.897894 # we have MI = TE - rPNDE - rPNIE
+
+## Check that RE = PNDE - CDE_{M=0}
+res_gformula_Qol_M0$effect.pe["rpnde"] - res_gformula_Qol_M0$effect.pe["cde"]
+# -1.702085
+res_gformula_Qol_M0$effect.pe["rintref"]
+# -1.702085 # we have RE = PNDE - CDE_{M=0}
+```
+
+
+With a binary outcome, we can use the same `cmest` function as previously, replacing the `yreg = "linear"` argument by `yreg = "logistic"`. The results will be given on the Odds Ratio scale:
+
+```{r CMAverse_gcomp_death_OR, echo=TRUE, eval = FALSE}
+set.seed(1234)
+res_gformula_OR_M0 <- cmest(data = df2_int,
+                      model = "gformula",
+                      outcome = "Y_death",
+                      exposure = "A0_ace",
+                      mediator = "M_smoking",
+                      basec = c("L0_male", "L0_parent_low_educ_lv"),
+                      postc = "L1",
+                      EMint = TRUE,
+                      mreg = list("logistic"), # g(M=1|L1,A,L0)
+                      yreg = "logistic",# Qbar.L2 = P(Y=1|M,L1,A,L0)
+                      postcreg = list("logistic"), # Qbar.L1 = P(L1=1|A,L0)
+                      astar = 0,
+                      a = 1,
+                      mval = list(0), # do(M=0) to estimate CDE_m
+                      estimation = "imputation", # parametric g-comp if model= gformula
+                      inference = "bootstrap",
+                      boot.ci.type = "per", # forpercentile, other option: "bca"
+                      nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_OR_M0)
+### 1) Estimation of Qbar.Y = P(Y=1|M,L1,A,L0) with A*M interaction,
+###    by logistic regression
+# Outcome regression:
+# Call:
+# glm(formula = Y_death ~ A0_ace + M_smoking + A0_ace * M_smoking + 
+#     L0_male + L0_parent_low_educ_lv + L1, family = binomial(), 
+#     data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
+# 
+# Coefficients:
+#                       Estimate Std. Error z value Pr(>|z|)    
+# (Intercept)           -2.04033    0.05855 -34.849  < 2e-16 ***
+# A0_ace                 0.28922    0.10123   2.857  0.00428 ** 
+# M_smoking              0.44406    0.05569   7.974 1.53e-15 ***
+# L0_male                0.26913    0.04996   5.387 7.15e-08 ***
+# L0_parent_low_educ_lv  0.34603    0.05432   6.370 1.89e-10 ***
+# L11                    0.42894    0.05195   8.257  < 2e-16 ***
+# A0_ace:M_smoking       0.04387    0.14311   0.307  0.75919   
+
+# etc
+
+### 4) Effect decomposition on the odds ratio scale via the g-formula approach
+#                 Estimate Std.error  95% CIL 95% CIU  P.val    
+# Rcde            1.592115  0.121242 1.401748   1.565 <2e-16 ***
+# rRpnde          1.610141  0.064880 1.458433   1.546 <2e-16 ***
+# rRtnde          1.621371  0.046720 1.479227   1.542 <2e-16 ***
+# rRpnie          1.076471  0.001714 1.036683   1.039 <2e-16 ***
+# rRtnie          1.083979  0.014539 1.034267   1.054 <2e-16 ***
+# Rte             1.745359  0.045898 1.536897   1.599 <2e-16 ***
+# ERcde           0.392219  0.073776 0.277167   0.376 <2e-16 ***
+# rERintref       0.217921  0.008895 0.169383   0.181 <2e-16 ***
+# rERintmed       0.058747  0.017268 0.016243   0.039 <2e-16 ***
+# rERpnie         0.076471  0.001714 0.036684   0.039 <2e-16 ***
+# ERcde(prop)     0.526216  0.083694 0.515858   0.628 <2e-16 ***
+# rERintref(prop) 0.292371  0.040769 0.283120   0.338 <2e-16 ***
+# rERintmed(prop) 0.078817  0.034491 0.027264   0.074 <2e-16 ***
+# rERpnie(prop)   0.102596  0.008434 0.061314   0.073 <2e-16 ***
+# rpm             0.181413  0.042925 0.088578   0.146 <2e-16 ***
+# rint            0.371188  0.075260 0.310384   0.411 <2e-16 ***
+# rpe             0.473784  0.083694 0.371698   0.484 <2e-16 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Rcde: controlled direct effect odds ratio; 
+# rRpnde: randomized analogue of pure natural direct effect odds ratio; 
+# rRtnde: randomized analogue of total natural direct effect odds ratio; 
+# rRpnie: randomized analogue of pure natural indirect effect odds ratio; 
+# rRtnie: randomized analogue of total natural indirect effect odds ratio; 
+# Rte: total effect odds ratio; 
+# ERcde: excess relative risk due to controlled direct effect; 
+# rERintref: randomized analogue of excess relative risk due to reference interaction; 
+# rERintmed: randomized analogue of excess relative risk due to mediated interaction; 
+# rERpnie: randomized analogue of excess relative risk due to pure natural indirect effect; 
+# ERcde(prop): proportion ERcde; 
+# rERintref(prop): proportion rERintref; 
+# rERintmed(prop): proportion rERintmed; 
+# rERpnie(prop): proportion rERpnie; 
+# rpm: randomized analogue of overall proportion mediated; 
+# rint: randomized analogue of overall proportion attributable to interaction; 
+# rpe: randomized analogue of overall proportion eliminated)
+```
+
+
+If we prefer to estimate results for the binary outcome on a risk difference scale, it is still possible, by appyling a linear regression for the outcome model, using the argument `yreg = "linear"`.
+
+```{r CMAverse_gcomp_death_RD, echo=TRUE, eval = FALSE}
+set.seed(1234)
+res_gformula_RD_M0 <- cmest(data = df2_int,
+                      model = "gformula",
+                      outcome = "Y_death",
+                      exposure = "A0_ace",
+                      mediator = "M_smoking",
+                      basec = c("L0_male", "L0_parent_low_educ_lv"),
+                      postc = "L1",
+                      EMint = TRUE,
+                      mreg = list("logistic"), # g(M=1|L1,A,L0)
+                      yreg = "linear",# Qbar.L2 = P(Y=1|M,L1,A,L0)
+                      postcreg = list("logistic"), # Qbar.L1 = P(L1=1|A,L0)
+                      astar = 0,
+                      a = 1,
+                      mval = list(0), # do(M=0) to estimate CDE_m
+                      estimation = "imputation", # parametric g-comp if model= gformula
+                      inference = "bootstrap",
+                      boot.ci.type = "per", # forpercentile, other option: "bca"
+                      nboot = 2) # we should use a large number of bootstrap samples
+summary(res_gformula_RD_M0)
+## 4) Effect decomposition on the mean difference scale via the g-formula approach
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+#                  Estimate Std.error   95% CIL 95% CIU  P.val
+#   cde           0.0638914 0.0158641 0.0467659   0.068 <2e-16 *** 
+#   rpnde         0.0734700 0.0307357 0.0598528   0.101 <2e-16 *** 
+#   rtnde         0.0771555 0.0333264 0.0647151   0.109 <2e-16 ***
+#   rpnie         0.0090890 0.0033498 0.0050769   0.010 <2e-16 ***
+#   rtnie         0.0127744 0.0007591 0.0134198   0.014 <2e-16 *** 
+#   te            0.0862445 0.0299766 0.0742924   0.115 <2e-16 ***
+#   rintref       0.0095786 0.0148716 0.0130869   0.033 <2e-16 ***
+#   rintmed       0.0036855 0.0025907 0.0048623   0.008 <2e-16 ***
+#   cde(prop)     0.7408176 0.0263715 0.5945733   0.630 <2e-16 ***
+#   rintref(prop) 0.1110634 0.0841501 0.1744983   0.288 <2e-16 ***
+#   rintmed(prop) 0.0427328 0.0055167 0.0653396   0.073 <2e-16 ***
+#   rpnie(prop)   0.1053862 0.0632953 0.0451212   0.130 <2e-16 ***
+#   rpm           0.1481190 0.0577786 0.1178726   0.195 <2e-16 ***
+#   rint          0.1537963 0.0896668 0.2398378   0.360 <2e-16 ***
+#   rpe           0.2591824 0.0263715 0.3699965   0.405 <2e-16 ***
+```
+Using the `CMAverse` package, 
+
+  - the total effect (overall effect) on the probability of death (binary outcome) is estimated to be $TE = P\left(Y_{A=1,G_{A=1\mid L(0)}} = 1\right) - P\left(Y_{A=0,G_{A=0\mid L(0)}} = 1\right) \approx 0.086$,
+  - the controlled direct effect ($CDE_{M=0}$), setting $M=0$ is $CDE_{M=0}=P\left(Y_{A=1,M=0} =1 \right) - P\left(Y_{A=0,M=0} = 1 \right)\approx 0.064$,
+  - the randomized pure natural direct effect is $rPNDE = P\left(Y_{A=1,G_{A=0\mid L(0)}} = 1 \right) - P\left(Y_{A=0,G_{A=0\mid L(0)}}  = 1\right)\approx 0.073$
+  - the randomized total natural indirect effect is $rTNIE = P\left(Y_{A=1,G_{A=1\mid L(0)}} =1\right) - P\left(Y_{A=1,G_{A=0\mid L(0)}} =1\right)\approx 0.013$

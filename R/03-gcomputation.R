@@ -160,7 +160,7 @@ CDE.qol.m1.gcomp.param
 ## II.2) G-computation by iterative conditional expectation --------------------
 # ---------------------------------------------------------------------------- #
 rm(list=ls())
-df2_int <- read.csv(file = "df2_int.csv")
+df2_int <- read.csv(file = "data/df2_int.csv")
 
 # 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
 Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
@@ -170,68 +170,204 @@ Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
                      M_smoking + A0_ace:M_smoking,
                    family = "gaussian", data = df2_int)
 
-# 2) Generate predicted values by evaluating the regression setting the mediator
-#    value to M=0 or to M=1
-#    (Note: it is also possible to set A=0 or A=1 to evaluate the regression at
-#     exposure history of interest: {A0=1,M=0},{A0=0,M=0},{A0=1,M=1},{A0=0,M=1})
-data.Mis0 <- data.Mis1 <- df2_int
-data.Mis0$M_smoking <- 0
-data.Mis1$M_smoking <- 1
+# 2) Generate predicted values by evaluating the regression setting the exposure
+#    and the mediator at exposure history of interest:
+#    {A=1,M=0},{A=0,M=0},{A=1,M=1},{A=0,M=1}
+data.Ais0.Mis0 <- data.Ais0.Mis1 <- df2_int
+data.Ais1.Mis0 <- data.Ais1.Mis1 <- df2_int
 
-Q.L2.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
-Q.L2.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
+data.Ais0.Mis0$A0_ace <- 0
+data.Ais0.Mis0$M_smoking <- 0
 
-Q.L2.qol.Mis0 <- predict(Y.qol.model, newdata = data.Mis0, type="response")
-Q.L2.qol.Mis1 <- predict(Y.qol.model, newdata = data.Mis1, type="response")
+data.Ais0.Mis1$A0_ace <- 0
+data.Ais0.Mis1$M_smoking <- 1
+
+data.Ais1.Mis0$A0_ace <- 1
+data.Ais1.Mis0$M_smoking <- 0
+
+data.Ais1.Mis1$A0_ace <- 1
+data.Ais1.Mis1$M_smoking <- 1
+
+
+Q.L2.death.A0M0 <- predict(Y.death.model, newdata = data.Ais0.Mis0, type="response")
+Q.L2.death.A0M1 <- predict(Y.death.model, newdata = data.Ais0.Mis1, type="response")
+Q.L2.death.A1M0 <- predict(Y.death.model, newdata = data.Ais1.Mis0, type="response")
+Q.L2.death.A1M1 <- predict(Y.death.model, newdata = data.Ais1.Mis1, type="response")
+
+Q.L2.qol.A0M0 <- predict(Y.qol.model, newdata = data.Ais0.Mis0, type="response")
+Q.L2.qol.A0M1 <- predict(Y.qol.model, newdata = data.Ais0.Mis1, type="response")
+Q.L2.qol.A1M0 <- predict(Y.qol.model, newdata = data.Ais1.Mis0, type="response")
+Q.L2.qol.A1M1 <- predict(Y.qol.model, newdata = data.Ais1.Mis1, type="response")
 
 
 # 3) Regress the predicted values conditional on the exposure A
 #    and baseline confounders L(0)
-L1.death.Mis0.model <- glm(Q.L2.death.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0M0.model <- glm(Q.L2.death.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                            family = "quasibinomial", data = df2_int)
-L1.death.Mis1.model <- glm(Q.L2.death.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0M1.model <- glm(Q.L2.death.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M0.model <- glm(Q.L2.death.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                           family = "quasibinomial", data = df2_int)
+L1.death.A1M1.model <- glm(Q.L2.death.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                            family = "quasibinomial", data = df2_int)
 
-L1.qol.Mis0.model <- glm(Q.L2.qol.Mis0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0M0.model <- glm(Q.L2.qol.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "gaussian", data = df2_int)
-L1.qol.Mis1.model <- glm(Q.L2.qol.Mis1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0M1.model <- glm(Q.L2.qol.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "gaussian", data = df2_int)
+L1.qol.A1M0.model <- glm(Q.L2.qol.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+                         family = "gaussian", data = df2_int)
+L1.qol.A1M1.model <- glm(Q.L2.qol.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
                          family = "gaussian", data = df2_int)
 
 # 4) generate predicted values by evaluating the regression at exposure
 #    of interest: {A=1} & {A=0}
-data.Ais0 <- data.Ais1 <- df2_int
-data.Ais0$A0_ace <- 0
-data.Ais1$A0_ace <- 1
+Q.L1.death.A0M0 <- predict(L1.death.A0M0.model, newdata = data.Ais0.Mis0, type="response")
+Q.L1.death.A0M1 <- predict(L1.death.A0M1.model, newdata = data.Ais0.Mis1, type="response")
+Q.L1.death.A1M0 <- predict(L1.death.A1M0.model, newdata = data.Ais1.Mis0, type="response")
+Q.L1.death.A1M1 <- predict(L1.death.A1M1.model, newdata = data.Ais1.Mis1, type="response")
 
-Q.L1.death.Ais0.Mis0 <- predict(L1.death.Mis0.model, newdata = data.Ais0, type="response")
-Q.L1.death.Ais1.Mis0 <- predict(L1.death.Mis0.model, newdata = data.Ais1, type="response")
-Q.L1.death.Ais0.Mis1 <- predict(L1.death.Mis1.model, newdata = data.Ais0, type="response")
-Q.L1.death.Ais1.Mis1 <- predict(L1.death.Mis1.model, newdata = data.Ais1, type="response")
-
-Q.L1.qol.Ais0.Mis0 <- predict(L1.qol.Mis0.model, newdata = data.Ais0, type="response")
-Q.L1.qol.Ais1.Mis0 <- predict(L1.qol.Mis0.model, newdata = data.Ais1, type="response")
-Q.L1.qol.Ais0.Mis1 <- predict(L1.qol.Mis1.model, newdata = data.Ais0, type="response")
-Q.L1.qol.Ais1.Mis1 <- predict(L1.qol.Mis1.model, newdata = data.Ais1, type="response")
+Q.L1.qol.A0M0 <- predict(L1.qol.A0M0.model, newdata = data.Ais0.Mis0, type="response")
+Q.L1.qol.A0M1 <- predict(L1.qol.A0M1.model, newdata = data.Ais0.Mis1, type="response")
+Q.L1.qol.A1M0 <- predict(L1.qol.A1M0.model, newdata = data.Ais1.Mis0, type="response")
+Q.L1.qol.A1M1 <- predict(L1.qol.A1M1.model, newdata = data.Ais1.Mis1, type="response")
 
 # 5) Take empirical mean of final predicted outcomes to estimate CDE
 # CDE setting M=0
-CDE.death.m0.gcomp.ice <- mean(Q.L1.death.Ais1.Mis0) - mean(Q.L1.death.Ais0.Mis0)
+CDE.death.m0.gcomp.ice <- mean(Q.L1.death.A1M0) - mean(Q.L1.death.A0M0)
 CDE.death.m0.gcomp.ice
-# [1] 0.06341297
+# [1] 0.06342833
 
-CDE.qol.m0.gcomp.ice <- mean(Q.L1.qol.Ais1.Mis0) - mean(Q.L1.qol.Ais0.Mis0)
+CDE.qol.m0.gcomp.ice <- mean(Q.L1.qol.A1M0) - mean(Q.L1.qol.A0M0)
 CDE.qol.m0.gcomp.ice
 # [1] -4.869509
 
 # CDE setting M=1
-CDE.death.m1.gcomp.ice <- mean(Q.L1.death.Ais1.Mis1) - mean(Q.L1.death.Ais0.Mis1)
+CDE.death.m1.gcomp.ice <- mean(Q.L1.death.A1M1) - mean(Q.L1.death.A0M1)
 CDE.death.m1.gcomp.ice
-# [1] 0.08810508
+# [1] 0.08812318
 
-CDE.qol.m1.gcomp.ice <- mean(Q.L1.qol.Ais1.Mis1) - mean(Q.L1.qol.Ais0.Mis1)
+CDE.qol.m1.gcomp.ice <- mean(Q.L1.qol.A1M1) - mean(Q.L1.qol.A0M1)
 CDE.qol.m1.gcomp.ice
 # [1] -10.38144
 
+
+### G-computation by iterative conditional expectation using the ltmle package
+library(ltmle)
+rm(list=ls())
+df2_int <- read.csv(file = "df2_int.csv")
+df.death <- subset(df2_int, select = -Y_qol)
+df.qol <- subset(df2_int, select = -Y_death)
+
+# the data set should be composed of continuous or binary variables,
+# ordered following the cause-effect sequence of each variables.
+# Note that within a set of exposures or intermediate confounders measured at a
+# single discrete time t, any causal sequence can be applied (for example,
+# with several L1 variable, it can be {L1.1, L1.2, L1.3} or {L1.2,L1.3,L1.1},
+# without any consequences on the estimation.
+
+# 1) define Q formulas (Qbar_L1 and Qbar_Y functions)
+Q_formulas.death <- c(L1 = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+                      Y_death = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                                 A0_ace * M_smoking")
+Q_formulas.qol <- c(L1 = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
+                    Y_qol = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
+                             A0_ace * M_smoking")
+# 2) define g formulas (needed for the ltmle package) but they are not used
+#    with the g-computation estimator
+g_formulas <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
+                "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+
+
+# arguments:
+#  - Anodes: indicate the exposure and the mediator variables
+#  - Lnodes: indicate the intermediate confounders (+/- baseline confounders)
+#  - Cnodes: censoring nodes, useless in our example
+#  - Ynodes: outcome variable
+#  - survivalOutcome = FALSE in our example
+#  - abar: list of the two values used to define counterfactual outcomes
+#          for the contrast of interest. For example, setting M=0,
+#          CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
+#  - rule: to define dynamic rules (useless in our example)
+#  - gbounds = c(0.01, 1) by default. This parameter is not used with g-computation
+#  - Yrange = NULL, can be used to define range (min,max) for continuous outcomes
+#  - SL.library = "glm",  will apply main terms glm models.
+#                 The argument can be used to specify SuperLearner libraries.
+#                 However, simple glm models might be preferable as data.adaptive
+#                 algorithms rely on cross-validation, which is difficult and long to
+#                 implement with the bootstrap procedure needed for 95% confidence
+#                 intervals
+#  - stratify = FALSE by default. If TRUE, glm estimations are stratified for
+#               each counterfactual scenario defined in abar.
+#  - estimate.time = FALSE. If TRUE, print a rough estimate of computation time
+#  - iptw.only = FALSE, useless with g-computation
+#  - variance.method = "ic", computation is faster than with "tmle" which
+#  -                     is useless with g-comp: variance estimates rely on
+#                        influence curves which cannot be used with g-comp because
+#                       g-computation is not a asymptotically efficient estimator.
+#  - observation.weights = NULL, can be used to specify individual weights
+
+# with binary outcome, CDE(M=1) = P(Y_{A=1,M=0} = 1) - P(Y_{A=0,M=0} = 1)
+ltmle.gcomp.CDE.M0 <- ltmle(data = df.death,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"),
+                            Ynodes = c("Y_death"), # binary outcome
+                            survivalOutcome = FALSE,
+                            Qform = Q_formulas.death, # Q formulas
+                            gform = g_formulas, # g formulas
+                            abar = list(c(1,0),c(0,0)), # Y_{A=1,M=0} vs Y_{A=0,M=0}
+                            rule = NULL,
+                            gbounds = c(0.01, 1), # by default
+                            Yrange = NULL,
+                            deterministic.g.function = NULL,
+                            stratify = FALSE,
+                            SL.library = "glm",
+                            SL.cvControl = list(),
+                            estimate.time = FALSE,
+                            gcomp = TRUE, # should be TRUE for g-computation
+                            iptw.only = FALSE,
+                            deterministic.Q.function = NULL,
+                            variance.method = "ic",
+                            observation.weights = NULL,
+                            id = NULL)
+summary(ltmle.gcomp.CDE.M0)
+# Additive Treatment Effect:
+#   Parameter Estimate:  0.063428 # same as manual computation
+#    Estimated Std Err:  0.018159
+#              p-value:  0.00047789
+#    95% Conf Interval: (0.027836, 0.09902) # those 95%CI should not be used
+#                      => apply a bootstrap computation instead
+
+# with continuous outcome, CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
+ltmle.gcomp.CDE.M1 <- ltmle(data = df.qol,
+                            Anodes = c("A0_ace", "M_smoking"),
+                            Lnodes = c("L1"),
+                            Ynodes = c("Y_qol"), # continous outcome
+                            survivalOutcome = FALSE,
+                            Qform = Q_formulas.qol, # Q formulas
+                            gform = g_formulas, # g formulas
+                            abar = list(c(1,1),c(0,1)), # Y_{A=1,M=1} vs Y_{A=0,M=1}
+                            rule = NULL,
+                            gbounds = c(0.01, 1), # by default
+                            Yrange = NULL,
+                            deterministic.g.function = NULL,
+                            stratify = FALSE,
+                            SL.library = "glm",
+                            SL.cvControl = list(),
+                            estimate.time = FALSE,
+                            gcomp = TRUE, # should be TRUE for g-computation
+                            iptw.only = FALSE,
+                            deterministic.Q.function = NULL,
+                            variance.method = "ic",
+                            observation.weights = NULL,
+                            id = NULL)
+summary(ltmle.gcomp.CDE.M1)
+# Additive Treatment Effect:
+#   Parameter Estimate:  -10.432
+#    Estimated Std Err:  0.55975
+#              p-value:  <2e-16
+#    95% Conf Interval: (-11.529, -9.335) those 95%CI should not be used
+#                      => apply a bootstrap computation instead
 
 
 # ---------------------------------------------------------------------------- #
@@ -526,11 +662,7 @@ cmdag(outcome = "Y_death", exposure = "A0_ace", mediator = "M_smoking",
 ### Continuous outcome
 ## The g-formula Approach
 set.seed(1234)
-res_gformula_Qol <- cmest(data = df2_int, #data.frame(df2_int[,c("L0_male",
-                                                       #"L0_parent_low_educ_lv",
-                                                       #"A0_ace")],
-                                           #L1=as.factor(df2_int$L1),
-                                           #df2_int[,c("M_smoking","Y_qol")]),
+res_gformula_Qol <- cmest(data = df2_int,
                          model = "gformula", # for parametric g-computation
                          outcome = "Y_qol", # outcome variable
                          exposure = "A0_ace", # exposure variable
@@ -634,11 +766,36 @@ summary(res_gformula_Qol)
 # rint: randomized analogue of overall proportion attributable to interaction;
 # rpe: randomized analogue of overall proportion eliminated
 
+### We can check those equalities for the analogues of the 3-way and 4-way decomposition
+res_gformula_Qol$effect.pe["te"]
+# TE = -9.870139
+res_gformula_Qol$effect.pe["rpnde"]
+# rPNDE = -7.565835
+res_gformula_Qol$effect.pe["rpnie"]
+# rPNIE = -1.40641
+res_gformula_Qol$effect.pe["cde"]
+# CDE(M=0) = -5.86375
+
+## Check that MI = TE - rPNDE - rPNIE
+(res_gformula_Qol$effect.pe["te"] - res_gformula_Qol$effect.pe["rpnde"] -
+    res_gformula_Qol$effect.pe["rpnie"])
+# -0.897894
+res_gformula_Qol$effect.pe["rintmed"]
+# -0.897894 # we have MI = TE - rPNDE - rPNIE
+
+## Check that RE = PNDE - CDE_{M=0}
+res_gformula_Qol$effect.pe["rpnde"] - res_gformula_Qol$effect.pe["cde"]
+# -1.702085
+res_gformula_Qol$effect.pe["rintref"]
+# -1.702085 # we have RE = PNDE - CDE_{M=0}
+
+
 ## The g-formula Approach
 set.seed(1234)
-res_gformula_OR <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
-                                        L1=as.factor(df2_int$L1),
-                                        df2_int[,c("M_smoking","Y_death")]),
+res_gformula_OR <- cmest(data = df2_int,
+                         # data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                         #                L1=as.factor(df2_int$L1),
+                         #                df2_int[,c("M_smoking","Y_death")]),
                       model = "gformula",
                       outcome = "Y_death",
                       exposure = "A0_ace",
@@ -791,9 +948,10 @@ summary(res_gformula_OR)
 ## How to get risk differences ? apply a gaussian glm for the Qbar.L2 model
 # setting do(M=0) for the controlled direct effect
 set.seed(12345)
-res_gformula_RD_M0 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
-                                              L1=as.factor(df2_int$L1),
-                                              df2_int[,c("M_smoking","Y_death")]),
+res_gformula_RD_M0 <- cmest(data = df2_int,
+                            # data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                            #                   L1=as.factor(df2_int$L1),
+                            #                   df2_int[,c("M_smoking","Y_death")]),
                             model = "gformula",
                             outcome = "Y_death",
                             exposure = "A0_ace",
