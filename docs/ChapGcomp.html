@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 6 G-computation | Mediation Workshop</title>
   <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
-  <meta name="generator" content="bookdown 0.38 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 6 G-computation | Mediation Workshop" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-05-10" />
+<meta name="date" content="2024-09-10" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -56,7 +56,7 @@
 
 <style type="text/css">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -128,6 +128,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging div.csl-entry {
   margin-left:2em;
@@ -266,7 +267,7 @@ div.csl-indent {
 <li class="chapter" data-level="11.1.7" data-path="appendix_b.html"><a href="appendix_b.html#marginal-randomized-direct-and-indirect-effects"><i class="fa fa-check"></i><b>11.1.7</b> Marginal randomized direct and indirect effects</a></li>
 <li class="chapter" data-level="11.1.8" data-path="appendix_b.html"><a href="appendix_b.html#conditional-randomized-direct-and-indirect-effects"><i class="fa fa-check"></i><b>11.1.8</b> Conditional randomized direct and indirect effects</a></li>
 </ul></li>
-<li class="chapter" data-level="11.2" data-path="appendix_b.html"><a href="appendix_b.html#true-causal-quantities-with-mediator-ouctome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>11.2</b> True causal quantities with mediator-ouctome confounder affected by the exposure</a>
+<li class="chapter" data-level="11.2" data-path="appendix_b.html"><a href="appendix_b.html#true-causal-quantities-with-mediator-outcome-confounder-affected-by-the-exposure"><i class="fa fa-check"></i><b>11.2</b> True causal quantities with mediator-outcome confounder affected by the exposure</a>
 <ul>
 <li class="chapter" data-level="11.2.1" data-path="appendix_b.html"><a href="appendix_b.html#average-total-effects-ate-1"><i class="fa fa-check"></i><b>11.2.1</b> Average total effects (ATE)</a></li>
 <li class="chapter" data-level="11.2.2" data-path="appendix_b.html"><a href="appendix_b.html#controlled-direct-effects-cde-1"><i class="fa fa-check"></i><b>11.2.2</b> Controlled direct effects (CDE)</a></li>
@@ -1351,14 +1352,14 @@ RIE &amp;= \left[\mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right) - \mathbb{E}\l
 <ul>
 <li>the total effect (overall effect) on the probability of death (binary outcome) is estimated to be <span class="math inline">\(TE = P\left(Y_{A=1,G_{A=1\mid L(0)}} = 1\right) - P\left(Y_{A=0,G_{A=0\mid L(0)}} = 1\right) \approx 0.086\)</span>,</li>
 <li>the controlled direct effect (<span class="math inline">\(CDE_{M=0}\)</span>), setting <span class="math inline">\(M=0\)</span> is <span class="math inline">\(CDE_{M=0}=P\left(Y_{A=1,M=0} =1 \right) - P\left(Y_{A=0,M=0} = 1 \right)\approx 0.064\)</span>,</li>
-<li>the randomized pure natural direct effect is <span class="math inline">\(rPNDE = P\left(Y_{A=1,G_{A=0\mid L(0)}} = 1 \right) - P\left(Y_{A=0,G_{A=0\mid L(0)}} = 1\right)\approx 0.073\)</span></li>
+<li>the randomized pure natural direct effect is <span class="math inline">\(rPNDE = P\left(Y_{A=1,G_{A=0\mid L(0)}} = 1 \right) - P\left(Y_{A=0,G_{A=0\mid L(0)}}  = 1\right)\approx 0.073\)</span></li>
 <li>the randomized total natural indirect effect is <span class="math inline">\(rTNIE = P\left(Y_{A=1,G_{A=1\mid L(0)}} =1\right) - P\left(Y_{A=1,G_{A=0\mid L(0)}} =1\right)\approx 0.013\)</span></li>
 </ul>
 
 </div>
 </div>
 <h3>References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-daniel2013" class="csl-entry">
 Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. <span>“Methods for Dealing with Time-Dependent Confounding.”</span> <em>Statistics in Medicine</em> 32 (9): 1584–1618.
 </div>

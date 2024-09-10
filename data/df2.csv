@@ -1,4 +1,4 @@
-"L0_male","L0_parent_low_educ_lv","A0_ace","L1","M_smoking","Y_death","Y_qol"
+"L0_male","L0_soc_env","A0_PM2.5","L1","M_diabetes","Y_death","Y_qol"
 0,1,0,1,0,0,91.9181856936183
 1,1,1,0,0,1,67.5322149720919
 1,1,0,0,0,0,75.5624909415507

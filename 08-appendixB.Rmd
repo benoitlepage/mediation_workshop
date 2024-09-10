@@ -19,48 +19,48 @@ true.ATE1 <- function(interaction = NULL) {
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  colnames(S) <- list("male","soc_env","L1","M","sum")
   for (n in 1:16) {
     S[n,"sum"] <- ( ( ( b["b_Y"] + 
                       b["b_male_Y"] * S[n,"male"] + 
-                      b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                      b["b_soc_env_Y"] * S[n,"soc_env"] + 
                       b["b_A_Y"] * 1 + 
                       b["b_L1_Y"] * S[n,"L1"] +
                       b["b_M_Y"] * S[n,"M"] +
                       b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
                     (( b["b_M"] + 
                            b["b_male_M"] * S[n,"male"] + 
-                           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                           b["b_soc_env_M"] * S[n,"soc_env"] + 
                            b["b_L1_M"] * S[n,"L1"] +
                            b["b_A_M"] * 1 )^( S[n,"M"] )) *
                     (( 1 - (b["b_M"] + 
                               b["b_male_M"] * S[n,"male"] + 
-                              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                              b["b_soc_env_M"] * S[n,"soc_env"] + 
                               b["b_L1_M"] * S[n,"L1"] +
                               b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) ) - 
                     ( ( b["b_Y"] + 
                           b["b_male_Y"] * S[n,"male"] + 
-                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_soc_env_Y"] * S[n,"soc_env"] + 
                           b["b_A_Y"] * 0 + 
                           b["b_L1_Y"] * S[n,"L1"] +
                           b["b_M_Y"] * S[n,"M"] +
                           b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
                         (( b["b_M"] + 
                              b["b_male_M"] * S[n,"male"] + 
-                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_M"] * S[n,"soc_env"] + 
                              b["b_L1_M"] * S[n,"L1"] +
                              b["b_A_M"] * 0 )^( S[n,"M"] )) *
                         (( 1 - (b["b_M"] + 
                                   b["b_male_M"] * S[n,"male"] + 
-                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_soc_env_M"] * S[n,"soc_env"] + 
                                   b["b_L1_M"] * S[n,"L1"] +
                                   b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) ) *
     ((b["p_L1"])^(S[n,"L1"])) *
     ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
     ((b["p_L0_male"])^(S[n,"male"])) * 
     ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-    ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-    ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+    ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
 }
 
 ATE.death <- sum(S[,"sum"])
@@ -68,48 +68,48 @@ ATE.death <- sum(S[,"sum"])
 
 # quantitative outcome (QoL)
 S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
-colnames(S) <- list("male","parent_educ","L1","M","sum")
+colnames(S) <- list("male","soc_env","L1","M","sum")
 for (n in 1:16) {
   S[n,"sum"] <- ( ( ( b["mu_Y"] + 
                         b["c_male_Y"] * S[n,"male"] + 
-                        b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                        b["c_soc_env_Y"] * S[n,"soc_env"] +
                         b["c_A_Y"] * 1 +
                         b["c_L1_Y"] * S[n,"L1"] +
                         b["c_M_Y"] * S[n,"M"] + 
                         b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
                       (( b["b_M"] + 
                            b["b_male_M"] * S[n,"male"] + 
-                           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                           b["b_soc_env_M"] * S[n,"soc_env"] + 
                            b["b_L1_M"] * S[n,"L1"] +
                            b["b_A_M"] * 1 )^( S[n,"M"] )) *
                       (( 1 - (b["b_M"] + 
                                 b["b_male_M"] * S[n,"male"] + 
-                                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                b["b_soc_env_M"] * S[n,"soc_env"] + 
                                 b["b_L1_M"] * S[n,"L1"] +
                                 b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) ) - 
                     ( ( b["mu_Y"] + 
                           b["c_male_Y"] * S[n,"male"] + 
-                          b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                          b["c_soc_env_Y"] * S[n,"soc_env"] +
                           b["c_A_Y"] * 0 +
                           b["c_L1_Y"] * S[n,"L1"] +
                           b["c_M_Y"] * S[n,"M"] + 
                           b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
                         (( b["b_M"] + 
                              b["b_male_M"] * S[n,"male"] + 
-                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_M"] * S[n,"soc_env"] + 
                              b["b_L1_M"] * S[n,"L1"] +
                              b["b_A_M"] * 0 )^( S[n,"M"] )) *
                         (( 1 - (b["b_M"] + 
                                   b["b_male_M"] * S[n,"male"] + 
-                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_soc_env_M"] * S[n,"soc_env"] + 
                                   b["b_L1_M"] * S[n,"L1"] +
                                   b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) ) *
     ((b["p_L1"])^(S[n,"L1"])) *
     ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
     ((b["p_L0_male"])^(S[n,"male"])) * 
     ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-    ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-    ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+    ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
 }
 
 ATE.qol <- sum(S[,"sum"])
@@ -144,18 +144,18 @@ true.CDE1 <- function(interaction = NULL) {
   # we estimate both CDE, fixing do(M) = 0 et do(M) = 1 and 
   # using the corresponding lines in the S matrix
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3))
-  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  colnames(S) <- list("male","soc_env","L1","M","sum")
   for (n in 1:16) {
     S[n,"sum"] <- ( ( b["b_Y"] + 
                         b["b_male_Y"] * S[n,"male"] + 
-                        b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["b_soc_env_Y"] * S[n,"soc_env"] + 
                         b["b_A_Y"] * 1 + 
                         b["b_L1_Y"] * S[n,"L1"] +
                         b["b_M_Y"] * S[n,"M"] +
                         b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                       ( b["b_Y"] + 
                           b["b_male_Y"] * S[n,"male"] + 
-                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_soc_env_Y"] * S[n,"soc_env"] + 
                           b["b_A_Y"] * 0 + 
                           b["b_L1_Y"] * S[n,"L1"] +
                           b["b_M_Y"] * S[n,"M"] +
@@ -164,8 +164,8 @@ true.CDE1 <- function(interaction = NULL) {
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   CDE.M0.death <- sum(S[1:8,"sum"])
@@ -177,14 +177,14 @@ true.CDE1 <- function(interaction = NULL) {
   for (n in 1:16) {
     S[n,"sum"] <- ( ( b["mu_Y"] + 
                         b["c_male_Y"] * S[n,"male"] + 
-                        b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["c_soc_env_Y"] * S[n,"soc_env"] + 
                         b["c_A_Y"] * 1 + 
                         b["c_L1_Y"] * S[n,"L1"] +
                         b["c_M_Y"] * S[n,"M"] +
                         b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                       ( b["mu_Y"] + 
                           b["c_male_Y"] * S[n,"male"] + 
-                          b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["c_soc_env_Y"] * S[n,"soc_env"] + 
                           b["c_A_Y"] * 0 + 
                           b["c_L1_Y"] * S[n,"L1"] +
                           b["c_M_Y"] * S[n,"M"] +
@@ -193,8 +193,8 @@ true.CDE1 <- function(interaction = NULL) {
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   CDE.M0.qol <- sum(S[1:8,"sum"])
@@ -233,74 +233,74 @@ true.PNDE.TNIE1 <- function(interaction = NULL) {
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.pnde", "sum.tnie")
+  colnames(S) <- list("male","soc_env","L1","M","sum.pnde", "sum.tnie")
   for (n in 1:16) {
     # PNDE 
     S[n,"sum.pnde"] <- ( ( b["b_Y"] + 
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                            ( b["b_Y"] + 
                                b["b_male_Y"] * S[n,"male"] + 
-                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                b["b_A_Y"] * 0 + 
                                b["b_L1_Y"] * S[n,"L1"] +
                                b["b_M_Y"] * S[n,"M"] + 
                                b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
       (( b["b_M"] + 
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) * 
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # TNIE 
     S[n,"sum.tnie"] <- ( b["b_Y"] + 
                            b["b_male_Y"] * S[n,"male"] + 
-                           b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["b_soc_env_Y"] * S[n,"soc_env"] + 
                            b["b_A_Y"] * 1 + 
                            b["b_L1_Y"] * S[n,"L1"] +
                            b["b_M_Y"] * S[n,"M"] +
                            b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       ( (( b["b_M"] + 
              b["b_male_M"] * S[n,"male"] + 
-             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_soc_env_M"] * S[n,"soc_env"] + 
              b["b_L1_M"] * S[n,"L1"] +
              b["b_A_M"] * 1 )^( S[n,"M"] )) +
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
           (( b["b_M"] + 
                b["b_male_M"] * S[n,"male"] + 
-               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_soc_env_M"] * S[n,"soc_env"] + 
                b["b_L1_M"] * S[n,"L1"] +
                b["b_A_M"] * 0 )^( S[n,"M"] )) - 
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   PNDE.death <- sum(S[,"sum.pnde"])
@@ -309,74 +309,74 @@ true.PNDE.TNIE1 <- function(interaction = NULL) {
   
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.pnde", "sum.tnie")
+  colnames(S) <- list("male","soc_env","L1","M","sum.pnde", "sum.tnie")
   for (n in 1:16) {
     # PNDE 
     S[n,"sum.pnde"] <- ( ( b["mu_Y"] + 
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                            ( b["mu_Y"] + 
                                b["c_male_Y"] * S[n,"male"] + 
-                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                b["c_A_Y"] * 0 + 
                                b["c_L1_Y"] * S[n,"L1"] +
                                b["c_M_Y"] * S[n,"M"] + 
                                b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
       (( b["b_M"] + 
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) * 
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # TNIE 
     S[n,"sum.tnie"] <- ( b["mu_Y"] + 
                            b["c_male_Y"] * S[n,"male"] + 
-                           b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["c_soc_env_Y"] * S[n,"soc_env"] + 
                            b["c_A_Y"] * 1 + 
                            b["c_L1_Y"] * S[n,"L1"] +
                            b["c_M_Y"] * S[n,"M"] +
                            b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       ( (( b["b_M"] + 
              b["b_male_M"] * S[n,"male"] + 
-             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_soc_env_M"] * S[n,"soc_env"] + 
              b["b_L1_M"] * S[n,"L1"] +
              b["b_A_M"] * 1 )^( S[n,"M"] )) +
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
           (( b["b_M"] + 
                b["b_male_M"] * S[n,"male"] + 
-               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_soc_env_M"] * S[n,"soc_env"] + 
                b["b_L1_M"] * S[n,"L1"] +
                b["b_A_M"] * 0 )^( S[n,"M"] )) - 
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   PNDE.qol <- sum(S[,"sum.pnde"])
@@ -412,75 +412,75 @@ true.TNDE.PNIE1 <- function(interaction = NULL) {
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.tnde", "sum.pnie")
+  colnames(S) <- list("male","soc_env","L1","M","sum.tnde", "sum.pnie")
   
   for (n in 1:16) {
     # TNDE 
     S[n,"sum.tnde"] <- ( ( b["b_Y"] + 
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                            ( b["b_Y"] + 
                                b["b_male_Y"] * S[n,"male"] + 
-                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                b["b_A_Y"] * 0 + 
                                b["b_L1_Y"] * S[n,"L1"] +
                                b["b_M_Y"] * S[n,"M"] + 
                                b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
       (( b["b_M"] + 
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 1 )^( S[n,"M"] )) * 
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 1) )^( 1 - S[n,"M"] ))  *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # PNIE 
     S[n,"sum.pnie"] <- ( b["b_Y"] + 
                            b["b_male_Y"] * S[n,"male"] + 
-                           b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["b_soc_env_Y"] * S[n,"soc_env"] + 
                            b["b_A_Y"] * 0 + 
                            b["b_L1_Y"] * S[n,"L1"] +
                            b["b_M_Y"] * S[n,"M"] +
                            b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       ( (( b["b_M"] + 
              b["b_male_M"] * S[n,"male"] + 
-             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_soc_env_M"] * S[n,"soc_env"] + 
              b["b_L1_M"] * S[n,"L1"] +
              b["b_A_M"] * 1 )^( S[n,"M"] )) +
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
           (( b["b_M"] + 
                b["b_male_M"] * S[n,"male"] + 
-               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_soc_env_M"] * S[n,"soc_env"] + 
                b["b_L1_M"] * S[n,"L1"] +
                b["b_A_M"] * 0 )^( S[n,"M"] )) - 
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   TNDE.death <- sum(S[,"sum.tnde"])
@@ -488,74 +488,74 @@ true.TNDE.PNIE1 <- function(interaction = NULL) {
   
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.tnde", "sum.pnie")
+  colnames(S) <- list("male","soc_env","L1","M","sum.tnde", "sum.pnie")
   for (n in 1:16) {
     # TNDE 
     S[n,"sum.tnde"] <- ( ( b["mu_Y"] + 
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                            ( b["mu_Y"] + 
                                b["c_male_Y"] * S[n,"male"] + 
-                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                b["c_A_Y"] * 0 + 
                                b["c_L1_Y"] * S[n,"L1"] +
                                b["c_M_Y"] * S[n,"M"] + 
                                b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
       (( b["b_M"] + 
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] +
+           b["b_soc_env_M"] * S[n,"soc_env"] +
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 1 )^( S[n,"M"] )) * 
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 1) )^( 1 - S[n,"M"] ))  *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # PNIE 
     S[n,"sum.pnie"] <- ( b["mu_Y"] + 
                            b["c_male_Y"] * S[n,"male"] + 
-                           b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                           b["c_soc_env_Y"] * S[n,"soc_env"] + 
                            b["c_A_Y"] * 0 + 
                            b["c_L1_Y"] * S[n,"L1"] +
                            b["c_M_Y"] * S[n,"M"] +
                            b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       ( (( b["b_M"] + 
              b["b_male_M"] * S[n,"male"] + 
-             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_soc_env_M"] * S[n,"soc_env"] + 
              b["b_L1_M"] * S[n,"L1"] +
              b["b_A_M"] * 1 )^( S[n,"M"] )) +
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
           (( b["b_M"] + 
                b["b_male_M"] * S[n,"male"] + 
-               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_soc_env_M"] * S[n,"soc_env"] + 
                b["b_L1_M"] * S[n,"L1"] +
                b["b_A_M"] * 0 )^( S[n,"M"] )) - 
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   TNDE.qol <- sum(S[,"sum.tnde"])
@@ -592,124 +592,124 @@ true.3way.decomp <- function(interaction = NULL) {
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.pde", "sum.pie")
+  colnames(S) <- list("male","soc_env","L1","M","sum.pde", "sum.pie")
   for (n in 1:16) {
     # PDE 
     S[n,"sum.pde"] <- ( ( b["b_Y"] + 
                             b["b_male_Y"] * S[n,"male"] + 
-                            b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["b_soc_env_Y"] * S[n,"soc_env"] + 
                             b["b_A_Y"] * 1 + 
                             b["b_L1_Y"] * S[n,"L1"] +
                             b["b_M_Y"] * S[n,"M"] +
                             b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                           ( b["b_Y"] + 
                               b["b_male_Y"] * S[n,"male"] + 
-                              b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["b_soc_env_Y"] * S[n,"soc_env"] + 
                               b["b_A_Y"] * 0 + 
                               b["b_L1_Y"] * S[n,"L1"] +
                               b["b_M_Y"] * S[n,"M"] + 
                               b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
     (( b["b_M"] + 
          b["b_male_M"] * S[n,"male"] + 
-         b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+         b["b_soc_env_M"] * S[n,"soc_env"] + 
          b["b_L1_M"] * S[n,"L1"] +
          b["b_A_M"] * 0 )^( S[n,"M"] )) * 
     (( 1 - (b["b_M"] + 
               b["b_male_M"] * S[n,"male"] + 
-              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
     ((b["p_L1"])^(S[n,"L1"])) *
     ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
     ((b["p_L0_male"])^(S[n,"male"])) * 
     ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-    ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-    ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+    ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+    ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # PIE 
     S[n,"sum.pie"] <- ( b["b_Y"] + 
                           b["b_male_Y"] * S[n,"male"] + 
-                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_soc_env_Y"] * S[n,"soc_env"] + 
                           b["b_A_Y"] * 0 + 
                           b["b_L1_Y"] * S[n,"L1"] +
                           b["b_M_Y"] * S[n,"M"] +
                           b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       ( (( b["b_M"] + 
              b["b_male_M"] * S[n,"male"] + 
-             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_soc_env_M"] * S[n,"soc_env"] + 
              b["b_L1_M"] * S[n,"L1"] +
              b["b_A_M"] * 1 )^( S[n,"M"] )) +
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
           (( b["b_M"] + 
                b["b_male_M"] * S[n,"male"] + 
-               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_soc_env_M"] * S[n,"soc_env"] + 
                b["b_L1_M"] * S[n,"L1"] +
                b["b_A_M"] * 0 )^( S[n,"M"] )) - 
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   # MI 
   S.MI <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4))
-  colnames(S.MI) <- list("male","parent_educ","L1", "sum.mi")
+  colnames(S.MI) <- list("male","soc_env","L1", "sum.mi")
   for (n in 1:8) {
     S.MI[n,"sum.mi"] <- ( ( b["b_Y"] + 
                               b["b_male_Y"] * S.MI[n,"male"] + 
-                              b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                              b["b_soc_env_Y"] * S.MI[n,"soc_env"] + 
                               b["b_A_Y"] * 1 + 
                               b["b_L1_Y"] * S.MI[n,"L1"] +
                               b["b_M_Y"] * 1 +
                               b["b_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
                             ( b["b_Y"] + 
                                 b["b_male_Y"] * S.MI[n,"male"] + 
-                                b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["b_soc_env_Y"] * S.MI[n,"soc_env"] + 
                                 b["b_A_Y"] * 1 + 
                                 b["b_L1_Y"] * S.MI[n,"L1"] +
                                 b["b_M_Y"] * 0 +
                                 b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                             ( b["b_Y"] + 
                                 b["b_male_Y"] * S.MI[n,"male"] + 
-                                b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["b_soc_env_Y"] * S.MI[n,"soc_env"] + 
                                 b["b_A_Y"] * 0 + 
                                 b["b_L1_Y"] * S.MI[n,"L1"] +
                                 b["b_M_Y"] * 1 +
                                 b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
                             ( b["b_Y"] + 
                                 b["b_male_Y"] * S.MI[n,"male"] + 
-                                b["b_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["b_soc_env_Y"] * S.MI[n,"soc_env"] + 
                                 b["b_A_Y"] * 0 + 
                                 b["b_L1_Y"] * S.MI[n,"L1"] +
                                 b["b_M_Y"] * 0 +
                                 b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
       ( ( b["b_M"] + 
             b["b_male_M"] * S.MI[n,"male"] + 
-            b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+            b["b_soc_env_M"] * S.MI[n,"soc_env"] + 
             b["b_L1_M"] * S[n,"L1"] +
             b["b_A_M"] * 1 ) - 
           ( b["b_M"] + 
               b["b_male_M"] * S.MI[n,"male"] + 
-              b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S.MI[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0 )) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S.MI[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S.MI[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S.MI[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S.MI[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S.MI[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S.MI[n,"soc_env"])) 
     }
   
   PDE.death <- sum(S[,"sum.pde"])
@@ -719,124 +719,124 @@ true.3way.decomp <- function(interaction = NULL) {
   
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.pde", "sum.pie")
+  colnames(S) <- list("male","soc_env","L1","M","sum.pde", "sum.pie")
   for (n in 1:16) {
     # PDE 
     S[n,"sum.pde"] <- ( ( b["mu_Y"] + 
                             b["c_male_Y"] * S[n,"male"] + 
-                            b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["c_soc_env_Y"] * S[n,"soc_env"] + 
                             b["c_A_Y"] * 1 + 
                             b["c_L1_Y"] * S[n,"L1"] +
                             b["c_M_Y"] * S[n,"M"] +
                             b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) - 
                           ( b["mu_Y"] + 
                               b["c_male_Y"] * S[n,"male"] + 
-                              b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["c_soc_env_Y"] * S[n,"soc_env"] + 
                               b["c_A_Y"] * 0 + 
                               b["c_L1_Y"] * S[n,"L1"] +
                               b["c_M_Y"] * S[n,"M"] + 
                               b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) ) *
       (( b["b_M"] + 
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) * 
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0) )^( 1 - S[n,"M"] ))  *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # PIE 
     S[n,"sum.pie"] <- ( b["mu_Y"] + 
                           b["c_male_Y"] * S[n,"male"] + 
-                          b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["c_soc_env_Y"] * S[n,"soc_env"] + 
                           b["c_A_Y"] * 0 + 
                           b["c_L1_Y"] * S[n,"L1"] +
                           b["c_M_Y"] * S[n,"M"] +
                           b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       ( (( b["b_M"] + 
              b["b_male_M"] * S[n,"male"] + 
-             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+             b["b_soc_env_M"] * S[n,"soc_env"] + 
              b["b_L1_M"] * S[n,"L1"] +
              b["b_A_M"] * 1 )^( S[n,"M"] )) +
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) -
           (( b["b_M"] + 
                b["b_male_M"] * S[n,"male"] + 
-               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+               b["b_soc_env_M"] * S[n,"soc_env"] + 
                b["b_L1_M"] * S[n,"L1"] +
                b["b_A_M"] * 0 )^( S[n,"M"] )) - 
           (( 1 - (b["b_M"] + 
                     b["b_male_M"] * S[n,"male"] + 
-                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                     b["b_L1_M"] * S[n,"L1"] +
                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   # MI 
   S.MI <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4))
-  colnames(S.MI) <- list("male","parent_educ","L1","sum.mi")
+  colnames(S.MI) <- list("male","soc_env","L1","sum.mi")
   for (n in 1:8) {
     S.MI[n,"sum.mi"] <- ( ( b["mu_Y"] + 
                               b["c_male_Y"] * S.MI[n,"male"] + 
-                              b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                              b["c_soc_env_Y"] * S.MI[n,"soc_env"] + 
                               b["c_A_Y"] * 1 + 
                               b["c_L1_Y"] * S.MI[n,"L1"] +
                               b["c_M_Y"] * 1 +
                               b["c_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
                             ( b["mu_Y"] + 
                                 b["c_male_Y"] * S.MI[n,"male"] + 
-                                b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["c_soc_env_Y"] * S.MI[n,"soc_env"] + 
                                 b["c_A_Y"] * 1 + 
                                 b["c_L1_Y"] * S.MI[n,"L1"] +
                                 b["c_M_Y"] * 0 +
                                 b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                             ( b["mu_Y"] + 
                                 b["c_male_Y"] * S.MI[n,"male"] + 
-                                b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["c_soc_env_Y"] * S.MI[n,"soc_env"] + 
                                 b["c_A_Y"] * 0 + 
                                 b["c_L1_Y"] * S.MI[n,"L1"] +
                                 b["c_M_Y"] * 1 +
                                 b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
                             ( b["mu_Y"] + 
                                 b["c_male_Y"] * S.MI[n,"male"] + 
-                                b["c_parent_educ_Y"] * S.MI[n,"parent_educ"] + 
+                                b["c_soc_env_Y"] * S.MI[n,"soc_env"] + 
                                 b["c_A_Y"] * 0 + 
                                 b["c_L1_Y"] * S.MI[n,"L1"] +
                                 b["c_M_Y"] * 0 +
                                 b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
       ( ( b["b_M"] + 
             b["b_male_M"] * S.MI[n,"male"] + 
-            b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+            b["b_soc_env_M"] * S.MI[n,"soc_env"] + 
             b["b_L1_M"] * S[n,"L1"] +
             b["b_A_M"] * 1 ) - 
           ( b["b_M"] + 
               b["b_male_M"] * S.MI[n,"male"] + 
-              b["b_parent_educ_M"] * S.MI[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S.MI[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0 )) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S.MI[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S.MI[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S.MI[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S.MI[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S.MI[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S.MI[n,"soc_env"])) 
     }
   
   PDE.qol <- sum(S[,"sum.pde"])
@@ -874,20 +874,20 @@ true.4way.decomp <- function(interaction = NULL) {
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3), rep(NA,n=2^3), 
              rep(NA,n=2^3), rep(NA,n=2^3))
-  colnames(S) <- list("male","parent_educ", "L1", "sum.cde", "sum.intref", 
+  colnames(S) <- list("male","soc_env", "L1", "sum.cde", "sum.intref", 
                       "sum.intmed", "sum.pie")
   for (n in 1:8) {
     # CDE 
     S[n,"sum.cde"] <- ( ( b["b_Y"] + 
                             b["b_male_Y"] * S[n,"male"] + 
-                            b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["b_soc_env_Y"] * S[n,"soc_env"] + 
                             b["b_A_Y"] * 1 + 
                             b["b_L1_Y"] * S[n,"L1"] +
                             b["b_M_Y"] * 0 +
                             b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                           ( b["b_Y"] + 
                               b["b_male_Y"] * S[n,"male"] + 
-                              b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["b_soc_env_Y"] * S[n,"soc_env"] + 
                               b["b_A_Y"] * 0 + 
                               b["b_L1_Y"] * S[n,"L1"] +
                               b["b_M_Y"] * 0 +
@@ -896,127 +896,127 @@ true.4way.decomp <- function(interaction = NULL) {
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # INTref 
     S[n,"sum.intref"] <- ( ( b["b_Y"] + 
                                b["b_male_Y"] * S[n,"male"] + 
-                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                b["b_A_Y"] * 1 + 
                                b["b_L1_Y"] * S[n,"L1"] +
                                b["b_M_Y"] * 1 +
                                b["b_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
                              ( b["b_Y"] + 
                                  b["b_male_Y"] * S[n,"male"] + 
-                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["b_A_Y"] * 1 + 
                                  b["b_L1_Y"] * S[n,"L1"] +
                                  b["b_M_Y"] * 0 +
                                  b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                              ( b["b_Y"] + 
                                  b["b_male_Y"] * S[n,"male"] + 
-                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["b_A_Y"] * 0 + 
                                  b["b_L1_Y"] * S[n,"L1"] +
                                  b["b_M_Y"] * 1 +
                                  b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
                              ( b["b_Y"] + 
                                  b["b_male_Y"] * S[n,"male"] + 
-                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["b_A_Y"] * 0 + 
                                  b["b_L1_Y"] * S[n,"L1"] +
                                  b["b_M_Y"] * 0 +
                                  b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
       ( b["b_M"] + 
           b["b_male_M"] * S[n,"male"] + 
-          b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+          b["b_soc_env_M"] * S[n,"soc_env"] + 
           b["b_L1_M"] * S[n,"L1"] +
           b["b_A_M"] * 0 ) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"]))
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"]))
     
     # INTmed 
     S[n,"sum.intmed"] <- ( ( b["b_Y"] + 
                                b["b_male_Y"] * S[n,"male"] + 
-                               b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                b["b_A_Y"] * 1 + 
                                b["b_L1_Y"] * S[n,"L1"] +
                                b["b_M_Y"] * 1 +
                                b["b_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
                              ( b["b_Y"] + 
                                  b["b_male_Y"] * S[n,"male"] + 
-                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["b_A_Y"] * 1 + 
                                  b["b_L1_Y"] * S[n,"L1"] +
                                  b["b_M_Y"] * 0 +
                                  b["b_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                              ( b["b_Y"] + 
                                  b["b_male_Y"] * S[n,"male"] + 
-                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["b_A_Y"] * 0 + 
                                  b["b_L1_Y"] * S[n,"L1"] +
                                  b["b_M_Y"] * 1 +
                                  b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
                              ( b["b_Y"] + 
                                  b["b_male_Y"] * S[n,"male"] + 
-                                 b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["b_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["b_A_Y"] * 0 + 
                                  b["b_L1_Y"] * S[n,"L1"] +
                                  b["b_M_Y"] * 0 +
                                  b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
       ( ( b["b_M"] + 
             b["b_male_M"] * S[n,"male"] + 
-            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_soc_env_M"] * S[n,"soc_env"] + 
             b["b_L1_M"] * S[n,"L1"] +
             b["b_A_M"] * 1 ) - 
           ( b["b_M"] + 
               b["b_male_M"] * S[n,"male"] + 
-              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0 )) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # PIE 
     S[n,"sum.pie"] <- ( ( b["b_Y"] + 
                             b["b_male_Y"] * S[n,"male"] + 
-                            b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["b_soc_env_Y"] * S[n,"soc_env"] + 
                             b["b_A_Y"] * 0 + 
                             b["b_L1_Y"] * S[n,"L1"] +
                             b["b_M_Y"] * 1 +
                             b["b_AM_Y"] * 0 * 1 * b["A.M.inter"] ) - 
                           ( b["b_Y"] + 
                               b["b_male_Y"] * S[n,"male"] + 
-                              b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["b_soc_env_Y"] * S[n,"soc_env"] + 
                               b["b_A_Y"] * 0 + 
                               b["b_L1_Y"] * S[n,"L1"] +
                               b["b_M_Y"] * 0 +
                               b["b_AM_Y"] * 0 * 0 * b["A.M.inter"] ) ) *
       ( ( b["b_M"] + 
             b["b_male_M"] * S[n,"male"] + 
-            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_soc_env_M"] * S[n,"soc_env"] + 
             b["b_L1_M"] * S[n,"L1"] +
             b["b_A_M"] * 1 ) - 
           ( b["b_M"] + 
               b["b_male_M"] * S[n,"male"] + 
-              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0 )) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   CDE.death <- sum(S[,"sum.cde"])
@@ -1027,20 +1027,20 @@ true.4way.decomp <- function(interaction = NULL) {
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3), rep(NA,n=2^3), 
              rep(NA,n=2^3), rep(NA,n=2^3))
-  colnames(S) <- list("male","parent_educ", "L1", "sum.cde", "sum.intref", 
+  colnames(S) <- list("male","soc_env", "L1", "sum.cde", "sum.intref", 
                       "sum.intmed", "sum.pie")
   for (n in 1:8) {
     # CDE 
     S[n,"sum.cde"] <- ( ( b["mu_Y"] + 
                             b["c_male_Y"] * S[n,"male"] + 
-                            b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["c_soc_env_Y"] * S[n,"soc_env"] + 
                             b["c_A_Y"] * 1 + 
                             b["c_L1_Y"] * S[n,"L1"] +
                             b["c_M_Y"] * 0 +
                             b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                           ( b["mu_Y"] + 
                               b["c_male_Y"] * S[n,"male"] + 
-                              b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["c_soc_env_Y"] * S[n,"soc_env"] + 
                               b["c_A_Y"] * 0 + 
                               b["c_L1_Y"] * S[n,"L1"] +
                               b["c_M_Y"] * 0 +
@@ -1049,127 +1049,127 @@ true.4way.decomp <- function(interaction = NULL) {
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # INTref 
     S[n,"sum.intref"] <- ( ( b["mu_Y"] + 
                                b["c_male_Y"] * S[n,"male"] + 
-                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                b["c_A_Y"] * 1 + 
                                b["c_L1_Y"] * S[n,"L1"] +
                                b["c_M_Y"] * 1 +
                                b["c_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
                              ( b["mu_Y"] + 
                                  b["c_male_Y"] * S[n,"male"] + 
-                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["c_A_Y"] * 1 + 
                                  b["c_L1_Y"] * S[n,"L1"] +
                                  b["c_M_Y"] * 0 +
                                  b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                              ( b["mu_Y"] + 
                                  b["c_male_Y"] * S[n,"male"] + 
-                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["c_A_Y"] * 0 + 
                                  b["c_L1_Y"] * S[n,"L1"] +
                                  b["c_M_Y"] * 1 +
                                  b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
                              ( b["mu_Y"] + 
                                  b["c_male_Y"] * S[n,"male"] + 
-                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["c_A_Y"] * 0 + 
                                  b["c_L1_Y"] * S[n,"L1"] +
                                  b["c_M_Y"] * 0 +
                                  b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
       ( b["b_M"] + 
           b["b_male_M"] * S[n,"male"] + 
-          b["b_parent_educ_M"] * S[n,"parent_educ"] +
+          b["b_soc_env_M"] * S[n,"soc_env"] +
           b["b_L1_M"] * S[n,"L1"] +
           b["b_A_M"] * 0 ) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # INTmed 
     S[n,"sum.intmed"] <- ( ( b["mu_Y"] + 
                                b["c_male_Y"] * S[n,"male"] + 
-                               b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                               b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                b["c_A_Y"] * 1 + 
                                b["c_L1_Y"] * S[n,"L1"] +
                                b["c_M_Y"] * 1 +
                                b["c_AM_Y"] * 1 * 1 * b["A.M.inter"] ) - 
                              ( b["mu_Y"] + 
                                  b["c_male_Y"] * S[n,"male"] + 
-                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["c_A_Y"] * 1 + 
                                  b["c_L1_Y"] * S[n,"L1"] +
                                  b["c_M_Y"] * 0 +
                                  b["c_AM_Y"] * 1 * 0 * b["A.M.inter"] ) - 
                              ( b["mu_Y"] + 
                                  b["c_male_Y"] * S[n,"male"] + 
-                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["c_A_Y"] * 0 + 
                                  b["c_L1_Y"] * S[n,"L1"] +
                                  b["c_M_Y"] * 1 +
                                  b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) + 
                              ( b["mu_Y"] + 
                                  b["c_male_Y"] * S[n,"male"] + 
-                                 b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                                 b["c_soc_env_Y"] * S[n,"soc_env"] + 
                                  b["c_A_Y"] * 0 + 
                                  b["c_L1_Y"] * S[n,"L1"] +
                                  b["c_M_Y"] * 0 +
                                  b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] )) *
       ( ( b["b_M"] + 
             b["b_male_M"] * S[n,"male"] + 
-            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_soc_env_M"] * S[n,"soc_env"] + 
             b["b_L1_M"] * S[n,"L1"] +
             b["b_A_M"] * 1 ) - 
           ( b["b_M"] + 
               b["b_male_M"] * S[n,"male"] + 
-              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0 )) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     # PIE 
     S[n,"sum.pie"] <- ( ( b["mu_Y"] + 
                             b["c_male_Y"] * S[n,"male"] + 
-                            b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                            b["c_soc_env_Y"] * S[n,"soc_env"] + 
                             b["c_A_Y"] * 0 + 
                             b["c_L1_Y"] * S[n,"L1"] +
                             b["c_M_Y"] * 1 +
                             b["c_AM_Y"] * 0 * 1 * b["A.M.inter"] ) - 
                           ( b["mu_Y"] + 
                               b["c_male_Y"] * S[n,"male"] + 
-                              b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                              b["c_soc_env_Y"] * S[n,"soc_env"] + 
                               b["c_A_Y"] * 0 + 
                               b["c_L1_Y"] * S[n,"L1"] +
                               b["c_M_Y"] * 0 +
                               b["c_AM_Y"] * 0 * 0 * b["A.M.inter"] ) ) *
       ( ( b["b_M"] + 
             b["b_male_M"] * S[n,"male"] + 
-            b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+            b["b_soc_env_M"] * S[n,"soc_env"] + 
             b["b_L1_M"] * S[n,"L1"] +
             b["b_A_M"] * 1 ) - 
           ( b["b_M"] + 
               b["b_male_M"] * S[n,"male"] + 
-              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+              b["b_soc_env_M"] * S[n,"soc_env"] + 
               b["b_L1_M"] * S[n,"L1"] +
               b["b_A_M"] * 0 )) * 
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   CDE.qol <- sum(S[,"sum.cde"])
@@ -1209,189 +1209,189 @@ true.marg.random <- function(interaction = NULL) {
   
   # marginal distribution of M
   M.S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^5))
-  colnames(M.S) <- list("male","parent_educ","L1","M","A","sum")
+  colnames(M.S) <- list("male","soc_env","L1","M","A","sum")
   
   for (n in 1:32) {
     M.S[n,"sum"] <- (( b["b_M"] +                                                              
                          b["b_male_M"] * M.S[n,"male"] + 
-                         b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                         b["b_soc_env_M"] * M.S[n,"soc_env"] + 
                          b["b_L1_M"] * M.S[n,"L1"] +
                          b["b_A_M"] * M.S[n,"A"])^( M.S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * M.S[n,"male"] + 
-                b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * M.S[n,"soc_env"] + 
                 b["b_L1_M"] * M.S[n,"L1"] +
                 b["b_A_M"] * M.S[n,"A"]) )^( 1 - M.S[n,"M"] )) 
     }
   
   M0.A0.L0_00.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M0.A0.L0_01.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M0.A0.L0_10.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M0.A0.L0_11.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M0.A0.L0_00.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M0.A0.L0_01.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   M0.A0.L0_10.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M0.A0.L0_11.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   
   M1.A0.L0_00.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M1.A0.L0_01.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M1.A0.L0_10.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M1.A0.L0_11.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M1.A0.L0_00.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M1.A0.L0_01.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   M1.A0.L0_10.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M1.A0.L0_11.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   
   M0.A1.L0_00.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M0.A1.L0_01.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M0.A1.L0_10.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M0.A1.L0_11.L1_0 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M0.A1.L0_00.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M0.A1.L0_01.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   M0.A1.L0_10.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M0.A1.L0_11.L1_1 <- M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   
   M1.A1.L0_00.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M1.A1.L0_01.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M1.A1.L0_10.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==0,"sum"]
   M1.A1.L0_11.L1_0 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==0,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==0,"sum"]
   M1.A1.L0_00.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M1.A1.L0_01.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   M1.A1.L0_10.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==0 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==0 & M.S[,"L1"]==1,"sum"]
   M1.A1.L0_11.L1_1 <- M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                            M.S[,"parent_educ"]==1 & M.S[,"L1"]==1,"sum"]
+                            M.S[,"soc_env"]==1 & M.S[,"L1"]==1,"sum"]
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), rep(NA,n=2^4), 
              rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", "sum.psi00")
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["b_Y"] +                                            # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=1             
-          M1.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M1.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M1.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M1.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + # A'=1             
+          M1.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M1.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M1.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( S[n,"M"] )) *
-      ((M0.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +                
-          M0.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M0.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M0.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M0.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) +                
+          M0.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M0.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M0.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(M.S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["b_Y"] +                                            # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
-          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
-          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(M.S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["b_Y"] +                                            # A=0
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 0 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
-          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
-          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(M.S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   mrNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -1400,104 +1400,104 @@ true.marg.random <- function(interaction = NULL) {
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", 
                       "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=1
-          M1.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M1.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M1.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M1.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + # A'=1
+          M1.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M1.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M1.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( S[n,"M"] )) *
-      ((M0.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +                
-          M0.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M0.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M0.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M0.A1.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) +                
+          M0.A1.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M0.A1.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A1.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M0.A1.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A1.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(M.S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 +
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
-          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
-          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(M.S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 0 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + # A'=0
-          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M1.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + # A'=0
+          M1.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M1.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M1.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M1.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M1.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) +               
-          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==0) + 
-          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==0) +
-          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"parent_educ"]==1)*(S[n,"L1"]==1) +
-          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==0)*(S[n,"L1"]==1) +
-          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"parent_educ"]==1)*
+      ((M0.A0.L0_00.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) +               
+          M0.A0.L0_01.L1_0*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_10.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==0) + 
+          M0.A0.L0_11.L1_0*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*(S[n,"L1"]==0) +
+          M0.A0.L0_00.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_01.L1_1*(S[n,"male"]==0)*(S[n,"soc_env"]==1)*(S[n,"L1"]==1) +
+          M0.A0.L0_10.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==0)*(S[n,"L1"]==1) +
+          M0.A0.L0_11.L1_1*(S[n,"male"]==1)*(S[n,"soc_env"]==1)*
           (S[n,"L1"]==1) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(M.S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - M.S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   mrNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -1534,80 +1534,80 @@ true.cond.random <- function(interaction = NULL) {
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", 
                       "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["b_Y"] +                                           # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=1
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 1 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["b_Y"] +                                           # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["b_Y"] +                                           # A=0
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 0 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"]))
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"]))
     }
   
   crNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -1616,80 +1616,80 @@ true.cond.random <- function(interaction = NULL) {
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", 
                       "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=1
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 1 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 0 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       ((b["p_L1"])^(S[n,"L1"])) *
       ((1 - b["p_L1"])^(1 - S[n,"L1"])) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   crNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -1789,7 +1789,7 @@ Table: True values without time varying confounders
 
 
 
-## True causal quantities with mediator-ouctome confounder affected by the exposure
+## True causal quantities with mediator-outcome confounder affected by the exposure
 
 ### Average total effects (ATE)
 
@@ -1800,124 +1800,124 @@ true.ATE.time.var.conf <- function(interaction = NULL) {
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  colnames(S) <- list("male","soc_env","L1","M","sum")
   for (n in 1:16) {
     S[n,"sum"] <- ( ( ( b["b_Y"] + 
                       b["b_male_Y"] * S[n,"male"] + 
-                      b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                      b["b_soc_env_Y"] * S[n,"soc_env"] + 
                       b["b_A_Y"] * 1 + 
                       b["b_L1_Y"] * S[n,"L1"] +
                       b["b_M_Y"] * S[n,"M"] +
                       b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
                     (( b["b_M"] + 
                            b["b_male_M"] * S[n,"male"] + 
-                           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                           b["b_soc_env_M"] * S[n,"soc_env"] + 
                            b["b_L1_M"] * S[n,"L1"] +
                            b["b_A_M"] * 1 )^( S[n,"M"] )) *
                     (( 1 - (b["b_M"] + 
                               b["b_male_M"] * S[n,"male"] + 
-                              b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                              b["b_soc_env_M"] * S[n,"soc_env"] + 
                               b["b_L1_M"] * S[n,"L1"] +
                               b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) *
                         (( b["b_L1"] +
                              b["b_male_L1"] * S[n,"male"] +  
-                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_soc_env_L1"] * S[n,"soc_env"] +
                              b["b_A_L1"] * 1)^( S[n,"L1"] )) *
                         (( 1 - ( b["b_L1"] +
                                    b["b_male_L1"] * S[n,"male"] +  
-                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_soc_env_L1"] * S[n,"soc_env"] +
                                    b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) ) - 
                     ( ( b["b_Y"] + 
                           b["b_male_Y"] * S[n,"male"] + 
-                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_soc_env_Y"] * S[n,"soc_env"] + 
                           b["b_A_Y"] * 0 + 
                           b["b_L1_Y"] * S[n,"L1"] +
                           b["b_M_Y"] * S[n,"M"] +
                           b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
                         (( b["b_M"] + 
                              b["b_male_M"] * S[n,"male"] + 
-                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_M"] * S[n,"soc_env"] + 
                              b["b_L1_M"] * S[n,"L1"] +
                              b["b_A_M"] * 0 )^( S[n,"M"] )) *
                         (( 1 - (b["b_M"] + 
                                   b["b_male_M"] * S[n,"male"] + 
-                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_soc_env_M"] * S[n,"soc_env"] + 
                                   b["b_L1_M"] * S[n,"L1"] +
                                   b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) *
                         (( b["b_L1"] +
                              b["b_male_L1"] * S[n,"male"] +  
-                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_soc_env_L1"] * S[n,"soc_env"] +
                              b["b_A_L1"] * 0)^( S[n,"L1"] )) *
                         (( 1 - ( b["b_L1"] +
                                    b["b_male_L1"] * S[n,"male"] +  
-                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_soc_env_L1"] * S[n,"soc_env"] +
                                    b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) ) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   ATE.death <- sum(S[,"sum"])
   
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1), c(0,1)), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  colnames(S) <- list("male","soc_env","L1","M","sum")
   for (n in 1:16) {
     S[n,"sum"] <- ( ( ( b["mu_Y"] + 
                           b["c_male_Y"] * S[n,"male"] + 
-                          b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                          b["c_soc_env_Y"] * S[n,"soc_env"] +
                           b["c_A_Y"] * 1 +
                           b["c_L1_Y"] * S[n,"L1"] +
                           b["c_M_Y"] * S[n,"M"] + 
                           b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
                         (( b["b_M"] + 
                              b["b_male_M"] * S[n,"male"] + 
-                             b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_M"] * S[n,"soc_env"] + 
                              b["b_L1_M"] * S[n,"L1"] +
                              b["b_A_M"] * 1 )^( S[n,"M"] )) *
                         (( 1 - (b["b_M"] + 
                                   b["b_male_M"] * S[n,"male"] + 
-                                  b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                  b["b_soc_env_M"] * S[n,"soc_env"] + 
                                   b["b_L1_M"] * S[n,"L1"] +
                                   b["b_A_M"] * 1) )^( 1 - S[n,"M"] )) *
                         (( b["b_L1"] +
                              b["b_male_L1"] * S[n,"male"] +  
-                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_soc_env_L1"] * S[n,"soc_env"] +
                              b["b_A_L1"] * 1)^( S[n,"L1"] )) *
                         (( 1 - ( b["b_L1"] +
                                    b["b_male_L1"] * S[n,"male"] +  
-                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_soc_env_L1"] * S[n,"soc_env"] +
                                    b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) ) - 
                       ( ( b["mu_Y"] + 
                             b["c_male_Y"] * S[n,"male"] + 
-                            b["c_parent_educ_Y"] * S[n,"parent_educ"] +
+                            b["c_soc_env_Y"] * S[n,"soc_env"] +
                             b["c_A_Y"] * 0 +
                             b["c_L1_Y"] * S[n,"L1"] +
                             b["c_M_Y"] * S[n,"M"] + 
                             b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
                           (( b["b_M"] + 
                                b["b_male_M"] * S[n,"male"] + 
-                               b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                               b["b_soc_env_M"] * S[n,"soc_env"] + 
                                b["b_L1_M"] * S[n,"L1"] +
                                b["b_A_M"] * 0 )^( S[n,"M"] )) *
                           (( 1 - (b["b_M"] + 
                                     b["b_male_M"] * S[n,"male"] + 
-                                    b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                                    b["b_soc_env_M"] * S[n,"soc_env"] + 
                                     b["b_L1_M"] * S[n,"L1"] +
                                     b["b_A_M"] * 0) )^( 1 - S[n,"M"] )) ) *
                         (( b["b_L1"] +
                              b["b_male_L1"] * S[n,"male"] +  
-                             b["b_parent_L1"] * S[n,"parent_educ"] +
+                             b["b_soc_env_L1"] * S[n,"soc_env"] +
                              b["b_A_L1"] * 0)^( S[n,"L1"] )) *
                         (( 1 - ( b["b_L1"] +
                                    b["b_male_L1"] * S[n,"male"] +  
-                                   b["b_parent_L1"] * S[n,"parent_educ"] +
+                                   b["b_soc_env_L1"] * S[n,"soc_env"] +
                                    b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   ATE.qol <- sum(S[,"sum"])
@@ -1951,42 +1951,42 @@ true.CDE.time.var <- function(interaction = NULL) {
   # we estimate both CDE, fixing do(M) = 0 et do(M) = 1 and using the 
   # corresponding lines in the S matrix
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^3))
-  colnames(S) <- list("male","parent_educ","L1","M","sum")
+  colnames(S) <- list("male","soc_env","L1","M","sum")
   for (n in 1:16) {
     S[n,"sum"] <- ( (( b["b_Y"] + 
                         b["b_male_Y"] * S[n,"male"] + 
-                        b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["b_soc_env_Y"] * S[n,"soc_env"] + 
                         b["b_A_Y"] * 1 + 
                         b["b_L1_Y"] * S[n,"L1"] +
                         b["b_M_Y"] * S[n,"M"] +
                         b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
                       (( b["b_L1"] +
                            b["b_male_L1"] * S[n,"male"] +  
-                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_soc_env_L1"] * S[n,"soc_env"] +
                            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
                       (( 1 - ( b["b_L1"] +
                                  b["b_male_L1"] * S[n,"male"] +  
-                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) ) - 
                       (( b["b_Y"] + 
                           b["b_male_Y"] * S[n,"male"] + 
-                          b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["b_soc_env_Y"] * S[n,"soc_env"] + 
                           b["b_A_Y"] * 0 + 
                           b["b_L1_Y"] * S[n,"L1"] +
                           b["b_M_Y"] * S[n,"M"] +
                           b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
                       (( b["b_L1"] +
                            b["b_male_L1"] * S[n,"male"] +  
-                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_soc_env_L1"] * S[n,"soc_env"] +
                            b["b_A_L1"] * 0)^( S[n,"L1"] )) *
                       (( 1 - ( b["b_L1"] +
                                  b["b_male_L1"] * S[n,"male"] +  
-                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                                  b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) ) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   CDE.M0.death <- sum(S[1:8,"sum"])
@@ -1998,38 +1998,38 @@ true.CDE.time.var <- function(interaction = NULL) {
   for (n in 1:16) {
     S[n,"sum"] <- ( (( b["mu_Y"] + 
                         b["c_male_Y"] * S[n,"male"] + 
-                        b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                        b["c_soc_env_Y"] * S[n,"soc_env"] + 
                         b["c_A_Y"] * 1 + 
                         b["c_L1_Y"] * S[n,"L1"] +
                         b["c_M_Y"] * S[n,"M"] +
                         b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
                       (( b["b_L1"] +
                            b["b_male_L1"] * S[n,"male"] +  
-                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_soc_env_L1"] * S[n,"soc_env"] +
                            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
                       (( 1 - ( b["b_L1"] +
                                  b["b_male_L1"] * S[n,"male"] +  
-                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] ))) - 
                       (( b["mu_Y"] + 
                           b["c_male_Y"] * S[n,"male"] + 
-                          b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                          b["c_soc_env_Y"] * S[n,"soc_env"] + 
                           b["c_A_Y"] * 0 + 
                           b["c_L1_Y"] * S[n,"L1"] +
                           b["c_M_Y"] * S[n,"M"] +
                           b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
                       (( b["b_L1"] +
                            b["b_male_L1"] * S[n,"male"] +  
-                           b["b_parent_L1"] * S[n,"parent_educ"] +
+                           b["b_soc_env_L1"] * S[n,"soc_env"] +
                            b["b_A_L1"] * 0)^( S[n,"L1"] )) *
                       (( 1 - ( b["b_L1"] +
                                  b["b_male_L1"] * S[n,"male"] +  
-                                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                                  b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) ) ) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   CDE.M0.qol <- sum(S[1:8,"sum"])
@@ -2067,154 +2067,154 @@ true.marg.random.time.var <- function(interaction = NULL) {
   
   # marginal distribution of M
   M.S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^5))
-  colnames(M.S) <- list("male","parent_educ","L1","M","A","sum")
+  colnames(M.S) <- list("male","soc_env","L1","M","A","sum")
   
   for (n in 1:32) {
     M.S[n,"sum"] <- (( b["b_M"] +                                                              
                          b["b_male_M"] * M.S[n,"male"] + 
-                         b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                         b["b_soc_env_M"] * M.S[n,"soc_env"] + 
                          b["b_L1_M"] * M.S[n,"L1"] +
                          b["b_A_M"] * M.S[n,"A"])^( M.S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * M.S[n,"male"] + 
-                b["b_parent_educ_M"] * M.S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * M.S[n,"soc_env"] + 
                 b["b_L1_M"] * M.S[n,"L1"] +
                 b["b_A_M"] * M.S[n,"A"]) )^( 1 - M.S[n,"M"] )) *
       (( b["b_L1"] +                                                           
            b["b_male_L1"] * M.S[n,"male"] +  
-           b["b_parent_L1"] * M.S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * M.S[n,"soc_env"] +
            b["b_A_L1"] * M.S[n,"A"])^( M.S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * M.S[n,"male"] +  
-                 b["b_parent_L1"] * M.S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * M.S[n,"soc_env"] +
                  b["b_A_L1"] * M.S[n,"A"]))^( 1 - M.S[n,"L1"] )) 
     }
   
   M0.A0.L00 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M0.A0.L01 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   M0.A0.L10 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M0.A0.L11 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   
   M1.A0.L00 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M1.A0.L01 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   M1.A0.L10 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M1.A0.L11 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==0 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
 
   M0.A1.L00 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M0.A1.L01 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   M0.A1.L10 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M0.A1.L11 <- sum(M.S[M.S[,"M"]==0 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   
   M1.A1.L00 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M1.A1.L01 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==0 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   M1.A1.L10 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==0,"sum"])
+                         M.S[,"soc_env"]==0,"sum"])
   M1.A1.L11 <- sum(M.S[M.S[,"M"]==1 & M.S[,"A"]==1 & M.S[,"male"]==1 & 
-                         M.S[,"parent_educ"]==1,"sum"])
+                         M.S[,"soc_env"]==1,"sum"])
   
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", 
                       "sum.psi10", "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["b_Y"] +                                           # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-          ((M1.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                # A'=1
-              M1.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-              M1.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-              M1.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
-      ((M0.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
-          M0.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M0.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M0.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+          ((M1.A1.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                # A'=1
+              M1.A1.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+              M1.A1.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+              M1.A1.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( S[n,"M"] )) *
+      ((M0.A1.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                
+          M0.A1.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M0.A1.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M0.A1.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["b_Y"] +                                           # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
-          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
-          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["b_Y"] +                                           # A=0
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 0 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
-          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
-          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=0
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 0)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   mrNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -2223,92 +2223,92 @@ true.marg.random.time.var <- function(interaction = NULL) {
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", 
                       "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=1
-          M1.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M1.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M1.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
-      ((M0.A1.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
-          M0.A1.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M0.A1.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M0.A1.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      ((M1.A1.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                    # A'=1
+          M1.A1.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M1.A1.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M1.A1.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( S[n,"M"] )) *
+      ((M0.A1.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                
+          M0.A1.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M0.A1.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M0.A1.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 +
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
-          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
-          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 0 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
-      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                    # A'=0
-          M1.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M1.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M1.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( S[n,"M"] )) *
-      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"parent_educ"]==0) +                
-          M0.A0.L01*(S[n,"male"]==0)*(S[n,"parent_educ"]==1) +
-          M0.A0.L10*(S[n,"male"]==1)*(S[n,"parent_educ"]==0) + 
-          M0.A0.L11*(S[n,"male"]==1)*(S[n,"parent_educ"]==1) )^( 1 - S[n,"M"] )) *
+      ((M1.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                    # A'=0
+          M1.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M1.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M1.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( S[n,"M"] )) *
+      ((M0.A0.L00*(S[n,"male"]==0)*(S[n,"soc_env"]==0) +                
+          M0.A0.L01*(S[n,"male"]==0)*(S[n,"soc_env"]==1) +
+          M0.A0.L10*(S[n,"male"]==1)*(S[n,"soc_env"]==0) + 
+          M0.A0.L11*(S[n,"male"]==1)*(S[n,"soc_env"]==1) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=0
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 0)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   mrNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -2345,98 +2345,98 @@ true.cond.random.time.var <- function(interaction = NULL) {
   # binary outcome (death)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", 
                       "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["b_Y"] +                                           # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=1
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 1 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["b_Y"] +                                           # A=1
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 1 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["b_Y"] +                                           # A=0
                              b["b_male_Y"] * S[n,"male"] + 
-                             b["b_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["b_soc_env_Y"] * S[n,"soc_env"] + 
                              b["b_A_Y"] * 0 + 
                              b["b_L1_Y"] * S[n,"L1"] +
                              b["b_M_Y"] * S[n,"M"] +
                              b["b_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=0
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 0)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"]))
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"]))
     }
   
   crNDE.death <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])
@@ -2445,98 +2445,98 @@ true.cond.random.time.var <- function(interaction = NULL) {
   # quantitative outcome (QoL)
   S <- cbind(expand.grid(c(0,1),c(0,1),c(0,1),c(0,1)), rep(NA,n=2^4), 
              rep(NA,n=2^4), rep(NA,n=2^4))
-  colnames(S) <- list("male","parent_educ","L1","M","sum.psi11", "sum.psi10", 
+  colnames(S) <- list("male","soc_env","L1","M","sum.psi11", "sum.psi10", 
                       "sum.psi00")
   for (n in 1:16) {
     S[n,"sum.psi11"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=1
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 1 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 1 ) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi10"] <-  ( b["mu_Y"] +                                          # A=1
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 1 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 1 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=1
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 1)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 1))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     
     S[n,"sum.psi00"] <-  ( b["mu_Y"] +                                          # A=0
                              b["c_male_Y"] * S[n,"male"] + 
-                             b["c_parent_educ_Y"] * S[n,"parent_educ"] + 
+                             b["c_soc_env_Y"] * S[n,"soc_env"] + 
                              b["c_A_Y"] * 0 + 
                              b["c_L1_Y"] * S[n,"L1"] +
                              b["c_M_Y"] * S[n,"M"] +
                              b["c_AM_Y"] * 0 * S[n,"M"] * b["A.M.inter"] ) *
       (( b["b_M"] +                                                             # A'=0
            b["b_male_M"] * S[n,"male"] + 
-           b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+           b["b_soc_env_M"] * S[n,"soc_env"] + 
            b["b_L1_M"] * S[n,"L1"] +
            b["b_A_M"] * 0 )^( S[n,"M"] )) *
       (( 1 - (b["b_M"] + 
                 b["b_male_M"] * S[n,"male"] + 
-                b["b_parent_educ_M"] * S[n,"parent_educ"] + 
+                b["b_soc_env_M"] * S[n,"soc_env"] + 
                 b["b_L1_M"] * S[n,"L1"] +
                 b["b_A_M"] * 0 ) )^( 1 - S[n,"M"] )) *
       (( b["b_L1"] +                                                            # A=0
            b["b_male_L1"] * S[n,"male"] +  
-           b["b_parent_L1"] * S[n,"parent_educ"] +
+           b["b_soc_env_L1"] * S[n,"soc_env"] +
            b["b_A_L1"] * 0)^( S[n,"L1"] )) *
       (( 1 - ( b["b_L1"] +
                  b["b_male_L1"] * S[n,"male"] +  
-                 b["b_parent_L1"] * S[n,"parent_educ"] +
+                 b["b_soc_env_L1"] * S[n,"soc_env"] +
                  b["b_A_L1"] * 0))^( 1 - S[n,"L1"] )) *
       ((b["p_L0_male"])^(S[n,"male"])) * 
       ((1 - b["p_L0_male"])^(1 - S[n,"male"])) * 
-      ((b["p_L0_parent_low_educ_lv"])^(S[n,"parent_educ"])) *
-      ((1 - b["p_L0_parent_low_educ_lv"])^(1 - S[n,"parent_educ"])) 
+      ((b["p_L0_soc_env"])^(S[n,"soc_env"])) *
+      ((1 - b["p_L0_soc_env"])^(1 - S[n,"soc_env"])) 
     }
   
   crNDE.qol <- sum(S[,"sum.psi10"]) - sum(S[,"sum.psi00"])

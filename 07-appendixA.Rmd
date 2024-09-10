@@ -9,14 +9,14 @@ In the first causal model, the mediator-outcome confounder $L(1)$ is not affecte
 This data generating mechanism is defined by the following set of structural equations:
 $$\begin{array}{lll}
 P(L(0)_{male} = 1) &=& p_{L(0)_{male}}\\
-P(L(0)_{parent} = 1) &=& p_{L(0)_{parent}}\\
-P(A_{ACE} = 1) &=& \beta_{A} + \beta_{male}^A \times L(0)_{male} + \beta_{parent}^A \times L(0)_{parent}\\
+P(L(0)_{soc.env} = 1) &=& p_{L(0)_{soc.env}}\\
+P(A_{PM_{2.5}} = 1) &=& \beta_{A} + \beta_{male}^A \times L(0)_{male} + \beta_{soc.env}^A \times L(0)_{soc.env}\\
 P(L(1) = 1) &=& p_{L(1)}\\
-P(M_{smoking} = 1) &=& \beta_{M} + \beta_{male}^M \times L(0)_{male} + \beta_{parent}^M \times L(0)_{parent} + \beta_{L(1)}^M \times L(1) + \beta_{A}^M \times A_{ACE}\\
-P(Y_{death} = 1) &=& \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \beta_{parent}^Y \times L(0)_{parent} + \beta_{L(1)}^Y \times L(1)\\
-                 & & + \beta_{A}^Y \times A_{ACE} + \beta_{M}^Y \times M_{smoking} + \beta_{A \ast M }^Y \times A_{ACE} \times M_{smoking}\\
-\mathbb{E}(Y_{Qol} = 1) &=& \gamma_{Y} + \gamma_{male}^Y \times L(0)_{male} + \gamma_{parent}^Y \times L(0)_{parent} + \gamma_{L(1)}^Y \times L(1)\\
-                        & &+ \gamma_{A}^Y \times A_{ACE} + \gamma_{M}^Y \times M_{smoking} + \gamma_{A \ast M }^Y \times A_{ACE} \times M_{smoking} + \varepsilon_Y
+P(M_{smoking} = 1) &=& \beta_{M} + \beta_{male}^M \times L(0)_{male} + \beta_{soc.env}^M \times L(0)_{soc.env} + \beta_{L(1)}^M \times L(1) + \beta_{A}^M \times A_{PM_{2.5}}\\
+P(Y_{death} = 1) &=& \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \beta_{soc.env}^Y \times L(0)_{soc.env} + \beta_{L(1)}^Y \times L(1)\\
+                 & & + \beta_{A}^Y \times A_{PM_{2.5}} + \beta_{M}^Y \times M_{diabetes} + \beta_{A \ast M }^Y \times A_{PM_{2.5}} \times M_{diabetes}\\
+\mathbb{E}(Y_{Qol} = 1) &=& \gamma_{Y} + \gamma_{male}^Y \times L(0)_{male} + \gamma_{soc.env}^Y \times L(0)_{soc.env} + \gamma_{L(1)}^Y \times L(1)\\
+                 & &+ \gamma_{A}^Y \times A_{PM_{2.5}} + \gamma_{M}^Y \times M_{diabetes} + \gamma_{A \ast M }^Y \times A_{PM_{2.5}} \times M_{diabetes} + \varepsilon_Y
 \end{array}$$
 where $\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10)$.
 
@@ -26,58 +26,58 @@ One can set the parameters of these structural equations using the following fun
 param.causal.model.1 <- function(A.M.interaction = NULL) {
 # L0
 p_L0_male <- 0.5
-p_L0_parent_low_educ_lv <- 0.65
+p_L0_soc_env <- 0.65
 
-# A: A0_ace <- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_parent_low_educ_lv ) 
+# A: A0_PM2.5 <- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env ) 
 b_A <- 0.05   # reference prevalence is 5%
-b_male_A <- 0.04  # + 0.04 for the effect of L0_male -> A0_ace
-b_parent_educ_A <- 0.06  # +0.06 for the effect of L0_parent_low_educ_lv -> A0_ace
+b_male_A <- 0.04  # + 0.04 for the effect of L0_male -> A0_PM2.5
+b_soc_env_A <- 0.06  # +0.06 for the effect of L0_soc_env -> A0_PM2.5
 
 # L1: intermediate confounder between M and Y, not influenced by A
 p_L1 <- 0.3
 
-# M: M_smoking <- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_parent_low_educ_lv + 0.07 * L1 +
-#                         0.1 * A0_ace ) 
+# M: M_diabetes <- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env + 0.07 * L1 +
+#                         0.1 * A0_PM2.5 ) 
 b_M <- 0.2 # reference prevalence is 20%
-b_male_M <- 0.05 # +0.05 for the effect of L0_male -> M_smoking
-b_parent_educ_M <- 0.06 # +0.06 for the effect of L0_parent_low_educ_lv -> M_smoking
-b_L1_M <- 0.07 # +0.07 for the effect of L1 -> M_smoking
-b_A_M <- 0.1 # +0.10 for the effect of A0_ace -> M_smoking
+b_male_M <- 0.05 # +0.05 for the effect of L0_male -> M_diabetes
+b_soc_env_M <- 0.06 # +0.06 for the effect of L0_soc_env -> M_diabetes
+b_L1_M <- 0.07 # +0.07 for the effect of L1 -> M_diabetes
+b_A_M <- 0.1 # +0.10 for the effect of A0_PM2.5 -> M_diabetes
 
-# Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_parent_low_educ_lv + 0.05 * A0_ace +
-#                   0.07 * L1 + 0.08 * M_smoking +
-#                   0.03 * A0_ace * M_smoking * A.M.inter ) 
+# Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env + 0.05 * A0_PM2.5 +
+#                   0.07 * L1 + 0.08 * M_diabetes +
+#                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter ) 
 b_Y <- 0.1 # reference prevalence is 10%
 b_male_Y <- 0.06 # +0.06 for the effect of L0_male -> Y
-b_parent_educ_Y <- 0.04 # +0.04 for the effect of L0_parent_low_educ_lv -> Y
-b_A_Y <- 0.05 # 0.05 for the effect of A0_ace -> Y
+b_soc_env_Y <- 0.04 # +0.04 for the effect of L0_soc_env -> Y
+b_A_Y <- 0.05 # 0.05 for the effect of A0_PM2.5 -> Y
 b_L1_Y <- 0.07 # +0.07 for the effect of L1 -> Y
-b_M_Y <- 0.08 # 0.08 for the effect of M_smoking -> Y
-b_AM_Y <- 0.03 # 0.03 for the interaction effect A0_ace * M_smoking -> Y
+b_M_Y <- 0.08 # 0.08 for the effect of M_diabetes -> Y
+b_AM_Y <- 0.03 # 0.03 for the interaction effect A0_PM2.5 * M_diabetes -> Y
 
-# Y continuous: (75 - 1 * L0_male - 3 * L0_parent_low_educ_lv - 4 * A0_ace -3.5 * L1 - 
-#                9 * M_smoking -5 * A0_ace * M_smoking * A.M.inter ) + 
+# Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 -3.5 * L1 - 
+#                9 * M_diabetes -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + 
 #                rnorm(N, mean = 0, sd = 10)
 mu_Y <- 75 # reference mean for QoL
 c_male_Y <- -1 # -1 for the effect of L0_male -> Y
-c_parent_educ_Y <- -3 # -3 for the effect of L0_parent_low_educ_lv -> Y
-c_A_Y <- -4 # -4 for the effect of A0_ace -> Y
+c_soc_env_Y <- -3 # -3 for the effect of L0_soc_env -> Y
+c_A_Y <- -4 # -4 for the effect of A0_PM2.5 -> Y
 c_L1_Y <- -3.5 # -3.5 for the effect of L1 -> Y
-c_M_Y <- -9 # -9 for the effect of M_smoking -> Y
-c_AM_Y <- -5  # - 5 for the interaction effect A0_ace * M_smoking  -> Y
+c_M_Y <- -9 # -9 for the effect of M_diabetes -> Y
+c_AM_Y <- -5  # - 5 for the interaction effect A0_PM2.5 * M_diabetes  -> Y
 sd_Y <- 10 # standard deviation of the residuals
 
 # A*M interaction ?
 A.M.inter <- A.M.interaction
 
-coef <- c( p_L0_male = p_L0_male, p_L0_parent_low_educ_lv = p_L0_parent_low_educ_lv, 
-           b_A = b_A, b_male_A = b_male_A, b_parent_educ_A = b_parent_educ_A, 
+coef <- c( p_L0_male = p_L0_male, p_L0_soc_env = p_L0_soc_env, 
+           b_A = b_A, b_male_A = b_male_A, b_soc_env_A = b_soc_env_A, 
            p_L1 = p_L1,
-           b_M = b_M, b_male_M = b_male_M, b_parent_educ_M = b_parent_educ_M, 
+           b_M = b_M, b_male_M = b_male_M, b_soc_env_M = b_soc_env_M, 
             b_L1_M = b_L1_M, b_A_M = b_A_M,
-           b_Y = b_Y, b_male_Y = b_male_Y, b_parent_educ_Y = b_parent_educ_Y, 
+           b_Y = b_Y, b_male_Y = b_male_Y, b_soc_env_Y = b_soc_env_Y, 
             b_A_Y = b_A_Y, b_L1_Y = b_L1_Y, b_M_Y = b_M_Y, b_AM_Y = b_AM_Y,
-           mu_Y = mu_Y, c_male_Y = c_male_Y, c_parent_educ_Y = c_parent_educ_Y, 
+           mu_Y = mu_Y, c_male_Y = c_male_Y, c_soc_env_Y = c_soc_env_Y, 
             c_A_Y = c_A_Y, c_L1_Y = c_L1_Y, c_M_Y = c_M_Y, c_AM_Y = c_AM_Y, 
            sd_Y = sd_Y, A.M.inter = A.M.inter)
   
@@ -91,14 +91,14 @@ return(coef)
 This data generating mechanism is defined by the following set of structural equations:
 $$\begin{array}{lll}
 P(L(0)_{male} = 1) &=& p_{L(0)_{male}}\\
-P(L(0)_{parent} = 1) &=& p_{L(0)_{parent}}\\
-P(A_{ACE} = 1) &=& \beta_{A} + \beta_{male}^A \times L(0)_{male} + \beta_{parent}^A \times L(0)_{parent}\\
-P(L(1) = 1) &=& \beta_{L(1)} + \beta_{male}^{L(1)} \times L(0)_{male} + \beta_{parent}^{L(1)} \times L(0)_{parent} + \beta_{A}^{L(1)} \times A_{ACE}\\
-P(M_{smoking} = 1) &=& \beta_{M} + \beta_{male}^M \times L(0)_{male} + \beta_{parent}^M \times L(0)_{parent} + \beta_{L(1)}^M \times L(1) + \beta_{A}^M \times A_{ACE}\\
-P(Y_{death} = 1) &=& \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \beta_{parent}^Y \times L(0)_{parent} + \beta_{L(1)}^Y \times L(1)\\
-                 & & + \beta_{A}^Y \times A_{ACE} + \beta_{M}^Y \times M_{smoking} + \beta_{A \ast M }^Y \times A_{ACE} \times M_{smoking}\\
-\mathbb{E}(Y_{Qol} = 1) &=& \gamma_{Y} + \gamma_{male}^Y \times L(0)_{male} + \gamma_{parent}^Y \times L(0)_{parent} + \gamma_{L(1)}^Y \times L(1)\\
-                        & &+ \gamma_{A}^Y \times A_{ACE} + \gamma_{M}^Y \times M_{smoking} + \gamma_{A \ast M }^Y \times A_{ACE} \times M_{smoking} + \varepsilon_Y
+P(L(0)_{soc.env} = 1) &=& p_{L(0)_{soc.env}}\\
+P(A_{PM_{2.5}} = 1) &=& \beta_{A} + \beta_{male}^A \times L(0)_{male} + \beta_{soc.env}^A \times L(0)_{soc.env}\\
+P(L(1) = 1) &=& \beta_{L(1)} + \beta_{male}^{L(1)} \times L(0)_{male} + \beta_{soc.env}^{L(1)} \times L(0)_{soc.env} + \beta_{A}^{L(1)} \times A_{PM_{2.5}}\\
+P(M_{diabetes} = 1) &=& \beta_{M} + \beta_{male}^M \times L(0)_{male} + \beta_{soc.env}^M \times L(0)_{soc.env} + \beta_{L(1)}^M \times L(1) + \beta_{A}^M \times A_{PM_{2.5}}\\
+P(Y_{death} = 1) &=& \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \beta_{soc.env}^Y \times L(0)_{soc.env} + \beta_{L(1)}^Y \times L(1)\\
+                 & & + \beta_{A}^Y \times A_{PM_{2.5}} + \beta_{M}^Y \times M_{diabetes} + \beta_{A \ast M }^Y \times A_{PM_{2.5}} \times M_{diabetes}\\
+\mathbb{E}(Y_{Qol} = 1) &=& \gamma_{Y} + \gamma_{male}^Y \times L(0)_{male} + \gamma_{soc.env}^Y \times L(0)_{soc.env} + \gamma_{L(1)}^Y \times L(1)\\
+                        & &+ \gamma_{A}^Y \times A_{PM_{2.5}} + \gamma_{M}^Y \times M_{diabetes} + \gamma_{A \ast M }^Y \times A_{PM_{2.5}} \times M_{diabetes} + \varepsilon_Y
 \end{array}$$
 where $\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10)$.
 
@@ -107,63 +107,63 @@ One can set the parameters of these structural equations using the following fun
 param.causal.model.2 <- function(A.M.interaction = NULL) {
 # L0
 p_L0_male <- 0.5
-p_L0_parent_low_educ_lv <- 0.65
+p_L0_soc_env <- 0.65
 
-# A: A0_ace <- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_parent_low_educ_lv ) 
+# A: A0_PM2.5 <- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env ) 
 b_A <- 0.05   # reference prevalence is 5%
-b_male_A <- 0.04  # + 0.04 for the effect of L0_male -> A0_ace
-b_parent_educ_A <- 0.06  # +0.06 for the effect of L0_parent_low_educ_lv -> A0_ace
+b_male_A <- 0.04  # + 0.04 for the effect of L0_male -> A0_PM2.5
+b_soc_env_A <- 0.06  # +0.06 for the effect of L0_soc_env -> A0_PM2.5
 
-# L1: L1 <- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_parent_low_educ_lv + 
-#                   0.2 * A0_ace ) 
+# L1: L1 <- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_soc_env + 
+#                   0.2 * A0_PM2.5 ) 
 b_L1 <- 0.30   # reference prevalence is 30%
 b_male_L1 <- -0.05  # - 0.05 for the effect of L0_male -> L1
-b_parent_L1 <- +0.08 # + 0.08 for the effect of L0_parent_low_educ_lv -> L1
-b_A_L1 <- +0.2 # +0.2 for the effect of A0_ace -> L1
+b_soc_env_L1 <- +0.08 # + 0.08 for the effect of L0_soc_env -> L1
+b_A_L1 <- +0.2 # +0.2 for the effect of A0_PM2.5 -> L1
 
-# M: M_smoking <- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_parent_low_educ_lv + 
-#                         0.2 * L1 + 0.1 * A0_ace ) 
+# M: M_diabetes <- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env + 
+#                         0.2 * L1 + 0.1 * A0_PM2.5 ) 
 b_M <- 0.2 # reference prevalence is 20%
-b_male_M <- 0.05 # +0.05 for the effect of L0_male -> M_smoking
-b_parent_educ_M <- 0.06 # +0.06 for the effect of L0_parent_low_educ_lv -> M_smoking
-b_A_M <- 0.1 # +0.10 for the effect of A0_ace -> M_smoking
-b_L1_M <- 0.2 # +0.2 for the effect of L1 -> M_smoking
+b_male_M <- 0.05 # +0.05 for the effect of L0_male -> M_diabetes
+b_soc_env_M <- 0.06 # +0.06 for the effect of L0_soc_env -> M_diabetes
+b_A_M <- 0.1 # +0.10 for the effect of A0_PM2.5 -> M_diabetes
+b_L1_M <- 0.2 # +0.2 for the effect of L1 -> M_diabetes
 
-# Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_parent_low_educ_lv + 
-#                   0.05 * A0_ace + 0.07 * L1 + 0.08 * M_smoking +
-#                   0.03 * A0_ace * M_smoking * A.M.inter ) 
+# Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env + 
+#                   0.05 * A0_PM2.5 + 0.07 * L1 + 0.08 * M_diabetes +
+#                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter ) 
 b_Y <- 0.1 # reference prevalence is 10%
 b_male_Y <- 0.06 # +0.06 for the effect of L0_male -> Y
-b_parent_educ_Y <- 0.04 # +0.04 for the effect of L0_parent_low_educ_lv -> Y
-b_A_Y <- 0.05 # 0.05 for the effect of A0_ace -> Y
+b_soc_env_Y <- 0.04 # +0.04 for the effect of L0_soc_env -> Y
+b_A_Y <- 0.05 # 0.05 for the effect of A0_PM2.5 -> Y
 b_L1_Y <- 0.07 # +0.07 for the effect of L1 -> Y
-b_M_Y <- 0.08 # 0.08 for the effect of M_smoking -> Y
-b_AM_Y <- 0.03 # 0.03 for the interaction effect A0_ace * M_smoking -> Y
+b_M_Y <- 0.08 # 0.08 for the effect of M_diabetes -> Y
+b_AM_Y <- 0.03 # 0.03 for the interaction effect A0_PM2.5 * M_diabetes -> Y
 
-# Y continuous: (75 - 1 * L0_male - 3 * L0_parent_low_educ_lv - 4 * A0_ace +
-#                -3.5 * L1 - 9 * M_smoking + 
-#                -5 * A0_ace * M_smoking * A.M.inter ) + rnorm(N, mean = 0, sd = 10)
+# Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 +
+#                -3.5 * L1 - 9 * M_diabetes + 
+#                -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + rnorm(N, mean = 0, sd = 10)
 mu_Y <- 75 # reference mean for QoL
 c_male_Y <- -1 # -1 for the effect of L0_male -> Y
-c_parent_educ_Y <- -3 # -3 for the effect of L0_parent_low_educ_lv -> Y
-c_A_Y <- -4 # -4 for the effect of A0_ace -> Y
+c_soc_env_Y <- -3 # -3 for the effect of L0_soc_env -> Y
+c_A_Y <- -4 # -4 for the effect of A0_PM2.5 -> Y
 c_L1_Y <- -5 # -5 for the effect of L1 -> Y
-c_M_Y <- -9 # -9 for the effect of M_smoking -> Y
-c_AM_Y <- -5  # - 5 for the interaction effect A0_ace * M_smoking  -> Y
+c_M_Y <- -9 # -9 for the effect of M_diabetes -> Y
+c_AM_Y <- -5  # - 5 for the interaction effect A0_PM2.5 * M_diabetes  -> Y
 sd_Y <- 10 # standard deviation of the residuals
 
 # A*M interaction ?
 A.M.inter <- A.M.interaction
 
-coef <- c( p_L0_male = p_L0_male, p_L0_parent_low_educ_lv = p_L0_parent_low_educ_lv, 
-           b_A = b_A, b_male_A = b_male_A, b_parent_educ_A = b_parent_educ_A, 
-           b_L1 = b_L1, b_male_L1 = b_male_L1, b_parent_L1 = b_parent_L1, 
+coef <- c( p_L0_male = p_L0_male, p_L0_soc_env = p_L0_soc_env, 
+           b_A = b_A, b_male_A = b_male_A, b_soc_env_A = b_soc_env_A, 
+           b_L1 = b_L1, b_male_L1 = b_male_L1, b_soc_env_L1 = b_soc_env_L1, 
             b_A_L1 = b_A_L1,
-           b_M = b_M, b_male_M = b_male_M, b_parent_educ_M = b_parent_educ_M, 
+           b_M = b_M, b_male_M = b_male_M, b_soc_env_M = b_soc_env_M, 
             b_L1_M = b_L1_M, b_A_M = b_A_M,
-           b_Y = b_Y, b_male_Y = b_male_Y, b_parent_educ_Y = b_parent_educ_Y, 
+           b_Y = b_Y, b_male_Y = b_male_Y, b_soc_env_Y = b_soc_env_Y, 
             b_A_Y = b_A_Y, b_L1_Y = b_L1_Y, b_M_Y = b_M_Y, b_AM_Y = b_AM_Y,
-           mu_Y = mu_Y, c_male_Y = c_male_Y, c_parent_educ_Y = c_parent_educ_Y, 
+           mu_Y = mu_Y, c_male_Y = c_male_Y, c_soc_env_Y = c_soc_env_Y, 
             c_A_Y = c_A_Y, c_L1_Y = c_L1_Y, c_M_Y = c_M_Y, c_AM_Y = c_AM_Y, 
               sd_Y = sd_Y, A.M.inter = A.M.inter)
   
@@ -184,46 +184,46 @@ gen.data.causal.model.1 <- function(N, A.M.inter) { # input parameters are the
   
   b <- param.causal.model.1(A.M.interaction = A.M.inter)
     
-  # baseline confounders: parent's educational level=L0_parent_low_educ_lv & sex=L0_male
+  # baseline confounders: parent's educational level=L0_soc_env & sex=L0_male
   L0_male <- rbinom(N, size = 1, prob = b["p_L0_male"]) 
-  L0_parent_low_educ_lv <- rbinom(N, size = 1, prob = b["p_L0_parent_low_educ_lv"])  
+  L0_soc_env <- rbinom(N, size = 1, prob = b["p_L0_soc_env"])  
   
-  # exposure: A0_ace
-  A0_ace <- rbinom(N, size = 1, prob =  b["b_A"] + 
+  # exposure: A0_PM2.5
+  A0_PM2.5 <- rbinom(N, size = 1, prob =  b["b_A"] + 
                      b["b_male_A"] * L0_male + 
-                     b["b_parent_educ_A"] * L0_parent_low_educ_lv ) 
+                     b["b_soc_env_A"] * L0_soc_env ) 
   
-  # intermediate confounder between M_smoking and Y, not affected by A0 L1
+  # intermediate confounder between M_diabetes and Y, not affected by A0 L1
   L1 <- rbinom(N, size = 1, prob = b["p_L1"])
   
-  # mediator: M_smoking
-  M_smoking <- rbinom(N, size = 1, prob = b["b_M"] + 
+  # mediator: M_diabetes
+  M_diabetes <- rbinom(N, size = 1, prob = b["b_M"] + 
                         b["b_male_M"] * L0_male + 
-                        b["b_parent_educ_M"] * L0_parent_low_educ_lv + 
-                        b["b_A_M"] * A0_ace +
+                        b["b_soc_env_M"] * L0_soc_env + 
+                        b["b_A_M"] * A0_PM2.5 +
                         b["b_L1_M"] * L1) 
 
   # Y_death 
   Y_death <- rbinom(N, size = 1, prob = b["b_Y"] + 
                       b["b_male_Y"] * L0_male + 
-                      b["b_parent_educ_Y"] * L0_parent_low_educ_lv + 
-                      b["b_A_Y"] * A0_ace + 
+                      b["b_soc_env_Y"] * L0_soc_env + 
+                      b["b_A_Y"] * A0_PM2.5 + 
                       b["b_L1_Y"] * L1 +
-                      b["b_M_Y"] * M_smoking +
-                      b["b_AM_Y"] * A0_ace * M_smoking * A.M.inter ) 
+                      b["b_M_Y"] * M_diabetes +
+                      b["b_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter ) 
   
   # Y_qol 
   Y_qol <- ( b["mu_Y"] + 
                b["c_male_Y"] * L0_male + 
-               b["c_parent_educ_Y"] * L0_parent_low_educ_lv +
-               b["c_A_Y"] * A0_ace +
+               b["c_soc_env_Y"] * L0_soc_env +
+               b["c_A_Y"] * A0_PM2.5 +
                b["c_L1_Y"] * L1 +
-               b["c_M_Y"] * M_smoking + 
-               b["c_AM_Y"] * A0_ace * M_smoking * A.M.inter ) + 
+               b["c_M_Y"] * M_diabetes + 
+               b["c_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter ) + 
     rnorm(N, mean = 0, sd = b["sd_Y"])
   
   # data.frame
-  data.sim <- data.frame(L0_male, L0_parent_low_educ_lv, A0_ace, L1, M_smoking, 
+  data.sim <- data.frame(L0_male, L0_soc_env, A0_PM2.5, L1, M_diabetes, 
                          Y_death, Y_qol)
 
   return( data.sim )
@@ -261,49 +261,49 @@ gen.data.causal.model.2 <- function(N, A.M.inter) { # input parameters are the
   
   b <- param.causal.model.2(A.M.interaction = A.M.inter)
     
-  # baseline confounders: parent's educational level=L0_parent_low_educ_lv & sex=L0_male
+  # baseline confounders: parent's educational level=L0_soc_env & sex=L0_male
   L0_male <- rbinom(N, size = 1, prob = b["p_L0_male"]) 
-  L0_parent_low_educ_lv <- rbinom(N, size = 1, prob = b["p_L0_parent_low_educ_lv"])  
+  L0_soc_env <- rbinom(N, size = 1, prob = b["p_L0_soc_env"])  
   
-  # exposure: A0_ace
-  A0_ace <- rbinom(N, size = 1, prob =  b["b_A"] + 
+  # exposure: A0_PM2.5
+  A0_PM2.5 <- rbinom(N, size = 1, prob =  b["b_A"] + 
                      b["b_male_A"] * L0_male + 
-                     b["b_parent_educ_A"] * L0_parent_low_educ_lv ) 
+                     b["b_soc_env_A"] * L0_soc_env ) 
   
-  # intermediate confounder between M_smoking and Y, 
+  # intermediate confounder between M_diabetes and Y, 
   L1 <- rbinom(N, size = 1, prob = b["b_L1"] +
                  b["b_male_L1"] * L0_male +
-                 b["b_parent_L1"] * L0_parent_low_educ_lv + 
-                 b["b_A_L1"]* A0_ace)
+                 b["b_soc_env_L1"] * L0_soc_env + 
+                 b["b_A_L1"]* A0_PM2.5)
   
-  # mediator: M_smoking
-  M_smoking <- rbinom(N, size = 1, prob = b["b_M"] + 
+  # mediator: M_diabetes
+  M_diabetes <- rbinom(N, size = 1, prob = b["b_M"] + 
                         b["b_male_M"] * L0_male + 
-                        b["b_parent_educ_M"] * L0_parent_low_educ_lv + 
-                        b["b_A_M"] * A0_ace +
+                        b["b_soc_env_M"] * L0_soc_env + 
+                        b["b_A_M"] * A0_PM2.5 +
                         b["b_L1_M"] * L1) 
 
   # Y_death 
   Y_death <- rbinom(N, size = 1, prob = b["b_Y"] + 
                       b["b_male_Y"] * L0_male + 
-                      b["b_parent_educ_Y"] * L0_parent_low_educ_lv + 
-                      b["b_A_Y"] * A0_ace + 
+                      b["b_soc_env_Y"] * L0_soc_env + 
+                      b["b_A_Y"] * A0_PM2.5 + 
                       b["b_L1_Y"] * L1 +
-                      b["b_M_Y"] * M_smoking +
-                      b["b_AM_Y"] * A0_ace * M_smoking * A.M.inter ) 
+                      b["b_M_Y"] * M_diabetes +
+                      b["b_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter ) 
   
   # Y_qol 
   Y_qol <- ( b["mu_Y"] + 
                b["c_male_Y"] * L0_male + 
-               b["c_parent_educ_Y"] * L0_parent_low_educ_lv +
-               b["c_A_Y"] * A0_ace +
+               b["c_soc_env_Y"] * L0_soc_env +
+               b["c_A_Y"] * A0_PM2.5 +
                b["c_L1_Y"] * L1 +
-               b["c_M_Y"] * M_smoking + 
-               b["c_AM_Y"] * A0_ace * M_smoking * A.M.inter ) + 
+               b["c_M_Y"] * M_diabetes + 
+               b["c_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter ) + 
     rnorm(N, mean = 0, sd = b["sd_Y"])
   
   # data.frame
-  data.sim <- data.frame(L0_male, L0_parent_low_educ_lv, A0_ace, L1, M_smoking, 
+  data.sim <- data.frame(L0_male, L0_soc_env, A0_PM2.5, L1, M_diabetes, 
                          Y_death, Y_qol)
 
   return( data.sim )

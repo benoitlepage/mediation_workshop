@@ -77,7 +77,7 @@ vanderweeles-3-way-decomposition
 vanderweeles-4-way-decomposition
 marginal-randomized-direct-and-indirect-effects
 conditional-randomized-direct-and-indirect-effects
-true-causal-quantities-with-mediator-ouctome-confounder-affected-by-the-exposure
+true-causal-quantities-with-mediator-outcome-confounder-affected-by-the-exposure
 average-total-effects-ate-1
 controlled-direct-effects-cde-1
 marginal-randomized-direct-and-indirect-effects-1
