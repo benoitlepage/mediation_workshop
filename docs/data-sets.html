@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-09-10" />
+<meta name="date" content="2024-09-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -305,19 +305,19 @@ div.csl-indent {
 <li>2 baseline confounders (denoted <span class="math inline">\(L(0)\)</span> in the DAGs):
 <ul>
 <li><code>L0_male</code>, a binary variable indicating the sex of the participant (1 for men, 0 for women);</li>
-<li><code>L0_parent_low_educ_lv</code>, a binary variable indicated if the parents of the participants had a low level of education (1 for a low educational level, 0 for a high educational level);</li>
+<li><code>L0_soc_env</code>, a binary variable indicating if the participant has been exposed to a deprived social environment);</li>
 </ul></li>
 <li>1 exposure of interest (denoted <span class="math inline">\(A\)</span> in the DAGs):
 <ul>
-<li><code>A0_ace</code>, a binary variable indicating if the participants had been exposed to a high level of “Adverse childhood experience”;</li>
+<li><code>A0_PM2.5</code>, a binary variable indicating if the participants had been exposed to a high level of <span class="math inline">\(\text{PM}_{2.5}\)</span>;</li>
 </ul></li>
 <li>1 confounder of the mediator-outcome relationship (denoted <span class="math inline">\(L(1)\)</span> in the DAGs):
 <ul>
-<li><code>L1</code>, a binary variable indicating if the participant has a low educational level (1 for a low educational level, 0 for a high educational level);</li>
+<li><code>L1</code>, a binary variable indicating if the participant is overweight (1 for being overweight, 0 for not being overweight);</li>
 </ul></li>
 <li>1 mediator of interest (denoted <span class="math inline">\(M\)</span> in the DAGs):
 <ul>
-<li><code>M_smoking</code>, a binary variable indicating if the participant is a smoker (1 for smokers, 0 for non-smokers);</li>
+<li><code>M_diabetes</code>, a binary variable indicating if the participant has type 2 diabetes;</li>
 </ul></li>
 <li>2 outcomes (denoted <span class="math inline">\(Y\)</span> in the DAGs):
 <ul>
@@ -397,7 +397,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/benoitlepage/mediation_workshop/edit/BRANCH/index.Rmd",
+"link": "https://github.com/benoitlepage/mediation_workshop/index.Rmd",
 "text": "Edit"
 },
 "history": {

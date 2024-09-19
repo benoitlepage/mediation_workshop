@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-09-10}
+\date{2024-09-19}
 
 \begin{document}
 \maketitle
@@ -166,14 +166,25 @@ The objective of this document is to provide practical examples for the Expanse 
 
 \chapter{Software}\label{software}
 
-The examples given in this workshop have been elaborated for R (version 4.2.2).
+The examples given in this workshop have been elaborated for R (version 4.3.3).
 
 Depending on the estimator, some R packages might be necessary:
 
 \begin{itemize}
-\tightlist
 \item
-  COMPLETE ONCE ALL THE EXAMPLES ARE DONE
+  \texttt{CMAverse} \href{https://bs1125.github.io/CMAverse/}{package}
+\item
+  \texttt{sandwich} \href{https://sandwich.r-forge.r-project.org/articles/sandwich.html}{package}
+\item
+  \texttt{boot} \href{https://cran.r-project.org/web/packages/boot/index.html}{package}
+\item
+  \texttt{regmedint} \href{https://kaz-yos.github.io/regmedint/}{package}
+\item
+  \texttt{ltmle} \href{http://joshuaschwab.github.io/ltmle/}{package}
+\item
+  \texttt{SuperLearner} \href{http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html}{package}
+\item
+  \texttt{intmed} \href{https://cran.r-project.org/web/packages/intmed/index.html}{package}
 \end{itemize}
 
 \chapter{Data sets}\label{data-sets}
@@ -192,7 +203,7 @@ Four data sets have been simulated, each containing 7 variables:
   \item
     \texttt{L0\_male}, a binary variable indicating the sex of the participant (1 for men, 0 for women);
   \item
-    \texttt{L0\_parent\_low\_educ\_lv}, a binary variable indicated if the parents of the participants had a low level of education (1 for a low educational level, 0 for a high educational level);
+    \texttt{L0\_soc\_env}, a binary variable indicating if the participant has been exposed to a deprived social environment);
   \end{itemize}
 \item
   1 exposure of interest (denoted \(A\) in the DAGs):
@@ -200,7 +211,7 @@ Four data sets have been simulated, each containing 7 variables:
   \begin{itemize}
   \tightlist
   \item
-    \texttt{A0\_ace}, a binary variable indicating if the participants had been exposed to a high level of ``Adverse childhood experience'';
+    \texttt{A0\_PM2.5}, a binary variable indicating if the participants had been exposed to a high level of \(\text{PM}_{2.5}\);
   \end{itemize}
 \item
   1 confounder of the mediator-outcome relationship (denoted \(L(1)\) in the DAGs):
@@ -208,7 +219,7 @@ Four data sets have been simulated, each containing 7 variables:
   \begin{itemize}
   \tightlist
   \item
-    \texttt{L1}, a binary variable indicating if the participant has a low educational level (1 for a low educational level, 0 for a high educational level);
+    \texttt{L1}, a binary variable indicating if the participant is overweight (1 for being overweight, 0 for not being overweight);
   \end{itemize}
 \item
   1 mediator of interest (denoted \(M\) in the DAGs):
@@ -216,7 +227,7 @@ Four data sets have been simulated, each containing 7 variables:
   \begin{itemize}
   \tightlist
   \item
-    \texttt{M\_smoking}, a binary variable indicating if the participant is a smoker (1 for smokers, 0 for non-smokers);
+    \texttt{M\_diabetes}, a binary variable indicating if the participant has type 2 diabetes;
   \end{itemize}
 \item
   2 outcomes (denoted \(Y\) in the DAGs):
@@ -339,68 +350,69 @@ The indirect effect can be calculated using:
 \begin{Shaded}
 \begin{Highlighting}[]
 \DocumentationTok{\#\# Model 1 to estimate the total effect:}
-\NormalTok{model.tot.A.QoL }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{model.tot.A.QoL }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                       \AttributeTok{data =}\NormalTok{ df1)}
 \FunctionTok{summary}\NormalTok{(model.tot.A.QoL)}
 \CommentTok{\# Coefficients:}
-\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
-\CommentTok{\#   (Intercept)            71.8820     0.2155 333.565  \textless{} 2e{-}16 ***}
-\CommentTok{\#   A0\_ace                 {-}5.0961     0.3486 {-}14.617  \textless{} 2e{-}16 *** \textless{}{-} Total effect}
-\CommentTok{\#   L0\_male                {-}1.1486     0.2194  {-}5.235 1.68e{-}07 ***}
-\CommentTok{\#   L0\_parent\_low\_educ\_lv  {-}3.4441     0.2295 {-}15.005  \textless{} 2e{-}16 ***}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)  71.8820     0.2155 333.565  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5     {-}5.0961     0.3486 {-}14.617  \textless{} 2e{-}16 *** \textless{}{-} Total effect}
+\CommentTok{\#   L0\_male      {-}1.1486     0.2194  {-}5.235 1.68e{-}07 ***}
+\CommentTok{\#   L0\_soc\_env   {-}3.4441     0.2295 {-}15.005  \textless{} 2e{-}16 ***}
 
-\CommentTok{\# The total effect of ACE on Quality of life is approximately equal to {-}5.1,}
-\CommentTok{\# given by the A0\_ace coefficient:}
-\NormalTok{model.tot.A.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# The total effect of being exposed to high levels of PM\_2.5 on Quality of life}
+\CommentTok{\# is approximately equal to an average decrease of {-}5.1 on the QoL scale,}
+\CommentTok{\# given by the A0\_PM2.5 coefficient:}
+\NormalTok{model.tot.A.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# {-}5.096057}
 
 \DocumentationTok{\#\# Model 2 to estimate the effect of the exposure on the mediator}
 \DocumentationTok{\#\# because the mediator is binary, we might want to use a logistic or probit regression}
 \DocumentationTok{\#\# for example}
-\NormalTok{logit.model.A.M }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{logit.model.A.M }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                        \AttributeTok{data =}\NormalTok{ df1, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{)}
 \FunctionTok{summary}\NormalTok{(logit.model.A.M)}
 \CommentTok{\# effects estimated on the logit scale:}
 \CommentTok{\# Coefficients:}
-\CommentTok{\#                         Estimate Std. Error z value Pr(\textgreater{}|z|)}
-\CommentTok{\#   (Intercept)           {-}1.27152    0.04584 {-}27.736  \textless{} 2e{-}16 ***}
-\CommentTok{\#   A0\_ace                 0.56168    0.06537   8.592  \textless{} 2e{-}16 *** \textless{}{-} effect of A on M}
-\CommentTok{\#   L0\_male                0.25455    0.04425   5.753 8.77e{-}09 ***}
-\CommentTok{\#   L0\_parent\_low\_educ\_lv  0.32683    0.04731   6.908 4.91e{-}12 ***}
-\FunctionTok{exp}\NormalTok{(}\FunctionTok{coefficients}\NormalTok{(logit.model.A.M)[}\StringTok{"A0\_ace"}\NormalTok{])}
-\CommentTok{\# Odds ratio = 1.753609  for the effect of ACE on the mediator (probability of smoking)}
+\CommentTok{\#                          Estimate Std. Error z value Pr(\textgreater{}|z|)}
+\CommentTok{\#   (Intercept) {-}1.27152    0.04584 {-}27.736  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5     0.56168    0.06537   8.592  \textless{} 2e{-}16 *** \textless{}{-} effect of A on M}
+\CommentTok{\#   L0\_male      0.25455    0.04425   5.753 8.77e{-}09 ***}
+\CommentTok{\#   L0\_soc\_env   0.32683    0.04731   6.908 4.91e{-}12 ***}
+\FunctionTok{exp}\NormalTok{(}\FunctionTok{coefficients}\NormalTok{(logit.model.A.M)[}\StringTok{"A0\_PM2.5"}\NormalTok{])}
+\CommentTok{\# Odds ratio = 1.753609  for the effect of being exposed to high levels of PM\_2.5}
+\CommentTok{\# on the mediator (probability of type 2 diabetes)}
 
 \DocumentationTok{\#\# Model 3 to estimate the direct effect of the exposure (conditional on the outcome) and}
 \DocumentationTok{\#\# the effect of M on Y, adjusted for confounders of the A{-}Y and M{-}Y relationships}
-\NormalTok{model.A.M.QoL }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{model.A.M.QoL }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                     \AttributeTok{data =}\NormalTok{ df1)}
 \FunctionTok{summary}\NormalTok{(model.A.M.QoL)}
 \CommentTok{\# Coefficients:}
-\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
-\CommentTok{\#   (Intercept)            74.7858     0.2130 351.178  \textless{} 2e{-}16 ***}
-\CommentTok{\#   A0\_ace                 {-}3.9650     0.3212 {-}12.345  \textless{} 2e{-}16 *** \textless{}{-} Direct effect}
-\CommentTok{\#   M\_smoking              {-}8.7138     0.2221 {-}39.237  \textless{} 2e{-}16 *** \textless{}{-} effect of M on Y}
-\CommentTok{\#   L1                     {-}3.4252     0.2212 {-}15.483  \textless{} 2e{-}16 ***}
-\CommentTok{\#   L0\_male                {-}0.7193     0.2017  {-}3.566 0.000364 ***}
-\CommentTok{\#   L0\_parent\_low\_educ\_lv  {-}2.8876     0.2112 {-}13.674  \textless{} 2e{-}16 ***}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept)  74.7858     0.2130 351.178  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5     {-}3.9650     0.3212 {-}12.345  \textless{} 2e{-}16 *** \textless{}{-} Direct effect}
+\CommentTok{\#   M\_diabetes   {-}8.7138     0.2221 {-}39.237  \textless{} 2e{-}16 *** \textless{}{-} effect of M on Y}
+\CommentTok{\#   L1           {-}3.4252     0.2212 {-}15.483  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male      {-}0.7193     0.2017  {-}3.566 0.000364 ***}
+\CommentTok{\#   L0\_soc\_env   {-}2.8876     0.2112 {-}13.674  \textless{} 2e{-}16 ***}
 
-\CommentTok{\# The direct effect is approximately {-}4.0 given by the A0\_ace coefficient}
-\NormalTok{model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# The direct effect of PM\_2.5 is approximately {-}4.0 given by the A0\_PM2.5 coefficient}
+\NormalTok{model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# {-}3.965038}
 
 \DocumentationTok{\#\# Following the Baron \& Kenny Steps, we would conclude that :}
-\CommentTok{\# {-} There is a significant total effect of ACEs on Quality of Life (Model 1)}
-\CommentTok{\# {-} There is a significant effect of ACEs on the mediator (smoking) (Model 2)}
-\CommentTok{\# {-} There is a significant effect of the mediator (smoking) on Qol (model 3)}
+\CommentTok{\# {-} There is a significant total effect of PM\_2.5 on Quality of Life (Model 1)}
+\CommentTok{\# {-} There is a significant effect of PM\_2.5 on the mediator (diabetes) (Model 2)}
+\CommentTok{\# {-} There is a significant effect of the mediator (diabetes) on Qol (model 3)}
 \CommentTok{\# {-} The direct effect is significantly non{-}null}
-\CommentTok{\# =\textgreater{} Conclusion: Smoking partially mediates the relationship between ACEs and QoL}
+\CommentTok{\# =\textgreater{} Conclusion: Diabetes partially mediates the relationship between PM\_2.5 and QoL}
 
 \DocumentationTok{\#\#\# Estimation of the indirect effect:}
 \DocumentationTok{\#\#\# We can apply the difference in coefficient method to estimate the indirect effect:}
 \DocumentationTok{\#\#\# substract the direct effect from the Total effect:}
-\NormalTok{ind.effect.dif.meth }\OtherTok{\textless{}{-}}\NormalTok{ (model.tot.A.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{{-}}
-\NormalTok{                          model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{])}
-
+\NormalTok{ind.effect.dif.meth }\OtherTok{\textless{}{-}}\NormalTok{ (model.tot.A.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{{-}}
+\NormalTok{                          model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{])}
 \CommentTok{\# {-}1.131019}
 \CommentTok{\# the indirect effect is approximately {-}1.1}
 \CommentTok{\# The confidence interval of the indirect effect can be computed by bootstrap.}
@@ -413,19 +425,19 @@ The indirect effect can be calculated using:
 \CommentTok{\# Surprisingly, another possibility is to run a linear model of the binary mediator}
 \CommentTok{\# instead of the logistic regression to apply the "product of coefficient method"}
 \CommentTok{\# in order to estimate the indirect effect:}
-\NormalTok{linear.model.A.M }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{linear.model.A.M }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                        \AttributeTok{data =}\NormalTok{ df1)}
 \FunctionTok{summary}\NormalTok{(linear.model.A.M)}
 \CommentTok{\# Coefficients:}
-\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
-\CommentTok{\#   (Intercept)           0.215398   0.008929  24.123  \textless{} 2e{-}16 ***}
-\CommentTok{\#   A0\_ace                0.127180   0.014446   8.804  \textless{} 2e{-}16 ***}
-\CommentTok{\#   L0\_male               0.052363   0.009091   5.760 8.67e{-}09 ***}
-\CommentTok{\#   L0\_parent\_low\_educ\_lv 0.065806   0.009511   6.919 4.83e{-}12 ***}
+\CommentTok{\#             Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\# (Intercept) 0.215398   0.008929  24.123  \textless{} 2e{-}16 ***}
+\CommentTok{\# A0\_PM2.5    0.127180   0.014446   8.804  \textless{} 2e{-}16 *** \textless{}{-} effect of A on M}
+\CommentTok{\# L0\_male     0.052363   0.009091   5.760 8.67e{-}09 ***}
+\CommentTok{\# L0\_soc\_env  0.065806   0.009511   6.919 4.83e{-}12 ***}
 
 \DocumentationTok{\#\# product of coefficient method:}
-\NormalTok{ind.effect.prod.meth }\OtherTok{\textless{}{-}}\NormalTok{ (linear.model.A.M}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{*}
-\NormalTok{                           model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_smoking"}\NormalTok{])}
+\NormalTok{ind.effect.prod.meth }\OtherTok{\textless{}{-}}\NormalTok{ (linear.model.A.M}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{*}
+\NormalTok{                           model.A.M.QoL}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_diabetes"}\NormalTok{])}
 \CommentTok{\# {-}1.108213}
 \CommentTok{\# which also gives an indirect effect of approximately {-}1.1}
 \end{Highlighting}
@@ -439,45 +451,45 @@ However, as for the binary mediator, some authors suggested that using linear re
 \begin{Highlighting}[]
 \DocumentationTok{\#\#\# Baron \& Kenny approach for binary outcomes:}
 \DocumentationTok{\#\# Model 1: linear model of the probability of death to estimate the total effect:}
-\NormalTok{model.tot.A.death }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{model.tot.A.death }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                         \AttributeTok{data =}\NormalTok{ df1)}
 \FunctionTok{summary}\NormalTok{(model.tot.A.death)}
 \CommentTok{\# Coefficients:}
-\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
-\CommentTok{\#   (Intercept)           0.135282   0.007909  17.104  \textless{} 2e{-}16 ***}
-\CommentTok{\#   A0\_ace                0.060247   0.012796   4.708 2.53e{-}06 *** \textless{}{-} Total effect}
-\CommentTok{\#   L0\_male               0.050285   0.008053   6.244 4.43e{-}10 ***}
-\CommentTok{\#   L0\_parent\_low\_educ\_lv 0.059565   0.008425   7.070 1.65e{-}12 ***}
-\CommentTok{\# On a risk difference scale the total effect of ACE on the probability of death is}
-\CommentTok{\# approximately +6.0\%}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept) 0.135282   0.007909  17.104  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5    0.060247   0.012796   4.708 2.53e{-}06 *** \textless{}{-} Total effect}
+\CommentTok{\#   L0\_male     0.050285   0.008053   6.244 4.43e{-}10 ***}
+\CommentTok{\#   L0\_soc\_env  0.059565   0.008425   7.070 1.65e{-}12 ***}
+\CommentTok{\# On a risk difference scale the total effect of being exposed to high levels of}
+\CommentTok{\# PM\_2.5 on the probability of death is approximately +6.0\%}
 
 \DocumentationTok{\#\# Model 3: linear model to estimate the direct effect of the exposure (conditional on}
 \DocumentationTok{\#\# the outcome) and the effect of M on Y, adjusted for confounders of the A{-}Y}
 \DocumentationTok{\#\# and M{-}Y relationships}
-\NormalTok{model.A.M.death }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{model.A.M.death }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                       \AttributeTok{data =}\NormalTok{ df1)}
 \FunctionTok{summary}\NormalTok{(model.A.M.death)}
 \CommentTok{\#   Coefficients:}
-\CommentTok{\#                         Estimate Std. Error t value Pr(\textgreater{}|t|)}
-\CommentTok{\#   (Intercept)           0.098691   0.008460  11.666  \textless{} 2e{-}16 ***}
-\CommentTok{\#   A0\_ace                0.051509   0.012759   4.037 5.45e{-}05 *** \textless{}{-} Direct effect}
-\CommentTok{\#   M\_smoking             0.064751   0.008822   7.340 2.31e{-}13 *** \textless{}{-} effect of M on Y}
-\CommentTok{\#   L1                    0.075533   0.008788   8.595  \textless{} 2e{-}16 ***}
-\CommentTok{\#   L0\_male               0.047490   0.008013   5.927 3.19e{-}09 ***}
-\CommentTok{\#   L0\_parent\_low\_educ\_lv 0.055676   0.008389   6.637 3.36e{-}11 ***}
+\CommentTok{\#                          Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept) 0.098691   0.008460  11.666  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5    0.051509   0.012759   4.037 5.45e{-}05 *** \textless{}{-} Direct effect}
+\CommentTok{\#   M\_diabetes  0.064751   0.008822   7.340 2.31e{-}13 *** \textless{}{-} effect of M on Y}
+\CommentTok{\#   L1          0.075533   0.008788   8.595  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male     0.047490   0.008013   5.927 3.19e{-}09 ***}
+\CommentTok{\#   L0\_soc\_env  0.055676   0.008389   6.637 3.36e{-}11 ***}
 
 
-\CommentTok{\# The direct effect is approximately +5.2\% given by the A0\_ace coefficient}
-\NormalTok{model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# The direct effect is approximately +5.2\% given by the A0\_PM2.5 coefficient}
+\NormalTok{model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.05150901}
 
 \CommentTok{\# The indirect effect can be calculated by the "difference in coefficient" method}
 \CommentTok{\# using coefficients from models 1 and 3}
-\NormalTok{model.tot.A.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{model.tot.A.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.008737889, i.e. approximately 0.9\%}
 
 \CommentTok{\# or the product of coefficients using the previous model 2bis and model 3:}
-\NormalTok{linear.model.A.M}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_smoking"}\NormalTok{]}
+\NormalTok{linear.model.A.M}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ model.A.M.death}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"M\_diabetes"}\NormalTok{]}
 \CommentTok{\# 0.008234978, i.e. approximately 0.8\%}
 \end{Highlighting}
 \end{Shaded}

@@ -21,11 +21,19 @@ github-repo: mediation_workshop
 The objective of this document is to provide practical examples for the Expanse report [_"Mediation Analysis: a Starting Guide for Epidemiologists"_](https://github.com/benoitlepage/mediation_workshop/blob/main/Expanse%20report/Mediation_BL-2024-03-29.pdf) with R scripts corresponding to the different estimation methods presented in the report.
 
 # Software 
-The examples given in this workshop have been elaborated for R (version 4.2.2).
+The examples given in this workshop have been elaborated for R (version 4.3.3).
 
 Depending on the estimator, some R packages might be necessary:
 
-- COMPLETE ONCE ALL THE EXAMPLES ARE DONE
+- `CMAverse` [package](https://bs1125.github.io/CMAverse/)
+- `sandwich` [package](https://sandwich.r-forge.r-project.org/articles/sandwich.html)
+- `boot` [package](https://cran.r-project.org/web/packages/boot/index.html)
+- `regmedint` [package](https://kaz-yos.github.io/regmedint/)
+- `ltmle` [package](http://joshuaschwab.github.io/ltmle/)
+- `SuperLearner` [package](http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html)
+
+- `intmed` [package](https://cran.r-project.org/web/packages/intmed/index.html)
+
 
 # Data sets
 ## General presentation of the data used in our examples
@@ -33,13 +41,13 @@ Four data sets have been simulated, each containing 7 variables:
 
 - 2 baseline confounders (denoted $L(0)$ in the DAGs):
     - `L0_male`, a binary variable indicating the sex of the participant (1 for men, 0 for women);
-    - `L0_parent_low_educ_lv`, a binary variable indicated if the parents of the participants had a low level of education (1 for a low educational level, 0 for a high educational level);
+    - `L0_soc_env`, a binary variable indicating if the participant has been exposed to a deprived social environment);
 - 1 exposure of interest (denoted $A$ in the DAGs):
-    - `A0_ace`, a binary variable indicating if the participants had been exposed to a high level of "Adverse childhood experience";
+    - `A0_PM2.5`, a binary variable indicating if the participants had been exposed to a high level of $\text{PM}_{2.5}$;
 - 1 confounder of the mediator-outcome relationship (denoted $L(1)$ in the DAGs):
-    - `L1`, a binary variable indicating if the participant has a low educational level (1 for a low educational level, 0 for a high educational level);
+    - `L1`, a binary variable indicating if the participant is overweight (1 for being overweight, 0 for not being overweight);
 - 1 mediator of interest (denoted $M$ in the DAGs):
-    - `M_smoking`, a binary variable indicating if the participant is a smoker (1 for smokers, 0 for non-smokers);
+    - `M_diabetes`, a binary variable indicating if the participant has type 2 diabetes;
 - 2 outcomes (denoted $Y$ in the DAGs):
     - `Y2_death`, a binary variable indicating the occurrence of death before 60 years of age (1 if dead, 0 if alive);
     - `Y2_qol`, a quantitative variable corresponding to a quality of life measurement.
