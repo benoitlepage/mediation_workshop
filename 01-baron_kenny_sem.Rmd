@@ -176,3 +176,150 @@ linear.model.A.M$coefficients["A0_PM2.5"] * model.A.M.death$coefficients["M_diab
 # 0.008234978, i.e. approximately 0.8%
 ```
 
+
+## Path analysis and Structural Equation Modeling
+Path analyses can be considered as a "generalization" of the product of coefficients method. They combine graphical representation of causal structures, a set of linear equations and assumptions concerning the covariance structure of residuals.
+
+When the causal model includes latent variables (represented by a measurement model), we refer to the analysis as structural equation modeling.
+
+Variables which does not receive causal inputs from any other variable in the diagram are called exogenous variables. Unless the assumption is explicitly made that two exogenous variables are uncorrelated (because they do not have any common causal factor), it is preferable to consider them as not independent (connecting them by double arrows).
+
+In the `df1.csv` data set, there are 3 exogenous variables: `L0_male`, `L0_soc_env` and `L1`.
+
+We will use the [`lavaan`](https://lavaan.ugent.be/) R package to run path analyses.
+
+  - The first step is to write the model syntax
+  - The second step is to analyze the model with the dataset
+  
+**First step**. Let us write the model syntax to analyze the effect of being exposed to high levels of $\text{PM}_{2.5}$ on quality of life, mediated by type-2 diabetes.
+
+We have to define:
+
+  - regression models for the endogenous variables: exposure to $\text{PM}_{2.5}$ (`A0_PM2.5`), type-2 diabetes (`M_diabetes`) and quality of life (`Y_qol`)
+  - covariance assumptions for the exogenous variables
+  - we can also define additional parameters of interest (in our case, direct, indirect and total effects)
+```{r sem_model_qol, echo=TRUE, eval = FALSE}
+sem.QoL <- "                                 # models are written between quotes
+## Regression models
+## we can also add the names of some path coefficients 
+  A0_PM2.5 ~ L0_male + L0_soc_env
+  M_diabetes ~ L0_male + L0_soc_env + b.A * A0_PM2.5 + L1   # label b.A path coef
+  Y_qol ~ L0_male + L0_soc_env + c.A*A0_PM2.5 + L1 + c.M*M_diabetes # label c.A and c.M
+
+## Covariances
+# Assuming a non-null covariance between confounders 
+# covariances are represented with a double tilde ~~ (double arrow)
+# (note: in the data-generating system, the null assumptions were true)
+  L0_male ~~ L0_soc_env
+  L0_male ~~ L1
+  L0_soc_env ~~ L1
+
+## We can define other parameters to estimate, using the := syntax
+## we want the direct, indirect and total effects:
+  direct := c.A
+  indirect := b.A * c.M
+  total := (b.A * c.M) + c.A
+"
+```
+
+**Second step**. Let us analyze the model with the `df1.csv` dataset using the `sem` function from the `lavaan` package.
+
+Binary exogenous variables (`L0_male`,`L0_soc_env` and `L1`) can be coded as simple dummy (0/1) variables, there is no need to declare them as `factors`. 
+
+Note that in the following example, we will not declare the other binary variables (`A0_PM2.5`,`M_diabetes`) as factors and let them as simple dummy variables.
+
+Running the `sem` function with the `df1.csv` dataset, we obtain: 
+
+  - information about the estimator
+  - estimates of the regression models
+  - estimates of the covariance between exogenous variables
+  - estimates of the residual variances
+  - estimates of the additional parameters (direct, indirect and total effects)
+```{r sem_analysis_qol1, echo=TRUE, eval = FALSE}
+fit.qol <- lavaan::sem(model = sem.QoL,
+                       data = df1)
+summary(fit.qol)
+# lavaan 0.6-18 ended normally after 23 iterations
+# 
+# Estimator                                         ML
+# Optimization method                           NLMINB
+# Number of model parameters                        20
+# 
+# Number of observations                         10000
+# 
+# Model Test User Model:
+#   Test statistic                                 0.211
+#   Degrees of freedom                                 1
+#   P-value (Chi-square)                           0.646
+# 
+# Parameter Estimates:
+#   Standard errors                             Standard
+#   Information                                 Expected
+#   Information saturated (h1) model          Structured
+# 
+# Regressions:
+#                  Estimate  Std.Err  z-value  P(>|z|)
+# A0_PM2.5 ~                                          
+#   L0_male           0.040    0.006    6.337    0.000
+#   L0_sc_nv          0.058    0.007    8.869    0.000
+# M_diabetes ~                                        
+#   L0_male           0.053    0.009    5.836    0.000
+#   L0_sc_nv          0.066    0.009    6.974    0.000
+#   A0_PM2.5 (b.A)    0.127    0.014    8.795    0.000
+#   L1                0.070    0.010    7.078    0.000
+# Y_qol ~                                             
+#   L0_male          -0.719    0.202   -3.567    0.000
+#   L0_sc_nv         -2.888    0.211  -13.678    0.000
+#   A0_PM2.5 (c.A)   -3.965    0.321  -12.349    0.000
+#   L1               -3.425    0.221  -15.488    0.000
+#   M_diabts (c.M)   -8.714    0.222  -39.249    0.000
+# 
+# Covariances:
+#                  Estimate  Std.Err  z-value  P(>|z|)
+# L0_male ~~                                          
+#   L0_soc_env       -0.003    0.002   -1.167    0.243
+#   L1               -0.002    0.002   -0.832    0.406
+# L0_soc_env ~~                                       
+#   L1               -0.001    0.002   -0.468    0.640
+# 
+# Variances:
+#                  Estimate  Std.Err  z-value  P(>|z|)
+#  .A0_PM2.5          0.099    0.001   70.711    0.000
+#  .M_diabetes        0.205    0.003   70.711    0.000
+#  .Y_qol           100.882    1.427   70.711    0.000
+#   L0_male           0.250    0.004   70.711    0.000
+#   L0_soc_env        0.229    0.003   70.711    0.000
+#   L1                0.207    0.003   70.711    0.000
+# 
+# Defined Parameters:
+#                Estimate  Std.Err  z-value  P(>|z|)
+# direct           -3.965    0.321  -12.349    0.000
+# indirect         -1.104    0.129   -8.582    0.000
+# total            -5.069    0.344  -14.753    0.000
+```
+The Baron & Kenny approach gave us the following results:
+
+  - direct effect = -3.965
+  - indirect effect = -1.131 (using the "difference in coefficients" method) or -1.108213 (using the "product of coefficients" method)
+  - total effect = -5.096
+  
+The path analysis results from `lavaan` are very close the the Baron & Kenny results.
+
+We can plot the estimated model using the `semPlot` package (Figure \@ref(fig:FigSemPlotQol1)):
+```{r sem_plot_qol1, echo=TRUE, eval = FALSE}
+library(semPlot)
+semPaths(fit.qol,
+         what = "est",
+         layout = "tree2", # tree, tree2, spring
+         rotation = 2, #exogenous on the left, endogenous on the right
+         sizeMan = 10, # font size of manifest variable names
+         nCharNodes = 0,
+         nCharEdges = 0, # don't limit variable name lengths
+         edge.label.cex = 0.6,
+         curvePivot = TRUE,
+         fade = FALSE)
+```
+
+```{r FigSemPlotQol1, echo=FALSE, out.width="70%", fig.align="center", fig.cap="Plot of the SEM"}
+knitr::include_graphics("./figures/sem_plot.jpeg")    
+```

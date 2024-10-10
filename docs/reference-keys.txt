@@ -1,5 +1,6 @@
 fig:figDAGM1
 fig:figDAGM2
+fig:FigSemPlotQol1
 eq:regtotaleffect
 eq:logittotaleffect
 eq:contoutcomereg
@@ -18,6 +19,7 @@ general-presentation-of-the-data-used-in-our-examples
 data-generating-mechanisms
 ChapBaronKennySem
 baron-and-kenny-approach
+path-analysis-and-structural-equation-modeling
 ChapTradRegModels
 estimation-of-the-average-total-effect-ate
 trad2way

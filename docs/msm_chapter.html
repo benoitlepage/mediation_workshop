@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 8 Marginal structural models | Mediation Workshop</title>
   <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
-  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 8 Marginal structural models | Mediation Workshop" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-09-19" />
+<meta name="date" content="2024-10-10" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -173,6 +173,7 @@ div.csl-indent {
 <li class="chapter" data-level="4" data-path="ChapBaronKennySem.html"><a href="ChapBaronKennySem.html"><i class="fa fa-check"></i><b>4</b> Baron and Kenny, structural equation models</a>
 <ul>
 <li class="chapter" data-level="4.1" data-path="ChapBaronKennySem.html"><a href="ChapBaronKennySem.html#baron-and-kenny-approach"><i class="fa fa-check"></i><b>4.1</b> Baron and Kenny approach</a></li>
+<li class="chapter" data-level="4.2" data-path="ChapBaronKennySem.html"><a href="ChapBaronKennySem.html#path-analysis-and-structural-equation-modeling"><i class="fa fa-check"></i><b>4.2</b> Path analysis and Structural Equation Modeling</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="ChapTradRegModels.html"><a href="ChapTradRegModels.html"><i class="fa fa-check"></i><b>5</b> Traditional regression models</a>
 <ul>
@@ -343,84 +344,84 @@ div.csl-indent {
 \end{equation}\]</span></p>
 <p>where <span class="math inline">\(w_i=\frac{1}{P(A=a_i \mid L(0)=l(0)_i)}\)</span> or <span class="math inline">\(sw_i=\frac{P(A=a_i \mid L_\text{male}(0))}{P(A=a_i \mid L(0)=l(0)_i)}\)</span>.</p>
 <p>As in chapter <a href="ChapIptw.html#ChapIptw">7</a>, the “no-unmeasured confounding” assumption is addressed by the application of weights <span class="math inline">\(w_i\)</span> or <span class="math inline">\(sw_i\)</span>, which balance confounders <span class="math inline">\(L(0)\)</span> relative to the exposure <span class="math inline">\(A\)</span>.</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="msm_chapter.html#cb36-1" tabindex="-1"></a><span class="do">## 1. Denominator of the weight</span></span>
-<span id="cb36-2"><a href="msm_chapter.html#cb36-2" tabindex="-1"></a><span class="co"># 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)</span></span>
-<span id="cb36-3"><a href="msm_chapter.html#cb36-3" tabindex="-1"></a>g.A.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb36-4"><a href="msm_chapter.html#cb36-4" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb36-5"><a href="msm_chapter.html#cb36-5" tabindex="-1"></a></span>
-<span id="cb36-6"><a href="msm_chapter.html#cb36-6" tabindex="-1"></a><span class="co"># 1b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb36-7"><a href="msm_chapter.html#cb36-7" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1 &amp; P(A0_ace=0)</span></span>
-<span id="cb36-8"><a href="msm_chapter.html#cb36-8" tabindex="-1"></a>pred.g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb36-9"><a href="msm_chapter.html#cb36-9" tabindex="-1"></a>pred.g0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.L</span>
-<span id="cb36-10"><a href="msm_chapter.html#cb36-10" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment P(A = a_i | L(0)) is :</span></span>
-<span id="cb36-11"><a href="msm_chapter.html#cb36-11" tabindex="-1"></a>gAi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb36-12"><a href="msm_chapter.html#cb36-12" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb36-13"><a href="msm_chapter.html#cb36-13" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
-<span id="cb36-14"><a href="msm_chapter.html#cb36-14" tabindex="-1"></a></span>
-<span id="cb36-15"><a href="msm_chapter.html#cb36-15" tabindex="-1"></a><span class="do">## 2. Numerator of the weight</span></span>
-<span id="cb36-16"><a href="msm_chapter.html#cb36-16" tabindex="-1"></a><span class="co"># The numerator of the weight can be 1 for simple weights,</span></span>
-<span id="cb36-17"><a href="msm_chapter.html#cb36-17" tabindex="-1"></a><span class="co"># or g(A=a_i|V) to obtain stabilized weights which put less weight to individuals</span></span>
-<span id="cb36-18"><a href="msm_chapter.html#cb36-18" tabindex="-1"></a><span class="co"># with less observation. Stabilized weights enable a weaker positivity assumption.</span></span>
-<span id="cb36-19"><a href="msm_chapter.html#cb36-19" tabindex="-1"></a></span>
-<span id="cb36-20"><a href="msm_chapter.html#cb36-20" tabindex="-1"></a><span class="co"># 2a. Estimate g(A=a_i | sex) (numerator of the stabilized weight)</span></span>
-<span id="cb36-21"><a href="msm_chapter.html#cb36-21" tabindex="-1"></a>g.A.sex <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male,</span>
-<span id="cb36-22"><a href="msm_chapter.html#cb36-22" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb36-23"><a href="msm_chapter.html#cb36-23" tabindex="-1"></a></span>
-<span id="cb36-24"><a href="msm_chapter.html#cb36-24" tabindex="-1"></a><span class="co"># 2b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb36-25"><a href="msm_chapter.html#cb36-25" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1 | sex) &amp; P(A0_ace=0 | sex)</span></span>
-<span id="cb36-26"><a href="msm_chapter.html#cb36-26" tabindex="-1"></a>pred.g1.sex <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.sex, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb36-27"><a href="msm_chapter.html#cb36-27" tabindex="-1"></a>pred.g0.sex <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.sex</span>
-<span id="cb36-28"><a href="msm_chapter.html#cb36-28" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment P(A = a_i | sex) is :</span></span>
-<span id="cb36-29"><a href="msm_chapter.html#cb36-29" tabindex="-1"></a>gAi.sex <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb36-30"><a href="msm_chapter.html#cb36-30" tabindex="-1"></a>gAi.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb36-31"><a href="msm_chapter.html#cb36-31" tabindex="-1"></a>gAi.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
-<span id="cb36-32"><a href="msm_chapter.html#cb36-32" tabindex="-1"></a></span>
-<span id="cb36-33"><a href="msm_chapter.html#cb36-33" tabindex="-1"></a><span class="do">## 3. Define individual weights:</span></span>
-<span id="cb36-34"><a href="msm_chapter.html#cb36-34" tabindex="-1"></a><span class="co"># We can use simple weights w = 1 / g(A=a_i | L(0))</span></span>
-<span id="cb36-35"><a href="msm_chapter.html#cb36-35" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gAi.L</span>
-<span id="cb36-36"><a href="msm_chapter.html#cb36-36" tabindex="-1"></a><span class="co"># Or alternatively, we can use stabilized weights : </span></span>
-<span id="cb36-37"><a href="msm_chapter.html#cb36-37" tabindex="-1"></a><span class="co"># sw = g(A=a_i | sex) / g(A=a_i | L(0))</span></span>
-<span id="cb36-38"><a href="msm_chapter.html#cb36-38" tabindex="-1"></a>sw <span class="ot">&lt;-</span> gAi.sex <span class="sc">/</span> gAi.L</span>
-<span id="cb36-39"><a href="msm_chapter.html#cb36-39" tabindex="-1"></a></span>
-<span id="cb36-40"><a href="msm_chapter.html#cb36-40" tabindex="-1"></a><span class="co"># we can see that stabilized weights have less extreme values</span></span>
-<span id="cb36-41"><a href="msm_chapter.html#cb36-41" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfcol =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
-<span id="cb36-42"><a href="msm_chapter.html#cb36-42" tabindex="-1"></a><span class="fu">boxplot</span>(w <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
-<span id="cb36-43"><a href="msm_chapter.html#cb36-43" tabindex="-1"></a><span class="fu">boxplot</span>(sw <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
-<span id="cb36-44"><a href="msm_chapter.html#cb36-44" tabindex="-1"></a></span>
-<span id="cb36-45"><a href="msm_chapter.html#cb36-45" tabindex="-1"></a><span class="do">## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
-<span id="cb36-46"><a href="msm_chapter.html#cb36-46" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
-<span id="cb36-47"><a href="msm_chapter.html#cb36-47" tabindex="-1"></a><span class="co"># (for relative risk or rate ratios, we can apply a Poisson family; </span></span>
-<span id="cb36-48"><a href="msm_chapter.html#cb36-48" tabindex="-1"></a><span class="co">#  for OR, we can apply a binomial family)</span></span>
-<span id="cb36-49"><a href="msm_chapter.html#cb36-49" tabindex="-1"></a>msm1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
-<span id="cb36-50"><a href="msm_chapter.html#cb36-50" tabindex="-1"></a>           <span class="at">weights =</span> w, <span class="co"># applying the simple weight</span></span>
-<span id="cb36-51"><a href="msm_chapter.html#cb36-51" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb36-52"><a href="msm_chapter.html#cb36-52" tabindex="-1"></a>           <span class="at">data =</span> df1_int)</span>
-<span id="cb36-53"><a href="msm_chapter.html#cb36-53" tabindex="-1"></a><span class="fu">coef</span>(msm1)</span>
-<span id="cb36-54"><a href="msm_chapter.html#cb36-54" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
-<span id="cb36-55"><a href="msm_chapter.html#cb36-55" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
-<span id="cb36-56"><a href="msm_chapter.html#cb36-56" tabindex="-1"></a></span>
-<span id="cb36-57"><a href="msm_chapter.html#cb36-57" tabindex="-1"></a>msm2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
-<span id="cb36-58"><a href="msm_chapter.html#cb36-58" tabindex="-1"></a>            <span class="at">weights =</span> sw, <span class="co"># applying the stabilized weight</span></span>
-<span id="cb36-59"><a href="msm_chapter.html#cb36-59" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb36-60"><a href="msm_chapter.html#cb36-60" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
-<span id="cb36-61"><a href="msm_chapter.html#cb36-61" tabindex="-1"></a><span class="fu">coef</span>(msm2)</span>
-<span id="cb36-62"><a href="msm_chapter.html#cb36-62" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
-<span id="cb36-63"><a href="msm_chapter.html#cb36-63" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
-<span id="cb36-64"><a href="msm_chapter.html#cb36-64" tabindex="-1"></a></span>
-<span id="cb36-65"><a href="msm_chapter.html#cb36-65" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
-<span id="cb36-66"><a href="msm_chapter.html#cb36-66" tabindex="-1"></a><span class="co"># According to the MSM1 (with simple weights)</span></span>
-<span id="cb36-67"><a href="msm_chapter.html#cb36-67" tabindex="-1"></a>ATE.msm1.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb36-68"><a href="msm_chapter.html#cb36-68" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
-<span id="cb36-69"><a href="msm_chapter.html#cb36-69" tabindex="-1"></a>ATE.msm1.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
-<span id="cb36-70"><a href="msm_chapter.html#cb36-70" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
-<span id="cb36-71"><a href="msm_chapter.html#cb36-71" tabindex="-1"></a></span>
-<span id="cb36-72"><a href="msm_chapter.html#cb36-72" tabindex="-1"></a><span class="co"># According to the MSM2 (with stabilized weights)</span></span>
-<span id="cb36-73"><a href="msm_chapter.html#cb36-73" tabindex="-1"></a>ATE.msm2.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb36-74"><a href="msm_chapter.html#cb36-74" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
-<span id="cb36-75"><a href="msm_chapter.html#cb36-75" tabindex="-1"></a>ATE.msm2.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
-<span id="cb36-76"><a href="msm_chapter.html#cb36-76" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
-<span id="cb36-77"><a href="msm_chapter.html#cb36-77" tabindex="-1"></a><span class="co"># The results are the same because there is no violation of the positivity assumption</span></span>
-<span id="cb36-78"><a href="msm_chapter.html#cb36-78" tabindex="-1"></a><span class="co"># In case of positivity violation, stabilized weights would give more accurate estimates</span></span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="msm_chapter.html#cb39-1" tabindex="-1"></a><span class="do">## 1. Denominator of the weight</span></span>
+<span id="cb39-2"><a href="msm_chapter.html#cb39-2" tabindex="-1"></a><span class="co"># 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)</span></span>
+<span id="cb39-3"><a href="msm_chapter.html#cb39-3" tabindex="-1"></a>g.A.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb39-4"><a href="msm_chapter.html#cb39-4" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb39-5"><a href="msm_chapter.html#cb39-5" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="msm_chapter.html#cb39-6" tabindex="-1"></a><span class="co"># 1b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb39-7"><a href="msm_chapter.html#cb39-7" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1 &amp; P(A0_ace=0)</span></span>
+<span id="cb39-8"><a href="msm_chapter.html#cb39-8" tabindex="-1"></a>pred.g1.L <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb39-9"><a href="msm_chapter.html#cb39-9" tabindex="-1"></a>pred.g0.L <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.L</span>
+<span id="cb39-10"><a href="msm_chapter.html#cb39-10" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment P(A = a_i | L(0)) is :</span></span>
+<span id="cb39-11"><a href="msm_chapter.html#cb39-11" tabindex="-1"></a>gAi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb39-12"><a href="msm_chapter.html#cb39-12" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb39-13"><a href="msm_chapter.html#cb39-13" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb39-14"><a href="msm_chapter.html#cb39-14" tabindex="-1"></a></span>
+<span id="cb39-15"><a href="msm_chapter.html#cb39-15" tabindex="-1"></a><span class="do">## 2. Numerator of the weight</span></span>
+<span id="cb39-16"><a href="msm_chapter.html#cb39-16" tabindex="-1"></a><span class="co"># The numerator of the weight can be 1 for simple weights,</span></span>
+<span id="cb39-17"><a href="msm_chapter.html#cb39-17" tabindex="-1"></a><span class="co"># or g(A=a_i|V) to obtain stabilized weights which put less weight to individuals</span></span>
+<span id="cb39-18"><a href="msm_chapter.html#cb39-18" tabindex="-1"></a><span class="co"># with less observation. Stabilized weights enable a weaker positivity assumption.</span></span>
+<span id="cb39-19"><a href="msm_chapter.html#cb39-19" tabindex="-1"></a></span>
+<span id="cb39-20"><a href="msm_chapter.html#cb39-20" tabindex="-1"></a><span class="co"># 2a. Estimate g(A=a_i | sex) (numerator of the stabilized weight)</span></span>
+<span id="cb39-21"><a href="msm_chapter.html#cb39-21" tabindex="-1"></a>g.A.sex <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male,</span>
+<span id="cb39-22"><a href="msm_chapter.html#cb39-22" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb39-23"><a href="msm_chapter.html#cb39-23" tabindex="-1"></a></span>
+<span id="cb39-24"><a href="msm_chapter.html#cb39-24" tabindex="-1"></a><span class="co"># 2b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb39-25"><a href="msm_chapter.html#cb39-25" tabindex="-1"></a><span class="co"># predict the probabilities P(A0_ace=1 | sex) &amp; P(A0_ace=0 | sex)</span></span>
+<span id="cb39-26"><a href="msm_chapter.html#cb39-26" tabindex="-1"></a>pred.g1.sex <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.sex, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb39-27"><a href="msm_chapter.html#cb39-27" tabindex="-1"></a>pred.g0.sex <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> pred.g1.sex</span>
+<span id="cb39-28"><a href="msm_chapter.html#cb39-28" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment P(A = a_i | sex) is :</span></span>
+<span id="cb39-29"><a href="msm_chapter.html#cb39-29" tabindex="-1"></a>gAi.sex <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb39-30"><a href="msm_chapter.html#cb39-30" tabindex="-1"></a>gAi.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> pred.g1.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb39-31"><a href="msm_chapter.html#cb39-31" tabindex="-1"></a>gAi.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> pred.g0.sex[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb39-32"><a href="msm_chapter.html#cb39-32" tabindex="-1"></a></span>
+<span id="cb39-33"><a href="msm_chapter.html#cb39-33" tabindex="-1"></a><span class="do">## 3. Define individual weights:</span></span>
+<span id="cb39-34"><a href="msm_chapter.html#cb39-34" tabindex="-1"></a><span class="co"># We can use simple weights w = 1 / g(A=a_i | L(0))</span></span>
+<span id="cb39-35"><a href="msm_chapter.html#cb39-35" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> gAi.L</span>
+<span id="cb39-36"><a href="msm_chapter.html#cb39-36" tabindex="-1"></a><span class="co"># Or alternatively, we can use stabilized weights : </span></span>
+<span id="cb39-37"><a href="msm_chapter.html#cb39-37" tabindex="-1"></a><span class="co"># sw = g(A=a_i | sex) / g(A=a_i | L(0))</span></span>
+<span id="cb39-38"><a href="msm_chapter.html#cb39-38" tabindex="-1"></a>sw <span class="ot">&lt;-</span> gAi.sex <span class="sc">/</span> gAi.L</span>
+<span id="cb39-39"><a href="msm_chapter.html#cb39-39" tabindex="-1"></a></span>
+<span id="cb39-40"><a href="msm_chapter.html#cb39-40" tabindex="-1"></a><span class="co"># we can see that stabilized weights have less extreme values</span></span>
+<span id="cb39-41"><a href="msm_chapter.html#cb39-41" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfcol =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb39-42"><a href="msm_chapter.html#cb39-42" tabindex="-1"></a><span class="fu">boxplot</span>(w <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
+<span id="cb39-43"><a href="msm_chapter.html#cb39-43" tabindex="-1"></a><span class="fu">boxplot</span>(sw <span class="sc">~</span> df1_int<span class="sc">$</span>A0_ace)</span>
+<span id="cb39-44"><a href="msm_chapter.html#cb39-44" tabindex="-1"></a></span>
+<span id="cb39-45"><a href="msm_chapter.html#cb39-45" tabindex="-1"></a><span class="do">## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
+<span id="cb39-46"><a href="msm_chapter.html#cb39-46" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
+<span id="cb39-47"><a href="msm_chapter.html#cb39-47" tabindex="-1"></a><span class="co"># (for relative risk or rate ratios, we can apply a Poisson family; </span></span>
+<span id="cb39-48"><a href="msm_chapter.html#cb39-48" tabindex="-1"></a><span class="co">#  for OR, we can apply a binomial family)</span></span>
+<span id="cb39-49"><a href="msm_chapter.html#cb39-49" tabindex="-1"></a>msm1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
+<span id="cb39-50"><a href="msm_chapter.html#cb39-50" tabindex="-1"></a>           <span class="at">weights =</span> w, <span class="co"># applying the simple weight</span></span>
+<span id="cb39-51"><a href="msm_chapter.html#cb39-51" tabindex="-1"></a>           <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb39-52"><a href="msm_chapter.html#cb39-52" tabindex="-1"></a>           <span class="at">data =</span> df1_int)</span>
+<span id="cb39-53"><a href="msm_chapter.html#cb39-53" tabindex="-1"></a><span class="fu">coef</span>(msm1)</span>
+<span id="cb39-54"><a href="msm_chapter.html#cb39-54" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
+<span id="cb39-55"><a href="msm_chapter.html#cb39-55" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
+<span id="cb39-56"><a href="msm_chapter.html#cb39-56" tabindex="-1"></a></span>
+<span id="cb39-57"><a href="msm_chapter.html#cb39-57" tabindex="-1"></a>msm2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">*</span>L0_male,</span>
+<span id="cb39-58"><a href="msm_chapter.html#cb39-58" tabindex="-1"></a>            <span class="at">weights =</span> sw, <span class="co"># applying the stabilized weight</span></span>
+<span id="cb39-59"><a href="msm_chapter.html#cb39-59" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb39-60"><a href="msm_chapter.html#cb39-60" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
+<span id="cb39-61"><a href="msm_chapter.html#cb39-61" tabindex="-1"></a><span class="fu">coef</span>(msm2)</span>
+<span id="cb39-62"><a href="msm_chapter.html#cb39-62" tabindex="-1"></a><span class="co"># (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
+<span id="cb39-63"><a href="msm_chapter.html#cb39-63" tabindex="-1"></a><span class="co"># 0.17573472     0.03589627     0.04598911     0.04136896</span></span>
+<span id="cb39-64"><a href="msm_chapter.html#cb39-64" tabindex="-1"></a></span>
+<span id="cb39-65"><a href="msm_chapter.html#cb39-65" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
+<span id="cb39-66"><a href="msm_chapter.html#cb39-66" tabindex="-1"></a><span class="co"># According to the MSM1 (with simple weights)</span></span>
+<span id="cb39-67"><a href="msm_chapter.html#cb39-67" tabindex="-1"></a>ATE.msm1.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb39-68"><a href="msm_chapter.html#cb39-68" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
+<span id="cb39-69"><a href="msm_chapter.html#cb39-69" tabindex="-1"></a>ATE.msm1.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm1)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
+<span id="cb39-70"><a href="msm_chapter.html#cb39-70" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
+<span id="cb39-71"><a href="msm_chapter.html#cb39-71" tabindex="-1"></a></span>
+<span id="cb39-72"><a href="msm_chapter.html#cb39-72" tabindex="-1"></a><span class="co"># According to the MSM2 (with stabilized weights)</span></span>
+<span id="cb39-73"><a href="msm_chapter.html#cb39-73" tabindex="-1"></a>ATE.msm2.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb39-74"><a href="msm_chapter.html#cb39-74" tabindex="-1"></a><span class="co"># 0.03589627</span></span>
+<span id="cb39-75"><a href="msm_chapter.html#cb39-75" tabindex="-1"></a>ATE.msm2.male1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm2)[<span class="st">&quot;A0_ace:L0_male&quot;</span>]</span>
+<span id="cb39-76"><a href="msm_chapter.html#cb39-76" tabindex="-1"></a><span class="co"># 0.07726522</span></span>
+<span id="cb39-77"><a href="msm_chapter.html#cb39-77" tabindex="-1"></a><span class="co"># The results are the same because there is no violation of the positivity assumption</span></span>
+<span id="cb39-78"><a href="msm_chapter.html#cb39-78" tabindex="-1"></a><span class="co"># In case of positivity violation, stabilized weights would give more accurate estimates</span></span></code></pre></div>
 <p>The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.6% in women and +7.7% in men.</p>
 <p>95% confidence intervals can be calculated by bootstrap.</p>
 <p>Note: Using the true data generating model used to simulate the illustrative datasets, the “true” value of the ATE stratified by sex can be calculated:</p>
@@ -445,58 +446,58 @@ div.csl-indent {
 <ol start="4" style="list-style-type: decimal">
 <li>Fit the MSM <span class="math inline">\(\mathbb{E}\left[Y_a \mid L_\text{male}(0)\right]\)</span> using the long dataset.</li>
 </ol>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="msm_chapter.html#cb37-1" tabindex="-1"></a><span class="do">## 1. Estimate Qbar</span></span>
-<span id="cb37-2"><a href="msm_chapter.html#cb37-2" tabindex="-1"></a>Q.tot.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb37-3"><a href="msm_chapter.html#cb37-3" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb37-4"><a href="msm_chapter.html#cb37-4" tabindex="-1"></a><span class="co"># The final result would be sligthly different if we apply a binomial family.</span></span>
-<span id="cb37-5"><a href="msm_chapter.html#cb37-5" tabindex="-1"></a></span>
-<span id="cb37-6"><a href="msm_chapter.html#cb37-6" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, in 2 counterfactual scenarios </span></span>
-<span id="cb37-7"><a href="msm_chapter.html#cb37-7" tabindex="-1"></a><span class="do">##    setting A=0 and A=1</span></span>
-<span id="cb37-8"><a href="msm_chapter.html#cb37-8" tabindex="-1"></a><span class="co"># prepare data sets used to predict the outcome under the counterfactual</span></span>
-<span id="cb37-9"><a href="msm_chapter.html#cb37-9" tabindex="-1"></a><span class="co"># scenarios setting A=0 and A=1</span></span>
-<span id="cb37-10"><a href="msm_chapter.html#cb37-10" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> data.A0 <span class="ot">&lt;-</span> df1_int</span>
-<span id="cb37-11"><a href="msm_chapter.html#cb37-11" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb37-12"><a href="msm_chapter.html#cb37-12" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb37-13"><a href="msm_chapter.html#cb37-13" tabindex="-1"></a></span>
-<span id="cb37-14"><a href="msm_chapter.html#cb37-14" tabindex="-1"></a><span class="co"># predict values under the same name in the corresponding counterfactual dataset</span></span>
-<span id="cb37-15"><a href="msm_chapter.html#cb37-15" tabindex="-1"></a>data.A1<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb37-16"><a href="msm_chapter.html#cb37-16" tabindex="-1"></a>data.A0<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb37-17"><a href="msm_chapter.html#cb37-17" tabindex="-1"></a></span>
-<span id="cb37-18"><a href="msm_chapter.html#cb37-18" tabindex="-1"></a><span class="do">## 3. Append both counterfactual datasets in a single long dataset</span></span>
-<span id="cb37-19"><a href="msm_chapter.html#cb37-19" tabindex="-1"></a><span class="co"># (the number of row is twice the initial number of row because there are 2 </span></span>
-<span id="cb37-20"><a href="msm_chapter.html#cb37-20" tabindex="-1"></a><span class="co"># counterfactual scenarios)</span></span>
-<span id="cb37-21"><a href="msm_chapter.html#cb37-21" tabindex="-1"></a>data<span class="fl">.2</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0, data.A1)</span>
-<span id="cb37-22"><a href="msm_chapter.html#cb37-22" tabindex="-1"></a></span>
-<span id="cb37-23"><a href="msm_chapter.html#cb37-23" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_a|sex)</span></span>
-<span id="cb37-24"><a href="msm_chapter.html#cb37-24" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
-<span id="cb37-25"><a href="msm_chapter.html#cb37-25" tabindex="-1"></a>MSM.ATE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Ya.death.pred <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">:</span>L0_male,</span>
-<span id="cb37-26"><a href="msm_chapter.html#cb37-26" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb37-27"><a href="msm_chapter.html#cb37-27" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.2</span>scenarios)</span>
-<span id="cb37-28"><a href="msm_chapter.html#cb37-28" tabindex="-1"></a><span class="fu">coef</span>(MSM.ATE.gcomp)</span>
-<span id="cb37-29"><a href="msm_chapter.html#cb37-29" tabindex="-1"></a><span class="co">#  (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
-<span id="cb37-30"><a href="msm_chapter.html#cb37-30" tabindex="-1"></a><span class="co"># 1.743994e-01   7.720726e-02   4.874750e-02   4.802530e-16</span></span>
-<span id="cb37-31"><a href="msm_chapter.html#cb37-31" tabindex="-1"></a></span>
-<span id="cb37-32"><a href="msm_chapter.html#cb37-32" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
-<span id="cb37-33"><a href="msm_chapter.html#cb37-33" tabindex="-1"></a><span class="co"># According to MSM.ATE.gcomp</span></span>
-<span id="cb37-34"><a href="msm_chapter.html#cb37-34" tabindex="-1"></a>ATE.MSM.gcomp.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb37-35"><a href="msm_chapter.html#cb37-35" tabindex="-1"></a><span class="co"># 0.07720726</span></span>
-<span id="cb37-36"><a href="msm_chapter.html#cb37-36" tabindex="-1"></a>ATE.MSM.gcomp.male1 <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
-<span id="cb37-37"><a href="msm_chapter.html#cb37-37" tabindex="-1"></a>                          <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_ace:L0_male&quot;</span>])</span>
-<span id="cb37-38"><a href="msm_chapter.html#cb37-38" tabindex="-1"></a><span class="co"># 0.07720726</span></span>
-<span id="cb37-39"><a href="msm_chapter.html#cb37-39" tabindex="-1"></a><span class="co"># The results are the same in both strata, because in the first Qbar model,</span></span>
-<span id="cb37-40"><a href="msm_chapter.html#cb37-40" tabindex="-1"></a><span class="co"># we did not include any (A * sex) interaction term</span></span>
-<span id="cb37-41"><a href="msm_chapter.html#cb37-41" tabindex="-1"></a></span>
-<span id="cb37-42"><a href="msm_chapter.html#cb37-42" tabindex="-1"></a><span class="co"># Applying a binomial family for the first Qbar model would result in two</span></span>
-<span id="cb37-43"><a href="msm_chapter.html#cb37-43" tabindex="-1"></a><span class="co"># different values of the ATE stratified by sex.</span></span>
-<span id="cb37-44"><a href="msm_chapter.html#cb37-44" tabindex="-1"></a><span class="co"># =&gt; 0.06880798 in the L0_male = 0 strata</span></span>
-<span id="cb37-45"><a href="msm_chapter.html#cb37-45" tabindex="-1"></a><span class="co"># =&gt; 0.08053575 in the L0_male = 1 strata</span></span>
-<span id="cb37-46"><a href="msm_chapter.html#cb37-46" tabindex="-1"></a></span>
-<span id="cb37-47"><a href="msm_chapter.html#cb37-47" tabindex="-1"></a><span class="co"># Comments: For the estimation of the first Qbar model, applying a gaussian family </span></span>
-<span id="cb37-48"><a href="msm_chapter.html#cb37-48" tabindex="-1"></a><span class="co"># (additive model) with no interaction terms implies the presence of some interaction </span></span>
-<span id="cb37-49"><a href="msm_chapter.html#cb37-49" tabindex="-1"></a><span class="co"># terms in a multiplicative model (such as a glm with a binomial family).</span></span>
-<span id="cb37-50"><a href="msm_chapter.html#cb37-50" tabindex="-1"></a><span class="co"># On the contrary, applying a binomial family (multiplicative model) with no</span></span>
-<span id="cb37-51"><a href="msm_chapter.html#cb37-51" tabindex="-1"></a><span class="co"># interaction terms implies some interaction terms in an additive model (such as</span></span>
-<span id="cb37-52"><a href="msm_chapter.html#cb37-52" tabindex="-1"></a><span class="co"># a glm with a gaussian family)</span></span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="msm_chapter.html#cb40-1" tabindex="-1"></a><span class="do">## 1. Estimate Qbar</span></span>
+<span id="cb40-2"><a href="msm_chapter.html#cb40-2" tabindex="-1"></a>Q.tot.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb40-3"><a href="msm_chapter.html#cb40-3" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb40-4"><a href="msm_chapter.html#cb40-4" tabindex="-1"></a><span class="co"># The final result would be sligthly different if we apply a binomial family.</span></span>
+<span id="cb40-5"><a href="msm_chapter.html#cb40-5" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="msm_chapter.html#cb40-6" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, in 2 counterfactual scenarios </span></span>
+<span id="cb40-7"><a href="msm_chapter.html#cb40-7" tabindex="-1"></a><span class="do">##    setting A=0 and A=1</span></span>
+<span id="cb40-8"><a href="msm_chapter.html#cb40-8" tabindex="-1"></a><span class="co"># prepare data sets used to predict the outcome under the counterfactual</span></span>
+<span id="cb40-9"><a href="msm_chapter.html#cb40-9" tabindex="-1"></a><span class="co"># scenarios setting A=0 and A=1</span></span>
+<span id="cb40-10"><a href="msm_chapter.html#cb40-10" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> data.A0 <span class="ot">&lt;-</span> df1_int</span>
+<span id="cb40-11"><a href="msm_chapter.html#cb40-11" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb40-12"><a href="msm_chapter.html#cb40-12" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb40-13"><a href="msm_chapter.html#cb40-13" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="msm_chapter.html#cb40-14" tabindex="-1"></a><span class="co"># predict values under the same name in the corresponding counterfactual dataset</span></span>
+<span id="cb40-15"><a href="msm_chapter.html#cb40-15" tabindex="-1"></a>data.A1<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb40-16"><a href="msm_chapter.html#cb40-16" tabindex="-1"></a>data.A0<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb40-17"><a href="msm_chapter.html#cb40-17" tabindex="-1"></a></span>
+<span id="cb40-18"><a href="msm_chapter.html#cb40-18" tabindex="-1"></a><span class="do">## 3. Append both counterfactual datasets in a single long dataset</span></span>
+<span id="cb40-19"><a href="msm_chapter.html#cb40-19" tabindex="-1"></a><span class="co"># (the number of row is twice the initial number of row because there are 2 </span></span>
+<span id="cb40-20"><a href="msm_chapter.html#cb40-20" tabindex="-1"></a><span class="co"># counterfactual scenarios)</span></span>
+<span id="cb40-21"><a href="msm_chapter.html#cb40-21" tabindex="-1"></a>data<span class="fl">.2</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0, data.A1)</span>
+<span id="cb40-22"><a href="msm_chapter.html#cb40-22" tabindex="-1"></a></span>
+<span id="cb40-23"><a href="msm_chapter.html#cb40-23" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_a|sex)</span></span>
+<span id="cb40-24"><a href="msm_chapter.html#cb40-24" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
+<span id="cb40-25"><a href="msm_chapter.html#cb40-25" tabindex="-1"></a>MSM.ATE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Ya.death.pred <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> A0_ace<span class="sc">:</span>L0_male,</span>
+<span id="cb40-26"><a href="msm_chapter.html#cb40-26" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb40-27"><a href="msm_chapter.html#cb40-27" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.2</span>scenarios)</span>
+<span id="cb40-28"><a href="msm_chapter.html#cb40-28" tabindex="-1"></a><span class="fu">coef</span>(MSM.ATE.gcomp)</span>
+<span id="cb40-29"><a href="msm_chapter.html#cb40-29" tabindex="-1"></a><span class="co">#  (Intercept)         A0_ace        L0_male A0_ace:L0_male</span></span>
+<span id="cb40-30"><a href="msm_chapter.html#cb40-30" tabindex="-1"></a><span class="co"># 1.743994e-01   7.720726e-02   4.874750e-02   4.802530e-16</span></span>
+<span id="cb40-31"><a href="msm_chapter.html#cb40-31" tabindex="-1"></a></span>
+<span id="cb40-32"><a href="msm_chapter.html#cb40-32" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
+<span id="cb40-33"><a href="msm_chapter.html#cb40-33" tabindex="-1"></a><span class="co"># According to MSM.ATE.gcomp</span></span>
+<span id="cb40-34"><a href="msm_chapter.html#cb40-34" tabindex="-1"></a>ATE.MSM.gcomp.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb40-35"><a href="msm_chapter.html#cb40-35" tabindex="-1"></a><span class="co"># 0.07720726</span></span>
+<span id="cb40-36"><a href="msm_chapter.html#cb40-36" tabindex="-1"></a>ATE.MSM.gcomp.male1 <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
+<span id="cb40-37"><a href="msm_chapter.html#cb40-37" tabindex="-1"></a>                          <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_ace:L0_male&quot;</span>])</span>
+<span id="cb40-38"><a href="msm_chapter.html#cb40-38" tabindex="-1"></a><span class="co"># 0.07720726</span></span>
+<span id="cb40-39"><a href="msm_chapter.html#cb40-39" tabindex="-1"></a><span class="co"># The results are the same in both strata, because in the first Qbar model,</span></span>
+<span id="cb40-40"><a href="msm_chapter.html#cb40-40" tabindex="-1"></a><span class="co"># we did not include any (A * sex) interaction term</span></span>
+<span id="cb40-41"><a href="msm_chapter.html#cb40-41" tabindex="-1"></a></span>
+<span id="cb40-42"><a href="msm_chapter.html#cb40-42" tabindex="-1"></a><span class="co"># Applying a binomial family for the first Qbar model would result in two</span></span>
+<span id="cb40-43"><a href="msm_chapter.html#cb40-43" tabindex="-1"></a><span class="co"># different values of the ATE stratified by sex.</span></span>
+<span id="cb40-44"><a href="msm_chapter.html#cb40-44" tabindex="-1"></a><span class="co"># =&gt; 0.06880798 in the L0_male = 0 strata</span></span>
+<span id="cb40-45"><a href="msm_chapter.html#cb40-45" tabindex="-1"></a><span class="co"># =&gt; 0.08053575 in the L0_male = 1 strata</span></span>
+<span id="cb40-46"><a href="msm_chapter.html#cb40-46" tabindex="-1"></a></span>
+<span id="cb40-47"><a href="msm_chapter.html#cb40-47" tabindex="-1"></a><span class="co"># Comments: For the estimation of the first Qbar model, applying a gaussian family </span></span>
+<span id="cb40-48"><a href="msm_chapter.html#cb40-48" tabindex="-1"></a><span class="co"># (additive model) with no interaction terms implies the presence of some interaction </span></span>
+<span id="cb40-49"><a href="msm_chapter.html#cb40-49" tabindex="-1"></a><span class="co"># terms in a multiplicative model (such as a glm with a binomial family).</span></span>
+<span id="cb40-50"><a href="msm_chapter.html#cb40-50" tabindex="-1"></a><span class="co"># On the contrary, applying a binomial family (multiplicative model) with no</span></span>
+<span id="cb40-51"><a href="msm_chapter.html#cb40-51" tabindex="-1"></a><span class="co"># interaction terms implies some interaction terms in an additive model (such as</span></span>
+<span id="cb40-52"><a href="msm_chapter.html#cb40-52" tabindex="-1"></a><span class="co"># a glm with a gaussian family)</span></span></code></pre></div>
 </div>
 </div>
 <div id="msm_CDE_paragraph" class="section level2 hasAnchor" number="8.2">
@@ -527,66 +528,66 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <p><span class="math inline">\(sw_{A,i}=\frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)}\)</span> and <span class="math inline">\(sw_{M,i}=\frac{P(M=m_i \mid A=a_i)}{P(M = m_i \mid A=a_i,L(0)=l(0)_i), L(1)=l(1)_i}\)</span>.</p>
 <p>The “no-unmeasured confounding” assumption is addressed by the application of weights <span class="math inline">\(sw_i\)</span>, which balance confounders <span class="math inline">\(L(0)\)</span> relative to the exposure-outcome <span class="math inline">\(A-Y\)</span> relationship, and balance the set of confounders <span class="math inline">\(\{L(0),A,L(1)\}\)</span> relative to the mediator-outcome <span class="math inline">\(M-Y\)</span> relationship.</p>
 <p>Importantly, this approach for the estimation of the controlled direct effect <span class="math inline">\(\text{CDE}_m\)</span> by IPTW is also valid if the exposure <span class="math inline">\(A\)</span> affects the intermediate confounder <span class="math inline">\(L(1)\)</span> (as with the Causal model 2).</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="msm_chapter.html#cb38-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by IPTW ----------------------------------------------</span></span>
-<span id="cb38-2"><a href="msm_chapter.html#cb38-2" tabindex="-1"></a><span class="do">## 1. Stabilized weight for the exposure sw_{A,i}</span></span>
-<span id="cb38-3"><a href="msm_chapter.html#cb38-3" tabindex="-1"></a><span class="co"># 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)</span></span>
-<span id="cb38-4"><a href="msm_chapter.html#cb38-4" tabindex="-1"></a>g.A.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb38-5"><a href="msm_chapter.html#cb38-5" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb38-6"><a href="msm_chapter.html#cb38-6" tabindex="-1"></a><span class="co"># 1b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb38-7"><a href="msm_chapter.html#cb38-7" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i | L(0)) is :</span></span>
-<span id="cb38-8"><a href="msm_chapter.html#cb38-8" tabindex="-1"></a>gAi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb38-9"><a href="msm_chapter.html#cb38-9" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb38-10"><a href="msm_chapter.html#cb38-10" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
-<span id="cb38-11"><a href="msm_chapter.html#cb38-11" tabindex="-1"></a></span>
-<span id="cb38-12"><a href="msm_chapter.html#cb38-12" tabindex="-1"></a><span class="co"># 1c. Estimate g(A=a_i) (numerator of the weight)</span></span>
-<span id="cb38-13"><a href="msm_chapter.html#cb38-13" tabindex="-1"></a>g.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb38-14"><a href="msm_chapter.html#cb38-14" tabindex="-1"></a><span class="co"># 1d. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb38-15"><a href="msm_chapter.html#cb38-15" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i) is :</span></span>
-<span id="cb38-16"><a href="msm_chapter.html#cb38-16" tabindex="-1"></a>gAi <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb38-17"><a href="msm_chapter.html#cb38-17" tabindex="-1"></a>gAi[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb38-18"><a href="msm_chapter.html#cb38-18" tabindex="-1"></a>gAi[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
-<span id="cb38-19"><a href="msm_chapter.html#cb38-19" tabindex="-1"></a></span>
-<span id="cb38-20"><a href="msm_chapter.html#cb38-20" tabindex="-1"></a><span class="co"># 1e. Calculate the weight for the exposure A: sw_{A,i}</span></span>
-<span id="cb38-21"><a href="msm_chapter.html#cb38-21" tabindex="-1"></a>sw_Ai <span class="ot">&lt;-</span> gAi <span class="sc">/</span> gAi.L</span>
-<span id="cb38-22"><a href="msm_chapter.html#cb38-22" tabindex="-1"></a></span>
-<span id="cb38-23"><a href="msm_chapter.html#cb38-23" tabindex="-1"></a><span class="do">## 2. Stabilized weight for the mediator sw_{M,i}</span></span>
-<span id="cb38-24"><a href="msm_chapter.html#cb38-24" tabindex="-1"></a><span class="co"># 2a. Estimate g(M=m_i|L(0),A,L(1)) (denominator of the weight)</span></span>
-<span id="cb38-25"><a href="msm_chapter.html#cb38-25" tabindex="-1"></a>g.M.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1,</span>
-<span id="cb38-26"><a href="msm_chapter.html#cb38-26" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb38-27"><a href="msm_chapter.html#cb38-27" tabindex="-1"></a><span class="co"># 2b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb38-28"><a href="msm_chapter.html#cb38-28" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i | L(0)) is :</span></span>
-<span id="cb38-29"><a href="msm_chapter.html#cb38-29" tabindex="-1"></a>gMi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb38-30"><a href="msm_chapter.html#cb38-30" tabindex="-1"></a>gMi.L[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb38-31"><a href="msm_chapter.html#cb38-31" tabindex="-1"></a>gMi.L[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.M.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>]</span>
-<span id="cb38-32"><a href="msm_chapter.html#cb38-32" tabindex="-1"></a></span>
-<span id="cb38-33"><a href="msm_chapter.html#cb38-33" tabindex="-1"></a><span class="co"># 2c. Estimate g(M=m_i|A) (numerator of the weight)</span></span>
-<span id="cb38-34"><a href="msm_chapter.html#cb38-34" tabindex="-1"></a>g.M.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb38-35"><a href="msm_chapter.html#cb38-35" tabindex="-1"></a><span class="co"># 2d. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
-<span id="cb38-36"><a href="msm_chapter.html#cb38-36" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(M = m_i|A) is :</span></span>
-<span id="cb38-37"><a href="msm_chapter.html#cb38-37" tabindex="-1"></a>gMi.A <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb38-38"><a href="msm_chapter.html#cb38-38" tabindex="-1"></a>gMi.A[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb38-39"><a href="msm_chapter.html#cb38-39" tabindex="-1"></a>gMi.A[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.M.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>]</span>
-<span id="cb38-40"><a href="msm_chapter.html#cb38-40" tabindex="-1"></a><span class="co"># 2e. Calculate the weight for the mediator M: sw_{M,i}</span></span>
-<span id="cb38-41"><a href="msm_chapter.html#cb38-41" tabindex="-1"></a>sw_Mi <span class="ot">&lt;-</span> gMi.A <span class="sc">/</span> gMi.L</span>
-<span id="cb38-42"><a href="msm_chapter.html#cb38-42" tabindex="-1"></a></span>
-<span id="cb38-43"><a href="msm_chapter.html#cb38-43" tabindex="-1"></a><span class="do">## 3. Define the individual stabilized weight for the CDE_m</span></span>
-<span id="cb38-44"><a href="msm_chapter.html#cb38-44" tabindex="-1"></a>sw_cde <span class="ot">&lt;-</span> sw_Ai <span class="sc">*</span> sw_Mi</span>
-<span id="cb38-45"><a href="msm_chapter.html#cb38-45" tabindex="-1"></a></span>
-<span id="cb38-46"><a href="msm_chapter.html#cb38-46" tabindex="-1"></a><span class="do">## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
-<span id="cb38-47"><a href="msm_chapter.html#cb38-47" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
-<span id="cb38-48"><a href="msm_chapter.html#cb38-48" tabindex="-1"></a>msm_cde <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">*</span>M_smoking,</span>
-<span id="cb38-49"><a href="msm_chapter.html#cb38-49" tabindex="-1"></a>               <span class="at">weights =</span> sw_cde,</span>
-<span id="cb38-50"><a href="msm_chapter.html#cb38-50" tabindex="-1"></a>               <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb38-51"><a href="msm_chapter.html#cb38-51" tabindex="-1"></a>               <span class="at">data =</span> df1_int)</span>
-<span id="cb38-52"><a href="msm_chapter.html#cb38-52" tabindex="-1"></a><span class="fu">coef</span>(msm_cde)</span>
-<span id="cb38-53"><a href="msm_chapter.html#cb38-53" tabindex="-1"></a><span class="co"># (Intercept)           A0_ace        M_smoking A0_ace:M_smoking </span></span>
-<span id="cb38-54"><a href="msm_chapter.html#cb38-54" tabindex="-1"></a><span class="co">#  0.17891689       0.06798282       0.06729724      -0.00495314</span></span>
-<span id="cb38-55"><a href="msm_chapter.html#cb38-55" tabindex="-1"></a></span>
-<span id="cb38-56"><a href="msm_chapter.html#cb38-56" tabindex="-1"></a><span class="do">## 5. Estimate CDE for m=0 and for m=1 using the MSM&#39;s coefficients</span></span>
-<span id="cb38-57"><a href="msm_chapter.html#cb38-57" tabindex="-1"></a>CDE_mis0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb38-58"><a href="msm_chapter.html#cb38-58" tabindex="-1"></a><span class="co"># 0.06798282</span></span>
-<span id="cb38-59"><a href="msm_chapter.html#cb38-59" tabindex="-1"></a>CDE_mis1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>]</span>
-<span id="cb38-60"><a href="msm_chapter.html#cb38-60" tabindex="-1"></a><span class="co"># 0.06302968</span></span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="msm_chapter.html#cb41-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by IPTW ----------------------------------------------</span></span>
+<span id="cb41-2"><a href="msm_chapter.html#cb41-2" tabindex="-1"></a><span class="do">## 1. Stabilized weight for the exposure sw_{A,i}</span></span>
+<span id="cb41-3"><a href="msm_chapter.html#cb41-3" tabindex="-1"></a><span class="co"># 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)</span></span>
+<span id="cb41-4"><a href="msm_chapter.html#cb41-4" tabindex="-1"></a>g.A.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb41-5"><a href="msm_chapter.html#cb41-5" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb41-6"><a href="msm_chapter.html#cb41-6" tabindex="-1"></a><span class="co"># 1b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb41-7"><a href="msm_chapter.html#cb41-7" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i | L(0)) is :</span></span>
+<span id="cb41-8"><a href="msm_chapter.html#cb41-8" tabindex="-1"></a>gAi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb41-9"><a href="msm_chapter.html#cb41-9" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb41-10"><a href="msm_chapter.html#cb41-10" tabindex="-1"></a>gAi.L[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.A.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb41-11"><a href="msm_chapter.html#cb41-11" tabindex="-1"></a></span>
+<span id="cb41-12"><a href="msm_chapter.html#cb41-12" tabindex="-1"></a><span class="co"># 1c. Estimate g(A=a_i) (numerator of the weight)</span></span>
+<span id="cb41-13"><a href="msm_chapter.html#cb41-13" tabindex="-1"></a>g.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb41-14"><a href="msm_chapter.html#cb41-14" tabindex="-1"></a><span class="co"># 1d. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb41-15"><a href="msm_chapter.html#cb41-15" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i) is :</span></span>
+<span id="cb41-16"><a href="msm_chapter.html#cb41-16" tabindex="-1"></a>gAi <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb41-17"><a href="msm_chapter.html#cb41-17" tabindex="-1"></a>gAi[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb41-18"><a href="msm_chapter.html#cb41-18" tabindex="-1"></a>gAi[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb41-19"><a href="msm_chapter.html#cb41-19" tabindex="-1"></a></span>
+<span id="cb41-20"><a href="msm_chapter.html#cb41-20" tabindex="-1"></a><span class="co"># 1e. Calculate the weight for the exposure A: sw_{A,i}</span></span>
+<span id="cb41-21"><a href="msm_chapter.html#cb41-21" tabindex="-1"></a>sw_Ai <span class="ot">&lt;-</span> gAi <span class="sc">/</span> gAi.L</span>
+<span id="cb41-22"><a href="msm_chapter.html#cb41-22" tabindex="-1"></a></span>
+<span id="cb41-23"><a href="msm_chapter.html#cb41-23" tabindex="-1"></a><span class="do">## 2. Stabilized weight for the mediator sw_{M,i}</span></span>
+<span id="cb41-24"><a href="msm_chapter.html#cb41-24" tabindex="-1"></a><span class="co"># 2a. Estimate g(M=m_i|L(0),A,L(1)) (denominator of the weight)</span></span>
+<span id="cb41-25"><a href="msm_chapter.html#cb41-25" tabindex="-1"></a>g.M.L <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1,</span>
+<span id="cb41-26"><a href="msm_chapter.html#cb41-26" tabindex="-1"></a>             <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb41-27"><a href="msm_chapter.html#cb41-27" tabindex="-1"></a><span class="co"># 2b. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb41-28"><a href="msm_chapter.html#cb41-28" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(A = a_i | L(0)) is :</span></span>
+<span id="cb41-29"><a href="msm_chapter.html#cb41-29" tabindex="-1"></a>gMi.L <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb41-30"><a href="msm_chapter.html#cb41-30" tabindex="-1"></a>gMi.L[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb41-31"><a href="msm_chapter.html#cb41-31" tabindex="-1"></a>gMi.L[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.M.L, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb41-32"><a href="msm_chapter.html#cb41-32" tabindex="-1"></a></span>
+<span id="cb41-33"><a href="msm_chapter.html#cb41-33" tabindex="-1"></a><span class="co"># 2c. Estimate g(M=m_i|A) (numerator of the weight)</span></span>
+<span id="cb41-34"><a href="msm_chapter.html#cb41-34" tabindex="-1"></a>g.M.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb41-35"><a href="msm_chapter.html#cb41-35" tabindex="-1"></a><span class="co"># 2d. Predict each individual&#39;s probability of being exposed to her own exposure</span></span>
+<span id="cb41-36"><a href="msm_chapter.html#cb41-36" tabindex="-1"></a><span class="co"># the predicted probability of the observed treatment g(M = m_i|A) is :</span></span>
+<span id="cb41-37"><a href="msm_chapter.html#cb41-37" tabindex="-1"></a>gMi.A <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb41-38"><a href="msm_chapter.html#cb41-38" tabindex="-1"></a>gMi.A[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb41-39"><a href="msm_chapter.html#cb41-39" tabindex="-1"></a>gMi.A[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">predict</span>(g.M.A, <span class="at">type=</span><span class="st">&quot;response&quot;</span>))[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>]</span>
+<span id="cb41-40"><a href="msm_chapter.html#cb41-40" tabindex="-1"></a><span class="co"># 2e. Calculate the weight for the mediator M: sw_{M,i}</span></span>
+<span id="cb41-41"><a href="msm_chapter.html#cb41-41" tabindex="-1"></a>sw_Mi <span class="ot">&lt;-</span> gMi.A <span class="sc">/</span> gMi.L</span>
+<span id="cb41-42"><a href="msm_chapter.html#cb41-42" tabindex="-1"></a></span>
+<span id="cb41-43"><a href="msm_chapter.html#cb41-43" tabindex="-1"></a><span class="do">## 3. Define the individual stabilized weight for the CDE_m</span></span>
+<span id="cb41-44"><a href="msm_chapter.html#cb41-44" tabindex="-1"></a>sw_cde <span class="ot">&lt;-</span> sw_Ai <span class="sc">*</span> sw_Mi</span>
+<span id="cb41-45"><a href="msm_chapter.html#cb41-45" tabindex="-1"></a></span>
+<span id="cb41-46"><a href="msm_chapter.html#cb41-46" tabindex="-1"></a><span class="do">## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)</span></span>
+<span id="cb41-47"><a href="msm_chapter.html#cb41-47" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
+<span id="cb41-48"><a href="msm_chapter.html#cb41-48" tabindex="-1"></a>msm_cde <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">*</span>M_smoking,</span>
+<span id="cb41-49"><a href="msm_chapter.html#cb41-49" tabindex="-1"></a>               <span class="at">weights =</span> sw_cde,</span>
+<span id="cb41-50"><a href="msm_chapter.html#cb41-50" tabindex="-1"></a>               <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb41-51"><a href="msm_chapter.html#cb41-51" tabindex="-1"></a>               <span class="at">data =</span> df1_int)</span>
+<span id="cb41-52"><a href="msm_chapter.html#cb41-52" tabindex="-1"></a><span class="fu">coef</span>(msm_cde)</span>
+<span id="cb41-53"><a href="msm_chapter.html#cb41-53" tabindex="-1"></a><span class="co"># (Intercept)           A0_ace        M_smoking A0_ace:M_smoking </span></span>
+<span id="cb41-54"><a href="msm_chapter.html#cb41-54" tabindex="-1"></a><span class="co">#  0.17891689       0.06798282       0.06729724      -0.00495314</span></span>
+<span id="cb41-55"><a href="msm_chapter.html#cb41-55" tabindex="-1"></a></span>
+<span id="cb41-56"><a href="msm_chapter.html#cb41-56" tabindex="-1"></a><span class="do">## 5. Estimate CDE for m=0 and for m=1 using the MSM&#39;s coefficients</span></span>
+<span id="cb41-57"><a href="msm_chapter.html#cb41-57" tabindex="-1"></a>CDE_mis0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb41-58"><a href="msm_chapter.html#cb41-58" tabindex="-1"></a><span class="co"># 0.06798282</span></span>
+<span id="cb41-59"><a href="msm_chapter.html#cb41-59" tabindex="-1"></a>CDE_mis1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(msm_cde)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>]</span>
+<span id="cb41-60"><a href="msm_chapter.html#cb41-60" tabindex="-1"></a><span class="co"># 0.06302968</span></span></code></pre></div>
 <p>In this example, our estimates of the controlled direct effects are <span class="math inline">\(CDE_{M=0} = 6.8\%\)</span> and <span class="math inline">\(CDE_{M=1} = 6.3\%\)</span>. Confidence intervals can be calculated by bootstrap.</p>
 </div>
 <div id="estimation-of-the-msm-coefficients-by-g-computation" class="section level3 hasAnchor" number="8.2.3">
@@ -607,180 +608,180 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <ol start="4" style="list-style-type: decimal">
 <li>Fit the MSM <span class="math inline">\(\mathbb{E}(Y_{am}) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m\)</span> using the long dataset.</li>
 </ol>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="msm_chapter.html#cb39-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by G-computation -------------------------------------</span></span>
-<span id="cb39-2"><a href="msm_chapter.html#cb39-2" tabindex="-1"></a><span class="do">## 1. Estimate Qbar(A,M,L0,L1)</span></span>
-<span id="cb39-3"><a href="msm_chapter.html#cb39-3" tabindex="-1"></a>Q.cde.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking <span class="sc">+</span> L0_male <span class="sc">+</span> </span>
-<span id="cb39-4"><a href="msm_chapter.html#cb39-4" tabindex="-1"></a>                     L0_parent_low_educ_lv <span class="sc">+</span> L1,</span>
-<span id="cb39-5"><a href="msm_chapter.html#cb39-5" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb39-6"><a href="msm_chapter.html#cb39-6" tabindex="-1"></a><span class="co"># The final result would be sligthly different if we applied a binomial family</span></span>
-<span id="cb39-7"><a href="msm_chapter.html#cb39-7" tabindex="-1"></a><span class="co"># The Gaussian family corresponds to the true generating model in this example.</span></span>
-<span id="cb39-8"><a href="msm_chapter.html#cb39-8" tabindex="-1"></a></span>
-<span id="cb39-9"><a href="msm_chapter.html#cb39-9" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, in each counterfactual scenario</span></span>
-<span id="cb39-10"><a href="msm_chapter.html#cb39-10" tabindex="-1"></a><span class="co"># Prepare data sets that will be used to predict the outcome under the counterfactual</span></span>
-<span id="cb39-11"><a href="msm_chapter.html#cb39-11" tabindex="-1"></a><span class="co"># 4 counterfactual scenarios setting (A=0,M=0), (A=1,M=0), (A=0,M=1) and (A=1,M=1)</span></span>
-<span id="cb39-12"><a href="msm_chapter.html#cb39-12" tabindex="-1"></a>data.A0M0 <span class="ot">&lt;-</span> data.A1M0 <span class="ot">&lt;-</span> data.A0M1 <span class="ot">&lt;-</span> data.A1M1 <span class="ot">&lt;-</span> df1_int</span>
-<span id="cb39-13"><a href="msm_chapter.html#cb39-13" tabindex="-1"></a>data.A0M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb39-14"><a href="msm_chapter.html#cb39-14" tabindex="-1"></a>data.A0M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb39-15"><a href="msm_chapter.html#cb39-15" tabindex="-1"></a></span>
-<span id="cb39-16"><a href="msm_chapter.html#cb39-16" tabindex="-1"></a>data.A1M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb39-17"><a href="msm_chapter.html#cb39-17" tabindex="-1"></a>data.A1M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb39-18"><a href="msm_chapter.html#cb39-18" tabindex="-1"></a></span>
-<span id="cb39-19"><a href="msm_chapter.html#cb39-19" tabindex="-1"></a>data.A0M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb39-20"><a href="msm_chapter.html#cb39-20" tabindex="-1"></a>data.A0M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb39-21"><a href="msm_chapter.html#cb39-21" tabindex="-1"></a></span>
-<span id="cb39-22"><a href="msm_chapter.html#cb39-22" tabindex="-1"></a>data.A1M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb39-23"><a href="msm_chapter.html#cb39-23" tabindex="-1"></a>data.A1M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb39-24"><a href="msm_chapter.html#cb39-24" tabindex="-1"></a></span>
-<span id="cb39-25"><a href="msm_chapter.html#cb39-25" tabindex="-1"></a><span class="co"># predict values under the same name in the corresponding counterfactual dataset</span></span>
-<span id="cb39-26"><a href="msm_chapter.html#cb39-26" tabindex="-1"></a>data.A0M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A0M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb39-27"><a href="msm_chapter.html#cb39-27" tabindex="-1"></a>data.A1M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A1M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb39-28"><a href="msm_chapter.html#cb39-28" tabindex="-1"></a>data.A0M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A0M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb39-29"><a href="msm_chapter.html#cb39-29" tabindex="-1"></a>data.A1M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A1M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb39-30"><a href="msm_chapter.html#cb39-30" tabindex="-1"></a></span>
-<span id="cb39-31"><a href="msm_chapter.html#cb39-31" tabindex="-1"></a><span class="do">## 3. Append the 4 counterfactual datasets in a single long dataset</span></span>
-<span id="cb39-32"><a href="msm_chapter.html#cb39-32" tabindex="-1"></a><span class="co"># number of row is 4 times the initial value (we have 4 counterfactual scenarios)</span></span>
-<span id="cb39-33"><a href="msm_chapter.html#cb39-33" tabindex="-1"></a>data<span class="fl">.4</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0M0, data.A1M0,data.A0M1,data.A1M1)</span>
-<span id="cb39-34"><a href="msm_chapter.html#cb39-34" tabindex="-1"></a></span>
-<span id="cb39-35"><a href="msm_chapter.html#cb39-35" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m</span></span>
-<span id="cb39-36"><a href="msm_chapter.html#cb39-36" tabindex="-1"></a>MSM.CDE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Yam.death.pred <span class="sc">~</span> A0_ace <span class="sc">+</span>  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
-<span id="cb39-37"><a href="msm_chapter.html#cb39-37" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="co"># gaussian family for risk differences</span></span>
-<span id="cb39-38"><a href="msm_chapter.html#cb39-38" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.4</span>scenarios)</span>
-<span id="cb39-39"><a href="msm_chapter.html#cb39-39" tabindex="-1"></a><span class="fu">coef</span>(MSM.CDE.gcomp)</span>
-<span id="cb39-40"><a href="msm_chapter.html#cb39-40" tabindex="-1"></a><span class="co"># (Intercept)           A0_ace        M_smoking A0_ace:M_smoking</span></span>
-<span id="cb39-41"><a href="msm_chapter.html#cb39-41" tabindex="-1"></a><span class="co">#  0.17968603       0.06000138       0.06757214       0.01918153</span></span>
-<span id="cb39-42"><a href="msm_chapter.html#cb39-42" tabindex="-1"></a></span>
-<span id="cb39-43"><a href="msm_chapter.html#cb39-43" tabindex="-1"></a><span class="do">## 5. Estimate the CDE(M=m)</span></span>
-<span id="cb39-44"><a href="msm_chapter.html#cb39-44" tabindex="-1"></a><span class="co"># CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})</span></span>
-<span id="cb39-45"><a href="msm_chapter.html#cb39-45" tabindex="-1"></a>CDE_mis0_gcomp <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb39-46"><a href="msm_chapter.html#cb39-46" tabindex="-1"></a><span class="co"># 0.06000138</span></span>
-<span id="cb39-47"><a href="msm_chapter.html#cb39-47" tabindex="-1"></a></span>
-<span id="cb39-48"><a href="msm_chapter.html#cb39-48" tabindex="-1"></a><span class="co"># CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})</span></span>
-<span id="cb39-49"><a href="msm_chapter.html#cb39-49" tabindex="-1"></a>CDE_mis1_gcomp <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
-<span id="cb39-50"><a href="msm_chapter.html#cb39-50" tabindex="-1"></a>                     <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>])</span>
-<span id="cb39-51"><a href="msm_chapter.html#cb39-51" tabindex="-1"></a><span class="co"># 0.07918291</span></span>
-<span id="cb39-52"><a href="msm_chapter.html#cb39-52" tabindex="-1"></a></span>
-<span id="cb39-53"><a href="msm_chapter.html#cb39-53" tabindex="-1"></a><span class="co"># Note: Applying a binomial family for the first Qbar model would result in two</span></span>
-<span id="cb39-54"><a href="msm_chapter.html#cb39-54" tabindex="-1"></a><span class="co"># sligthly different values of the CDE(M=m)</span></span>
-<span id="cb39-55"><a href="msm_chapter.html#cb39-55" tabindex="-1"></a><span class="co"># =&gt; 0.05934409 in setting M=0</span></span>
-<span id="cb39-56"><a href="msm_chapter.html#cb39-56" tabindex="-1"></a><span class="co"># =&gt; 0.07537874 in setting M=1</span></span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="msm_chapter.html#cb42-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by G-computation -------------------------------------</span></span>
+<span id="cb42-2"><a href="msm_chapter.html#cb42-2" tabindex="-1"></a><span class="do">## 1. Estimate Qbar(A,M,L0,L1)</span></span>
+<span id="cb42-3"><a href="msm_chapter.html#cb42-3" tabindex="-1"></a>Q.cde.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking <span class="sc">+</span> L0_male <span class="sc">+</span> </span>
+<span id="cb42-4"><a href="msm_chapter.html#cb42-4" tabindex="-1"></a>                     L0_parent_low_educ_lv <span class="sc">+</span> L1,</span>
+<span id="cb42-5"><a href="msm_chapter.html#cb42-5" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb42-6"><a href="msm_chapter.html#cb42-6" tabindex="-1"></a><span class="co"># The final result would be sligthly different if we applied a binomial family</span></span>
+<span id="cb42-7"><a href="msm_chapter.html#cb42-7" tabindex="-1"></a><span class="co"># The Gaussian family corresponds to the true generating model in this example.</span></span>
+<span id="cb42-8"><a href="msm_chapter.html#cb42-8" tabindex="-1"></a></span>
+<span id="cb42-9"><a href="msm_chapter.html#cb42-9" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, in each counterfactual scenario</span></span>
+<span id="cb42-10"><a href="msm_chapter.html#cb42-10" tabindex="-1"></a><span class="co"># Prepare data sets that will be used to predict the outcome under the counterfactual</span></span>
+<span id="cb42-11"><a href="msm_chapter.html#cb42-11" tabindex="-1"></a><span class="co"># 4 counterfactual scenarios setting (A=0,M=0), (A=1,M=0), (A=0,M=1) and (A=1,M=1)</span></span>
+<span id="cb42-12"><a href="msm_chapter.html#cb42-12" tabindex="-1"></a>data.A0M0 <span class="ot">&lt;-</span> data.A1M0 <span class="ot">&lt;-</span> data.A0M1 <span class="ot">&lt;-</span> data.A1M1 <span class="ot">&lt;-</span> df1_int</span>
+<span id="cb42-13"><a href="msm_chapter.html#cb42-13" tabindex="-1"></a>data.A0M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb42-14"><a href="msm_chapter.html#cb42-14" tabindex="-1"></a>data.A0M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb42-15"><a href="msm_chapter.html#cb42-15" tabindex="-1"></a></span>
+<span id="cb42-16"><a href="msm_chapter.html#cb42-16" tabindex="-1"></a>data.A1M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb42-17"><a href="msm_chapter.html#cb42-17" tabindex="-1"></a>data.A1M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb42-18"><a href="msm_chapter.html#cb42-18" tabindex="-1"></a></span>
+<span id="cb42-19"><a href="msm_chapter.html#cb42-19" tabindex="-1"></a>data.A0M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb42-20"><a href="msm_chapter.html#cb42-20" tabindex="-1"></a>data.A0M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb42-21"><a href="msm_chapter.html#cb42-21" tabindex="-1"></a></span>
+<span id="cb42-22"><a href="msm_chapter.html#cb42-22" tabindex="-1"></a>data.A1M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb42-23"><a href="msm_chapter.html#cb42-23" tabindex="-1"></a>data.A1M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb42-24"><a href="msm_chapter.html#cb42-24" tabindex="-1"></a></span>
+<span id="cb42-25"><a href="msm_chapter.html#cb42-25" tabindex="-1"></a><span class="co"># predict values under the same name in the corresponding counterfactual dataset</span></span>
+<span id="cb42-26"><a href="msm_chapter.html#cb42-26" tabindex="-1"></a>data.A0M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A0M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb42-27"><a href="msm_chapter.html#cb42-27" tabindex="-1"></a>data.A1M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A1M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb42-28"><a href="msm_chapter.html#cb42-28" tabindex="-1"></a>data.A0M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A0M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb42-29"><a href="msm_chapter.html#cb42-29" tabindex="-1"></a>data.A1M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.cde.death, <span class="at">newdata =</span> data.A1M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb42-30"><a href="msm_chapter.html#cb42-30" tabindex="-1"></a></span>
+<span id="cb42-31"><a href="msm_chapter.html#cb42-31" tabindex="-1"></a><span class="do">## 3. Append the 4 counterfactual datasets in a single long dataset</span></span>
+<span id="cb42-32"><a href="msm_chapter.html#cb42-32" tabindex="-1"></a><span class="co"># number of row is 4 times the initial value (we have 4 counterfactual scenarios)</span></span>
+<span id="cb42-33"><a href="msm_chapter.html#cb42-33" tabindex="-1"></a>data<span class="fl">.4</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0M0, data.A1M0,data.A0M1,data.A1M1)</span>
+<span id="cb42-34"><a href="msm_chapter.html#cb42-34" tabindex="-1"></a></span>
+<span id="cb42-35"><a href="msm_chapter.html#cb42-35" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m</span></span>
+<span id="cb42-36"><a href="msm_chapter.html#cb42-36" tabindex="-1"></a>MSM.CDE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Yam.death.pred <span class="sc">~</span> A0_ace <span class="sc">+</span>  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb42-37"><a href="msm_chapter.html#cb42-37" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="co"># gaussian family for risk differences</span></span>
+<span id="cb42-38"><a href="msm_chapter.html#cb42-38" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.4</span>scenarios)</span>
+<span id="cb42-39"><a href="msm_chapter.html#cb42-39" tabindex="-1"></a><span class="fu">coef</span>(MSM.CDE.gcomp)</span>
+<span id="cb42-40"><a href="msm_chapter.html#cb42-40" tabindex="-1"></a><span class="co"># (Intercept)           A0_ace        M_smoking A0_ace:M_smoking</span></span>
+<span id="cb42-41"><a href="msm_chapter.html#cb42-41" tabindex="-1"></a><span class="co">#  0.17968603       0.06000138       0.06757214       0.01918153</span></span>
+<span id="cb42-42"><a href="msm_chapter.html#cb42-42" tabindex="-1"></a></span>
+<span id="cb42-43"><a href="msm_chapter.html#cb42-43" tabindex="-1"></a><span class="do">## 5. Estimate the CDE(M=m)</span></span>
+<span id="cb42-44"><a href="msm_chapter.html#cb42-44" tabindex="-1"></a><span class="co"># CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})</span></span>
+<span id="cb42-45"><a href="msm_chapter.html#cb42-45" tabindex="-1"></a>CDE_mis0_gcomp <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb42-46"><a href="msm_chapter.html#cb42-46" tabindex="-1"></a><span class="co"># 0.06000138</span></span>
+<span id="cb42-47"><a href="msm_chapter.html#cb42-47" tabindex="-1"></a></span>
+<span id="cb42-48"><a href="msm_chapter.html#cb42-48" tabindex="-1"></a><span class="co"># CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})</span></span>
+<span id="cb42-49"><a href="msm_chapter.html#cb42-49" tabindex="-1"></a>CDE_mis1_gcomp <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
+<span id="cb42-50"><a href="msm_chapter.html#cb42-50" tabindex="-1"></a>                     <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>])</span>
+<span id="cb42-51"><a href="msm_chapter.html#cb42-51" tabindex="-1"></a><span class="co"># 0.07918291</span></span>
+<span id="cb42-52"><a href="msm_chapter.html#cb42-52" tabindex="-1"></a></span>
+<span id="cb42-53"><a href="msm_chapter.html#cb42-53" tabindex="-1"></a><span class="co"># Note: Applying a binomial family for the first Qbar model would result in two</span></span>
+<span id="cb42-54"><a href="msm_chapter.html#cb42-54" tabindex="-1"></a><span class="co"># sligthly different values of the CDE(M=m)</span></span>
+<span id="cb42-55"><a href="msm_chapter.html#cb42-55" tabindex="-1"></a><span class="co"># =&gt; 0.05934409 in setting M=0</span></span>
+<span id="cb42-56"><a href="msm_chapter.html#cb42-56" tabindex="-1"></a><span class="co"># =&gt; 0.07537874 in setting M=1</span></span></code></pre></div>
 <p>If the exposure <span class="math inline">\(A\)</span> affects the intermediate confounder <span class="math inline">\(L(1)\)</span>, as in the Causal model 2, the steps 1) and 2) of the algorithm should follow the method described in paragraph <a href="ChapGcomp.html#ChapGcomp-CDE-param">6.2.1</a> or <a href="ChapGcomp.html#ChapGcomp-CDE-ICE">6.2.2</a>.</p>
 <p>Here is an example applying G-computation by iterative conditional expectation:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="msm_chapter.html#cb40-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by G-computation (by ICE) ----------------------------</span></span>
-<span id="cb40-2"><a href="msm_chapter.html#cb40-2" tabindex="-1"></a><span class="do">## 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
-<span id="cb40-3"><a href="msm_chapter.html#cb40-3" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
-<span id="cb40-4"><a href="msm_chapter.html#cb40-4" tabindex="-1"></a>                       M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
-<span id="cb40-5"><a href="msm_chapter.html#cb40-5" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb40-6"><a href="msm_chapter.html#cb40-6" tabindex="-1"></a></span>
-<span id="cb40-7"><a href="msm_chapter.html#cb40-7" tabindex="-1"></a><span class="do">## 1b) Generate predicted values by evaluating the regression  </span></span>
-<span id="cb40-8"><a href="msm_chapter.html#cb40-8" tabindex="-1"></a><span class="do">##     under the 4 counterfactual scenarios</span></span>
-<span id="cb40-9"><a href="msm_chapter.html#cb40-9" tabindex="-1"></a>data.A0M0 <span class="ot">&lt;-</span> data.A1M0 <span class="ot">&lt;-</span> data.A0M1 <span class="ot">&lt;-</span> data.A1M1 <span class="ot">&lt;-</span> df2_int</span>
-<span id="cb40-10"><a href="msm_chapter.html#cb40-10" tabindex="-1"></a>data.A0M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb40-11"><a href="msm_chapter.html#cb40-11" tabindex="-1"></a>data.A0M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb40-12"><a href="msm_chapter.html#cb40-12" tabindex="-1"></a></span>
-<span id="cb40-13"><a href="msm_chapter.html#cb40-13" tabindex="-1"></a>data.A1M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb40-14"><a href="msm_chapter.html#cb40-14" tabindex="-1"></a>data.A1M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb40-15"><a href="msm_chapter.html#cb40-15" tabindex="-1"></a></span>
-<span id="cb40-16"><a href="msm_chapter.html#cb40-16" tabindex="-1"></a>data.A0M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb40-17"><a href="msm_chapter.html#cb40-17" tabindex="-1"></a>data.A0M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb40-18"><a href="msm_chapter.html#cb40-18" tabindex="-1"></a></span>
-<span id="cb40-19"><a href="msm_chapter.html#cb40-19" tabindex="-1"></a>data.A1M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb40-20"><a href="msm_chapter.html#cb40-20" tabindex="-1"></a>data.A1M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb40-21"><a href="msm_chapter.html#cb40-21" tabindex="-1"></a></span>
-<span id="cb40-22"><a href="msm_chapter.html#cb40-22" tabindex="-1"></a>Q.Y.death.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-23"><a href="msm_chapter.html#cb40-23" tabindex="-1"></a>Q.Y.death.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-24"><a href="msm_chapter.html#cb40-24" tabindex="-1"></a>Q.Y.death.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-25"><a href="msm_chapter.html#cb40-25" tabindex="-1"></a>Q.Y.death.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-26"><a href="msm_chapter.html#cb40-26" tabindex="-1"></a></span>
-<span id="cb40-27"><a href="msm_chapter.html#cb40-27" tabindex="-1"></a><span class="do">## 2a) Regress the predicted values conditional on the observed exposure A</span></span>
-<span id="cb40-28"><a href="msm_chapter.html#cb40-28" tabindex="-1"></a><span class="do">##    and baseline confounders L(0)</span></span>
-<span id="cb40-29"><a href="msm_chapter.html#cb40-29" tabindex="-1"></a>L1.death.A0M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A0M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
-<span id="cb40-30"><a href="msm_chapter.html#cb40-30" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb40-31"><a href="msm_chapter.html#cb40-31" tabindex="-1"></a>L1.death.A1M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A1M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
-<span id="cb40-32"><a href="msm_chapter.html#cb40-32" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb40-33"><a href="msm_chapter.html#cb40-33" tabindex="-1"></a>L1.death.A0M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A0M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
-<span id="cb40-34"><a href="msm_chapter.html#cb40-34" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb40-35"><a href="msm_chapter.html#cb40-35" tabindex="-1"></a>L1.death.A1M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A1M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
-<span id="cb40-36"><a href="msm_chapter.html#cb40-36" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb40-37"><a href="msm_chapter.html#cb40-37" tabindex="-1"></a></span>
-<span id="cb40-38"><a href="msm_chapter.html#cb40-38" tabindex="-1"></a></span>
-<span id="cb40-39"><a href="msm_chapter.html#cb40-39" tabindex="-1"></a><span class="do">## 2b) generate predicted values by evaluating the regression at exposure</span></span>
-<span id="cb40-40"><a href="msm_chapter.html#cb40-40" tabindex="-1"></a><span class="do">##    of interest: {A=0,M=0}, {A=1,M=0}, {A=0,M=1}, {A=1,M=1}</span></span>
-<span id="cb40-41"><a href="msm_chapter.html#cb40-41" tabindex="-1"></a>data.A0M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M0.model,</span>
-<span id="cb40-42"><a href="msm_chapter.html#cb40-42" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A0M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-43"><a href="msm_chapter.html#cb40-43" tabindex="-1"></a>data.A1M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M0.model,</span>
-<span id="cb40-44"><a href="msm_chapter.html#cb40-44" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A1M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-45"><a href="msm_chapter.html#cb40-45" tabindex="-1"></a>data.A0M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M1.model,</span>
-<span id="cb40-46"><a href="msm_chapter.html#cb40-46" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A0M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-47"><a href="msm_chapter.html#cb40-47" tabindex="-1"></a>data.A1M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M1.model,</span>
-<span id="cb40-48"><a href="msm_chapter.html#cb40-48" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A1M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb40-49"><a href="msm_chapter.html#cb40-49" tabindex="-1"></a></span>
-<span id="cb40-50"><a href="msm_chapter.html#cb40-50" tabindex="-1"></a></span>
-<span id="cb40-51"><a href="msm_chapter.html#cb40-51" tabindex="-1"></a><span class="do">## 3. Append the 4 counterfactual datasets in a single long dataset</span></span>
-<span id="cb40-52"><a href="msm_chapter.html#cb40-52" tabindex="-1"></a><span class="co"># number of row is 4 times the initial value (we have 4 counterfactual scenarios)</span></span>
-<span id="cb40-53"><a href="msm_chapter.html#cb40-53" tabindex="-1"></a>data<span class="fl">.4</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0M0, data.A1M0,data.A0M1,data.A1M1)</span>
-<span id="cb40-54"><a href="msm_chapter.html#cb40-54" tabindex="-1"></a></span>
-<span id="cb40-55"><a href="msm_chapter.html#cb40-55" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m</span></span>
-<span id="cb40-56"><a href="msm_chapter.html#cb40-56" tabindex="-1"></a>MSM.CDE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Yam.death.pred <span class="sc">~</span> A0_ace <span class="sc">+</span>  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
-<span id="cb40-57"><a href="msm_chapter.html#cb40-57" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="co"># gaussian family for risk differences</span></span>
-<span id="cb40-58"><a href="msm_chapter.html#cb40-58" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.4</span>scenarios)</span>
-<span id="cb40-59"><a href="msm_chapter.html#cb40-59" tabindex="-1"></a><span class="fu">coef</span>(MSM.CDE.gcomp)</span>
-<span id="cb40-60"><a href="msm_chapter.html#cb40-60" tabindex="-1"></a><span class="co"># (Intercept)           A0_ace        M_smoking A0_ace:M_smoking</span></span>
-<span id="cb40-61"><a href="msm_chapter.html#cb40-61" tabindex="-1"></a><span class="co">#  0.17974947       0.06342833       0.07366466       0.02469485</span></span>
-<span id="cb40-62"><a href="msm_chapter.html#cb40-62" tabindex="-1"></a></span>
-<span id="cb40-63"><a href="msm_chapter.html#cb40-63" tabindex="-1"></a><span class="do">## 5. Estimate the CDE(M=m)</span></span>
-<span id="cb40-64"><a href="msm_chapter.html#cb40-64" tabindex="-1"></a><span class="co"># CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})</span></span>
-<span id="cb40-65"><a href="msm_chapter.html#cb40-65" tabindex="-1"></a>CDE_mis0_gcomp_ice <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>]</span>
-<span id="cb40-66"><a href="msm_chapter.html#cb40-66" tabindex="-1"></a><span class="co"># 0.06342833</span></span>
-<span id="cb40-67"><a href="msm_chapter.html#cb40-67" tabindex="-1"></a></span>
-<span id="cb40-68"><a href="msm_chapter.html#cb40-68" tabindex="-1"></a><span class="co"># CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})</span></span>
-<span id="cb40-69"><a href="msm_chapter.html#cb40-69" tabindex="-1"></a>CDE_mis1_gcomp_ice <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
-<span id="cb40-70"><a href="msm_chapter.html#cb40-70" tabindex="-1"></a>                         <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>])</span>
-<span id="cb40-71"><a href="msm_chapter.html#cb40-71" tabindex="-1"></a><span class="co"># 0.08812318</span></span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="msm_chapter.html#cb43-1" tabindex="-1"></a><span class="do">### MSM of CDE, estimated by G-computation (by ICE) ----------------------------</span></span>
+<span id="cb43-2"><a href="msm_chapter.html#cb43-2" tabindex="-1"></a><span class="do">## 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
+<span id="cb43-3"><a href="msm_chapter.html#cb43-3" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb43-4"><a href="msm_chapter.html#cb43-4" tabindex="-1"></a>                       M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb43-5"><a href="msm_chapter.html#cb43-5" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-6"><a href="msm_chapter.html#cb43-6" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="msm_chapter.html#cb43-7" tabindex="-1"></a><span class="do">## 1b) Generate predicted values by evaluating the regression  </span></span>
+<span id="cb43-8"><a href="msm_chapter.html#cb43-8" tabindex="-1"></a><span class="do">##     under the 4 counterfactual scenarios</span></span>
+<span id="cb43-9"><a href="msm_chapter.html#cb43-9" tabindex="-1"></a>data.A0M0 <span class="ot">&lt;-</span> data.A1M0 <span class="ot">&lt;-</span> data.A0M1 <span class="ot">&lt;-</span> data.A1M1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb43-10"><a href="msm_chapter.html#cb43-10" tabindex="-1"></a>data.A0M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb43-11"><a href="msm_chapter.html#cb43-11" tabindex="-1"></a>data.A0M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb43-12"><a href="msm_chapter.html#cb43-12" tabindex="-1"></a></span>
+<span id="cb43-13"><a href="msm_chapter.html#cb43-13" tabindex="-1"></a>data.A1M0<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb43-14"><a href="msm_chapter.html#cb43-14" tabindex="-1"></a>data.A1M0<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb43-15"><a href="msm_chapter.html#cb43-15" tabindex="-1"></a></span>
+<span id="cb43-16"><a href="msm_chapter.html#cb43-16" tabindex="-1"></a>data.A0M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb43-17"><a href="msm_chapter.html#cb43-17" tabindex="-1"></a>data.A0M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb43-18"><a href="msm_chapter.html#cb43-18" tabindex="-1"></a></span>
+<span id="cb43-19"><a href="msm_chapter.html#cb43-19" tabindex="-1"></a>data.A1M1<span class="sc">$</span>A0_ace <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb43-20"><a href="msm_chapter.html#cb43-20" tabindex="-1"></a>data.A1M1<span class="sc">$</span>M_smoking <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb43-21"><a href="msm_chapter.html#cb43-21" tabindex="-1"></a></span>
+<span id="cb43-22"><a href="msm_chapter.html#cb43-22" tabindex="-1"></a>Q.Y.death.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-23"><a href="msm_chapter.html#cb43-23" tabindex="-1"></a>Q.Y.death.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-24"><a href="msm_chapter.html#cb43-24" tabindex="-1"></a>Q.Y.death.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-25"><a href="msm_chapter.html#cb43-25" tabindex="-1"></a>Q.Y.death.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-26"><a href="msm_chapter.html#cb43-26" tabindex="-1"></a></span>
+<span id="cb43-27"><a href="msm_chapter.html#cb43-27" tabindex="-1"></a><span class="do">## 2a) Regress the predicted values conditional on the observed exposure A</span></span>
+<span id="cb43-28"><a href="msm_chapter.html#cb43-28" tabindex="-1"></a><span class="do">##    and baseline confounders L(0)</span></span>
+<span id="cb43-29"><a href="msm_chapter.html#cb43-29" tabindex="-1"></a>L1.death.A0M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A0M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb43-30"><a href="msm_chapter.html#cb43-30" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-31"><a href="msm_chapter.html#cb43-31" tabindex="-1"></a>L1.death.A1M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A1M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb43-32"><a href="msm_chapter.html#cb43-32" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-33"><a href="msm_chapter.html#cb43-33" tabindex="-1"></a>L1.death.A0M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A0M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb43-34"><a href="msm_chapter.html#cb43-34" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-35"><a href="msm_chapter.html#cb43-35" tabindex="-1"></a>L1.death.A1M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.Y.death.A1M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> A0_ace,</span>
+<span id="cb43-36"><a href="msm_chapter.html#cb43-36" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb43-37"><a href="msm_chapter.html#cb43-37" tabindex="-1"></a></span>
+<span id="cb43-38"><a href="msm_chapter.html#cb43-38" tabindex="-1"></a></span>
+<span id="cb43-39"><a href="msm_chapter.html#cb43-39" tabindex="-1"></a><span class="do">## 2b) generate predicted values by evaluating the regression at exposure</span></span>
+<span id="cb43-40"><a href="msm_chapter.html#cb43-40" tabindex="-1"></a><span class="do">##    of interest: {A=0,M=0}, {A=1,M=0}, {A=0,M=1}, {A=1,M=1}</span></span>
+<span id="cb43-41"><a href="msm_chapter.html#cb43-41" tabindex="-1"></a>data.A0M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M0.model,</span>
+<span id="cb43-42"><a href="msm_chapter.html#cb43-42" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A0M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-43"><a href="msm_chapter.html#cb43-43" tabindex="-1"></a>data.A1M0<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M0.model,</span>
+<span id="cb43-44"><a href="msm_chapter.html#cb43-44" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A1M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-45"><a href="msm_chapter.html#cb43-45" tabindex="-1"></a>data.A0M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M1.model,</span>
+<span id="cb43-46"><a href="msm_chapter.html#cb43-46" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A0M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-47"><a href="msm_chapter.html#cb43-47" tabindex="-1"></a>data.A1M1<span class="sc">$</span>Yam.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M1.model,</span>
+<span id="cb43-48"><a href="msm_chapter.html#cb43-48" tabindex="-1"></a>                                    <span class="at">newdata =</span> data.A1M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb43-49"><a href="msm_chapter.html#cb43-49" tabindex="-1"></a></span>
+<span id="cb43-50"><a href="msm_chapter.html#cb43-50" tabindex="-1"></a></span>
+<span id="cb43-51"><a href="msm_chapter.html#cb43-51" tabindex="-1"></a><span class="do">## 3. Append the 4 counterfactual datasets in a single long dataset</span></span>
+<span id="cb43-52"><a href="msm_chapter.html#cb43-52" tabindex="-1"></a><span class="co"># number of row is 4 times the initial value (we have 4 counterfactual scenarios)</span></span>
+<span id="cb43-53"><a href="msm_chapter.html#cb43-53" tabindex="-1"></a>data<span class="fl">.4</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0M0, data.A1M0,data.A0M1,data.A1M1)</span>
+<span id="cb43-54"><a href="msm_chapter.html#cb43-54" tabindex="-1"></a></span>
+<span id="cb43-55"><a href="msm_chapter.html#cb43-55" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m</span></span>
+<span id="cb43-56"><a href="msm_chapter.html#cb43-56" tabindex="-1"></a>MSM.CDE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Yam.death.pred <span class="sc">~</span> A0_ace <span class="sc">+</span>  M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking,</span>
+<span id="cb43-57"><a href="msm_chapter.html#cb43-57" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="co"># gaussian family for risk differences</span></span>
+<span id="cb43-58"><a href="msm_chapter.html#cb43-58" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.4</span>scenarios)</span>
+<span id="cb43-59"><a href="msm_chapter.html#cb43-59" tabindex="-1"></a><span class="fu">coef</span>(MSM.CDE.gcomp)</span>
+<span id="cb43-60"><a href="msm_chapter.html#cb43-60" tabindex="-1"></a><span class="co"># (Intercept)           A0_ace        M_smoking A0_ace:M_smoking</span></span>
+<span id="cb43-61"><a href="msm_chapter.html#cb43-61" tabindex="-1"></a><span class="co">#  0.17974947       0.06342833       0.07366466       0.02469485</span></span>
+<span id="cb43-62"><a href="msm_chapter.html#cb43-62" tabindex="-1"></a></span>
+<span id="cb43-63"><a href="msm_chapter.html#cb43-63" tabindex="-1"></a><span class="do">## 5. Estimate the CDE(M=m)</span></span>
+<span id="cb43-64"><a href="msm_chapter.html#cb43-64" tabindex="-1"></a><span class="co"># CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})</span></span>
+<span id="cb43-65"><a href="msm_chapter.html#cb43-65" tabindex="-1"></a>CDE_mis0_gcomp_ice <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>]</span>
+<span id="cb43-66"><a href="msm_chapter.html#cb43-66" tabindex="-1"></a><span class="co"># 0.06342833</span></span>
+<span id="cb43-67"><a href="msm_chapter.html#cb43-67" tabindex="-1"></a></span>
+<span id="cb43-68"><a href="msm_chapter.html#cb43-68" tabindex="-1"></a><span class="co"># CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})</span></span>
+<span id="cb43-69"><a href="msm_chapter.html#cb43-69" tabindex="-1"></a>CDE_mis1_gcomp_ice <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
+<span id="cb43-70"><a href="msm_chapter.html#cb43-70" tabindex="-1"></a>                         <span class="fu">coef</span>(MSM.CDE.gcomp)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>])</span>
+<span id="cb43-71"><a href="msm_chapter.html#cb43-71" tabindex="-1"></a><span class="co"># 0.08812318</span></span></code></pre></div>
 <p>The example above (MSM estimation using G-computation by ICE) corresponds to the algorithm applied by the <code>ltmle</code> package:</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="msm_chapter.html#cb41-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
-<span id="cb41-2"><a href="msm_chapter.html#cb41-2" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>,</span>
-<span id="cb41-3"><a href="msm_chapter.html#cb41-3" tabindex="-1"></a>           <span class="at">Y_death=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +</span></span>
-<span id="cb41-4"><a href="msm_chapter.html#cb41-4" tabindex="-1"></a><span class="st">                    A0_ace * M_smoking&quot;</span>)</span>
-<span id="cb41-5"><a href="msm_chapter.html#cb41-5" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>,</span>
-<span id="cb41-6"><a href="msm_chapter.html#cb41-6" tabindex="-1"></a>           <span class="st">&quot;M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1&quot;</span>)</span>
-<span id="cb41-7"><a href="msm_chapter.html#cb41-7" tabindex="-1"></a><span class="co"># in this example of g-computation, the propensity scores &#39;gform&#39; will not be used</span></span>
-<span id="cb41-8"><a href="msm_chapter.html#cb41-8" tabindex="-1"></a></span>
-<span id="cb41-9"><a href="msm_chapter.html#cb41-9" tabindex="-1"></a>data_binary <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male, L0_parent_low_educ_lv,</span>
-<span id="cb41-10"><a href="msm_chapter.html#cb41-10" tabindex="-1"></a>                                          A0_ace, L1,</span>
-<span id="cb41-11"><a href="msm_chapter.html#cb41-11" tabindex="-1"></a>                                          M_smoking, Y_death))</span>
-<span id="cb41-12"><a href="msm_chapter.html#cb41-12" tabindex="-1"></a>CDE_ltmle_M0 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
-<span id="cb41-13"><a href="msm_chapter.html#cb41-13" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
-<span id="cb41-14"><a href="msm_chapter.html#cb41-14" tabindex="-1"></a>                      <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
-<span id="cb41-15"><a href="msm_chapter.html#cb41-15" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
-<span id="cb41-16"><a href="msm_chapter.html#cb41-16" tabindex="-1"></a>                      <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
-<span id="cb41-17"><a href="msm_chapter.html#cb41-17" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
-<span id="cb41-18"><a href="msm_chapter.html#cb41-18" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
-<span id="cb41-19"><a href="msm_chapter.html#cb41-19" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
-<span id="cb41-20"><a href="msm_chapter.html#cb41-20" tabindex="-1"></a>                                  <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
-<span id="cb41-21"><a href="msm_chapter.html#cb41-21" tabindex="-1"></a>                      <span class="at">SL.library =</span> <span class="cn">NULL</span>, <span class="co"># call glm() instead of SuperLearner</span></span>
-<span id="cb41-22"><a href="msm_chapter.html#cb41-22" tabindex="-1"></a>                      <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
-<span id="cb41-23"><a href="msm_chapter.html#cb41-23" tabindex="-1"></a>                      <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># to apply g-computation</span></span>
-<span id="cb41-24"><a href="msm_chapter.html#cb41-24" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb41-25"><a href="msm_chapter.html#cb41-25" tabindex="-1"></a><span class="co"># CDE with M=0</span></span>
-<span id="cb41-26"><a href="msm_chapter.html#cb41-26" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M0)<span class="sc">$</span>effect.measures<span class="sc">$</span>ATE<span class="sc">$</span>estimate</span>
-<span id="cb41-27"><a href="msm_chapter.html#cb41-27" tabindex="-1"></a><span class="co">#   Parameter Estimate:  0.06342833</span></span>
-<span id="cb41-28"><a href="msm_chapter.html#cb41-28" tabindex="-1"></a></span>
-<span id="cb41-29"><a href="msm_chapter.html#cb41-29" tabindex="-1"></a>CDE_ltmle_M1 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
-<span id="cb41-30"><a href="msm_chapter.html#cb41-30" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
-<span id="cb41-31"><a href="msm_chapter.html#cb41-31" tabindex="-1"></a>                      <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
-<span id="cb41-32"><a href="msm_chapter.html#cb41-32" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
-<span id="cb41-33"><a href="msm_chapter.html#cb41-33" tabindex="-1"></a>                      <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
-<span id="cb41-34"><a href="msm_chapter.html#cb41-34" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
-<span id="cb41-35"><a href="msm_chapter.html#cb41-35" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
-<span id="cb41-36"><a href="msm_chapter.html#cb41-36" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
-<span id="cb41-37"><a href="msm_chapter.html#cb41-37" tabindex="-1"></a>                                  <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
-<span id="cb41-38"><a href="msm_chapter.html#cb41-38" tabindex="-1"></a>                      <span class="at">SL.library =</span> <span class="cn">NULL</span>, <span class="co"># call glm() instead of SuperLearner</span></span>
-<span id="cb41-39"><a href="msm_chapter.html#cb41-39" tabindex="-1"></a>                      <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
-<span id="cb41-40"><a href="msm_chapter.html#cb41-40" tabindex="-1"></a>                      <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># to apply g-computation</span></span>
-<span id="cb41-41"><a href="msm_chapter.html#cb41-41" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
-<span id="cb41-42"><a href="msm_chapter.html#cb41-42" tabindex="-1"></a><span class="co"># CDE with M=1</span></span>
-<span id="cb41-43"><a href="msm_chapter.html#cb41-43" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M1)<span class="sc">$</span>effect.measures<span class="sc">$</span>ATE<span class="sc">$</span>estimate</span>
-<span id="cb41-44"><a href="msm_chapter.html#cb41-44" tabindex="-1"></a><span class="co">#   Parameter Estimate:  0.08812318</span></span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="msm_chapter.html#cb44-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
+<span id="cb44-2"><a href="msm_chapter.html#cb44-2" tabindex="-1"></a>Qform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace&quot;</span>,</span>
+<span id="cb44-3"><a href="msm_chapter.html#cb44-3" tabindex="-1"></a>           <span class="at">Y_death=</span><span class="st">&quot;Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +</span></span>
+<span id="cb44-4"><a href="msm_chapter.html#cb44-4" tabindex="-1"></a><span class="st">                    A0_ace * M_smoking&quot;</span>)</span>
+<span id="cb44-5"><a href="msm_chapter.html#cb44-5" tabindex="-1"></a>gform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace ~ L0_male + L0_parent_low_educ_lv&quot;</span>,</span>
+<span id="cb44-6"><a href="msm_chapter.html#cb44-6" tabindex="-1"></a>           <span class="st">&quot;M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1&quot;</span>)</span>
+<span id="cb44-7"><a href="msm_chapter.html#cb44-7" tabindex="-1"></a><span class="co"># in this example of g-computation, the propensity scores &#39;gform&#39; will not be used</span></span>
+<span id="cb44-8"><a href="msm_chapter.html#cb44-8" tabindex="-1"></a></span>
+<span id="cb44-9"><a href="msm_chapter.html#cb44-9" tabindex="-1"></a>data_binary <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="fu">c</span>(L0_male, L0_parent_low_educ_lv,</span>
+<span id="cb44-10"><a href="msm_chapter.html#cb44-10" tabindex="-1"></a>                                          A0_ace, L1,</span>
+<span id="cb44-11"><a href="msm_chapter.html#cb44-11" tabindex="-1"></a>                                          M_smoking, Y_death))</span>
+<span id="cb44-12"><a href="msm_chapter.html#cb44-12" tabindex="-1"></a>CDE_ltmle_M0 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
+<span id="cb44-13"><a href="msm_chapter.html#cb44-13" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
+<span id="cb44-14"><a href="msm_chapter.html#cb44-14" tabindex="-1"></a>                      <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
+<span id="cb44-15"><a href="msm_chapter.html#cb44-15" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
+<span id="cb44-16"><a href="msm_chapter.html#cb44-16" tabindex="-1"></a>                      <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
+<span id="cb44-17"><a href="msm_chapter.html#cb44-17" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
+<span id="cb44-18"><a href="msm_chapter.html#cb44-18" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
+<span id="cb44-19"><a href="msm_chapter.html#cb44-19" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
+<span id="cb44-20"><a href="msm_chapter.html#cb44-20" tabindex="-1"></a>                                  <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
+<span id="cb44-21"><a href="msm_chapter.html#cb44-21" tabindex="-1"></a>                      <span class="at">SL.library =</span> <span class="cn">NULL</span>, <span class="co"># call glm() instead of SuperLearner</span></span>
+<span id="cb44-22"><a href="msm_chapter.html#cb44-22" tabindex="-1"></a>                      <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
+<span id="cb44-23"><a href="msm_chapter.html#cb44-23" tabindex="-1"></a>                      <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># to apply g-computation</span></span>
+<span id="cb44-24"><a href="msm_chapter.html#cb44-24" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb44-25"><a href="msm_chapter.html#cb44-25" tabindex="-1"></a><span class="co"># CDE with M=0</span></span>
+<span id="cb44-26"><a href="msm_chapter.html#cb44-26" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M0)<span class="sc">$</span>effect.measures<span class="sc">$</span>ATE<span class="sc">$</span>estimate</span>
+<span id="cb44-27"><a href="msm_chapter.html#cb44-27" tabindex="-1"></a><span class="co">#   Parameter Estimate:  0.06342833</span></span>
+<span id="cb44-28"><a href="msm_chapter.html#cb44-28" tabindex="-1"></a></span>
+<span id="cb44-29"><a href="msm_chapter.html#cb44-29" tabindex="-1"></a>CDE_ltmle_M1 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> data_binary,</span>
+<span id="cb44-30"><a href="msm_chapter.html#cb44-30" tabindex="-1"></a>                      <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_ace&quot;</span>, <span class="st">&quot;M_smoking&quot;</span>),</span>
+<span id="cb44-31"><a href="msm_chapter.html#cb44-31" tabindex="-1"></a>                      <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>), <span class="co"># intermediate confounders +/- baseline</span></span>
+<span id="cb44-32"><a href="msm_chapter.html#cb44-32" tabindex="-1"></a>                      <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>),</span>
+<span id="cb44-33"><a href="msm_chapter.html#cb44-33" tabindex="-1"></a>                      <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>, <span class="co"># TRUE for time-to-event outcomes Y</span></span>
+<span id="cb44-34"><a href="msm_chapter.html#cb44-34" tabindex="-1"></a>                      <span class="at">Qform =</span> Qform,</span>
+<span id="cb44-35"><a href="msm_chapter.html#cb44-35" tabindex="-1"></a>                      <span class="at">gform =</span> gform,</span>
+<span id="cb44-36"><a href="msm_chapter.html#cb44-36" tabindex="-1"></a>                      <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="co"># counterfactual intervention do(A=1,M=0)</span></span>
+<span id="cb44-37"><a href="msm_chapter.html#cb44-37" tabindex="-1"></a>                                  <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># counterfactual intervention do(A=0,M=0)</span></span>
+<span id="cb44-38"><a href="msm_chapter.html#cb44-38" tabindex="-1"></a>                      <span class="at">SL.library =</span> <span class="cn">NULL</span>, <span class="co"># call glm() instead of SuperLearner</span></span>
+<span id="cb44-39"><a href="msm_chapter.html#cb44-39" tabindex="-1"></a>                      <span class="at">estimate.time =</span> <span class="cn">FALSE</span>, <span class="co"># estimate computation time?</span></span>
+<span id="cb44-40"><a href="msm_chapter.html#cb44-40" tabindex="-1"></a>                      <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># to apply g-computation</span></span>
+<span id="cb44-41"><a href="msm_chapter.html#cb44-41" tabindex="-1"></a>                      <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>)</span>
+<span id="cb44-42"><a href="msm_chapter.html#cb44-42" tabindex="-1"></a><span class="co"># CDE with M=1</span></span>
+<span id="cb44-43"><a href="msm_chapter.html#cb44-43" tabindex="-1"></a><span class="fu">summary</span>(CDE_ltmle_M1)<span class="sc">$</span>effect.measures<span class="sc">$</span>ATE<span class="sc">$</span>estimate</span>
+<span id="cb44-44"><a href="msm_chapter.html#cb44-44" tabindex="-1"></a><span class="co">#   Parameter Estimate:  0.08812318</span></span></code></pre></div>
 </div>
 </div>
 <div id="msm_NDE_NIE_paragraph" class="section level2 hasAnchor" number="8.3">
@@ -845,95 +846,95 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <p><span class="math display">\[\begin{equation*}
 \text{where} \quad sw_{msm2,i} = \frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)}
 \end{equation*}\]</span></p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="msm_chapter.html#cb42-1" tabindex="-1"></a><span class="do">### MSM of NDE &amp; NIE, estimated by IPTW ----------------------------------------</span></span>
-<span id="cb42-2"><a href="msm_chapter.html#cb42-2" tabindex="-1"></a><span class="do">## 1. Stabilized weight for the MSM1</span></span>
-<span id="cb42-3"><a href="msm_chapter.html#cb42-3" tabindex="-1"></a><span class="co"># 1a. sw_Ai = g(A=a_i | L(0)) / g(A=a_i | L(0)) = 1</span></span>
-<span id="cb42-4"><a href="msm_chapter.html#cb42-4" tabindex="-1"></a>sw_Ai <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb42-5"><a href="msm_chapter.html#cb42-5" tabindex="-1"></a></span>
-<span id="cb42-6"><a href="msm_chapter.html#cb42-6" tabindex="-1"></a><span class="co"># 1b. sw_Mi = g(M=m_i | A,L(0)) / g(M=m_i | A,L(0),L(1))</span></span>
-<span id="cb42-7"><a href="msm_chapter.html#cb42-7" tabindex="-1"></a>g.M.AL0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb42-8"><a href="msm_chapter.html#cb42-8" tabindex="-1"></a>               <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb42-9"><a href="msm_chapter.html#cb42-9" tabindex="-1"></a>g.Mis1.AL0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.AL0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb42-10"><a href="msm_chapter.html#cb42-10" tabindex="-1"></a>sw_M.num <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb42-11"><a href="msm_chapter.html#cb42-11" tabindex="-1"></a>sw_M.num[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Mis1.AL0[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb42-12"><a href="msm_chapter.html#cb42-12" tabindex="-1"></a>sw_M.num[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Mis1.AL0[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>])</span>
-<span id="cb42-13"><a href="msm_chapter.html#cb42-13" tabindex="-1"></a></span>
-<span id="cb42-14"><a href="msm_chapter.html#cb42-14" tabindex="-1"></a>g.M.AL0L1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> L1,</span>
-<span id="cb42-15"><a href="msm_chapter.html#cb42-15" tabindex="-1"></a>                 <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb42-16"><a href="msm_chapter.html#cb42-16" tabindex="-1"></a>g.Mis1.AL0L1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.AL0L1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb42-17"><a href="msm_chapter.html#cb42-17" tabindex="-1"></a>sw_M.denom <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb42-18"><a href="msm_chapter.html#cb42-18" tabindex="-1"></a>sw_M.denom[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Mis1.AL0L1[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb42-19"><a href="msm_chapter.html#cb42-19" tabindex="-1"></a>sw_M.denom[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Mis1.AL0L1[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>])</span>
-<span id="cb42-20"><a href="msm_chapter.html#cb42-20" tabindex="-1"></a></span>
-<span id="cb42-21"><a href="msm_chapter.html#cb42-21" tabindex="-1"></a>sw_msm1 <span class="ot">&lt;-</span> sw_Ai <span class="sc">*</span> sw_M.num <span class="sc">/</span> sw_M.denom</span>
-<span id="cb42-22"><a href="msm_chapter.html#cb42-22" tabindex="-1"></a></span>
-<span id="cb42-23"><a href="msm_chapter.html#cb42-23" tabindex="-1"></a><span class="do">## 2. Estimate coefficients of the MSM1</span></span>
-<span id="cb42-24"><a href="msm_chapter.html#cb42-24" tabindex="-1"></a>MSM1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking <span class="sc">+</span></span>
-<span id="cb42-25"><a href="msm_chapter.html#cb42-25" tabindex="-1"></a>              L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb42-26"><a href="msm_chapter.html#cb42-26" tabindex="-1"></a>            <span class="at">weights =</span> sw_msm1,</span>
-<span id="cb42-27"><a href="msm_chapter.html#cb42-27" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb42-28"><a href="msm_chapter.html#cb42-28" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
-<span id="cb42-29"><a href="msm_chapter.html#cb42-29" tabindex="-1"></a><span class="fu">coef</span>(MSM1)</span>
-<span id="cb42-30"><a href="msm_chapter.html#cb42-30" tabindex="-1"></a><span class="co"># (Intercept)                A0_ace             M_smoking</span></span>
-<span id="cb42-31"><a href="msm_chapter.html#cb42-31" tabindex="-1"></a><span class="co">#  0.12033221            0.06381257            0.06691712</span></span>
-<span id="cb42-32"><a href="msm_chapter.html#cb42-32" tabindex="-1"></a><span class="co">#     L0_male L0_parent_low_educ_lv      A0_ace:M_smoking</span></span>
-<span id="cb42-33"><a href="msm_chapter.html#cb42-33" tabindex="-1"></a><span class="co">#  0.04671886            0.05521263            0.01652446</span></span>
-<span id="cb42-34"><a href="msm_chapter.html#cb42-34" tabindex="-1"></a></span>
-<span id="cb42-35"><a href="msm_chapter.html#cb42-35" tabindex="-1"></a><span class="do">## 3. Stabilized weight for the MSM2</span></span>
-<span id="cb42-36"><a href="msm_chapter.html#cb42-36" tabindex="-1"></a><span class="co"># 3a. sw_A = g(A=a_i) / g(A=a_i | L(0))</span></span>
-<span id="cb42-37"><a href="msm_chapter.html#cb42-37" tabindex="-1"></a><span class="co"># numerator</span></span>
-<span id="cb42-38"><a href="msm_chapter.html#cb42-38" tabindex="-1"></a>g.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb42-39"><a href="msm_chapter.html#cb42-39" tabindex="-1"></a>g.Ais1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb42-40"><a href="msm_chapter.html#cb42-40" tabindex="-1"></a>sw_msm2.num <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb42-41"><a href="msm_chapter.html#cb42-41" tabindex="-1"></a>sw_msm2.num[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Ais1[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb42-42"><a href="msm_chapter.html#cb42-42" tabindex="-1"></a>sw_msm2.num[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Ais1[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>])</span>
-<span id="cb42-43"><a href="msm_chapter.html#cb42-43" tabindex="-1"></a></span>
-<span id="cb42-44"><a href="msm_chapter.html#cb42-44" tabindex="-1"></a><span class="co"># denominator</span></span>
-<span id="cb42-45"><a href="msm_chapter.html#cb42-45" tabindex="-1"></a>g.A.L0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb42-46"><a href="msm_chapter.html#cb42-46" tabindex="-1"></a>              <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb42-47"><a href="msm_chapter.html#cb42-47" tabindex="-1"></a>g.Ais1.L0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb42-48"><a href="msm_chapter.html#cb42-48" tabindex="-1"></a>sw_msm2.denom <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
-<span id="cb42-49"><a href="msm_chapter.html#cb42-49" tabindex="-1"></a>sw_msm2.denom[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Ais1.L0[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
-<span id="cb42-50"><a href="msm_chapter.html#cb42-50" tabindex="-1"></a>sw_msm2.denom[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Ais1.L0[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>])</span>
-<span id="cb42-51"><a href="msm_chapter.html#cb42-51" tabindex="-1"></a></span>
-<span id="cb42-52"><a href="msm_chapter.html#cb42-52" tabindex="-1"></a><span class="co"># stabilized weight</span></span>
-<span id="cb42-53"><a href="msm_chapter.html#cb42-53" tabindex="-1"></a>sw_msm2 <span class="ot">&lt;-</span> sw_msm2.num <span class="sc">/</span> sw_msm2.denom</span>
-<span id="cb42-54"><a href="msm_chapter.html#cb42-54" tabindex="-1"></a></span>
-<span id="cb42-55"><a href="msm_chapter.html#cb42-55" tabindex="-1"></a><span class="do">## 3. Estimate coefficients of the MSM2</span></span>
-<span id="cb42-56"><a href="msm_chapter.html#cb42-56" tabindex="-1"></a>MSM2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
-<span id="cb42-57"><a href="msm_chapter.html#cb42-57" tabindex="-1"></a>            <span class="at">weights =</span> sw_msm2,</span>
-<span id="cb42-58"><a href="msm_chapter.html#cb42-58" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>,</span>
-<span id="cb42-59"><a href="msm_chapter.html#cb42-59" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
-<span id="cb42-60"><a href="msm_chapter.html#cb42-60" tabindex="-1"></a><span class="fu">coef</span>(MSM2)</span>
-<span id="cb42-61"><a href="msm_chapter.html#cb42-61" tabindex="-1"></a><span class="co"># (Intercept)                A0_ace               L0_male L0_parent_low_educ_lv</span></span>
-<span id="cb42-62"><a href="msm_chapter.html#cb42-62" tabindex="-1"></a><span class="co">#  -1.2723106             0.5883720             0.2566129             0.3270087</span></span>
-<span id="cb42-63"><a href="msm_chapter.html#cb42-63" tabindex="-1"></a></span>
-<span id="cb42-64"><a href="msm_chapter.html#cb42-64" tabindex="-1"></a><span class="do">## 4. Estimate PNDE conditional on L(0), and the marginal value of PNDE</span></span>
-<span id="cb42-65"><a href="msm_chapter.html#cb42-65" tabindex="-1"></a><span class="co"># a = 1 and a* = 0</span></span>
-<span id="cb42-66"><a href="msm_chapter.html#cb42-66" tabindex="-1"></a><span class="co"># PNDE|L(0) = (a - a*)[alpha_A + alpha_AM.g^-1(a^*,l(0))]</span></span>
-<span id="cb42-67"><a href="msm_chapter.html#cb42-67" tabindex="-1"></a>g.minus1.A0 <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">coef</span>(MSM2)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(MSM2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">*</span> <span class="dv">0</span> <span class="sc">+</span></span>
-<span id="cb42-68"><a href="msm_chapter.html#cb42-68" tabindex="-1"></a>                      <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_male&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_male <span class="sc">+</span></span>
-<span id="cb42-69"><a href="msm_chapter.html#cb42-69" tabindex="-1"></a>                      <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_parent_low_educ_lv&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_parent_low_educ_lv)</span>
-<span id="cb42-70"><a href="msm_chapter.html#cb42-70" tabindex="-1"></a></span>
-<span id="cb42-71"><a href="msm_chapter.html#cb42-71" tabindex="-1"></a><span class="co"># PNDE conditional on L(0)</span></span>
-<span id="cb42-72"><a href="msm_chapter.html#cb42-72" tabindex="-1"></a>PNDE_L0 <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="dv">0</span>) <span class="sc">*</span> (<span class="fu">coef</span>(MSM1)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
-<span id="cb42-73"><a href="msm_chapter.html#cb42-73" tabindex="-1"></a>                        <span class="fu">coef</span>(MSM1)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>] <span class="sc">*</span> g.minus1.A0)</span>
-<span id="cb42-74"><a href="msm_chapter.html#cb42-74" tabindex="-1"></a><span class="co"># marginal PNDE</span></span>
-<span id="cb42-75"><a href="msm_chapter.html#cb42-75" tabindex="-1"></a>PNDE <span class="ot">&lt;-</span> <span class="fu">mean</span>(PNDE_L0)</span>
-<span id="cb42-76"><a href="msm_chapter.html#cb42-76" tabindex="-1"></a><span class="co"># [1] 0.06850657</span></span>
-<span id="cb42-77"><a href="msm_chapter.html#cb42-77" tabindex="-1"></a></span>
-<span id="cb42-78"><a href="msm_chapter.html#cb42-78" tabindex="-1"></a><span class="do">## 4. Estimate TNIE conditional on L(0), and the marginal value of TNIE</span></span>
-<span id="cb42-79"><a href="msm_chapter.html#cb42-79" tabindex="-1"></a><span class="co"># TNIE|L(0) = [g^-1(a,l(0)) - g^-1(a^*,l(0))] * (alpha_M + alpha_AM * a)</span></span>
-<span id="cb42-80"><a href="msm_chapter.html#cb42-80" tabindex="-1"></a>g.minus1.A1 <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">coef</span>(MSM2)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(MSM2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">*</span> <span class="dv">1</span> <span class="sc">+</span></span>
-<span id="cb42-81"><a href="msm_chapter.html#cb42-81" tabindex="-1"></a>                        <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_male&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_male <span class="sc">+</span></span>
-<span id="cb42-82"><a href="msm_chapter.html#cb42-82" tabindex="-1"></a>                        <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_parent_low_educ_lv&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_parent_low_educ_lv)</span>
-<span id="cb42-83"><a href="msm_chapter.html#cb42-83" tabindex="-1"></a></span>
-<span id="cb42-84"><a href="msm_chapter.html#cb42-84" tabindex="-1"></a><span class="co"># TNIE conditional on L(0)</span></span>
-<span id="cb42-85"><a href="msm_chapter.html#cb42-85" tabindex="-1"></a>TNIE_L0 <span class="ot">&lt;-</span> (g.minus1.A1 <span class="sc">-</span> g.minus1.A0) <span class="sc">*</span> (<span class="fu">coef</span>(MSM1)[<span class="st">&quot;M_smoking&quot;</span>] <span class="sc">+</span></span>
-<span id="cb42-86"><a href="msm_chapter.html#cb42-86" tabindex="-1"></a>                                            <span class="fu">coef</span>(MSM1)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>] <span class="sc">*</span> <span class="dv">1</span>)</span>
-<span id="cb42-87"><a href="msm_chapter.html#cb42-87" tabindex="-1"></a><span class="co"># marginal PNDE</span></span>
-<span id="cb42-88"><a href="msm_chapter.html#cb42-88" tabindex="-1"></a>TNIE <span class="ot">&lt;-</span> <span class="fu">mean</span>(TNIE_L0)</span>
-<span id="cb42-89"><a href="msm_chapter.html#cb42-89" tabindex="-1"></a><span class="co"># [1] 0.01096799</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="msm_chapter.html#cb45-1" tabindex="-1"></a><span class="do">### MSM of NDE &amp; NIE, estimated by IPTW ----------------------------------------</span></span>
+<span id="cb45-2"><a href="msm_chapter.html#cb45-2" tabindex="-1"></a><span class="do">## 1. Stabilized weight for the MSM1</span></span>
+<span id="cb45-3"><a href="msm_chapter.html#cb45-3" tabindex="-1"></a><span class="co"># 1a. sw_Ai = g(A=a_i | L(0)) / g(A=a_i | L(0)) = 1</span></span>
+<span id="cb45-4"><a href="msm_chapter.html#cb45-4" tabindex="-1"></a>sw_Ai <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb45-5"><a href="msm_chapter.html#cb45-5" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="msm_chapter.html#cb45-6" tabindex="-1"></a><span class="co"># 1b. sw_Mi = g(M=m_i | A,L(0)) / g(M=m_i | A,L(0),L(1))</span></span>
+<span id="cb45-7"><a href="msm_chapter.html#cb45-7" tabindex="-1"></a>g.M.AL0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb45-8"><a href="msm_chapter.html#cb45-8" tabindex="-1"></a>               <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb45-9"><a href="msm_chapter.html#cb45-9" tabindex="-1"></a>g.Mis1.AL0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.AL0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb45-10"><a href="msm_chapter.html#cb45-10" tabindex="-1"></a>sw_M.num <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb45-11"><a href="msm_chapter.html#cb45-11" tabindex="-1"></a>sw_M.num[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Mis1.AL0[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb45-12"><a href="msm_chapter.html#cb45-12" tabindex="-1"></a>sw_M.num[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Mis1.AL0[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>])</span>
+<span id="cb45-13"><a href="msm_chapter.html#cb45-13" tabindex="-1"></a></span>
+<span id="cb45-14"><a href="msm_chapter.html#cb45-14" tabindex="-1"></a>g.M.AL0L1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv <span class="sc">+</span> L1,</span>
+<span id="cb45-15"><a href="msm_chapter.html#cb45-15" tabindex="-1"></a>                 <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb45-16"><a href="msm_chapter.html#cb45-16" tabindex="-1"></a>g.Mis1.AL0L1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.M.AL0L1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb45-17"><a href="msm_chapter.html#cb45-17" tabindex="-1"></a>sw_M.denom <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb45-18"><a href="msm_chapter.html#cb45-18" tabindex="-1"></a>sw_M.denom[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Mis1.AL0L1[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb45-19"><a href="msm_chapter.html#cb45-19" tabindex="-1"></a>sw_M.denom[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Mis1.AL0L1[df1_int<span class="sc">$</span>M_smoking<span class="sc">==</span><span class="dv">0</span>])</span>
+<span id="cb45-20"><a href="msm_chapter.html#cb45-20" tabindex="-1"></a></span>
+<span id="cb45-21"><a href="msm_chapter.html#cb45-21" tabindex="-1"></a>sw_msm1 <span class="ot">&lt;-</span> sw_Ai <span class="sc">*</span> sw_M.num <span class="sc">/</span> sw_M.denom</span>
+<span id="cb45-22"><a href="msm_chapter.html#cb45-22" tabindex="-1"></a></span>
+<span id="cb45-23"><a href="msm_chapter.html#cb45-23" tabindex="-1"></a><span class="do">## 2. Estimate coefficients of the MSM1</span></span>
+<span id="cb45-24"><a href="msm_chapter.html#cb45-24" tabindex="-1"></a>MSM1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_ace <span class="sc">+</span> M_smoking <span class="sc">+</span> A0_ace<span class="sc">:</span>M_smoking <span class="sc">+</span></span>
+<span id="cb45-25"><a href="msm_chapter.html#cb45-25" tabindex="-1"></a>              L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb45-26"><a href="msm_chapter.html#cb45-26" tabindex="-1"></a>            <span class="at">weights =</span> sw_msm1,</span>
+<span id="cb45-27"><a href="msm_chapter.html#cb45-27" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb45-28"><a href="msm_chapter.html#cb45-28" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
+<span id="cb45-29"><a href="msm_chapter.html#cb45-29" tabindex="-1"></a><span class="fu">coef</span>(MSM1)</span>
+<span id="cb45-30"><a href="msm_chapter.html#cb45-30" tabindex="-1"></a><span class="co"># (Intercept)                A0_ace             M_smoking</span></span>
+<span id="cb45-31"><a href="msm_chapter.html#cb45-31" tabindex="-1"></a><span class="co">#  0.12033221            0.06381257            0.06691712</span></span>
+<span id="cb45-32"><a href="msm_chapter.html#cb45-32" tabindex="-1"></a><span class="co">#     L0_male L0_parent_low_educ_lv      A0_ace:M_smoking</span></span>
+<span id="cb45-33"><a href="msm_chapter.html#cb45-33" tabindex="-1"></a><span class="co">#  0.04671886            0.05521263            0.01652446</span></span>
+<span id="cb45-34"><a href="msm_chapter.html#cb45-34" tabindex="-1"></a></span>
+<span id="cb45-35"><a href="msm_chapter.html#cb45-35" tabindex="-1"></a><span class="do">## 3. Stabilized weight for the MSM2</span></span>
+<span id="cb45-36"><a href="msm_chapter.html#cb45-36" tabindex="-1"></a><span class="co"># 3a. sw_A = g(A=a_i) / g(A=a_i | L(0))</span></span>
+<span id="cb45-37"><a href="msm_chapter.html#cb45-37" tabindex="-1"></a><span class="co"># numerator</span></span>
+<span id="cb45-38"><a href="msm_chapter.html#cb45-38" tabindex="-1"></a>g.A <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb45-39"><a href="msm_chapter.html#cb45-39" tabindex="-1"></a>g.Ais1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb45-40"><a href="msm_chapter.html#cb45-40" tabindex="-1"></a>sw_msm2.num <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb45-41"><a href="msm_chapter.html#cb45-41" tabindex="-1"></a>sw_msm2.num[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Ais1[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb45-42"><a href="msm_chapter.html#cb45-42" tabindex="-1"></a>sw_msm2.num[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Ais1[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>])</span>
+<span id="cb45-43"><a href="msm_chapter.html#cb45-43" tabindex="-1"></a></span>
+<span id="cb45-44"><a href="msm_chapter.html#cb45-44" tabindex="-1"></a><span class="co"># denominator</span></span>
+<span id="cb45-45"><a href="msm_chapter.html#cb45-45" tabindex="-1"></a>g.A.L0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_ace <span class="sc">~</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb45-46"><a href="msm_chapter.html#cb45-46" tabindex="-1"></a>              <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb45-47"><a href="msm_chapter.html#cb45-47" tabindex="-1"></a>g.Ais1.L0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(g.A.L0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb45-48"><a href="msm_chapter.html#cb45-48" tabindex="-1"></a>sw_msm2.denom <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(df1_int))</span>
+<span id="cb45-49"><a href="msm_chapter.html#cb45-49" tabindex="-1"></a>sw_msm2.denom[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>] <span class="ot">&lt;-</span> g.Ais1.L0[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">1</span>]</span>
+<span id="cb45-50"><a href="msm_chapter.html#cb45-50" tabindex="-1"></a>sw_msm2.denom[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>] <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> g.Ais1.L0[df1_int<span class="sc">$</span>A0_ace<span class="sc">==</span><span class="dv">0</span>])</span>
+<span id="cb45-51"><a href="msm_chapter.html#cb45-51" tabindex="-1"></a></span>
+<span id="cb45-52"><a href="msm_chapter.html#cb45-52" tabindex="-1"></a><span class="co"># stabilized weight</span></span>
+<span id="cb45-53"><a href="msm_chapter.html#cb45-53" tabindex="-1"></a>sw_msm2 <span class="ot">&lt;-</span> sw_msm2.num <span class="sc">/</span> sw_msm2.denom</span>
+<span id="cb45-54"><a href="msm_chapter.html#cb45-54" tabindex="-1"></a></span>
+<span id="cb45-55"><a href="msm_chapter.html#cb45-55" tabindex="-1"></a><span class="do">## 3. Estimate coefficients of the MSM2</span></span>
+<span id="cb45-56"><a href="msm_chapter.html#cb45-56" tabindex="-1"></a>MSM2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_smoking <span class="sc">~</span> A0_ace <span class="sc">+</span> L0_male <span class="sc">+</span> L0_parent_low_educ_lv,</span>
+<span id="cb45-57"><a href="msm_chapter.html#cb45-57" tabindex="-1"></a>            <span class="at">weights =</span> sw_msm2,</span>
+<span id="cb45-58"><a href="msm_chapter.html#cb45-58" tabindex="-1"></a>            <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>,</span>
+<span id="cb45-59"><a href="msm_chapter.html#cb45-59" tabindex="-1"></a>            <span class="at">data =</span> df1_int)</span>
+<span id="cb45-60"><a href="msm_chapter.html#cb45-60" tabindex="-1"></a><span class="fu">coef</span>(MSM2)</span>
+<span id="cb45-61"><a href="msm_chapter.html#cb45-61" tabindex="-1"></a><span class="co"># (Intercept)                A0_ace               L0_male L0_parent_low_educ_lv</span></span>
+<span id="cb45-62"><a href="msm_chapter.html#cb45-62" tabindex="-1"></a><span class="co">#  -1.2723106             0.5883720             0.2566129             0.3270087</span></span>
+<span id="cb45-63"><a href="msm_chapter.html#cb45-63" tabindex="-1"></a></span>
+<span id="cb45-64"><a href="msm_chapter.html#cb45-64" tabindex="-1"></a><span class="do">## 4. Estimate PNDE conditional on L(0), and the marginal value of PNDE</span></span>
+<span id="cb45-65"><a href="msm_chapter.html#cb45-65" tabindex="-1"></a><span class="co"># a = 1 and a* = 0</span></span>
+<span id="cb45-66"><a href="msm_chapter.html#cb45-66" tabindex="-1"></a><span class="co"># PNDE|L(0) = (a - a*)[alpha_A + alpha_AM.g^-1(a^*,l(0))]</span></span>
+<span id="cb45-67"><a href="msm_chapter.html#cb45-67" tabindex="-1"></a>g.minus1.A0 <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">coef</span>(MSM2)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(MSM2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">*</span> <span class="dv">0</span> <span class="sc">+</span></span>
+<span id="cb45-68"><a href="msm_chapter.html#cb45-68" tabindex="-1"></a>                      <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_male&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_male <span class="sc">+</span></span>
+<span id="cb45-69"><a href="msm_chapter.html#cb45-69" tabindex="-1"></a>                      <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_parent_low_educ_lv&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_parent_low_educ_lv)</span>
+<span id="cb45-70"><a href="msm_chapter.html#cb45-70" tabindex="-1"></a></span>
+<span id="cb45-71"><a href="msm_chapter.html#cb45-71" tabindex="-1"></a><span class="co"># PNDE conditional on L(0)</span></span>
+<span id="cb45-72"><a href="msm_chapter.html#cb45-72" tabindex="-1"></a>PNDE_L0 <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="dv">0</span>) <span class="sc">*</span> (<span class="fu">coef</span>(MSM1)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">+</span></span>
+<span id="cb45-73"><a href="msm_chapter.html#cb45-73" tabindex="-1"></a>                        <span class="fu">coef</span>(MSM1)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>] <span class="sc">*</span> g.minus1.A0)</span>
+<span id="cb45-74"><a href="msm_chapter.html#cb45-74" tabindex="-1"></a><span class="co"># marginal PNDE</span></span>
+<span id="cb45-75"><a href="msm_chapter.html#cb45-75" tabindex="-1"></a>PNDE <span class="ot">&lt;-</span> <span class="fu">mean</span>(PNDE_L0)</span>
+<span id="cb45-76"><a href="msm_chapter.html#cb45-76" tabindex="-1"></a><span class="co"># [1] 0.06850657</span></span>
+<span id="cb45-77"><a href="msm_chapter.html#cb45-77" tabindex="-1"></a></span>
+<span id="cb45-78"><a href="msm_chapter.html#cb45-78" tabindex="-1"></a><span class="do">## 4. Estimate TNIE conditional on L(0), and the marginal value of TNIE</span></span>
+<span id="cb45-79"><a href="msm_chapter.html#cb45-79" tabindex="-1"></a><span class="co"># TNIE|L(0) = [g^-1(a,l(0)) - g^-1(a^*,l(0))] * (alpha_M + alpha_AM * a)</span></span>
+<span id="cb45-80"><a href="msm_chapter.html#cb45-80" tabindex="-1"></a>g.minus1.A1 <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">coef</span>(MSM2)[<span class="st">&quot;(Intercept)&quot;</span>] <span class="sc">+</span> <span class="fu">coef</span>(MSM2)[<span class="st">&quot;A0_ace&quot;</span>] <span class="sc">*</span> <span class="dv">1</span> <span class="sc">+</span></span>
+<span id="cb45-81"><a href="msm_chapter.html#cb45-81" tabindex="-1"></a>                        <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_male&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_male <span class="sc">+</span></span>
+<span id="cb45-82"><a href="msm_chapter.html#cb45-82" tabindex="-1"></a>                        <span class="fu">coef</span>(MSM2)[<span class="st">&quot;L0_parent_low_educ_lv&quot;</span>] <span class="sc">*</span> df1_int<span class="sc">$</span>L0_parent_low_educ_lv)</span>
+<span id="cb45-83"><a href="msm_chapter.html#cb45-83" tabindex="-1"></a></span>
+<span id="cb45-84"><a href="msm_chapter.html#cb45-84" tabindex="-1"></a><span class="co"># TNIE conditional on L(0)</span></span>
+<span id="cb45-85"><a href="msm_chapter.html#cb45-85" tabindex="-1"></a>TNIE_L0 <span class="ot">&lt;-</span> (g.minus1.A1 <span class="sc">-</span> g.minus1.A0) <span class="sc">*</span> (<span class="fu">coef</span>(MSM1)[<span class="st">&quot;M_smoking&quot;</span>] <span class="sc">+</span></span>
+<span id="cb45-86"><a href="msm_chapter.html#cb45-86" tabindex="-1"></a>                                            <span class="fu">coef</span>(MSM1)[<span class="st">&quot;A0_ace:M_smoking&quot;</span>] <span class="sc">*</span> <span class="dv">1</span>)</span>
+<span id="cb45-87"><a href="msm_chapter.html#cb45-87" tabindex="-1"></a><span class="co"># marginal PNDE</span></span>
+<span id="cb45-88"><a href="msm_chapter.html#cb45-88" tabindex="-1"></a>TNIE <span class="ot">&lt;-</span> <span class="fu">mean</span>(TNIE_L0)</span>
+<span id="cb45-89"><a href="msm_chapter.html#cb45-89" tabindex="-1"></a><span class="co"># [1] 0.01096799</span></span></code></pre></div>
 <p>In this example, the estimation of the PNDE is 6.9% and the estimation of the TNIE is 1.1%. Confidence intervals can be calculated by bootstrap.</p>
 
 </div>

@@ -25,6 +25,8 @@ The examples given in this workshop have been elaborated for R (version 4.3.3).
 
 Depending on the estimator, some R packages might be necessary:
 
+- `lavaan` [package](https://lavaan.ugent.be/)
+- `semPlot` [package](https://cran.r-project.org/web/packages/semPlot/index.html)
 - `CMAverse` [package](https://bs1125.github.io/CMAverse/)
 - `sandwich` [package](https://sandwich.r-forge.r-project.org/articles/sandwich.html)
 - `boot` [package](https://cran.r-project.org/web/packages/boot/index.html)

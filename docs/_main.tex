@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-09-19}
+\date{2024-10-10}
 
 \begin{document}
 \maketitle
@@ -171,6 +171,10 @@ The examples given in this workshop have been elaborated for R (version 4.3.3).
 Depending on the estimator, some R packages might be necessary:
 
 \begin{itemize}
+\item
+  \texttt{lavaan} \href{https://lavaan.ugent.be/}{package}
+\item
+  \texttt{semPlot} \href{https://cran.r-project.org/web/packages/semPlot/index.html}{package}
 \item
   \texttt{CMAverse} \href{https://bs1125.github.io/CMAverse/}{package}
 \item
@@ -494,6 +498,194 @@ However, as for the binary mediator, some authors suggested that using linear re
 \end{Highlighting}
 \end{Shaded}
 
+\section{Path analysis and Structural Equation Modeling}\label{path-analysis-and-structural-equation-modeling}
+
+Path analyses can be considered as a ``generalization'' of the product of coefficients method. They combine graphical representation of causal structures, a set of linear equations and assumptions concerning the covariance structure of residuals.
+
+When the causal model includes latent variables (represented by a measurement model), we refer to the analysis as structural equation modeling.
+
+Variables which does not receive causal inputs from any other variable in the diagram are called exogenous variables. Unless the assumption is explicitly made that two exogenous variables are uncorrelated (because they do not have any common causal factor), it is preferable to consider them as not independent (connecting them by double arrows).
+
+In the \texttt{df1.csv} data set, there are 3 exogenous variables: \texttt{L0\_male}, \texttt{L0\_soc\_env} and \texttt{L1}.
+
+We will use the \href{https://lavaan.ugent.be/}{\texttt{lavaan}} R package to run path analyses.
+
+\begin{itemize}
+\tightlist
+\item
+  The first step is to write the model syntax
+\item
+  The second step is to analyze the model with the dataset
+\end{itemize}
+
+\textbf{First step}. Let us write the model syntax to analyze the effect of being exposed to high levels of \(\text{PM}_{2.5}\) on quality of life, mediated by type-2 diabetes.
+
+We have to define:
+
+\begin{itemize}
+\tightlist
+\item
+  regression models for the endogenous variables: exposure to \(\text{PM}_{2.5}\) (\texttt{A0\_PM2.5}), type-2 diabetes (\texttt{M\_diabetes}) and quality of life (\texttt{Y\_qol})
+\item
+  covariance assumptions for the exogenous variables
+\item
+  we can also define additional parameters of interest (in our case, direct, indirect and total effects)
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sem.QoL }\OtherTok{\textless{}{-}} \StringTok{"                                 \# models are written between quotes}
+\StringTok{\#\# Regression models}
+\StringTok{\#\# we can also add the names of some path coefficients }
+\StringTok{  A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env}
+\StringTok{  M\_diabetes \textasciitilde{} L0\_male + L0\_soc\_env + b.A * A0\_PM2.5 + L1   \# label b.A path coef}
+\StringTok{  Y\_qol \textasciitilde{} L0\_male + L0\_soc\_env + c.A*A0\_PM2.5 + L1 + c.M*M\_diabetes \# label c.A and c.M}
+
+\StringTok{\#\# Covariances}
+\StringTok{\# Assuming a non{-}null covariance between confounders }
+\StringTok{\# covariances are represented with a double tilde \textasciitilde{}\textasciitilde{} (double arrow)}
+\StringTok{\# (note: in the data{-}generating system, the null assumptions were true)}
+\StringTok{  L0\_male \textasciitilde{}\textasciitilde{} L0\_soc\_env}
+\StringTok{  L0\_male \textasciitilde{}\textasciitilde{} L1}
+\StringTok{  L0\_soc\_env \textasciitilde{}\textasciitilde{} L1}
+
+\StringTok{\#\# We can define other parameters to estimate, using the := syntax}
+\StringTok{\#\# we want the direct, indirect and total effects:}
+\StringTok{  direct := c.A}
+\StringTok{  indirect := b.A * c.M}
+\StringTok{  total := (b.A * c.M) + c.A}
+\StringTok{"}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Second step}. Let us analyze the model with the \texttt{df1.csv} dataset using the \texttt{sem} function from the \texttt{lavaan} package.
+
+Binary exogenous variables (\texttt{L0\_male},\texttt{L0\_soc\_env} and \texttt{L1}) can be coded as simple dummy (0/1) variables, there is no need to declare them as \texttt{factors}.
+
+Note that in the following example, we will not declare the other binary variables (\texttt{A0\_PM2.5},\texttt{M\_diabetes}) as factors and let them as simple dummy variables.
+
+Running the \texttt{sem} function with the \texttt{df1.csv} dataset, we obtain:
+
+\begin{itemize}
+\tightlist
+\item
+  information about the estimator
+\item
+  estimates of the regression models
+\item
+  estimates of the covariance between exogenous variables
+\item
+  estimates of the residual variances
+\item
+  estimates of the additional parameters (direct, indirect and total effects)
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit.qol }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{sem}\NormalTok{(}\AttributeTok{model =}\NormalTok{ sem.QoL,}
+                       \AttributeTok{data =}\NormalTok{ df1)}
+\FunctionTok{summary}\NormalTok{(fit.qol)}
+\CommentTok{\# lavaan 0.6{-}18 ended normally after 23 iterations}
+\CommentTok{\# }
+\CommentTok{\# Estimator                                         ML}
+\CommentTok{\# Optimization method                           NLMINB}
+\CommentTok{\# Number of model parameters                        20}
+\CommentTok{\# }
+\CommentTok{\# Number of observations                         10000}
+\CommentTok{\# }
+\CommentTok{\# Model Test User Model:}
+\CommentTok{\#   Test statistic                                 0.211}
+\CommentTok{\#   Degrees of freedom                                 1}
+\CommentTok{\#   P{-}value (Chi{-}square)                           0.646}
+\CommentTok{\# }
+\CommentTok{\# Parameter Estimates:}
+\CommentTok{\#   Standard errors                             Standard}
+\CommentTok{\#   Information                                 Expected}
+\CommentTok{\#   Information saturated (h1) model          Structured}
+\CommentTok{\# }
+\CommentTok{\# Regressions:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
+\CommentTok{\# A0\_PM2.5 \textasciitilde{}                                          }
+\CommentTok{\#   L0\_male           0.040    0.006    6.337    0.000}
+\CommentTok{\#   L0\_sc\_nv          0.058    0.007    8.869    0.000}
+\CommentTok{\# M\_diabetes \textasciitilde{}                                        }
+\CommentTok{\#   L0\_male           0.053    0.009    5.836    0.000}
+\CommentTok{\#   L0\_sc\_nv          0.066    0.009    6.974    0.000}
+\CommentTok{\#   A0\_PM2.5 (b.A)    0.127    0.014    8.795    0.000}
+\CommentTok{\#   L1                0.070    0.010    7.078    0.000}
+\CommentTok{\# Y\_qol \textasciitilde{}                                             }
+\CommentTok{\#   L0\_male          {-}0.719    0.202   {-}3.567    0.000}
+\CommentTok{\#   L0\_sc\_nv         {-}2.888    0.211  {-}13.678    0.000}
+\CommentTok{\#   A0\_PM2.5 (c.A)   {-}3.965    0.321  {-}12.349    0.000}
+\CommentTok{\#   L1               {-}3.425    0.221  {-}15.488    0.000}
+\CommentTok{\#   M\_diabts (c.M)   {-}8.714    0.222  {-}39.249    0.000}
+\CommentTok{\# }
+\CommentTok{\# Covariances:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
+\CommentTok{\# L0\_male \textasciitilde{}\textasciitilde{}                                          }
+\CommentTok{\#   L0\_soc\_env       {-}0.003    0.002   {-}1.167    0.243}
+\CommentTok{\#   L1               {-}0.002    0.002   {-}0.832    0.406}
+\CommentTok{\# L0\_soc\_env \textasciitilde{}\textasciitilde{}                                       }
+\CommentTok{\#   L1               {-}0.001    0.002   {-}0.468    0.640}
+\CommentTok{\# }
+\CommentTok{\# Variances:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
+\CommentTok{\#  .A0\_PM2.5          0.099    0.001   70.711    0.000}
+\CommentTok{\#  .M\_diabetes        0.205    0.003   70.711    0.000}
+\CommentTok{\#  .Y\_qol           100.882    1.427   70.711    0.000}
+\CommentTok{\#   L0\_male           0.250    0.004   70.711    0.000}
+\CommentTok{\#   L0\_soc\_env        0.229    0.003   70.711    0.000}
+\CommentTok{\#   L1                0.207    0.003   70.711    0.000}
+\CommentTok{\# }
+\CommentTok{\# Defined Parameters:}
+\CommentTok{\#                Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
+\CommentTok{\# direct           {-}3.965    0.321  {-}12.349    0.000}
+\CommentTok{\# indirect         {-}1.104    0.129   {-}8.582    0.000}
+\CommentTok{\# total            {-}5.069    0.344  {-}14.753    0.000}
+\end{Highlighting}
+\end{Shaded}
+
+The Baron \& Kenny approach gave us the following results:
+
+\begin{itemize}
+\tightlist
+\item
+  direct effect = -3.965
+\item
+  indirect effect = -1.131 (using the ``difference in coefficients'' method) or -1.108213 (using the ``product of coefficients'' method)
+\item
+  total effect = -5.096
+\end{itemize}
+
+The path analysis results from \texttt{lavaan} are very close the the Baron \& Kenny results.
+
+We can plot the estimated model using the \texttt{semPlot} package (Figure \ref{fig:FigSemPlotQol1}):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(semPlot)}
+\FunctionTok{semPaths}\NormalTok{(fit.qol,}
+         \AttributeTok{what =} \StringTok{"est"}\NormalTok{,}
+         \AttributeTok{layout =} \StringTok{"tree2"}\NormalTok{, }\CommentTok{\# tree, tree2, spring}
+         \AttributeTok{rotation =} \DecValTok{2}\NormalTok{, }\CommentTok{\#exogenous on the left, endogenous on the right}
+         \AttributeTok{sizeMan =} \DecValTok{10}\NormalTok{, }\CommentTok{\# font size of manifest variable names}
+         \AttributeTok{nCharNodes =} \DecValTok{0}\NormalTok{,}
+         \AttributeTok{nCharEdges =} \DecValTok{0}\NormalTok{, }\CommentTok{\# don\textquotesingle{}t limit variable name lengths}
+         \AttributeTok{edge.label.cex =} \FloatTok{0.6}\NormalTok{,}
+         \AttributeTok{curvePivot =} \ConstantTok{TRUE}\NormalTok{,}
+         \AttributeTok{fade =} \ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.7\linewidth]{./figures/sem_plot} 
+
+}
+
+\caption{Plot of the SEM}\label{fig:FigSemPlotQol1}
+\end{figure}
+
 \chapter{Traditional regression models}\label{ChapTradRegModels}
 
 Traditional regression models can be applied in the absence of an intermediate confounder \(L(1)\) of the \(M-Y\) relationship affected by the exposure \(A\) (Causal model 1). They can be used for two-way, three-way and four-way decomposition of the average total effect.
@@ -506,14 +698,14 @@ In the following examples, we use the \texttt{df1\_int.csv} data set with a \(A 
 \end{Highlighting}
 \end{Shaded}
 
-If we assumed that there was no \(A \star M\) interaction, then the \texttt{A0\_ace:M\_smoking} interaction terms should be removed from the models below (applicable if we use the \texttt{df1.csv} data set).
+If we assumed that there was no \(A \star M\) interaction, then the \texttt{A0\_PM2.5:M\_diabetes} interaction terms should be removed from the models below (applicable if we use the \texttt{df1.csv} data set).
 
 \section{Estimation of the Average Total Effect (ATE)}\label{estimation-of-the-average-total-effect-ate}
 
-The average total effect is the difference between the mean outcome had the whole population been exposed to adverse childhood experience (ACE), compared to the mean outcome had the whole population been unexposed to ACE:
+The average total effect is the difference between the mean outcome had the whole population been exposed to high levels of \(\text{PM}_{2.5}\), compared to the mean outcome had the whole population been unexposed:
 \(\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})\).
 
-For the quantitative outcome, the ATE of the adverse childhood experience \(A\) on the quality of life score \(Y\) can be estimated using a traditional linear regression of \texttt{Y\_qol} on \texttt{A0\_ace}, adjusted for the baseline confounders \texttt{L0\_male} and \texttt{L0\_parent\_low\_educ\_lv}.
+For the quantitative outcome, the ATE of the exposure to high levels of \(\text{PM}_{2.5}\) \((A =1 \text{ versus } A=0)\) on the quality of life score \(Y\) can be estimated using a traditional linear regression of \texttt{Y\_qol} on \texttt{A0\_PM2.5}, adjusted for the baseline confounders \texttt{L0\_male} and \texttt{L0\_parent\_low\_educ\_lv}.
 
 For the binary outcome (death), we can estimate a risk difference applying a Generalized Linear Model with a Gaussian distribution and identity link, as suggested by Naimi \emph{et al} (\citeproc{ref-naimi2020}{Naimi and Whitcomb 2020}).
 
@@ -527,22 +719,22 @@ The regression coefficient of the exposure variable \(A\) is used to estimate th
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# For quantitative outcomes, apply a linear regression of Y on A (A0\_ace), }
+\CommentTok{\# For quantitative outcomes, apply a linear regression of Y on A (A0\_PM2.5), }
 \CommentTok{\# adjusted for the baseline confounders L(0):}
-\NormalTok{trad\_ATE\_qol }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{trad\_ATE\_qol }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                    \AttributeTok{data =}\NormalTok{ df1\_int)}
 
 \CommentTok{\# For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and}
 \CommentTok{\# identity link, adjusted for the baseline confounders:}
-\NormalTok{trad\_ATE\_death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{trad\_ATE\_death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                       \AttributeTok{family =} \FunctionTok{gaussian}\NormalTok{(}\StringTok{"identity"}\NormalTok{),}
                       \AttributeTok{data =}\NormalTok{ df1\_int)}
 
-\CommentTok{\# Use the regression coefficient of the exposure (A0\_ace) to estimate the ATE}
-\NormalTok{ATE\_trad\_qol }\OtherTok{\textless{}{-}} \FunctionTok{coefficients}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\CommentTok{\# Use the regression coefficient of the exposure (A0\_PM2.5) to estimate the ATE}
+\NormalTok{ATE\_trad\_qol }\OtherTok{\textless{}{-}} \FunctionTok{coefficients}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# {-}7.210089}
 
-\NormalTok{ATE\_trad\_death }\OtherTok{\textless{}{-}} \FunctionTok{coefficients}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{ATE\_trad\_death }\OtherTok{\textless{}{-}} \FunctionTok{coefficients}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.07720726}
 \end{Highlighting}
 \end{Shaded}

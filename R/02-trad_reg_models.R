@@ -11,20 +11,20 @@ df1_int <- read.csv(file = "df1_int.csv")
 ################################################################################
 
 ### ATE
-# For quantitative outcomes, apply a linear regression of Y on A (A0_ace),
+# For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5),
 # adjusted for the baseline confounders L(0):
-trad_ATE_qol <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+trad_ATE_qol <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
                    data = df1_int)
 
 # For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and
 # identity link, adjusted for the baseline confounders:
-trad_ATE_death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+trad_ATE_death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                       family = gaussian("identity"),
                       data = df1_int)
 
-# Use the regression coefficient of the exposure (A0_ace) to estimate the ATE
-ATE_trad_qol <- coefficients(trad_ATE_qol)["A0_ace"]
-ATE_trad_death <- coefficients(trad_ATE_death)["A0_ace"]
+# Use the regression coefficient of the exposure (A0_PM2.5) to estimate the ATE
+ATE_trad_qol <- coefficients(trad_ATE_qol)["A0_PM2.5"]
+ATE_trad_death <- coefficients(trad_ATE_death)["A0_PM2.5"]
 
 ATE_trad_qol
 # -7.210089
@@ -35,15 +35,15 @@ ATE_trad_death
 ## IC95%
 library(sandwich)
 # for the Quality of Life outcome
-ATE_trad_qol <- list(ATE = coef(trad_ATE_qol)["A0_ace"],
-                     lo = coef(trad_ATE_qol)["A0_ace"] - qnorm(0.975) *
-                       sqrt(sandwich(trad_ATE_qol)["A0_ace","A0_ace"]),
-                     hi = coef(trad_ATE_qol)["A0_ace"] + qnorm(0.975) *
-                       sqrt(sandwich(trad_ATE_qol)["A0_ace","A0_ace"]))
+ATE_trad_qol <- list(ATE = coef(trad_ATE_qol)["A0_PM2.5"],
+                     lo = coef(trad_ATE_qol)["A0_PM2.5"] - qnorm(0.975) *
+                       sqrt(sandwich(trad_ATE_qol)["A0_PM2.5","A0_PM2.5"]),
+                     hi = coef(trad_ATE_qol)["A0_PM2.5"] + qnorm(0.975) *
+                       sqrt(sandwich(trad_ATE_qol)["A0_PM2.5","A0_PM2.5"]))
 
 ATE_trad_qol
 # $ATE
-# A0_ace
+# A0_PM2.5
 # -7.210089
 # $lo
 # [1] -7.978234
@@ -51,33 +51,33 @@ ATE_trad_qol
 # [1] -6.441944
 
 # for death outcome
-ATE_trad_death <- list(ATE = coef(trad_ATE_death)["A0_ace"],
-                       lo = coef(trad_ATE_death)["A0_ace"] - qnorm(0.975) *
-                         sqrt(sandwich(trad_ATE_death)["A0_ace","A0_ace"]),
-                       hi = coef(trad_ATE_death)["A0_ace"] + qnorm(0.975) *
-                         sqrt(sandwich(trad_ATE_death)["A0_ace","A0_ace"]))
+ATE_trad_death <- list(ATE = coef(trad_ATE_death)["A0_PM2.5"],
+                       lo = coef(trad_ATE_death)["A0_PM2.5"] - qnorm(0.975) *
+                         sqrt(sandwich(trad_ATE_death)["A0_PM2.5","A0_PM2.5"]),
+                       hi = coef(trad_ATE_death)["A0_PM2.5"] + qnorm(0.975) *
+                         sqrt(sandwich(trad_ATE_death)["A0_PM2.5","A0_PM2.5"]))
 ATE_trad_death
 # $ATE
-# A0_ace
+# A0_PM2.5
 # 0.07720726
 # $lo
-# A0_ace
+# A0_PM2.5
 # 0.04945859
 # $hi
-# A0_ace
+# A0_PM2.5
 # 0.1049559
 
 # 95% CI calculation applying a bootstrap procedure
 library(boot)
 bootfunc <- function(data,index){
   boot_dat <- data[index,]
-  mod.qol <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+  mod.qol <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
                 data = boot_dat)
-  mod.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+  mod.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                    family = gaussian("identity"),
                    data = boot_dat)
-  est <- c(coef(mod.qol)["A0_ace"],
-           coef(mod.death)["A0_ace"])
+  est <- c(coef(mod.qol)["A0_PM2.5"],
+           coef(mod.death)["A0_PM2.5"])
   return(est)
 }
 
@@ -101,20 +101,20 @@ boot.ci(boot_est, index = 2, type = "norm")
 
 
 ### For risk of death, expressed using Odds Ratio conditional on L(0):
-TE_death_model <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+TE_death_model <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                       family = "binomial",
                       data = df1_int)
 res_TE_death <- summary(TE_death_model)
-tot.effect.death.OR <- list(OR = exp(coef(res_TE_death)["A0_ace","Estimate"]),
-                            lo = exp(coef(res_TE_death)["A0_ace","Estimate"] -
+tot.effect.death.OR <- list(OR = exp(coef(res_TE_death)["A0_PM2.5","Estimate"]),
+                            lo = exp(coef(res_TE_death)["A0_PM2.5","Estimate"] -
                                        qnorm(0.975) *
-                                       coef(res_TE_death)["A0_ace","Std. Error"]),
-                            hi = exp(coef(res_TE_death)["A0_ace","Estimate"] +
+                                       coef(res_TE_death)["A0_PM2.5","Std. Error"]),
+                            hi = exp(coef(res_TE_death)["A0_PM2.5","Estimate"] +
                                        qnorm(0.975) *
-                                       coef(res_TE_death)["A0_ace","Std. Error"]))
+                                       coef(res_TE_death)["A0_PM2.5","Std. Error"]))
 tot.effect.death.OR
 # $OR
-# A0_ace
+# A0_PM2.5
 # 1.523254
 # $lo
 # [1] 1.323317
@@ -131,29 +131,29 @@ tot.effect.death.OR
 ################################################################################
 
 ### Quantitative outcome
-trad_qol_am <- lm(Y_qol ~ A0_ace + M_smoking + A0_ace:M_smoking +
-                    L0_male + L0_parent_low_educ_lv + L1,
+trad_qol_am <- lm(Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+                    L0_male + L0_soc_env + L1,
                   data = df1_int)
-gamma.A.q <- coef(trad_qol_am)["A0_ace"]
-gamma.M.q <- coef(trad_qol_am)["M_smoking"]
-gamma.AM.q <- coef(trad_qol_am)["A0_ace:M_smoking"]
+gamma.A.q <- coef(trad_qol_am)["A0_PM2.5"]
+gamma.M.q <- coef(trad_qol_am)["M_diabetes"]
+gamma.AM.q <- coef(trad_qol_am)["A0_PM2.5:M_diabetes"]
 
 
-trad_m <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv + L1, # il semble qu'il faut aussi ajuster sur L1 ici ?
+trad_m <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + L1, # il semble qu'il faut aussi ajuster sur L1 ici ? sur simulation, c'est mieux sans ajuster sur L1 # de plus, régression logistique => non-collapsibility cela peut jouer
               family = "binomial",
               data = df1_int)
 beta.0 <- coef(trad_m)["(Intercept)"]
-beta.A <- coef(trad_m)["A0_ace"]
+beta.A <- coef(trad_m)["A0_PM2.5"]
 
 
 ### binary outcome
-trad_death_am <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking +
-                       L0_male + L0_parent_low_educ_lv + L1,
+trad_death_am <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+                       L0_male + L0_soc_env + L1,
                      family = "binomial",
                      data = df1_int)
-gamma.A.d <- coef(trad_death_am)["A0_ace"]
-gamma.M.d <- coef(trad_death_am)["M_smoking"]
-gamma.AM.d <- coef(trad_death_am)["A0_ace:M_smoking"]
+gamma.A.d <- coef(trad_death_am)["A0_PM2.5"]
+gamma.M.d <- coef(trad_death_am)["M_diabetes"]
+gamma.AM.d <- coef(trad_death_am)["A0_PM2.5:M_diabetes"]
 
 ### CDE
 ### For a continuous outcome
@@ -241,10 +241,10 @@ library(regmedint)
 regmedint_cont <- regmedint(data = df1_int,
                             ## Variables
                             yvar = "Y_qol",                   # outcome variable
-                            avar = "A0_ace",                  # exposure
-                            mvar = "M_smoking",               # mediator
+                            avar = "A0_PM2.5",                  # exposure
+                            mvar = "M_diabetes",               # mediator
                             cvar = c("L0_male",               # confounders
-                                     "L0_parent_low_educ_lv",
+                                     "L0_soc_env",
                                      "L1"),
                             #eventvar = "event",     # only for survival outcome
                             ## Values at which effects are evaluated
@@ -274,10 +274,10 @@ summary(regmedint_cont)
 regmedint_bin <- regmedint(data = df1_int,
                             ## Variables
                             yvar = "Y_death",                 # outcome variable
-                            avar = "A0_ace",                  # exposure
-                            mvar = "M_smoking",               # mediator
+                            avar = "A0_PM2.5",                  # exposure
+                            mvar = "M_diabetes",               # mediator
                             cvar = c("L0_male",               # confounders
-                                     "L0_parent_low_educ_lv",
+                                     "L0_soc_env",
                                      "L1"),
                             #eventvar = "event",     # only for survival outcome
                             ## Values at which effects are evaluated
@@ -444,10 +444,10 @@ library(CMAverse)
 res_rb_param_delta <- cmest(data = df1_int,
                             model = "rb", # for "regression based" (rb) approach
                             outcome = "Y_qol",        # outcome variable
-                            exposure = "A0_ace",      # exposure variable
-                            mediator = "M_smoking",   # mediator
+                            exposure = "A0_PM2.5",      # exposure variable
+                            mediator = "M_diabetes",   # mediator
                             basec = c("L0_male",      # confounders
-                                      "L0_parent_low_educ_lv",
+                                      "L0_soc_env",
                                       "L1"),
                             EMint = TRUE, # exposures*mediator interaction
                             mreg = list("logistic"), # model of the mediator
@@ -505,14 +505,14 @@ data.frame("Estimate" = res_rb_param_delta$effect.pe,
 
 
 ### For the binary outcome
-## Closed-form parameter function estimation and delta method inferece
+## Closed-form parameter function estimation and delta method inference
 res_rb_param_delta <- cmest(data = df1_int,
                             model = "rb", # for "regression based" (rb) approach
                             outcome = "Y_death",        # outcome variable
-                            exposure = "A0_ace",      # exposure variable
-                            mediator = "M_smoking",   # mediator
+                            exposure = "A0_PM2.5",      # exposure variable
+                            mediator = "M_diabetes",   # mediator
                             basec = c("L0_male",      # confounders
-                                      "L0_parent_low_educ_lv",
+                                      "L0_soc_env",
                                       "L1"),
                             EMint = TRUE, # exposures*mediator interaction
                             mreg = list("logistic"), # model of the mediator

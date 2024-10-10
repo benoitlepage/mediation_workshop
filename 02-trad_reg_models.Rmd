@@ -8,14 +8,14 @@ In the following examples, we use the `df1_int.csv` data set with a $A \star M$ 
 df1_int <- read.csv(file = "df1_int.csv")
 ```
 
-If we assumed that there was no $A \star M$ interaction, then the `A0_ace:M_smoking` interaction terms should be removed from the models below (applicable if we use the `df1.csv` data set).
+If we assumed that there was no $A \star M$ interaction, then the `A0_PM2.5:M_diabetes` interaction terms should be removed from the models below (applicable if we use the `df1.csv` data set).
 
 ## Estimation of the Average Total Effect (ATE)
 
-The average total effect is the difference between the mean outcome had the whole population been exposed to adverse childhood experience (ACE), compared to the mean outcome had the whole population been unexposed to ACE:
+The average total effect is the difference between the mean outcome had the whole population been exposed to high levels of $\text{PM}_{2.5}$, compared to the mean outcome had the whole population been unexposed:
 $\text{ATE} = \mathbb{E}(Y_{A=1}) - \mathbb{E}(Y_{A=0})$.
 
-For the quantitative outcome, the ATE of the adverse childhood experience $A$ on the quality of life score $Y$ can be estimated using a traditional linear regression of `Y_qol` on `A0_ace`, adjusted for the baseline confounders `L0_male` and `L0_parent_low_educ_lv`.
+For the quantitative outcome, the ATE of the exposure to high levels of $\text{PM}_{2.5}$ $(A =1 \text{ versus } A=0)$ on the quality of life score $Y$ can be estimated using a traditional linear regression of `Y_qol` on `A0_PM2.5`, adjusted for the baseline confounders `L0_male` and `L0_parent_low_educ_lv`.
 
 For the binary outcome (death), we can estimate a risk difference applying a Generalized Linear Model with a Gaussian distribution and identity link, as suggested by Naimi _et al_ [@naimi2020].
 
@@ -29,22 +29,22 @@ The regression coefficient of the exposure variable $A$ is used to estimate the 
 $$ \hat{\Psi}_{\text{trad}}^{\text{ATE}} = \hat{\alpha}_A$$
 
 ```{r trad_reg_ATE, echo=TRUE, eval = FALSE}
-# For quantitative outcomes, apply a linear regression of Y on A (A0_ace), 
+# For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5), 
 # adjusted for the baseline confounders L(0):
-trad_ATE_qol <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+trad_ATE_qol <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
                    data = df1_int)
 
 # For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and
 # identity link, adjusted for the baseline confounders:
-trad_ATE_death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+trad_ATE_death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                       family = gaussian("identity"),
                       data = df1_int)
 
-# Use the regression coefficient of the exposure (A0_ace) to estimate the ATE
-ATE_trad_qol <- coefficients(trad_ATE_qol)["A0_ace"]
+# Use the regression coefficient of the exposure (A0_PM2.5) to estimate the ATE
+ATE_trad_qol <- coefficients(trad_ATE_qol)["A0_PM2.5"]
 # -7.210089
 
-ATE_trad_death <- coefficients(trad_ATE_death)["A0_ace"]
+ATE_trad_death <- coefficients(trad_ATE_death)["A0_PM2.5"]
 # 0.07720726
 ```
 

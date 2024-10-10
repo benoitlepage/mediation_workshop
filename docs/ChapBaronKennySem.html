@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 4 Baron and Kenny, structural equation models | Mediation Workshop</title>
   <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
-  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 4 Baron and Kenny, structural equation models | Mediation Workshop" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-09-19" />
+<meta name="date" content="2024-10-10" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -173,6 +173,7 @@ div.csl-indent {
 <li class="chapter" data-level="4" data-path="ChapBaronKennySem.html"><a href="ChapBaronKennySem.html"><i class="fa fa-check"></i><b>4</b> Baron and Kenny, structural equation models</a>
 <ul>
 <li class="chapter" data-level="4.1" data-path="ChapBaronKennySem.html"><a href="ChapBaronKennySem.html#baron-and-kenny-approach"><i class="fa fa-check"></i><b>4.1</b> Baron and Kenny approach</a></li>
+<li class="chapter" data-level="4.2" data-path="ChapBaronKennySem.html"><a href="ChapBaronKennySem.html#path-analysis-and-structural-equation-modeling"><i class="fa fa-check"></i><b>4.2</b> Path analysis and Structural Equation Modeling</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="ChapTradRegModels.html"><a href="ChapTradRegModels.html"><i class="fa fa-check"></i><b>5</b> Traditional regression models</a>
 <ul>
@@ -462,6 +463,142 @@ div.csl-indent {
 <span id="cb2-40"><a href="ChapBaronKennySem.html#cb2-40" tabindex="-1"></a><span class="co"># or the product of coefficients using the previous model 2bis and model 3:</span></span>
 <span id="cb2-41"><a href="ChapBaronKennySem.html#cb2-41" tabindex="-1"></a>linear.model.A.M<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">*</span> model.A.M.death<span class="sc">$</span>coefficients[<span class="st">&quot;M_diabetes&quot;</span>]</span>
 <span id="cb2-42"><a href="ChapBaronKennySem.html#cb2-42" tabindex="-1"></a><span class="co"># 0.008234978, i.e. approximately 0.8%</span></span></code></pre></div>
+</div>
+<div id="path-analysis-and-structural-equation-modeling" class="section level2 hasAnchor" number="4.2">
+<h2><span class="header-section-number">4.2</span> Path analysis and Structural Equation Modeling<a href="ChapBaronKennySem.html#path-analysis-and-structural-equation-modeling" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Path analyses can be considered as a “generalization” of the product of coefficients method. They combine graphical representation of causal structures, a set of linear equations and assumptions concerning the covariance structure of residuals.</p>
+<p>When the causal model includes latent variables (represented by a measurement model), we refer to the analysis as structural equation modeling.</p>
+<p>Variables which does not receive causal inputs from any other variable in the diagram are called exogenous variables. Unless the assumption is explicitly made that two exogenous variables are uncorrelated (because they do not have any common causal factor), it is preferable to consider them as not independent (connecting them by double arrows).</p>
+<p>In the <code>df1.csv</code> data set, there are 3 exogenous variables: <code>L0_male</code>, <code>L0_soc_env</code> and <code>L1</code>.</p>
+<p>We will use the <a href="https://lavaan.ugent.be/"><code>lavaan</code></a> R package to run path analyses.</p>
+<ul>
+<li>The first step is to write the model syntax</li>
+<li>The second step is to analyze the model with the dataset</li>
+</ul>
+<p><strong>First step</strong>. Let us write the model syntax to analyze the effect of being exposed to high levels of <span class="math inline">\(\text{PM}_{2.5}\)</span> on quality of life, mediated by type-2 diabetes.</p>
+<p>We have to define:</p>
+<ul>
+<li>regression models for the endogenous variables: exposure to <span class="math inline">\(\text{PM}_{2.5}\)</span> (<code>A0_PM2.5</code>), type-2 diabetes (<code>M_diabetes</code>) and quality of life (<code>Y_qol</code>)</li>
+<li>covariance assumptions for the exogenous variables</li>
+<li>we can also define additional parameters of interest (in our case, direct, indirect and total effects)</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="ChapBaronKennySem.html#cb3-1" tabindex="-1"></a>sem.QoL <span class="ot">&lt;-</span> <span class="st">&quot;                                 # models are written between quotes</span></span>
+<span id="cb3-2"><a href="ChapBaronKennySem.html#cb3-2" tabindex="-1"></a><span class="st">## Regression models</span></span>
+<span id="cb3-3"><a href="ChapBaronKennySem.html#cb3-3" tabindex="-1"></a><span class="st">## we can also add the names of some path coefficients </span></span>
+<span id="cb3-4"><a href="ChapBaronKennySem.html#cb3-4" tabindex="-1"></a><span class="st">  A0_PM2.5 ~ L0_male + L0_soc_env</span></span>
+<span id="cb3-5"><a href="ChapBaronKennySem.html#cb3-5" tabindex="-1"></a><span class="st">  M_diabetes ~ L0_male + L0_soc_env + b.A * A0_PM2.5 + L1   # label b.A path coef</span></span>
+<span id="cb3-6"><a href="ChapBaronKennySem.html#cb3-6" tabindex="-1"></a><span class="st">  Y_qol ~ L0_male + L0_soc_env + c.A*A0_PM2.5 + L1 + c.M*M_diabetes # label c.A and c.M</span></span>
+<span id="cb3-7"><a href="ChapBaronKennySem.html#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="ChapBaronKennySem.html#cb3-8" tabindex="-1"></a><span class="st">## Covariances</span></span>
+<span id="cb3-9"><a href="ChapBaronKennySem.html#cb3-9" tabindex="-1"></a><span class="st"># Assuming a non-null covariance between confounders </span></span>
+<span id="cb3-10"><a href="ChapBaronKennySem.html#cb3-10" tabindex="-1"></a><span class="st"># covariances are represented with a double tilde ~~ (double arrow)</span></span>
+<span id="cb3-11"><a href="ChapBaronKennySem.html#cb3-11" tabindex="-1"></a><span class="st"># (note: in the data-generating system, the null assumptions were true)</span></span>
+<span id="cb3-12"><a href="ChapBaronKennySem.html#cb3-12" tabindex="-1"></a><span class="st">  L0_male ~~ L0_soc_env</span></span>
+<span id="cb3-13"><a href="ChapBaronKennySem.html#cb3-13" tabindex="-1"></a><span class="st">  L0_male ~~ L1</span></span>
+<span id="cb3-14"><a href="ChapBaronKennySem.html#cb3-14" tabindex="-1"></a><span class="st">  L0_soc_env ~~ L1</span></span>
+<span id="cb3-15"><a href="ChapBaronKennySem.html#cb3-15" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="ChapBaronKennySem.html#cb3-16" tabindex="-1"></a><span class="st">## We can define other parameters to estimate, using the := syntax</span></span>
+<span id="cb3-17"><a href="ChapBaronKennySem.html#cb3-17" tabindex="-1"></a><span class="st">## we want the direct, indirect and total effects:</span></span>
+<span id="cb3-18"><a href="ChapBaronKennySem.html#cb3-18" tabindex="-1"></a><span class="st">  direct := c.A</span></span>
+<span id="cb3-19"><a href="ChapBaronKennySem.html#cb3-19" tabindex="-1"></a><span class="st">  indirect := b.A * c.M</span></span>
+<span id="cb3-20"><a href="ChapBaronKennySem.html#cb3-20" tabindex="-1"></a><span class="st">  total := (b.A * c.M) + c.A</span></span>
+<span id="cb3-21"><a href="ChapBaronKennySem.html#cb3-21" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<p><strong>Second step</strong>. Let us analyze the model with the <code>df1.csv</code> dataset using the <code>sem</code> function from the <code>lavaan</code> package.</p>
+<p>Binary exogenous variables (<code>L0_male</code>,<code>L0_soc_env</code> and <code>L1</code>) can be coded as simple dummy (0/1) variables, there is no need to declare them as <code>factors</code>.</p>
+<p>Note that in the following example, we will not declare the other binary variables (<code>A0_PM2.5</code>,<code>M_diabetes</code>) as factors and let them as simple dummy variables.</p>
+<p>Running the <code>sem</code> function with the <code>df1.csv</code> dataset, we obtain:</p>
+<ul>
+<li>information about the estimator</li>
+<li>estimates of the regression models</li>
+<li>estimates of the covariance between exogenous variables</li>
+<li>estimates of the residual variances</li>
+<li>estimates of the additional parameters (direct, indirect and total effects)</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="ChapBaronKennySem.html#cb4-1" tabindex="-1"></a>fit.qol <span class="ot">&lt;-</span> lavaan<span class="sc">::</span><span class="fu">sem</span>(<span class="at">model =</span> sem.QoL,</span>
+<span id="cb4-2"><a href="ChapBaronKennySem.html#cb4-2" tabindex="-1"></a>                       <span class="at">data =</span> df1)</span>
+<span id="cb4-3"><a href="ChapBaronKennySem.html#cb4-3" tabindex="-1"></a><span class="fu">summary</span>(fit.qol)</span>
+<span id="cb4-4"><a href="ChapBaronKennySem.html#cb4-4" tabindex="-1"></a><span class="co"># lavaan 0.6-18 ended normally after 23 iterations</span></span>
+<span id="cb4-5"><a href="ChapBaronKennySem.html#cb4-5" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-6"><a href="ChapBaronKennySem.html#cb4-6" tabindex="-1"></a><span class="co"># Estimator                                         ML</span></span>
+<span id="cb4-7"><a href="ChapBaronKennySem.html#cb4-7" tabindex="-1"></a><span class="co"># Optimization method                           NLMINB</span></span>
+<span id="cb4-8"><a href="ChapBaronKennySem.html#cb4-8" tabindex="-1"></a><span class="co"># Number of model parameters                        20</span></span>
+<span id="cb4-9"><a href="ChapBaronKennySem.html#cb4-9" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-10"><a href="ChapBaronKennySem.html#cb4-10" tabindex="-1"></a><span class="co"># Number of observations                         10000</span></span>
+<span id="cb4-11"><a href="ChapBaronKennySem.html#cb4-11" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-12"><a href="ChapBaronKennySem.html#cb4-12" tabindex="-1"></a><span class="co"># Model Test User Model:</span></span>
+<span id="cb4-13"><a href="ChapBaronKennySem.html#cb4-13" tabindex="-1"></a><span class="co">#   Test statistic                                 0.211</span></span>
+<span id="cb4-14"><a href="ChapBaronKennySem.html#cb4-14" tabindex="-1"></a><span class="co">#   Degrees of freedom                                 1</span></span>
+<span id="cb4-15"><a href="ChapBaronKennySem.html#cb4-15" tabindex="-1"></a><span class="co">#   P-value (Chi-square)                           0.646</span></span>
+<span id="cb4-16"><a href="ChapBaronKennySem.html#cb4-16" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-17"><a href="ChapBaronKennySem.html#cb4-17" tabindex="-1"></a><span class="co"># Parameter Estimates:</span></span>
+<span id="cb4-18"><a href="ChapBaronKennySem.html#cb4-18" tabindex="-1"></a><span class="co">#   Standard errors                             Standard</span></span>
+<span id="cb4-19"><a href="ChapBaronKennySem.html#cb4-19" tabindex="-1"></a><span class="co">#   Information                                 Expected</span></span>
+<span id="cb4-20"><a href="ChapBaronKennySem.html#cb4-20" tabindex="-1"></a><span class="co">#   Information saturated (h1) model          Structured</span></span>
+<span id="cb4-21"><a href="ChapBaronKennySem.html#cb4-21" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-22"><a href="ChapBaronKennySem.html#cb4-22" tabindex="-1"></a><span class="co"># Regressions:</span></span>
+<span id="cb4-23"><a href="ChapBaronKennySem.html#cb4-23" tabindex="-1"></a><span class="co">#                  Estimate  Std.Err  z-value  P(&gt;|z|)</span></span>
+<span id="cb4-24"><a href="ChapBaronKennySem.html#cb4-24" tabindex="-1"></a><span class="co"># A0_PM2.5 ~                                          </span></span>
+<span id="cb4-25"><a href="ChapBaronKennySem.html#cb4-25" tabindex="-1"></a><span class="co">#   L0_male           0.040    0.006    6.337    0.000</span></span>
+<span id="cb4-26"><a href="ChapBaronKennySem.html#cb4-26" tabindex="-1"></a><span class="co">#   L0_sc_nv          0.058    0.007    8.869    0.000</span></span>
+<span id="cb4-27"><a href="ChapBaronKennySem.html#cb4-27" tabindex="-1"></a><span class="co"># M_diabetes ~                                        </span></span>
+<span id="cb4-28"><a href="ChapBaronKennySem.html#cb4-28" tabindex="-1"></a><span class="co">#   L0_male           0.053    0.009    5.836    0.000</span></span>
+<span id="cb4-29"><a href="ChapBaronKennySem.html#cb4-29" tabindex="-1"></a><span class="co">#   L0_sc_nv          0.066    0.009    6.974    0.000</span></span>
+<span id="cb4-30"><a href="ChapBaronKennySem.html#cb4-30" tabindex="-1"></a><span class="co">#   A0_PM2.5 (b.A)    0.127    0.014    8.795    0.000</span></span>
+<span id="cb4-31"><a href="ChapBaronKennySem.html#cb4-31" tabindex="-1"></a><span class="co">#   L1                0.070    0.010    7.078    0.000</span></span>
+<span id="cb4-32"><a href="ChapBaronKennySem.html#cb4-32" tabindex="-1"></a><span class="co"># Y_qol ~                                             </span></span>
+<span id="cb4-33"><a href="ChapBaronKennySem.html#cb4-33" tabindex="-1"></a><span class="co">#   L0_male          -0.719    0.202   -3.567    0.000</span></span>
+<span id="cb4-34"><a href="ChapBaronKennySem.html#cb4-34" tabindex="-1"></a><span class="co">#   L0_sc_nv         -2.888    0.211  -13.678    0.000</span></span>
+<span id="cb4-35"><a href="ChapBaronKennySem.html#cb4-35" tabindex="-1"></a><span class="co">#   A0_PM2.5 (c.A)   -3.965    0.321  -12.349    0.000</span></span>
+<span id="cb4-36"><a href="ChapBaronKennySem.html#cb4-36" tabindex="-1"></a><span class="co">#   L1               -3.425    0.221  -15.488    0.000</span></span>
+<span id="cb4-37"><a href="ChapBaronKennySem.html#cb4-37" tabindex="-1"></a><span class="co">#   M_diabts (c.M)   -8.714    0.222  -39.249    0.000</span></span>
+<span id="cb4-38"><a href="ChapBaronKennySem.html#cb4-38" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-39"><a href="ChapBaronKennySem.html#cb4-39" tabindex="-1"></a><span class="co"># Covariances:</span></span>
+<span id="cb4-40"><a href="ChapBaronKennySem.html#cb4-40" tabindex="-1"></a><span class="co">#                  Estimate  Std.Err  z-value  P(&gt;|z|)</span></span>
+<span id="cb4-41"><a href="ChapBaronKennySem.html#cb4-41" tabindex="-1"></a><span class="co"># L0_male ~~                                          </span></span>
+<span id="cb4-42"><a href="ChapBaronKennySem.html#cb4-42" tabindex="-1"></a><span class="co">#   L0_soc_env       -0.003    0.002   -1.167    0.243</span></span>
+<span id="cb4-43"><a href="ChapBaronKennySem.html#cb4-43" tabindex="-1"></a><span class="co">#   L1               -0.002    0.002   -0.832    0.406</span></span>
+<span id="cb4-44"><a href="ChapBaronKennySem.html#cb4-44" tabindex="-1"></a><span class="co"># L0_soc_env ~~                                       </span></span>
+<span id="cb4-45"><a href="ChapBaronKennySem.html#cb4-45" tabindex="-1"></a><span class="co">#   L1               -0.001    0.002   -0.468    0.640</span></span>
+<span id="cb4-46"><a href="ChapBaronKennySem.html#cb4-46" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-47"><a href="ChapBaronKennySem.html#cb4-47" tabindex="-1"></a><span class="co"># Variances:</span></span>
+<span id="cb4-48"><a href="ChapBaronKennySem.html#cb4-48" tabindex="-1"></a><span class="co">#                  Estimate  Std.Err  z-value  P(&gt;|z|)</span></span>
+<span id="cb4-49"><a href="ChapBaronKennySem.html#cb4-49" tabindex="-1"></a><span class="co">#  .A0_PM2.5          0.099    0.001   70.711    0.000</span></span>
+<span id="cb4-50"><a href="ChapBaronKennySem.html#cb4-50" tabindex="-1"></a><span class="co">#  .M_diabetes        0.205    0.003   70.711    0.000</span></span>
+<span id="cb4-51"><a href="ChapBaronKennySem.html#cb4-51" tabindex="-1"></a><span class="co">#  .Y_qol           100.882    1.427   70.711    0.000</span></span>
+<span id="cb4-52"><a href="ChapBaronKennySem.html#cb4-52" tabindex="-1"></a><span class="co">#   L0_male           0.250    0.004   70.711    0.000</span></span>
+<span id="cb4-53"><a href="ChapBaronKennySem.html#cb4-53" tabindex="-1"></a><span class="co">#   L0_soc_env        0.229    0.003   70.711    0.000</span></span>
+<span id="cb4-54"><a href="ChapBaronKennySem.html#cb4-54" tabindex="-1"></a><span class="co">#   L1                0.207    0.003   70.711    0.000</span></span>
+<span id="cb4-55"><a href="ChapBaronKennySem.html#cb4-55" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-56"><a href="ChapBaronKennySem.html#cb4-56" tabindex="-1"></a><span class="co"># Defined Parameters:</span></span>
+<span id="cb4-57"><a href="ChapBaronKennySem.html#cb4-57" tabindex="-1"></a><span class="co">#                Estimate  Std.Err  z-value  P(&gt;|z|)</span></span>
+<span id="cb4-58"><a href="ChapBaronKennySem.html#cb4-58" tabindex="-1"></a><span class="co"># direct           -3.965    0.321  -12.349    0.000</span></span>
+<span id="cb4-59"><a href="ChapBaronKennySem.html#cb4-59" tabindex="-1"></a><span class="co"># indirect         -1.104    0.129   -8.582    0.000</span></span>
+<span id="cb4-60"><a href="ChapBaronKennySem.html#cb4-60" tabindex="-1"></a><span class="co"># total            -5.069    0.344  -14.753    0.000</span></span></code></pre></div>
+<p>The Baron &amp; Kenny approach gave us the following results:</p>
+<ul>
+<li>direct effect = -3.965</li>
+<li>indirect effect = -1.131 (using the “difference in coefficients” method) or -1.108213 (using the “product of coefficients” method)</li>
+<li>total effect = -5.096</li>
+</ul>
+<p>The path analysis results from <code>lavaan</code> are very close the the Baron &amp; Kenny results.</p>
+<p>We can plot the estimated model using the <code>semPlot</code> package (Figure <a href="ChapBaronKennySem.html#fig:FigSemPlotQol1">4.1</a>):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="ChapBaronKennySem.html#cb5-1" tabindex="-1"></a><span class="fu">library</span>(semPlot)</span>
+<span id="cb5-2"><a href="ChapBaronKennySem.html#cb5-2" tabindex="-1"></a><span class="fu">semPaths</span>(fit.qol,</span>
+<span id="cb5-3"><a href="ChapBaronKennySem.html#cb5-3" tabindex="-1"></a>         <span class="at">what =</span> <span class="st">&quot;est&quot;</span>,</span>
+<span id="cb5-4"><a href="ChapBaronKennySem.html#cb5-4" tabindex="-1"></a>         <span class="at">layout =</span> <span class="st">&quot;tree2&quot;</span>, <span class="co"># tree, tree2, spring</span></span>
+<span id="cb5-5"><a href="ChapBaronKennySem.html#cb5-5" tabindex="-1"></a>         <span class="at">rotation =</span> <span class="dv">2</span>, <span class="co">#exogenous on the left, endogenous on the right</span></span>
+<span id="cb5-6"><a href="ChapBaronKennySem.html#cb5-6" tabindex="-1"></a>         <span class="at">sizeMan =</span> <span class="dv">10</span>, <span class="co"># font size of manifest variable names</span></span>
+<span id="cb5-7"><a href="ChapBaronKennySem.html#cb5-7" tabindex="-1"></a>         <span class="at">nCharNodes =</span> <span class="dv">0</span>,</span>
+<span id="cb5-8"><a href="ChapBaronKennySem.html#cb5-8" tabindex="-1"></a>         <span class="at">nCharEdges =</span> <span class="dv">0</span>, <span class="co"># don&#39;t limit variable name lengths</span></span>
+<span id="cb5-9"><a href="ChapBaronKennySem.html#cb5-9" tabindex="-1"></a>         <span class="at">edge.label.cex =</span> <span class="fl">0.6</span>,</span>
+<span id="cb5-10"><a href="ChapBaronKennySem.html#cb5-10" tabindex="-1"></a>         <span class="at">curvePivot =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-11"><a href="ChapBaronKennySem.html#cb5-11" tabindex="-1"></a>         <span class="at">fade =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:FigSemPlotQol1"></span>
+<img src="figures/sem_plot.jpeg" alt="Plot of the SEM" width="70%" />
+<p class="caption">
+Figure 4.1: Plot of the SEM
+</p>
+</div>
 
 </div>
 </div>
