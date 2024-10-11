@@ -20,6 +20,9 @@ data-generating-mechanisms
 ChapBaronKennySem
 baron-and-kenny-approach
 path-analysis-and-structural-equation-modeling
+first-application-without-intermediate-confouding-affected-by-the-exposure
+dealing-with-categorical-endogenous-variables
+application-with-intermediate-confounding-affected-by-the-exposure
 ChapTradRegModels
 estimation-of-the-average-total-effect-ate
 trad2way

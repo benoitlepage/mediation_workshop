@@ -52,50 +52,51 @@ The estimation of 95\% confidence intervals could be obtained directly from the 
 
 ```{r trad_reg_ATE_ic95, echo=TRUE, eval = FALSE}
 library(sandwich)
-
-# for the Quality of Life outcome
-ATE_trad_qol <- list(ATE = coef(trad_ATE_qol)["A0_ace"],
-                     lo = coef(trad_ATE_qol)["A0_ace"] - qnorm(0.975) *
-                       sqrt(sandwich(trad_ATE_qol)["A0_ace","A0_ace"]),
-                     hi = coef(trad_ATE_qol)["A0_ace"] + qnorm(0.975) *
-                       sqrt(sandwich(trad_ATE_qol)["A0_ace","A0_ace"]))
+?sandwich
+# the sandwich() function returns a sandwich covariance matrix estimate
+## for the Quality of Life outcome
+ATE_trad_qol <- list(ATE = coef(trad_ATE_qol)["A0_PM2.5"],
+                     lo = coef(trad_ATE_qol)["A0_PM2.5"] - qnorm(0.975) *
+                       sqrt(sandwich(trad_ATE_qol)["A0_PM2.5","A0_PM2.5"]),
+                     hi = coef(trad_ATE_qol)["A0_PM2.5"] + qnorm(0.975) *
+                       sqrt(sandwich(trad_ATE_qol)["A0_PM2.5","A0_PM2.5"]))
 
 ATE_trad_qol
 # ATE = -7.210089 , IC95% = [-7.978234 ; -6.441944]
 
-# for death outcome
-ATE_trad_death <- list(ATE = coef(trad_ATE_death)["A0_ace"],
-                       lo = coef(trad_ATE_death)["A0_ace"] - qnorm(0.975) *
-                         sqrt(sandwich(trad_ATE_death)["A0_ace","A0_ace"]),
-                       hi = coef(trad_ATE_death)["A0_ace"] + qnorm(0.975) *
-                         sqrt(sandwich(trad_ATE_death)["A0_ace","A0_ace"]))
+## for death outcome
+ATE_trad_death <- list(ATE = coef(trad_ATE_death)["A0_PM2.5"],
+                       lo = coef(trad_ATE_death)["A0_PM2.5"] - qnorm(0.975) *
+                         sqrt(sandwich(trad_ATE_death)["A0_PM2.5","A0_PM2.5"]),
+                       hi = coef(trad_ATE_death)["A0_PM2.5"] + qnorm(0.975) *
+                         sqrt(sandwich(trad_ATE_death)["A0_PM2.5","A0_PM2.5"]))
 ATE_trad_death
 # ATE = 0.07720726 , IC95% = [0.04945859 ; 0.1049559]
 
-# 95% CI calculation applying a bootstrap procedure
+## 95% CI calculation applying a bootstrap procedure
 library(boot)
 bootfunc <- function(data,index){
   boot_dat <- data[index,]
-  mod.qol <- lm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+  mod.qol <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
                 data = boot_dat)
-  mod.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+  mod.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                    family = gaussian("identity"),
                    data = boot_dat)
-  est <- c(coef(mod.qol)["A0_ace"],
-           coef(mod.death)["A0_ace"])
+  est <- c(coef(mod.qol)["A0_PM2.5"],
+           coef(mod.death)["A0_PM2.5"])
   return(est)
 }
 
 set.seed(1234)
-boot_est <- boot(df1_int,bootfunc,R=2000)
+boot_est <- boot(df1_int, bootfunc, R = 1000)
 
-# the 95% CI for the estimation of the ATE of ACE on QoL is:
+## the 95% CI for the estimation of the ATE of ACE on QoL is:
 boot.ci(boot_est, index = 1, type = "norm")
-# (-7.978, -6.444 )
+# (-7.955, -6.445 ) 
 
-# the 95% CI for the estimation of the ATE of ACE on death is:
+## the 95% CI for the estimation of the ATE of ACE on death is:
 boot.ci(boot_est, index = 2, type = "norm")
-# ( 0.0502,  0.1040 )  
+# ( 0.0501,  0.1046 )  
 ```
 
 
@@ -110,17 +111,17 @@ Alternatively for binary outcomes, the total effect conditional on baseline conf
 $$ \text{OR}^{\text{TE}} \mid L(0) = \exp \hat{\alpha}_A $$
 
 ```{r trad_reg_ATE_logit, echo=TRUE, eval = FALSE}
-TE_death_model <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+TE_death_model <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                       family = "binomial",
                       data = df1_int)
 res_TE_death <- summary(TE_death_model)
-tot.effect.death.OR <- list(OR = exp(coef(res_TE_death)["A0_ace","Estimate"]),
-                            lo = exp(coef(res_TE_death)["A0_ace","Estimate"] -
+tot.effect.death.OR <- list(OR = exp(coef(res_TE_death)["A0_PM2.5","Estimate"]),
+                            lo = exp(coef(res_TE_death)["A0_PM2.5","Estimate"] -
                                        qnorm(0.975) *
-                                       coef(res_TE_death)["A0_ace","Std. Error"]),
-                            hi = exp(coef(res_TE_death)["A0_ace","Estimate"] +
+                                       coef(res_TE_death)["A0_PM2.5","Std. Error"]),
+                            hi = exp(coef(res_TE_death)["A0_PM2.5","Estimate"] +
                                        qnorm(0.975) *
-                                       coef(res_TE_death)["A0_ace","Std. Error"]))
+                                       coef(res_TE_death)["A0_PM2.5","Std. Error"]))
 tot.effect.death.OR
 # OR = 1.523254 , 95% CI = [ 1.323317 ; 1.753398]
 ```
@@ -147,26 +148,26 @@ If the outcome is binary, they suggest using the following logistic regression o
 \end{equation}
 
 ```{r trad_two_way_models, echo=TRUE, eval = FALSE}
-trad_qol_am <- lm(Y_qol ~ A0_ace + M_smoking + A0_ace:M_smoking +
-                    L0_male + L0_parent_low_educ_lv + L1,
+trad_qol_am <- lm(Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+                    L0_male + L0_soc_env + L1,
                   data = df1_int)
-gamma.A.q <- coef(trad_qol_am)["A0_ace"]
-gamma.M.q <- coef(trad_qol_am)["M_smoking"]
-gamma.AM.q <- coef(trad_qol_am)["A0_ace:M_smoking"]
+gamma.A.q <- coef(trad_qol_am)["A0_PM2.5"]
+gamma.M.q <- coef(trad_qol_am)["M_diabetes"]
+gamma.AM.q <- coef(trad_qol_am)["A0_PM2.5:M_diabetes"]
 
-trad_m <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv + L1, 
+trad_m <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + L1, 
               family = "binomial",
               data = df1_int)
 beta.0 <- coef(trad_m)["(Intercept)"]
-beta.A <- coef(trad_m)["A0_ace"]
+beta.A <- coef(trad_m)["A0_PM2.5"]
 
-trad_death_am <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking +
-                       L0_male + L0_parent_low_educ_lv + L1,
+trad_death_am <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+                       L0_male + L0_soc_env + L1,
                      family = "binomial",
                      data = df1_int)
-gamma.A.d <- coef(trad_death_am)["A0_ace"]
-gamma.M.d <- coef(trad_death_am)["M_smoking"]
-gamma.AM.d <- coef(trad_death_am)["A0_ace:M_smoking"]
+gamma.A.d <- coef(trad_death_am)["A0_PM2.5"]
+gamma.M.d <- coef(trad_death_am)["M_diabetes"]
+gamma.AM.d <- coef(trad_death_am)["A0_PM2.5:M_diabetes"]
 ```
 
 
@@ -194,13 +195,13 @@ $$OR^{\text{CDE}_m} = \text{exp}\left(\hat{\gamma}_A + \hat{\gamma}_{A \ast M} \
 ```{r trad_CDE_binary, echo=TRUE, eval = FALSE}
 ### For a binary outcome
 ## setting the mediator to M=0
-trad_OD_CDE_death_m0 <- exp(gamma.A.d + gamma.AM.d * 0)
-trad_OD_CDE_death_m0
+trad_OR_CDE_death_m0 <- exp(gamma.A.d + gamma.AM.d * 0)
+trad_OR_CDE_death_m0
 # OR_CDE_{M=0} = 1.442942 
 
 ## setting the mediator to M=1
-trad_OD_CDE_death_m1 <- exp(gamma.A.d + gamma.AM.d * 1)
-trad_OD_CDE_death_m1
+trad_OR_CDE_death_m1 <- exp(gamma.A.d + gamma.AM.d * 1)
+trad_OR_CDE_death_m1
 # OR_CDE_{M=1} = 1.461464 
 ```
 
@@ -330,22 +331,23 @@ library(regmedint)
 regmedint_cont <- regmedint(data = df1_int,
                             ## Variables
                             yvar = "Y_qol",                   # outcome variable
-                            avar = "A0_ace",                  # exposure
-                            mvar = "M_smoking",               # mediator
+                            avar = "A0_PM2.5",                # exposure
+                            mvar = "M_diabetes",              # mediator
                             cvar = c("L0_male",               # confounders
-                                     "L0_parent_low_educ_lv",
+                                     "L0_soc_env",
                                      "L1"),
                             #eventvar = "event",     # only for survival outcome
                             ## Values at which effects are evaluated
                             a0 = 0,
                             a1 = 1,
-                            m_cde = 0,              # mediator level for the CDE
+                            m_cde = 0,
                             c_cond = c(0,0,0),                 # covariate level
                             ## Model types
                             mreg = "logistic",
                             yreg = "linear",
                             ## Additional specification
-                            interaction = TRUE,
+                            interaction = TRUE, # presence of A:M interaction term
+                                                # in the outcome model
                             casecontrol = FALSE)
 summary(regmedint_cont)
 #### Mediation analysis
@@ -368,16 +370,16 @@ For binary outcomes:
 regmedint_bin <- regmedint(data = df1_int,
                             ## Variables
                             yvar = "Y_death",                 # outcome variable
-                            avar = "A0_ace",                  # exposure
-                            mvar = "M_smoking",               # mediator
+                            avar = "A0_PM2.5",                # exposure
+                            mvar = "M_diabetes",              # mediator
                             cvar = c("L0_male",               # confounders
-                                     "L0_parent_low_educ_lv",
+                                     "L0_soc_env",
                                      "L1"),
                             #eventvar = "event",     # only for survival outcome
                             ## Values at which effects are evaluated
                             a0 = 0,
                             a1 = 1,
-                            m_cde = 0,              # mediator level for the CDE
+                            m_cde = 0,
                             c_cond = c(0,0,0),                 # covariate level
                             ## Model types
                             mreg = "logistic",
@@ -399,7 +401,7 @@ exp(results.binary$summary_myreg[c("cde","pnde","tnie","tnde","pnie","te"),
 # pnie 1.048358 1.029285 1.067783
 # te   1.520479 1.316954 1.755457
 ```
-
+The `regmedint` package gives the same results as those calculated manually using the regression coefficients.
 
 
 ## Three-way decomposition {#trad3way}

@@ -153,12 +153,6 @@ library(lavaan)
 library(semPlot)
 
 ## quality of life ----
-df1.qol.sem <- data.frame(L0_male = df1$L0_male,
-                          L0_soc_env = df1$L0_soc_env,
-                          A0_PM2.5 = ordered(df1$A0_PM2.5), #df1$A0_PM2.5, # better not to declare
-                          L1 = df1$L1,
-                          M_diabetes = ordered(df1$M_diabetes), #df1$M_diabetes, # better not to declare
-                          Y_qol = df1$Y_qol)
 sem.QoL <- "                                 # models are written between quotes
 ## Regression models
 ## we can also add the names of some path coefficients
@@ -180,89 +174,117 @@ sem.QoL <- "                                 # models are written between quotes
   indirect := b.A * c.M
   total := (b.A * c.M) + c.A
 "
-
+set.seed(1234)
 fit.qol <- lavaan::sem(model = sem.QoL,
+                       fixed.x = FALSE,
+                       se = "boot", # estimation of SE by bootstrap
+                       # se = "robust.sem", # for sandwich-type SE
+                       bootstrap = 100, # better with 1000 bootstrap samples or more
                        data = df1)
-summary(fit.qol)
+summary(fit.qol,
+        ci = TRUE) # add 95%CI in the output
 # lavaan 0.6-18 ended normally after 23 iterations
 #
-# Estimator                                         ML
-# Optimization method                           NLMINB
-# Number of model parameters                        20
+#   Estimator                                         ML
+#   Optimization method                           NLMINB
+#   Number of model parameters                        20
 #
-# Number of observations                         10000
+#   Number of observations                         10000
 #
 # Model Test User Model:
-#
 #   Test statistic                                 0.211
 #   Degrees of freedom                                 1
 #   P-value (Chi-square)                           0.646
 #
 # Parameter Estimates:
-#
-#   Standard errors                             Standard
-#   Information                                 Expected
-#   Information saturated (h1) model          Structured
+#   Standard errors                            Bootstrap
+#   Number of requested bootstrap draws              100
+#   Number of successful bootstrap draws              97
 #
 # Regressions:
-#                  Estimate  Std.Err  z-value  P(>|z|)
+#                  Estimate  Std.Err  z-value  P(>|z|) ci.lower ci.upper
 # A0_PM2.5 ~
-#   L0_male           0.040    0.006    6.337    0.000
-#   L0_sc_nv          0.058    0.007    8.869    0.000
+#   L0_male           0.040    0.005    7.310    0.000    0.029    0.050
+#   L0_sc_nv          0.058    0.006    9.243    0.000    0.046    0.071
 # M_diabetes ~
-#   L0_male           0.053    0.009    5.836    0.000
-#   L0_sc_nv          0.066    0.009    6.974    0.000
-#   A0_PM2.5 (b.A)    0.127    0.014    8.795    0.000
-#   L1                0.070    0.010    7.078    0.000
+#   L0_male           0.053    0.009    5.626    0.000    0.033    0.074
+#   L0_sc_nv          0.066    0.010    6.948    0.000    0.047    0.088
+#   A0_PM2.5 (b.A)    0.127    0.015    8.475    0.000    0.100    0.156
+#   L1                0.070    0.011    6.391    0.000    0.046    0.088
 # Y_qol ~
-#   L0_male          -0.719    0.202   -3.567    0.000
-#   L0_sc_nv         -2.888    0.211  -13.678    0.000
-#   A0_PM2.5 (c.A)   -3.965    0.321  -12.349    0.000
-#   L1               -3.425    0.221  -15.488    0.000
-#   M_diabts (c.M)   -8.714    0.222  -39.249    0.000
+#   L0_male          -0.719    0.190   -3.777    0.000   -1.081   -0.314
+#   L0_sc_nv         -2.888    0.210  -13.760    0.000   -3.262   -2.408
+#   A0_PM2.5 (c.A)   -3.965    0.331  -11.977    0.000   -4.631   -3.262
+#   L1               -3.425    0.189  -18.136    0.000   -3.808   -3.043
+#   M_diabts (c.M)   -8.714    0.211  -41.394    0.000   -9.082   -8.280
 #
 # Covariances:
-#                  Estimate  Std.Err  z-value  P(>|z|)
+#                  Estimate  Std.Err  z-value  P(>|z|) ci.lower ci.upper
 # L0_male ~~
-#   L0_soc_env       -0.003    0.002   -1.167    0.243
-#   L1               -0.002    0.002   -0.832    0.406
+#   L0_soc_env       -0.003    0.003   -1.055    0.291   -0.008    0.004
+#   L1               -0.002    0.002   -0.887    0.375   -0.006    0.002
 # L0_soc_env ~~
-#   L1               -0.001    0.002   -0.468    0.640
+#   L1               -0.001    0.002   -0.452    0.651   -0.006    0.003
 #
 # Variances:
-#                  Estimate  Std.Err  z-value  P(>|z|)
-#  .A0_PM2.5          0.099    0.001   70.711    0.000
-#  .M_diabetes        0.205    0.003   70.711    0.000
-#  .Y_qol           100.882    1.427   70.711    0.000
-#   L0_male           0.250    0.004   70.711    0.000
-#   L0_soc_env        0.229    0.003   70.711    0.000
-#   L1                0.207    0.003   70.711    0.000
+#                  Estimate  Std.Err  z-value  P(>|z|) ci.lower ci.upper
+#  .A0_PM2.5          0.099    0.002   43.273    0.000    0.094    0.103
+#  .M_diabetes        0.205    0.002  114.604    0.000    0.200    0.208
+#  .Y_qol           100.882    1.409   71.573    0.000   98.185  103.725
+#   L0_male           0.250    0.000 9358.475    0.000    0.250    0.250
+#   L0_soc_env        0.229    0.001  166.244    0.000    0.226    0.232
+#   L1                0.207    0.002  117.109    0.000    0.204    0.210
 #
 # Defined Parameters:
-#                Estimate  Std.Err  z-value  P(>|z|)
-# direct           -3.965    0.321  -12.349    0.000
-# indirect         -1.104    0.129   -8.582    0.000
-# total            -5.069    0.344  -14.753    0.000
+#                Estimate  Std.Err  z-value  P(>|z|) ci.lower ci.upper
+# direct           -3.965    0.333  -11.915    0.000   -4.631   -3.262
+# indirect         -1.104    0.129   -8.586    0.000   -1.359   -0.866
+# total            -5.069    0.358  -14.170    0.000   -5.843   -4.343
 
-## using the Baron & Kenny approach, results were:
-# - direct effect = -3.965038
-# - indirect effect = -1.131019 (difference coef) or -1.108213 (product coef)
-# - total effect = -5.096057
-# these results are quite different from the Baron & Kenny approach !
+# ?lavaan::parameterEstimates for more options on bootstrap SE estimations.
+parameterEstimates(fit.qol,
+                   level = 0.95,
+                   boot.ci.type = "bca.simple") # "bca.simple" to correct for bias,
+                                                # but not acceleration
+#           lhs op           rhs    label     est    se        z pvalue ci.lower ci.upper
+# 1    A0_PM2.5  ~       L0_male            0.040 0.005    7.310  0.000    0.031    0.051
+# 2    A0_PM2.5  ~    L0_soc_env            0.058 0.006    9.243  0.000    0.045    0.070
+# ...
+# 21     direct :=           c.A   direct  -3.965 0.333  -11.915  0.000   -4.544   -3.190
+# 22   indirect :=       b.A*c.M indirect  -1.104 0.129   -8.586  0.000   -1.401   -0.897
+# 23      total := (b.A*c.M)+c.A    total  -5.069 0.358  -14.170  0.000   -5.658   -4.201
+
+
+### Dealing with categorical variables
+df1.cat <- data.frame(L0_male = df1$L0_male,
+                       L0_soc_env = df1$L0_soc_env,
+                       A0_PM2.5 = ordered(df1$A0_PM2.5),
+                       L1 = df1$L1,
+                       M_diabetes = ordered(df1$M_diabetes),
+                       Y_qol = df1$Y_qol)
 
 fit.qol <- lavaan::sem(model = sem.QoL,
-                       data = df1.qol.sem)
-summary(fit.qol)
+                       se = "robust.sem", # for sandwich-type SE
+                       fixed.x = FALSE,
+                       data = df1.cat)
+# You will get 2 warnings:
+# 1) A generalized inverse for A11 submatrix was used to solve a trouble
+#    constructing W matrix
+# 2) The variance-covariance matrix of the vcov does not appear to be positive definite.
+#    Probably because the mean and variance of binary variable are collinear.
+#    This message might be quite common and can be ignored
+summary(fit.qol,
+        ci = TRUE)
 # lavaan 0.6-18 ended normally after 76 iterations
 #
-# Estimator                                       DWLS
+# Estimator                                       DWLS  # apply WLS estimator
 # Optimization method                           NLMINB
 # Number of model parameters                        24
 #
 # Number of observations                         10000
 #
 # Model Test User Model:
-#                                             Standard      Scaled
+#   Standard      Scaled
 # Test Statistic                                 0.209       0.214
 # Degrees of freedom                                 1           1
 # P-value (Chi-square)                           0.648       0.644
@@ -277,61 +299,57 @@ summary(fit.qol)
 #   Information saturated (h1) model        Unstructured
 #
 # Regressions:
-#                  Estimate  Std.Err  z-value   P(>|z|)
+#                  Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
 # A0_PM2.5 ~
-#   L0_mal  (a.01)    0.209    0.033     6.394    0.000
-#   L0_sc_  (a.02)    0.324    0.035     9.129    0.000
+#   L0_male           0.209    0.033     6.394    0.000    0.145    0.273
+#   L0_sc_nv          0.324    0.035     9.129    0.000    0.254    0.393
 # M_diabetes ~
-#   L0_mal (b.L01)    0.129    0.027     4.846    0.000
-#   L0_sc_ (b.L02)    0.156    0.029     5.463    0.000
-#   A0_PM2   (b.A)    0.182    0.021     8.498    0.000
-#   L1      (b.L1)    0.199    0.028     7.083    0.000
+#   L0_male           0.129    0.027     4.846    0.000    0.077    0.181
+#   L0_sc_nv          0.156    0.029     5.463    0.000    0.100    0.212
+#   A0_PM2.5 (b.A)    0.182    0.021     8.498    0.000    0.140    0.224
+#   L1                0.199    0.028     7.083    0.000    0.144    0.254
 # Y_qol ~
-#   L0_mal  (c.01)   -0.193    0.214    -0.899    0.369
-#   L0_sc_  (c.02)   -2.130    0.232    -9.195    0.000
-#   A0_PM2   (c.A)   -1.754    0.169   -10.351    0.000
-#   L1      (c.L1)   -3.070    0.229   -13.411    0.000
-#   M_dbts   (c.M)   -4.927    0.142   -34.802    0.000
+#   L0_male          -0.193    0.214    -0.899    0.369   -0.613    0.227
+#   L0_sc_nv         -2.130    0.232    -9.195    0.000   -2.585   -1.676
+#   A0_PM2.5 (c.A)   -1.754    0.169   -10.351    0.000   -2.086   -1.422
+#   L1               -3.070    0.229   -13.411    0.000   -3.519   -2.621
+#   M_diabts (c.M)   -4.927    0.142   -34.802    0.000   -5.204   -4.649
 #
 # Covariances:
-#                   Estimate  Std.Err  z-value   P(>|z|)
+#   Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
 # L0_male ~~
-#   L0_soc_env       -0.003    0.002    -1.167    0.243
-#   L1               -0.002    0.002    -0.801    0.423
+#   L0_soc_env       -0.003    0.002    -1.167    0.243   -0.007    0.002
+#   L1               -0.002    0.002    -0.801    0.423   -0.006    0.003
 # L0_soc_env ~~
-#   L1               -0.001    0.002    -0.425    0.671
+#   L1               -0.001    0.002    -0.425    0.671   -0.005    0.003
 #
 # Intercepts:
-#                  Estimate  Std.Err  z-value   P(>|z|)
-#  .Y_qol            72.816    0.228   319.590    0.000
-#   L0_male           0.501    0.005   100.197    0.000
-#   L0_soc_env        0.644    0.003   187.422    0.000
-#   L1                0.293    0.002   128.425    0.000
+#                  Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
+#  .Y_qol            72.816    0.228   319.590    0.000   72.370   73.263
+#   L0_male           0.501    0.005   100.197    0.000    0.491    0.511
+#   L0_soc_env        0.644    0.003   187.422    0.000    0.637    0.651
+#   L1                0.293    0.002   128.425    0.000    0.289    0.298
 #
-# Thresholds:                                           # Thresholds for the
-#                Estimate  Std.Err  z-value   P(>|z|)   # latent response variables
-# A0_PM2.5|t1       1.527    0.031    48.583    0.000   # (binary M and Y)
-# M_diabetes|t1     0.810    0.026    30.789    0.000
+# Thresholds:
+#                Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
+# A0_PM2.5|t1       1.527    0.031    48.583    0.000    1.465    1.589
+# M_diabetes|t1     0.810    0.026    30.789    0.000    0.758    0.861
 #
 # Variances:
-#                 Estimate  Std.Err  z-value   P(>|z|)
-# .A0_PM2.5          0.965
-# .M_diabetes        0.975
-# .Y_qol            88.521    1.538    57.551    0.000
-#  L0_male           0.250    0.000 12499.500    0.000
-#  L0_soc_env        0.229    0.002   106.346    0.000
-#  L1                0.207    0.002    91.060    0.000
+#                  Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
+#  .A0_PM2.5          0.965                                0.965    0.965
+#  .M_diabetes        0.975                                0.975    0.975
+#  .Y_qol            88.521    1.538    57.551    0.000   85.506   91.535
+#   L0_male           0.250    0.000 12499.500    0.000    0.250    0.250
+#   L0_soc_env        0.229    0.002   106.346    0.000    0.225    0.234
+#   L1                0.207    0.002    91.060    0.000    0.203    0.212
 #
 # Defined Parameters:
-#                Estimate  Std.Err  z-value  P(>|z|)
-# direct           -1.754    0.169   -10.351    0.000
-# indirect         -0.896    0.099    -9.041    0.000
-# total            -2.651    0.177   -14.942    0.000
+#                Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
+# direct           -1.754    0.169   -10.351    0.000   -2.086   -1.422
+# indirect         -0.896    0.099    -9.041    0.000   -1.091   -0.702
+# total            -2.651    0.177   -14.942    0.000   -2.998   -2.303
 
-## using the Baron & Kenny approach, results were:
-# - direct effect = -3.965038
-# - indirect effect = -1.131019 (difference coef) or -1.108213 (product coef)
-# - total effect = -5.096057
 # these results are quite different from the Baron & Kenny approach !
 
 # If we keep the mediator as a continuous variable:
@@ -508,8 +526,7 @@ sem.QoL.int <- "
 
 fit.qol <- lavaan::sem(model = sem.QoL.int,
                        data = df1.qol.int,
-                       se = "bootstrap",
-                       bootstrap = 100)
+                       se = "robust.sem")
 semPaths(fit.qol,
          what = "est",
          layout = "tree2", # tree, tree2, spring
@@ -523,71 +540,70 @@ semPaths(fit.qol,
 summary(fit.qol)
 # lavaan 0.6-18 ended normally after 27 iterations
 #
-# Estimator                                         ML
-# Optimization method                           NLMINB
-# Number of model parameters                        26
+#   Estimator                                         ML
+#   Optimization method                           NLMINB
+#   Number of model parameters                        26
 #
-# Number of observations                         10000
+#   Number of observations                         10000
 #
 # Model Test User Model:
-#
 #   Test statistic                              1423.845
 #   Degrees of freedom                                 2
 #   P-value (Chi-square)                           0.000
 #
 # Parameter Estimates:
 #
-#   Standard errors                            Bootstrap
-#   Number of requested bootstrap draws              100
-#   Number of successful bootstrap draws             100
+#   Standard errors                           Robust.sem
+#   Information                                 Expected
+#   Information saturated (h1) model          Structured
 #
 # Regressions:
-#                  Estimate  Std.Err  z-value  P(>|z|)
+#                  Estimate  Std.Err  z-value   P(>|z|)
 # A0_PM2.5 ~
-#   L0_mal  (a.01)    0.040    0.005    7.480    0.000
-#   L0_sc_  (a.02)    0.058    0.007    8.625    0.000
-#   M_diabetes ~
-#   L0_mal (b.L01)    0.053    0.008    6.741    0.000
-#   L0_sc_ (b.L02)    0.066    0.009    7.364    0.000
-#   A0_PM2   (b.A)    0.127    0.017    7.628    0.000
-#   L1      (b.L1)    0.070    0.010    6.834    0.000
+#   L0_mal  (a.01)    0.040    0.006     6.339    0.000
+#   L0_sc_  (a.02)    0.058    0.006     9.527    0.000
+# M_diabetes ~
+#   L0_mal (b.L01)    0.053    0.009     5.834    0.000
+#   L0_sc_ (b.L02)    0.066    0.009     7.130    0.000
+#   A0_PM2   (b.A)    0.127    0.016     8.132    0.000
+#   L1      (b.L1)    0.070    0.010     6.887    0.000
 # AM_inter ~
-#   L0_mal (d.L01)    0.000    0.003    0.048    0.962
-#   L0_sc_ (d.L02)    0.005    0.003    1.599    0.110
-#   A0_PM2   (d.A)    0.423    0.017   25.407    0.000
-#   L1      (d.L1)    0.005    0.004    1.325    0.185
+#   L0_mal (d.L01)    0.000    0.003     0.046    0.963
+#   L0_sc_ (d.L02)    0.005    0.003     1.655    0.098
+#   A0_PM2   (d.A)    0.423    0.015    28.692    0.000
+#   L1      (d.L1)    0.005    0.004     1.338    0.181
 # Y_qol ~
-#   L0_mal  (c.01)   -0.724    0.210   -3.448    0.001
-#   L0_sc_  (c.02)   -2.890    0.197  -14.667    0.000
-#   A0_PM2   (c.A)   -3.715    0.435   -8.540    0.000
-#   L1      (c.L1)   -3.428    0.274  -12.533    0.000
-#   M_dbts   (c.M)   -8.632    0.239  -36.107    0.000
-#   AM_ntr  (c.AM)   -5.615    0.652   -8.608    0.000
+#   L0_mal  (c.01)   -0.724    0.202    -3.587    0.000
+#   L0_sc_  (c.02)   -2.890    0.210   -13.790    0.000
+#   A0_PM2   (c.A)   -3.715    0.429    -8.652    0.000
+#   L1      (c.L1)   -3.428    0.219   -15.652    0.000
+#   M_dbts   (c.M)   -8.632    0.222   -38.945    0.000
+#   AM_ntr  (c.AM)   -5.615    0.616    -9.118    0.000
 #
 # Covariances:
-#                  Estimate  Std.Err  z-value  P(>|z|)
+#                  Estimate  Std.Err  z-value   P(>|z|)
 # L0_male ~~
-#   L0_soc_env       -0.003    0.002   -1.133    0.257
-#   L1               -0.002    0.003   -0.743    0.458
+#   L0_soc_env       -0.003    0.002    -1.167    0.243
+#   L1               -0.002    0.002    -0.832    0.406
 # L0_soc_env ~~
-#   L1               -0.001    0.002   -0.509    0.611
+#   L1               -0.001    0.002    -0.467    0.640
 #
 # Variances:
-#                  Estimate  Std.Err  z-value  P(>|z|)
-#  .A0_PM2.5          0.099    0.002   48.024    0.000
-#  .M_diabetes        0.205    0.002  108.839    0.000
-#  .AM_inter          0.027    0.001   35.725    0.000
-#  .Y_qol           100.873    1.560   64.667    0.000
-#   L0_male           0.250    0.000 7276.584    0.000
-#   L0_soc_env        0.229    0.001  180.231    0.000
-#   L1                0.207    0.002  101.196    0.000
+#                  Estimate  Std.Err  z-value   P(>|z|)
+#  .A0_PM2.5          0.099    0.002    41.100    0.000
+#  .M_diabetes        0.205    0.002   109.232    0.000
+#  .AM_inter          0.027    0.001    33.817    0.000
+#  .Y_qol           100.873    1.410    71.565    0.000
+#   L0_male           0.250    0.000 24999.950    0.000
+#   L0_soc_env        0.229    0.001   166.381    0.000
+#   L1                0.207    0.002   110.194    0.000
 #
 # Defined Parameters:
-#                Estimate  Std.Err  z-value  P(>|z|)
-# direct           -3.715    0.437   -8.497    0.000
-# indirect         -1.094    0.148   -7.369    0.000
-# mie              -2.374    0.281   -8.446    0.000
-# total            -7.183    0.383  -18.759    0.000
+#                  Estimate  Std.Err  z-value   P(>|z|)
+#   direct           -3.715    0.429    -8.652    0.000
+#   indirect         -1.094    0.137    -7.962    0.000
+#   mie              -2.374    0.273    -8.692    0.000
+#   total            -7.183    0.389   -18.449    0.000
 
 
 # ---------------------------------------------------------------------------- #
@@ -867,37 +883,48 @@ sapply(data.frame(results.int.rel) , mean)
 
 ## quality of life confusion intermédiaire ----
 df2 <- read.csv(file = "data/df2.csv")
-names(df2)
-# [1] "L0_male"    "L0_soc_env" "A0_PM2.5"   "L1"         "M_diabetes" "Y_death"    "Y_qol"
+head(df2)
+#   L0_male L0_soc_env A0_PM2.5 L1 M_diabetes Y_death    Y_qol
+# 1       0          1        0  1          0       0 91.91819
+# 2       1          1        1  0          0       1 67.53221
+# 3       1          1        0  0          0       0 75.56249
+# 4       1          0        0  0          0       0 89.77055
+# 5       1          1        0  1          1       1 63.22353
+# 6       1          1        0  1          0       0 77.87975
 
 ## quality of life ----
+## First step: write the model syntax
 sem.QoL.df2 <- "
-## SEM for quantitative outcome (QoL)
-# Regression models
-  A0_PM2.5 ~ a.L01 * L0_male + a.L02 * L0_soc_env
-  L1 ~ b.L01 * L0_male + b.L02 * L0_soc_env + b.A * A0_PM2.5
-  M_diabetes ~ c.L01 * L0_male + c.L02 * L0_soc_env + c.A * A0_PM2.5 + c.L1 * L1
-  Y_qol ~ d.01 * L0_male + d.02 * L0_soc_env + d.A * A0_PM2.5 + d.L1 * L1 + d.M * M_diabetes
+  ## SEM for quantitative outcome (QoL)
+  # Regression models
+    A0_PM2.5 ~ L0_male + L0_soc_env
+    L1 ~ L0_male + L0_soc_env + b.A * A0_PM2.5
+    M_diabetes ~ L0_male + L0_soc_env + c.A * A0_PM2.5 + c.L1 * L1
+    Y_qol ~ L0_male + L0_soc_env + d.A * A0_PM2.5 + d.L1 * L1 + d.M * M_diabetes
 
-# Assuming the possibility of non-null covariance between confounders
-# (note: in the data-generating system, the null assumptions were true)
-  L0_male ~~ L0_soc_env
+  # Assuming the possibility of non-null covariance between confounders
+  # (note: in the data-generating system, the null assumptions were true)
+    L0_male ~~ L0_soc_env
 
-# define other parameters: specific paths, direct, indirect and total effects
-  path.A_Y := d.A
-  path.A_L1_Y := b.A * d.L1
-  path.A_M_Y := c.A * d.M
-  path.A_L1_M_Y := b.A * c.L1 * d.M
-  marg.direct := d.A + (b.A * d.L1)
-  marg.indirect := (c.A * d.M) + (b.A * c.L1 * d.M)
-  total := d.A + (b.A * d.L1) + (c.A * d.M) + (b.A * c.L1 * d.M)
-  cond.direct := d.A + (b.A * d.L1) + (b.A * c.L1 * d.M)
-  cond.indirect := (c.A * d.M)
-"
+  # define other parameters: specific paths, direct, indirect and total effects
+    path.A_Y := d.A
+    path.A_L1_Y := b.A * d.L1
+    path.A_M_Y := c.A * d.M
+    path.A_L1_M_Y := b.A * c.L1 * d.M
+    MRDE := d.A + (b.A * d.L1)
+    MRIE := (c.A * d.M) + (b.A * c.L1 * d.M)
+    CRDE := d.A + (b.A * d.L1) + (b.A * c.L1 * d.M)
+    CRIE := (c.A * d.M)
+    total := d.A + (b.A * d.L1) + (c.A * d.M) + (b.A * c.L1 * d.M)
+  "
 
+## Second step: estimate the model with the df2 dataset
 fit.qol.df2 <- lavaan::sem(model = sem.QoL.df2,
+                           se = "robust.sem", # for sandwich-type SE
+                           fixed.x = FALSE,
                            data = df2)
-summary(fit.qol.df2)
+summary(fit.qol.df2,
+        ci = TRUE)
 # lavaan 0.6-18 ended normally after 18 iterations
 #
 # Estimator                                         ML
@@ -907,62 +934,60 @@ summary(fit.qol.df2)
 # Number of observations                         10000
 #
 # Model Test User Model:
-#
 #   Test statistic                                 0.000
 #   Degrees of freedom                                 0
 #
 # Parameter Estimates:
-#
-#   Standard errors                             Standard
+#   Standard errors                           Robust.sem
 #   Information                                 Expected
 #   Information saturated (h1) model          Structured
 #
 # Regressions:
-#                  Estimate  Std.Err  z-value  P(>|z|)
+#                  Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
 # A0_PM2.5 ~
-#   L0_mal (a.L01)    0.040    0.006    6.337    0.000
-#   L0_sc_ (a.L02)    0.058    0.007    8.869    0.000
+#   L0_mal (a.L01)    0.040    0.006     6.339    0.000    0.027    0.052
+#   L0_sc_ (a.L02)    0.058    0.006     9.527    0.000    0.046    0.070
 # L1 ~
-#   L0_mal (b.L01)   -0.043    0.009   -4.633    0.000
-#   L0_sc_ (b.L02)    0.069    0.010    7.055    0.000
-#   A0_PM2   (b.A)    0.226    0.015   15.170    0.000
-#   M_diabetes ~
-#   L0_mal (c.L01)    0.052    0.009    5.658    0.000
-#   L0_sc_ (c.L02)    0.064    0.010    6.575    0.000
-#   A0_PM2   (c.A)    0.072    0.015    4.846    0.000
-#   L1      (c.L1)    0.194    0.010   19.779    0.000
+#   L0_mal (b.L01)   -0.043    0.009    -4.638    0.000   -0.062   -0.025
+#   L0_sc_ (b.L02)    0.069    0.010     7.166    0.000    0.050    0.088
+#   A0_PM2   (b.A)    0.226    0.016    14.373    0.000    0.195    0.257
+# M_diabetes ~
+#   L0_mal (c.L01)    0.052    0.009     5.662    0.000    0.034    0.070
+#   L0_sc_ (c.L02)    0.064    0.010     6.692    0.000    0.045    0.082
+#   A0_PM2   (c.A)    0.072    0.016     4.567    0.000    0.041    0.103
+#   L1      (c.L1)    0.194    0.010    18.962    0.000    0.174    0.215
 # Y_qol ~
-#   L0_mal  (d.01)   -0.725    0.202   -3.594    0.000
-#   L0_sc_  (d.02)   -2.881    0.212  -13.617    0.000
-#   A0_PM2   (d.A)   -3.926    0.324  -12.120    0.000
-#   L1      (d.L1)   -5.165    0.219  -23.611    0.000
-#   M_dbts   (d.M)   -8.698    0.218  -39.849    0.000
+#   L0_mal  (d.01)   -0.725    0.202    -3.591    0.000   -1.121   -0.329
+#   L0_sc_  (d.02)   -2.881    0.210   -13.722    0.000   -3.292   -2.469
+#   A0_PM2   (d.A)   -3.926    0.329   -11.945    0.000   -4.570   -3.282
+#   L1      (d.L1)   -5.165    0.217   -23.794    0.000   -5.591   -4.740
+#   M_dbts   (d.M)   -8.698    0.217   -40.020    0.000   -9.124   -8.272
 #
 # Covariances:
-#                  Estimate  Std.Err  z-value  P(>|z|)
+#                  Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
 # L0_male ~~
-#   L0_soc_env       -0.003    0.002   -1.167    0.243
+#   L0_soc_env       -0.003    0.002    -1.167    0.243   -0.007    0.002
 #
 # Variances:
-#                  Estimate  Std.Err  z-value  P(>|z|)
-#  .A0_PM2.5          0.099    0.001   70.711    0.000
-#  .L1                0.219    0.003   70.711    0.000
-#  .M_diabetes        0.212    0.003   70.711    0.000
-#  .Y_qol           100.878    1.427   70.711    0.000
-#   L0_male           0.250    0.004   70.711    0.000
-#   L0_soc_env        0.229    0.003   70.711    0.000
+#                  Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
+#  .A0_PM2.5          0.099    0.002    41.100    0.000    0.094    0.103
+#  .L1                0.219    0.002   135.196    0.000    0.216    0.222
+#  .M_diabetes        0.212    0.002   123.351    0.000    0.208    0.215
+#  .Y_qol           100.878    1.409    71.598    0.000   98.117  103.640
+#   L0_male           0.250    0.000 24999.950    0.000    0.250    0.250
+#   L0_soc_env        0.229    0.001   166.381    0.000    0.227    0.232
 #
 # Defined Parameters:
-#                Estimate  Std.Err  z-value  P(>|z|)
-# path.A_Y         -3.926    0.324  -12.120    0.000
-# path.A_L1_Y      -1.168    0.092  -12.762    0.000
-# path.A_M_Y       -0.625    0.130   -4.810    0.000    true : -0.9
-# path.A_L1_M_Y    -0.382    0.033  -11.523    0.000
-# marg.direct      -5.093    0.330  -15.437    0.000    true : -5
-# marg.indirect    -1.007    0.132   -7.609    0.000    true : -1.26
-# total            -6.101    0.359  -16.986    0.000    true : -6.26
-# cond.direct      -5.476    0.337  -16.263    0.000    true : -5.36
-# cond.indirect    -0.625    0.130   -4.810    0.000    true : -0.9
+#                Estimate  Std.Err  z-value   P(>|z|) ci.lower ci.upper
+# path.A_Y         -3.926    0.329   -11.945    0.000   -4.570   -3.282
+# path.A_L1_Y      -1.168    0.095   -12.322    0.000   -1.354   -0.982
+# path.A_M_Y       -0.625    0.138    -4.536    0.000   -0.895   -0.355
+# path.A_L1_M_Y    -0.382    0.035   -10.999    0.000   -0.451   -0.314
+# MRDE             -5.093    0.336   -15.170    0.000   -5.751   -4.435
+# MRIE             -1.007    0.139    -7.228    0.000   -1.280   -0.734
+# CRDE             -5.476    0.343   -15.942    0.000   -6.149   -4.803
+# CRIE             -0.625    0.138    -4.536    0.000   -0.895   -0.355
+# total            -6.101    0.370   -16.500    0.000   -6.825   -5.376
 
 ## comparing these estimations with results from the CMAverse package
 library(CMAverse)
@@ -1117,9 +1142,10 @@ gen.data.causal.model.2 <- function(N, A.M.inter) { # input parameters are the
 }
 
 # create matrix to save simulation results
-results.df2 <- matrix(NA, nrow = 1000, ncol = 6,
+results.df2 <- matrix(NA, nrow = 1000, ncol = 8,
                       dimnames = list(c(1:1000),
                                       c("direct.1","indirect.1","total.1",
+                                        "direct.1bis","indirect.1bis",
                                         "direct.2","indirect.2","total.2")))
 
 set.seed(54321)
@@ -1154,11 +1180,11 @@ for(i in 1:1000) {
     path.A_L1_Y := b.A * d.L1
     path.A_M_Y := c.A * d.M
     path.A_L1_M_Y := b.A * c.L1 * d.M
-    marg.direct := d.A + (b.A * d.L1)
-    marg.indirect := (c.A * d.M) + (b.A * c.L1 * d.M)
+    MRDE := d.A + (b.A * d.L1)
+    MRIE := (c.A * d.M) + (b.A * c.L1 * d.M)
+    CRDE := d.A + (b.A * d.L1) + (b.A * c.L1 * d.M)
+    CRIE := (c.A * d.M)
     total := d.A + (b.A * d.L1) + (c.A * d.M) + (b.A * c.L1 * d.M)
-    cond.direct := d.A + (b.A * d.L1) + (b.A * c.L1 * d.M)
-    cond.indirect := (c.A * d.M)
   "
 
   fit.qol.df2 <- lavaan::sem(model = sem.QoL.df2,
@@ -1190,8 +1216,10 @@ for(i in 1:1000) {
   res.cmavers$effect.pe
 
   # save results
-  results.df2[i,"direct.1"] <- res.lavaan$pe[res.lavaan$pe$lhs == "marg.direct","est"] - (-5) # direct -5
-  results.df2[i,"indirect.1"] <- res.lavaan$pe[res.lavaan$pe$lhs == "marg.indirect","est"] - (-1.26) # indirect -1.26
+  results.df2[i,"direct.1"] <- res.lavaan$pe[res.lavaan$pe$lhs == "MRDE","est"] - (-5) # direct -5
+  results.df2[i,"indirect.1"] <- res.lavaan$pe[res.lavaan$pe$lhs == "MRIE","est"] - (-1.26) # indirect -1.26
+  results.df2[i,"direct.1bis"] <- res.lavaan$pe[res.lavaan$pe$lhs == "CRDE","est"] - (-5.36) # direct -5.36
+  results.df2[i,"indirect.1bis"] <- res.lavaan$pe[res.lavaan$pe$lhs == "CRIE","est"] - (-0.9) # indirect -0.9
   results.df2[i,"total.1"] <- res.lavaan$pe[res.lavaan$pe$lhs == "total","est"] - (-6.26) # ATE -6.26
   results.df2[i,"direct.2"] <- res.cmavers$effect.pe["rpnde"] - (-5) # direct -5
   results.df2[i,"indirect.2"] <- res.cmavers$effect.pe["rpnie"] - (-1.26) # indirect -1.26
@@ -1199,21 +1227,24 @@ for(i in 1:1000) {
 }
 
 sapply(data.frame(results.df2) , mean)
-#    direct.1  indirect.1     total.1    direct.2  indirect.2     total.2
-# 0.003239160 0.008998731 0.012237891 0.007879356 0.026796054 0.034675410
+#    direct.1    indirect.1       total.1   direct.1bis indirect.1bis      direct.2    indirect.2       total.2
+# 0.003239160   0.008998731   0.012237891   0.002913251   0.009324640   0.007879356   0.026796054   0.034675410
 
 boxplot(data.frame(results.df2))
 # globalement les performances ont l'air très proches !!
 boxplot(subset(data.frame(results.df2), select = c("direct.1", "direct.2")))
 boxplot(subset(data.frame(results.df2), select = c("indirect.1", "indirect.2")))
 boxplot(subset(data.frame(results.df2), select = c("total.1", "total.2")))
+boxplot(subset(data.frame(results.df2), select = c("direct.1bis", "indirect.1bis")))
 
 results.df2.rel <- results.df2
 results.df2.rel[,c("direct.1","direct.2")] <- results.df2.rel[,c("direct.1","direct.2")] / (-5)
+results.df2.rel[,"direct.1bis"] <- results.df2.rel[,"direct.1bis"] / (-5.36)
+results.df2.rel[,"indirect.1bis"] <- results.df2.rel[,"indirect.1bis"] / (-0.9)
 results.df2.rel[,c("indirect.1","indirect.2")] <- results.df2.rel[,c("indirect.1","indirect.2")] / (-1.26)
 results.df2.rel[,c("total.1","total.2")] <- results.df2.rel[,c("total.1","total.2")] / (-6.26)
 sapply(data.frame(results.df2.rel) , mean)
-#     direct.1   indirect.1      total.1     direct.2   indirect.2      total.2
-# -0.000647832 -0.007141850 -0.001954935 -0.001575871 -0.021266710 -0.005539203
+#     direct.1    indirect.1       total.1   direct.1bis indirect.1bis      direct.2    indirect.2       total.2
+# -0.000647832  -0.007141850  -0.001954935  -0.000543517  -0.010360711  -0.001575871  -0.021266710  -0.005539203
 
 

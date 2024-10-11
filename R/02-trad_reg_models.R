@@ -2,15 +2,15 @@
 
 rm(list=ls())
 
-df1 <- read.csv(file = "df1.csv")
-df1_int <- read.csv(file = "df1_int.csv")
+df1 <- read.csv(file = "./data/df1.csv")
+df1_int <- read.csv(file = "./data/df1_int.csv")
 
 
-################################################################################
-######################### Estimation of the Average Total Effect (ATE)
-################################################################################
+# ---------------------------------------------------------------------------- #
+# Estimation of the Average Total Effect (ATE) ----
+# ---------------------------------------------------------------------------- #
 
-### ATE
+## ATE ----
 # For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5),
 # adjusted for the baseline confounders L(0):
 trad_ATE_qol <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
@@ -83,7 +83,7 @@ bootfunc <- function(data,index){
 
 set.seed(1234)
 start.time <- Sys.time()
-boot_est <- boot(df1_int,bootfunc,R=2000) # , parallel = "multicore" ça ne change rien sur le temps de calcul
+boot_est <- boot(df1_int, bootfunc, R = 1000) # , parallel = "multicore" ça ne change rien sur le temps de calcul
 end.time <- Sys.time()
 end.time - start.time
 
@@ -91,13 +91,13 @@ end.time - start.time
 boot.ci(boot_est, index = 1, type = "norm")
 # Intervals :
 # Level      Normal
-# 95%   (-7.978, -6.444 )
+# 95%   (-7.955, -6.445 )
 
 # the 95% CI for the estimation of the ATE of ACE on death is:
 boot.ci(boot_est, index = 2, type = "norm")
 # Intervals :
 # Level      Normal
-# 95%   ( 0.0502,  0.1040 )
+# 95%   ( 0.0501,  0.1046 )
 
 
 ### For risk of death, expressed using Odds Ratio conditional on L(0):
@@ -122,13 +122,13 @@ tot.effect.death.OR
 # [1] 1.753398
 
 
-################################################################################
-######################### Two-way decomposition
-################################################################################
+# ---------------------------------------------------------------------------- #
+# Two-way decomposition ----
+# ---------------------------------------------------------------------------- #
 
-################################################################################
-######################### TNDE & PNIE, or PNDE & TNIE
-################################################################################
+# ---------------------------------------------------------------------------- #
+##  TNDE & PNIE, or PNDE & TNIE ----
+# ---------------------------------------------------------------------------- #
 
 ### Quantitative outcome
 trad_qol_am <- lm(Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
@@ -155,7 +155,7 @@ gamma.A.d <- coef(trad_death_am)["A0_PM2.5"]
 gamma.M.d <- coef(trad_death_am)["M_diabetes"]
 gamma.AM.d <- coef(trad_death_am)["A0_PM2.5:M_diabetes"]
 
-### CDE
+### CDE ----
 ### For a continuous outcome
 # setting the mediator to M=0
 trad_CDE_qol_m0 <- gamma.A.q + gamma.AM.q * 0
@@ -168,17 +168,17 @@ trad_CDE_qol_m1
 
 ### For a binary outcome
 ## setting the mediator to M=0
-trad_OD_CDE_death_m0 <- exp(gamma.A.d + gamma.AM.d * 0)
-trad_OD_CDE_death_m0
+trad_OR_CDE_death_m0 <- exp(gamma.A.d + gamma.AM.d * 0)
+trad_OR_CDE_death_m0
 # 1.442942
 
 ## setting the mediator to M=1
-trad_OD_CDE_death_m1 <- exp(gamma.A.d + gamma.AM.d * 1)
-trad_OD_CDE_death_m1
+trad_OR_CDE_death_m1 <- exp(gamma.A.d + gamma.AM.d * 1)
+trad_OR_CDE_death_m1
 # 1.461464
 
 
-### Natural direct and indirect effects
+### Natural direct and indirect effects ----
 ### For a continuous outcome
 ## The PNDE and TNIE are:
 trad_PNDE_qol <- gamma.A.q + gamma.AM.q * (exp(beta.0)) / (1 + exp(beta.0))
@@ -241,8 +241,8 @@ library(regmedint)
 regmedint_cont <- regmedint(data = df1_int,
                             ## Variables
                             yvar = "Y_qol",                   # outcome variable
-                            avar = "A0_PM2.5",                  # exposure
-                            mvar = "M_diabetes",               # mediator
+                            avar = "A0_PM2.5",                # exposure
+                            mvar = "M_diabetes",              # mediator
                             cvar = c("L0_male",               # confounders
                                      "L0_soc_env",
                                      "L1"),
@@ -274,8 +274,8 @@ summary(regmedint_cont)
 regmedint_bin <- regmedint(data = df1_int,
                             ## Variables
                             yvar = "Y_death",                 # outcome variable
-                            avar = "A0_PM2.5",                  # exposure
-                            mvar = "M_diabetes",               # mediator
+                            avar = "A0_PM2.5",                # exposure
+                            mvar = "M_diabetes",              # mediator
                             cvar = c("L0_male",               # confounders
                                      "L0_soc_env",
                                      "L1"),
@@ -303,9 +303,150 @@ exp(results.binary$summary_myreg[,c("est","lower","upper")])
 # te   1.520479 1.316954 1.755457
 # pm   1.149340 1.031922 1.280118
 
-################################################################################
-######################### Three-way decomposition
-################################################################################
+
+### MORE LIKE PARAMETRIC G-COMPUTATION based on traditional regressions +++
+#### Using the "mediation" package : R Package for Causal Mediation Analysis
+library(mediation)
+## we can use the previous model of the mediator (logistic regression)
+trad_m
+# Call:  glm(formula = M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env +
+#              L1, family = "binomial", data = df1_int)
+#
+# Coefficients:
+#   (Intercept)     A0_PM2.5      L0_male   L0_soc_env           L1
+#       -1.3788       0.5626       0.2586       0.3305       0.3346
+
+## we can use the previous models of the outcome (for continuous and binary outcomes)
+trad_qol_am
+# Call:
+#   lm(formula = Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+#        L0_male + L0_soc_env + L1, data = df1_int)
+#
+# Coefficients:
+# (Intercept) A0_PM2.5  M_diabetes  L0_male L0_soc_env       L1  A0_PM2.5:M_diabetes
+#    74.7669   -3.7153     -8.6317  -0.7235    -2.8899  -3.4280              -5.6154
+
+trad_death_am
+# Call:  glm(formula = Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+#              L0_male + L0_soc_env + L1, family = "binomial", data = df1_int)
+#
+# Coefficients:
+# (Intercept) A0_PM2.5  M_diabetes  L0_male L0_soc_env       L1  A0_PM2.5:M_diabetes
+#    -2.06294  0.36668     0.40921  0.29249    0.36360  0.44716              0.01275
+
+## Use the mediate() function to estimate the TNDE, PNIE
+# estimations relies on quasi-bayesian Monte Carlo method => set seed for reproducibility
+set.seed(2024)
+mediation.res.qol <- mediate(trad_m,                   # model of the mediator
+                             trad_qol_am,              # model of the outcome)
+                             treat = "A0_PM2.5",       # exposure
+                             mediator = "M_diabetes",  # mediator
+                             robustSE = TRUE,          # estimate sandwich SEs
+                             sims = 100)               # better to use >= 1000
+summary(mediation.res.qol)
+#                            Estimate 95% CI Lower 95% CI Upper p-value
+#   ACME (control)             -1.074       -1.356        -0.82  <2e-16 *** PNIE
+#   ACME (treated)             -1.778       -2.239        -1.38  <2e-16 *** TNIE
+#   ADE (control)              -5.301       -5.950        -4.63  <2e-16 *** PNDE
+#   ADE (treated)              -6.005       -6.646        -5.27  <2e-16 *** TNDE
+#   Total Effect               -7.079       -7.768        -6.24  <2e-16 ***
+#   Prop. Mediated (control)    0.151        0.118         0.19  <2e-16 ***
+#   Prop. Mediated (treated)    0.251        0.197         0.31  <2e-16 ***
+#   ACME (average)             -1.426       -1.811        -1.11  <2e-16 ***
+#   ADE (average)              -5.653       -6.267        -4.95  <2e-16 ***
+#   Prop. Mediated (average)    0.201        0.160         0.25  <2e-16 ***
+plot(mediation.res.qol)
+
+
+mediation.res.death <- mediate(trad_m,                   # model of the mediator
+                               trad_death_am,            # model of the outcome)
+                               treat = "A0_PM2.5",       # exposure
+                               mediator = "M_diabetes",  # mediator
+                               robustSE = TRUE,          # estimate sandwich SEs
+                               sims = 100)               # better to use >= 1000
+summary(mediation.res.death)
+  #                          Estimate 95% CI Lower 95% CI Upper p-value
+  # ACME (control)            0.00860      0.00569         0.01  <2e-16 *** PNIE
+  # ACME (treated)            0.00979      0.00377         0.02  <2e-16 *** TNIE
+  # ADE (control)             0.06543      0.03658         0.09  <2e-16 *** PNDE
+  # ADE (treated)             0.06662      0.03946         0.09  <2e-16 *** TNDE
+  # Total Effect              0.07522      0.04800         0.10  <2e-16 ***
+  # Prop. Mediated (control)  0.11172      0.07323         0.18  <2e-16 ***
+  # Prop. Mediated (treated)  0.13066      0.05714         0.22  <2e-16 ***
+  # ACME (average)            0.00920      0.00567         0.01  <2e-16 ***
+  # ADE (average)             0.06603      0.03803         0.09  <2e-16 ***
+  # Prop. Mediated (average)  0.12119      0.07330         0.20  <2e-16 ***
+
+## Sensitivity analysis to test sequential ignorability (assess the possible existence
+## of unobserved (baseline) confounders of the M-Y relationship)
+trad_m <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
+              family = binomial("probit"), # sensitivity analysis works only for
+                                           # probit models
+              data = df1_int)
+mediation.res.qol <- mediate(trad_m,                   # model of the mediator
+                             trad_qol_am,              # model of the outcome)
+                             treat = "A0_PM2.5",       # exposure
+                             mediator = "M_diabetes",  # mediator
+                             robustSE = TRUE,          # estimate sandwich SEs
+                             sims = 100)               # better to use >= 1000
+summary(mediation.res.qol)
+#                            Estimate 95% CI Lower 95% CI Upper p-value
+#   ACME (control)             -1.071       -1.416        -0.79  <2e-16 ***
+#   ACME (treated)             -1.784       -2.333        -1.31  <2e-16 ***
+#   ADE (control)              -5.266       -5.809        -4.56  <2e-16 ***
+#   ADE (treated)              -5.979       -6.515        -5.31  <2e-16 ***
+#   Total Effect               -7.050       -7.754        -6.34  <2e-16 ***
+#   Prop. Mediated (control)    0.151        0.119         0.19  <2e-16 ***
+#   Prop. Mediated (treated)    0.254        0.194         0.32  <2e-16 ***
+#   ACME (average)             -1.427       -1.889        -1.06  <2e-16 ***
+#   ADE (average)              -5.623       -6.152        -4.97  <2e-16 ***
+#   Prop. Mediated (average)    0.203        0.159         0.26  <2e-16 ***
+
+sensisitivy <- medsens(mediation.res.qol,
+                       rho.by = 0.1, # sensitivity parameter = correlation between
+                                     # the residuals of the mediator & outcome regressions
+                                     # here, rho varies from -0.9 to +0.9 by 0.1 increments
+                       effect.type = "both", # "direct", "indirect" or "both"
+                       sims = 100)
+# If there exist unobserved (baseline) confounders of the M-Y relationship, we expect
+# that rho is no longer zero.
+# The sensitivity analysis is conducted by varying the value of rho and examining
+# how the estimated ACME and ADE change.
+summary(sensisitivy)
+# Sensitivity Region: ACME for Control Group
+#         Rho ACME(control) 95% CI Lower 95% CI Upper R^2_M*R^2_Y* R^2_M~R^2_Y~
+#   [1,] -0.6        0.0454      -0.0169       0.1097         0.36       0.2647
+#
+# Rho at which ACME for Control Group = 0: -0.6
+# R^2_M*R^2_Y* at which ACME for Control Group = 0: 0.36
+# R^2_M~R^2_Y~ at which ACME for Control Group = 0: 0.2647
+#
+# Rho at which ACME for Treatment Group = 0: -0.9
+# R^2_M*R^2_Y* at which ACME for Treatment Group = 0: 0.81
+# R^2_M~R^2_Y~ at which ACME for Treatment Group = 0: 0.5956
+
+par(mfrow = c(2,2))
+plot(sensisitivy)
+par(mfrow = c(2,1))
+
+# Here, for PNIE, the confidence interval of the ACME (PNIE) contain zero when rho=-0.6
+# R^2 correspond to
+# When the product of the residual variance explained by the omitted confounding
+# is 0.36, the point estimate of PNIE = 0
+# When the product of the total variance explained by the omitted confounding
+# is 0.27, the point estimate of PNIE = 0
+# => The risk that PNIE is cancelled because of unmeasured M-Y confounding
+#    seems low in our example (it requires rather strong correlations)
+
+
+
+# Note: sensitivity analysis cannot be applied with both binary mediator and outcome
+
+
+
+# ---------------------------------------------------------------------------- #
+# Three-way decomposition ----
+# ---------------------------------------------------------------------------- #
 
 ### For a continuous outcome
 ## The PNDE is:

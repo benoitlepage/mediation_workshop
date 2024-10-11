@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-10-10}
+\date{2024-10-11}
 
 \begin{document}
 \maketitle
@@ -500,6 +500,8 @@ However, as for the binary mediator, some authors suggested that using linear re
 
 \section{Path analysis and Structural Equation Modeling}\label{path-analysis-and-structural-equation-modeling}
 
+\subsection{First application, without intermediate confouding affected by the exposure}\label{first-application-without-intermediate-confouding-affected-by-the-exposure}
+
 Path analyses can be considered as a ``generalization'' of the product of coefficients method. They combine graphical representation of causal structures, a set of linear equations and assumptions concerning the covariance structure of residuals.
 
 When the causal model includes latent variables (represented by a measurement model), we refer to the analysis as structural equation modeling.
@@ -516,6 +518,18 @@ We will use the \href{https://lavaan.ugent.be/}{\texttt{lavaan}} R package to ru
   The first step is to write the model syntax
 \item
   The second step is to analyze the model with the dataset
+\end{itemize}
+
+For a complete overview of the analyses that can be performed using \texttt{lavaan}, you can read:
+
+\begin{itemize}
+\tightlist
+\item
+  \href{https://lavaan.ugent.be/tutorial/}{the lavaan tutorial}
+\item
+  \href{https://tdjorgensen.github.io/SEM-in-Ed-compendium/index.html}{A lavaan Compendium for Structural Equation Modeling in Educational Research},(\citeproc{ref-Jak2023}{Jak, Suzanne and Jorgensen, Terrence D. 2024})
+\item
+  \href{https://gabriellajg.github.io/EPSY-579-R-Cookbook-for-SEM/}{R Cookbook for Structural Equation Modeling},(\citeproc{ref-Jiang2023}{Jiang, Ge 2023})
 \end{itemize}
 
 \textbf{First step}. Let us write the model syntax to analyze the effect of being exposed to high levels of \(\text{PM}_{2.5}\) on quality of life, mediated by type-2 diabetes.
@@ -560,7 +574,7 @@ We have to define:
 
 \textbf{Second step}. Let us analyze the model with the \texttt{df1.csv} dataset using the \texttt{sem} function from the \texttt{lavaan} package.
 
-Binary exogenous variables (\texttt{L0\_male},\texttt{L0\_soc\_env} and \texttt{L1}) can be coded as simple dummy (0/1) variables, there is no need to declare them as \texttt{factors}.
+Binary exogenous variables (\texttt{L0\_male},\texttt{L0\_soc\_env} and \texttt{L1}) can be coded as simple dummy (0/1) variables, there is no need to declare them as factors (\texttt{ordered}).
 
 Note that in the following example, we will not declare the other binary variables (\texttt{A0\_PM2.5},\texttt{M\_diabetes}) as factors and let them as simple dummy variables.
 
@@ -580,72 +594,103 @@ Running the \texttt{sem} function with the \texttt{df1.csv} dataset, we obtain:
   estimates of the additional parameters (direct, indirect and total effects)
 \end{itemize}
 
+For datasets with only continuous variables, \texttt{lavaan} would estimate the covariance structure by maximum likelihood estimation. For categorical data, weighted least square estimators (WLS) are typically used. Applying WLS to continuous data is referred to as asymptotical distribution-free estimation (ADF) in the SEM literature. ADF estimation requires large sample sizes (\textgreater{} 2000 or 5000).(\citeproc{ref-Jak2023}{Jak, Suzanne and Jorgensen, Terrence D. 2024})
+
+In order to avoid underestimating standard errors and confidence intervals, robust estimators (``sandwich'' and bootstrap) are usually applied if the data are not multivariate normal.
+
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
 \NormalTok{fit.qol }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{sem}\NormalTok{(}\AttributeTok{model =}\NormalTok{ sem.QoL,}
+                       \AttributeTok{fixed.x =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# ask for covariance of exogenous variables}
+                                        \CommentTok{\# to be freely estimated }
+                       \CommentTok{\# estimator = "DWLS",  \# for WLS estimation}
+                       \AttributeTok{se =} \StringTok{"boot"}\NormalTok{, }\CommentTok{\# estimation of SE by bootstrap}
+                       \CommentTok{\# se = "robust.sem", \# for sandwich{-}type SE}
+                       \AttributeTok{bootstrap =} \DecValTok{100}\NormalTok{, }\CommentTok{\# better with 1000 bootstrap samples or more}
                        \AttributeTok{data =}\NormalTok{ df1)}
-\FunctionTok{summary}\NormalTok{(fit.qol)}
+\FunctionTok{summary}\NormalTok{(fit.qol,}
+        \AttributeTok{ci =} \ConstantTok{TRUE}\NormalTok{) }\CommentTok{\# add 95\%CI in the output}
+\CommentTok{\# You will get 2 warning messages: }
+\CommentTok{\# 1) we did not standardize the outcome, its variance is very large variance compared  }
+\CommentTok{\#    to the other binary variables (not a problem)}
+\CommentTok{\# 2) 3 bootstrap runs failed or did not converge. }
+\CommentTok{\#    =\textgreater{} The estimations relie on the 97 other bootstrap samples}
+
 \CommentTok{\# lavaan 0.6{-}18 ended normally after 23 iterations}
-\CommentTok{\# }
-\CommentTok{\# Estimator                                         ML}
-\CommentTok{\# Optimization method                           NLMINB}
-\CommentTok{\# Number of model parameters                        20}
-\CommentTok{\# }
-\CommentTok{\# Number of observations                         10000}
-\CommentTok{\# }
+\CommentTok{\#}
+\CommentTok{\#   Estimator                                         ML}
+\CommentTok{\#   Optimization method                           NLMINB}
+\CommentTok{\#   Number of model parameters                        20}
+\CommentTok{\#}
+\CommentTok{\#   Number of observations                         10000}
+\CommentTok{\#}
 \CommentTok{\# Model Test User Model:}
 \CommentTok{\#   Test statistic                                 0.211}
 \CommentTok{\#   Degrees of freedom                                 1}
 \CommentTok{\#   P{-}value (Chi{-}square)                           0.646}
-\CommentTok{\# }
+\CommentTok{\#}
 \CommentTok{\# Parameter Estimates:}
-\CommentTok{\#   Standard errors                             Standard}
-\CommentTok{\#   Information                                 Expected}
-\CommentTok{\#   Information saturated (h1) model          Structured}
-\CommentTok{\# }
+\CommentTok{\#   Standard errors                            Bootstrap}
+\CommentTok{\#   Number of requested bootstrap draws              100}
+\CommentTok{\#   Number of successful bootstrap draws              97}
+\CommentTok{\#}
 \CommentTok{\# Regressions:}
-\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
-\CommentTok{\# A0\_PM2.5 \textasciitilde{}                                          }
-\CommentTok{\#   L0\_male           0.040    0.006    6.337    0.000}
-\CommentTok{\#   L0\_sc\_nv          0.058    0.007    8.869    0.000}
-\CommentTok{\# M\_diabetes \textasciitilde{}                                        }
-\CommentTok{\#   L0\_male           0.053    0.009    5.836    0.000}
-\CommentTok{\#   L0\_sc\_nv          0.066    0.009    6.974    0.000}
-\CommentTok{\#   A0\_PM2.5 (b.A)    0.127    0.014    8.795    0.000}
-\CommentTok{\#   L1                0.070    0.010    7.078    0.000}
-\CommentTok{\# Y\_qol \textasciitilde{}                                             }
-\CommentTok{\#   L0\_male          {-}0.719    0.202   {-}3.567    0.000}
-\CommentTok{\#   L0\_sc\_nv         {-}2.888    0.211  {-}13.678    0.000}
-\CommentTok{\#   A0\_PM2.5 (c.A)   {-}3.965    0.321  {-}12.349    0.000}
-\CommentTok{\#   L1               {-}3.425    0.221  {-}15.488    0.000}
-\CommentTok{\#   M\_diabts (c.M)   {-}8.714    0.222  {-}39.249    0.000}
-\CommentTok{\# }
+\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# A0\_PM2.5 \textasciitilde{}}
+\CommentTok{\#   L0\_male           0.040    0.005    7.310    0.000    0.029    0.050}
+\CommentTok{\#   L0\_sc\_nv          0.058    0.006    9.243    0.000    0.046    0.071}
+\CommentTok{\# M\_diabetes \textasciitilde{}}
+\CommentTok{\#   L0\_male           0.053    0.009    5.626    0.000    0.033    0.074}
+\CommentTok{\#   L0\_sc\_nv          0.066    0.010    6.948    0.000    0.047    0.088}
+\CommentTok{\#   A0\_PM2.5 (b.A)    0.127    0.015    8.475    0.000    0.100    0.156}
+\CommentTok{\#   L1                0.070    0.011    6.391    0.000    0.046    0.088}
+\CommentTok{\# Y\_qol \textasciitilde{}}
+\CommentTok{\#   L0\_male          {-}0.719    0.190   {-}3.777    0.000   {-}1.081   {-}0.314}
+\CommentTok{\#   L0\_sc\_nv         {-}2.888    0.210  {-}13.760    0.000   {-}3.262   {-}2.408}
+\CommentTok{\#   A0\_PM2.5 (c.A)   {-}3.965    0.331  {-}11.977    0.000   {-}4.631   {-}3.262}
+\CommentTok{\#   L1               {-}3.425    0.189  {-}18.136    0.000   {-}3.808   {-}3.043}
+\CommentTok{\#   M\_diabts (c.M)   {-}8.714    0.211  {-}41.394    0.000   {-}9.082   {-}8.280}
+\CommentTok{\#}
 \CommentTok{\# Covariances:}
-\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
-\CommentTok{\# L0\_male \textasciitilde{}\textasciitilde{}                                          }
-\CommentTok{\#   L0\_soc\_env       {-}0.003    0.002   {-}1.167    0.243}
-\CommentTok{\#   L1               {-}0.002    0.002   {-}0.832    0.406}
-\CommentTok{\# L0\_soc\_env \textasciitilde{}\textasciitilde{}                                       }
-\CommentTok{\#   L1               {-}0.001    0.002   {-}0.468    0.640}
-\CommentTok{\# }
+\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# L0\_male \textasciitilde{}\textasciitilde{}}
+\CommentTok{\#   L0\_soc\_env       {-}0.003    0.003   {-}1.055    0.291   {-}0.008    0.004}
+\CommentTok{\#   L1               {-}0.002    0.002   {-}0.887    0.375   {-}0.006    0.002}
+\CommentTok{\# L0\_soc\_env \textasciitilde{}\textasciitilde{}}
+\CommentTok{\#   L1               {-}0.001    0.002   {-}0.452    0.651   {-}0.006    0.003}
+\CommentTok{\#}
 \CommentTok{\# Variances:}
-\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
-\CommentTok{\#  .A0\_PM2.5          0.099    0.001   70.711    0.000}
-\CommentTok{\#  .M\_diabetes        0.205    0.003   70.711    0.000}
-\CommentTok{\#  .Y\_qol           100.882    1.427   70.711    0.000}
-\CommentTok{\#   L0\_male           0.250    0.004   70.711    0.000}
-\CommentTok{\#   L0\_soc\_env        0.229    0.003   70.711    0.000}
-\CommentTok{\#   L1                0.207    0.003   70.711    0.000}
-\CommentTok{\# }
+\CommentTok{\#                  Estimate  Std.Err  z{-}value  P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\#  .A0\_PM2.5          0.099    0.002   43.273    0.000    0.094    0.103}
+\CommentTok{\#  .M\_diabetes        0.205    0.002  114.604    0.000    0.200    0.208}
+\CommentTok{\#  .Y\_qol           100.882    1.409   71.573    0.000   98.185  103.725}
+\CommentTok{\#   L0\_male           0.250    0.000 9358.475    0.000    0.250    0.250}
+\CommentTok{\#   L0\_soc\_env        0.229    0.001  166.244    0.000    0.226    0.232}
+\CommentTok{\#   L1                0.207    0.002  117.109    0.000    0.204    0.210}
+\CommentTok{\#}
 \CommentTok{\# Defined Parameters:}
-\CommentTok{\#                Estimate  Std.Err  z{-}value  P(\textgreater{}|z|)}
-\CommentTok{\# direct           {-}3.965    0.321  {-}12.349    0.000}
-\CommentTok{\# indirect         {-}1.104    0.129   {-}8.582    0.000}
-\CommentTok{\# total            {-}5.069    0.344  {-}14.753    0.000}
+\CommentTok{\#                Estimate  Std.Err  z{-}value  P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# direct           {-}3.965    0.333  {-}11.915    0.000   {-}4.631   {-}3.262}
+\CommentTok{\# indirect         {-}1.104    0.129   {-}8.586    0.000   {-}1.359   {-}0.866}
+\CommentTok{\# total            {-}5.069    0.358  {-}14.170    0.000   {-}5.843   {-}4.343}
+
+\CommentTok{\# ?lavaan::parameterEstimates for more options on bootstrap SE estimations.}
+\FunctionTok{parameterEstimates}\NormalTok{(fit.qol,}
+                   \AttributeTok{level =} \FloatTok{0.95}\NormalTok{,}
+                   \AttributeTok{boot.ci.type =} \StringTok{"bca.simple"}\NormalTok{) }\CommentTok{\# "bca.simple" to correct for bias,}
+                                                \CommentTok{\# but not acceleration}
+\CommentTok{\#           lhs op           rhs    label     est    se        z pvalue ci.lower ci.upper}
+\CommentTok{\# 1    A0\_PM2.5  \textasciitilde{}       L0\_male            0.040 0.005    7.310  0.000    0.031    0.051}
+\CommentTok{\# 2    A0\_PM2.5  \textasciitilde{}    L0\_soc\_env            0.058 0.006    9.243  0.000    0.045    0.070}
+\CommentTok{\# ...}
+\CommentTok{\# 21     direct :=           c.A   direct  {-}3.965 0.333  {-}11.915  0.000   {-}4.544   {-}3.190}
+\CommentTok{\# 22   indirect :=       b.A*c.M indirect  {-}1.104 0.129   {-}8.586  0.000   {-}1.401   {-}0.897}
+\CommentTok{\# 23      total := (b.A*c.M)+c.A    total  {-}5.069 0.358  {-}14.170  0.000   {-}5.658   {-}4.201}
 \end{Highlighting}
 \end{Shaded}
 
-The Baron \& Kenny approach gave us the following results:
+We recall that the results obtained using Baron \& Kenny approach were:
 
 \begin{itemize}
 \tightlist
@@ -657,7 +702,7 @@ The Baron \& Kenny approach gave us the following results:
   total effect = -5.096
 \end{itemize}
 
-The path analysis results from \texttt{lavaan} are very close the the Baron \& Kenny results.
+The path analysis results from \texttt{lavaan} are very close to the Baron \& Kenny results.
 
 We can plot the estimated model using the \texttt{semPlot} package (Figure \ref{fig:FigSemPlotQol1}):
 
@@ -685,6 +730,269 @@ We can plot the estimated model using the \texttt{semPlot} package (Figure \ref{
 
 \caption{Plot of the SEM}\label{fig:FigSemPlotQol1}
 \end{figure}
+
+\subsection{Dealing with categorical endogenous variables}\label{dealing-with-categorical-endogenous-variables}
+
+In the dataset, we can declare the binary endogenous variables as \texttt{ordered} variables, so that the \texttt{sem} function will detect them automatically as categorical variables, and apply a Weighted Least Square estimation.
+
+When endogenous variables are binary or ordered categorical variables, the SEM-method will assume the existence of latent normal variables that underlies the observed categorical variables (corresponding to \emph{latent response variables} (LRV)). SEM will then fit the model to the LRV instead of the categorical variables. The distribution of a categorical variable is linked to the LRV using ``thresholds'', defined from the cumulative distribution function of a standard normal distribution to match the probabilities of observed levels (similarly to probit regressions).(\citeproc{ref-Jak2023}{Jak, Suzanne and Jorgensen, Terrence D. 2024})
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# We first create a data.frame, setting the exposure and mediator to ordered variables}
+\NormalTok{df1.cat }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{L0\_male =}\NormalTok{ df1}\SpecialCharTok{$}\NormalTok{L0\_male,}
+                      \AttributeTok{L0\_soc\_env =}\NormalTok{ df1}\SpecialCharTok{$}\NormalTok{L0\_soc\_env,}
+                      \AttributeTok{A0\_PM2.5 =} \FunctionTok{ordered}\NormalTok{(df1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{), }
+                      \AttributeTok{L1 =}\NormalTok{ df1}\SpecialCharTok{$}\NormalTok{L1,}
+                      \AttributeTok{M\_diabetes =} \FunctionTok{ordered}\NormalTok{(df1}\SpecialCharTok{$}\NormalTok{M\_diabetes), }
+                      \AttributeTok{Y\_qol =}\NormalTok{ df1}\SpecialCharTok{$}\NormalTok{Y\_qol)}
+
+\DocumentationTok{\#\# We analyze the model with the new data.frame (df1.cat)}
+\DocumentationTok{\#\# In this example, we estimate standwich{-}type standard errors}
+\NormalTok{fit.qol }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{sem}\NormalTok{(}\AttributeTok{model =}\NormalTok{ sem.QoL,}
+                       \AttributeTok{se =} \StringTok{"robust.sem"}\NormalTok{, }\CommentTok{\# for sandwich{-}type SE}
+                       \AttributeTok{fixed.x =} \ConstantTok{FALSE}\NormalTok{,}
+                       \AttributeTok{data =}\NormalTok{ df1.cat)}
+\CommentTok{\# You will get 2 warnings:}
+\CommentTok{\# 1) A generalized inverse for A11 submatrix was used to solve a trouble}
+\CommentTok{\#    constructing W matrix}
+\CommentTok{\# 2) The variance{-}covariance matrix of the vcov does not appear to be positive definite.}
+\CommentTok{\#    Probably because the mean and variance of binary variable are collinear.}
+\CommentTok{\#    This message might be quite common and can be ignored}
+\FunctionTok{summary}\NormalTok{(fit.qol,}
+        \AttributeTok{ci =} \ConstantTok{TRUE}\NormalTok{)}
+\CommentTok{\# lavaan 0.6{-}18 ended normally after 76 iterations}
+\CommentTok{\#}
+\CommentTok{\# Estimator                                       DWLS  \# apply WLS estimator}
+\CommentTok{\# Optimization method                           NLMINB}
+\CommentTok{\# Number of model parameters                        24}
+\CommentTok{\#}
+\CommentTok{\# Number of observations                         10000}
+\CommentTok{\#}
+\CommentTok{\# Model Test User Model:}
+\CommentTok{\#   Standard      Scaled}
+\CommentTok{\# Test Statistic                                 0.209       0.214}
+\CommentTok{\# Degrees of freedom                                 1           1}
+\CommentTok{\# P{-}value (Chi{-}square)                           0.648       0.644}
+\CommentTok{\# Scaling correction factor                                  0.977}
+\CommentTok{\# Shift parameter                                           {-}0.000}
+\CommentTok{\# simple second{-}order correction}
+\CommentTok{\#}
+\CommentTok{\# Parameter Estimates:}
+\CommentTok{\#   Parameterization                               Delta}
+\CommentTok{\#   Standard errors                           Robust.sem}
+\CommentTok{\#   Information                                 Expected}
+\CommentTok{\#   Information saturated (h1) model        Unstructured}
+\CommentTok{\#}
+\CommentTok{\# Regressions:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# A0\_PM2.5 \textasciitilde{}}
+\CommentTok{\#   L0\_male           0.209    0.033     6.394    0.000    0.145    0.273}
+\CommentTok{\#   L0\_sc\_nv          0.324    0.035     9.129    0.000    0.254    0.393}
+\CommentTok{\# M\_diabetes \textasciitilde{}}
+\CommentTok{\#   L0\_male           0.129    0.027     4.846    0.000    0.077    0.181}
+\CommentTok{\#   L0\_sc\_nv          0.156    0.029     5.463    0.000    0.100    0.212}
+\CommentTok{\#   A0\_PM2.5 (b.A)    0.182    0.021     8.498    0.000    0.140    0.224}
+\CommentTok{\#   L1                0.199    0.028     7.083    0.000    0.144    0.254}
+\CommentTok{\# Y\_qol \textasciitilde{}}
+\CommentTok{\#   L0\_male          {-}0.193    0.214    {-}0.899    0.369   {-}0.613    0.227}
+\CommentTok{\#   L0\_sc\_nv         {-}2.130    0.232    {-}9.195    0.000   {-}2.585   {-}1.676}
+\CommentTok{\#   A0\_PM2.5 (c.A)   {-}1.754    0.169   {-}10.351    0.000   {-}2.086   {-}1.422}
+\CommentTok{\#   L1               {-}3.070    0.229   {-}13.411    0.000   {-}3.519   {-}2.621}
+\CommentTok{\#   M\_diabts (c.M)   {-}4.927    0.142   {-}34.802    0.000   {-}5.204   {-}4.649}
+\CommentTok{\#}
+\CommentTok{\# Covariances:}
+\CommentTok{\#   Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# L0\_male \textasciitilde{}\textasciitilde{}}
+\CommentTok{\#   L0\_soc\_env       {-}0.003    0.002    {-}1.167    0.243   {-}0.007    0.002}
+\CommentTok{\#   L1               {-}0.002    0.002    {-}0.801    0.423   {-}0.006    0.003}
+\CommentTok{\# L0\_soc\_env \textasciitilde{}\textasciitilde{}}
+\CommentTok{\#   L1               {-}0.001    0.002    {-}0.425    0.671   {-}0.005    0.003}
+\CommentTok{\#}
+\CommentTok{\# Intercepts:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\#  .Y\_qol            72.816    0.228   319.590    0.000   72.370   73.263}
+\CommentTok{\#   L0\_male           0.501    0.005   100.197    0.000    0.491    0.511}
+\CommentTok{\#   L0\_soc\_env        0.644    0.003   187.422    0.000    0.637    0.651}
+\CommentTok{\#   L1                0.293    0.002   128.425    0.000    0.289    0.298}
+\CommentTok{\#}
+\CommentTok{\# Thresholds:}
+\CommentTok{\#                Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# A0\_PM2.5|t1       1.527    0.031    48.583    0.000    1.465    1.589}
+\CommentTok{\# M\_diabetes|t1     0.810    0.026    30.789    0.000    0.758    0.861}
+\CommentTok{\#}
+\CommentTok{\# Variances:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\#  .A0\_PM2.5          0.965                                0.965    0.965}
+\CommentTok{\#  .M\_diabetes        0.975                                0.975    0.975}
+\CommentTok{\#  .Y\_qol            88.521    1.538    57.551    0.000   85.506   91.535}
+\CommentTok{\#   L0\_male           0.250    0.000 12499.500    0.000    0.250    0.250}
+\CommentTok{\#   L0\_soc\_env        0.229    0.002   106.346    0.000    0.225    0.234}
+\CommentTok{\#   L1                0.207    0.002    91.060    0.000    0.203    0.212}
+\CommentTok{\#}
+\CommentTok{\# Defined Parameters:}
+\CommentTok{\#                Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# direct           {-}1.754    0.169   {-}10.351    0.000   {-}2.086   {-}1.422}
+\CommentTok{\# indirect         {-}0.896    0.099    {-}9.041    0.000   {-}1.091   {-}0.702}
+\CommentTok{\# total            {-}2.651    0.177   {-}14.942    0.000   {-}2.998   {-}2.303}
+\end{Highlighting}
+\end{Shaded}
+
+The results of the direct, indirect and total effects are quite different from the Baron \& Kenny estimations and the previous SEM (where categorical exogenous variables were treated as simple dummy variables).
+
+This difference can probably be explained by the fact that the data generating system (used to simulate the data) does not imply latent normal variables underlying the categorical variables. Binary variables were directly simulated using binomial distributions.
+
+If the exposure, mediator and outcome variables are a mix of continuous and categorical variables, (\citeproc{ref-Iacobucci2008}{Iacobucci 2008}) recommends to treat them as simple dummy variables (and as continuous variables when fitting the models).
+
+\subsection{Application with intermediate confounding affected by the exposure}\label{application-with-intermediate-confounding-affected-by-the-exposure}
+
+Under the causal model where the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2, Figure \ref{fig:figDAGM2}), we can describe 4 directed paths connecting the exposure to the outcome :
+
+\begin{enumerate}
+\def\labelenumi{(\roman{enumi})}
+\tightlist
+\item
+  the path \(A \rightarrow Y\),
+\item
+  the path \(A \rightarrow L(1) \rightarrow Y\)
+\item
+  the path \(A \rightarrow M \rightarrow Y\)
+\item
+  and the path \(A \rightarrow L(1) \rightarrow M \rightarrow Y\)
+\end{enumerate}
+
+In the causal inference literature,
+
+\begin{itemize}
+\tightlist
+\item
+  the \emph{Marginal Randomized (or Interventional) Indirect Effect} (MRIE), described by (\citeproc{ref-vanderweele2016}{VanderWeele and Tchetgen Tchetgen 2017}), can be considered as an analogue of the set of directed paths from \(A\) to \(Y\) going through the mediator \(M\) (i.e.~paths (iii) \(A \rightarrow M \rightarrow Y\) and (iv) \(A \rightarrow L(1) \rightarrow M \rightarrow Y\))
+\item
+  and the \emph{Marginal Randomized (or Interventional) Direct Effect} (MRDE), corresponds to the other paths (i.e.~paths (i) \(A \rightarrow Y\) and (ii) \(A \rightarrow L(1) \rightarrow Y\)).
+\end{itemize}
+
+Regarding the \emph{conditional effects} described by (\citeproc{ref-zheng2017longitudinal}{Zheng and van der Laan 2017}),
+
+\begin{itemize}
+\tightlist
+\item
+  the \emph{Conditional Randomized (or Interventional) Indirect Effect} (CRIE), described by Lin et al. (\citeproc{ref-lin2017}{2017}), can be considered as an analogue of the specific paths from \(A\) to \(Y\) going only through the mediator \(M\) (i.e.~path (iii) \(A \rightarrow M \rightarrow Y\))
+\item
+  and the \emph{Conditional Randomized (or Interventional) Direct Effect} (CRDE), corresponds to the other paths (i.e.~paths (i) \(A \rightarrow Y\) and (ii) \(A \rightarrow L(1) \rightarrow Y\) and (iv) \(A \rightarrow L(1) \rightarrow M \rightarrow Y\)).
+\end{itemize}
+
+We can estimate the 4 paths by SEM analysis. Using the \texttt{df2.csv} dataset (without \(A\ast M\) interaction effect on the outcome), we will explore the effect of the exposure to high levels of \(\text{PM}_{2.5}\) on quality of life (\(Y\)), through type-2 diabetes (mediator of interest \(M\)), where overweight \(L(1)\) is affected by the exposure.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df2 }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2.csv"}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(df2)}
+\CommentTok{\#   L0\_male L0\_soc\_env A0\_PM2.5 L1 M\_diabetes Y\_death    Y\_qol}
+\CommentTok{\# 1       0          1        0  1          0       0 91.91819}
+\CommentTok{\# 2       1          1        1  0          0       1 67.53221}
+\CommentTok{\# 3       1          1        0  0          0       0 75.56249}
+\CommentTok{\# 4       1          0        0  0          0       0 89.77055}
+\CommentTok{\# 5       1          1        0  1          1       1 63.22353}
+\CommentTok{\# 6       1          1        0  1          0       0 77.87975}
+
+\DocumentationTok{\#\# quality of life {-}{-}{-}{-}}
+\DocumentationTok{\#\# First step: write the model syntax}
+\NormalTok{sem.QoL.df2 }\OtherTok{\textless{}{-}} \StringTok{"}
+\StringTok{  \#\# SEM for quantitative outcome (QoL)}
+\StringTok{  \# Regression models}
+\StringTok{    A0\_PM2.5 \textasciitilde{} a.L01 * L0\_male + a.L02 * L0\_soc\_env}
+\StringTok{    L1 \textasciitilde{} b.L01 * L0\_male + b.L02 * L0\_soc\_env + b.A * A0\_PM2.5}
+\StringTok{    M\_diabetes \textasciitilde{} c.L01 * L0\_male + c.L02 * L0\_soc\_env + c.A * A0\_PM2.5 + c.L1 * L1}
+\StringTok{    Y\_qol \textasciitilde{} d.01 * L0\_male + d.02 * L0\_soc\_env + d.A * A0\_PM2.5 + d.L1 * L1 + d.M * M\_diabetes}
+
+\StringTok{  \# Assuming the possibility of non{-}null covariance between confounders}
+\StringTok{  \# (note: in the data{-}generating system, the null assumptions were true)}
+\StringTok{    L0\_male \textasciitilde{}\textasciitilde{} L0\_soc\_env}
+
+\StringTok{  \# define other parameters: specific paths, direct, indirect and total effects}
+\StringTok{    path.A\_Y := d.A}
+\StringTok{    path.A\_L1\_Y := b.A * d.L1}
+\StringTok{    path.A\_M\_Y := c.A * d.M}
+\StringTok{    path.A\_L1\_M\_Y := b.A * c.L1 * d.M}
+\StringTok{    MRDE := d.A + (b.A * d.L1)}
+\StringTok{    MRIE := (c.A * d.M) + (b.A * c.L1 * d.M)}
+\StringTok{    CRDE := d.A + (b.A * d.L1) + (b.A * c.L1 * d.M)}
+\StringTok{    CRIE := (c.A * d.M)}
+\StringTok{    total := d.A + (b.A * d.L1) + (c.A * d.M) + (b.A * c.L1 * d.M)}
+\StringTok{  "}
+
+\DocumentationTok{\#\# Second step: estimate the model with the df2 dataset}
+\NormalTok{fit.qol.df2 }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{sem}\NormalTok{(}\AttributeTok{model =}\NormalTok{ sem.QoL.df2,}
+                           \AttributeTok{se =} \StringTok{"robust.sem"}\NormalTok{, }\CommentTok{\# for sandwich{-}type SE}
+                           \AttributeTok{fixed.x =} \ConstantTok{FALSE}\NormalTok{,}
+                           \AttributeTok{data =}\NormalTok{ df2)}
+\FunctionTok{summary}\NormalTok{(fit.qol.df2,}
+        \AttributeTok{ci =} \ConstantTok{TRUE}\NormalTok{)}
+\CommentTok{\# lavaan 0.6{-}18 ended normally after 18 iterations}
+\CommentTok{\#}
+\CommentTok{\# Estimator                                         ML}
+\CommentTok{\# Optimization method                           NLMINB}
+\CommentTok{\# Number of model parameters                        21}
+\CommentTok{\#}
+\CommentTok{\# Number of observations                         10000}
+\CommentTok{\#}
+\CommentTok{\# Model Test User Model:}
+\CommentTok{\#   Test statistic                                 0.000}
+\CommentTok{\#   Degrees of freedom                                 0}
+\CommentTok{\#}
+\CommentTok{\# Parameter Estimates:}
+\CommentTok{\#   Standard errors                           Robust.sem}
+\CommentTok{\#   Information                                 Expected}
+\CommentTok{\#   Information saturated (h1) model          Structured}
+\CommentTok{\#}
+\CommentTok{\# Regressions:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# A0\_PM2.5 \textasciitilde{}}
+\CommentTok{\#   L0\_mal (a.L01)    0.040    0.006     6.339    0.000    0.027    0.052}
+\CommentTok{\#   L0\_sc\_ (a.L02)    0.058    0.006     9.527    0.000    0.046    0.070}
+\CommentTok{\# L1 \textasciitilde{}}
+\CommentTok{\#   L0\_mal (b.L01)   {-}0.043    0.009    {-}4.638    0.000   {-}0.062   {-}0.025}
+\CommentTok{\#   L0\_sc\_ (b.L02)    0.069    0.010     7.166    0.000    0.050    0.088}
+\CommentTok{\#   A0\_PM2   (b.A)    0.226    0.016    14.373    0.000    0.195    0.257}
+\CommentTok{\# M\_diabetes \textasciitilde{}}
+\CommentTok{\#   L0\_mal (c.L01)    0.052    0.009     5.662    0.000    0.034    0.070}
+\CommentTok{\#   L0\_sc\_ (c.L02)    0.064    0.010     6.692    0.000    0.045    0.082}
+\CommentTok{\#   A0\_PM2   (c.A)    0.072    0.016     4.567    0.000    0.041    0.103}
+\CommentTok{\#   L1      (c.L1)    0.194    0.010    18.962    0.000    0.174    0.215}
+\CommentTok{\# Y\_qol \textasciitilde{}}
+\CommentTok{\#   L0\_mal  (d.01)   {-}0.725    0.202    {-}3.591    0.000   {-}1.121   {-}0.329}
+\CommentTok{\#   L0\_sc\_  (d.02)   {-}2.881    0.210   {-}13.722    0.000   {-}3.292   {-}2.469}
+\CommentTok{\#   A0\_PM2   (d.A)   {-}3.926    0.329   {-}11.945    0.000   {-}4.570   {-}3.282}
+\CommentTok{\#   L1      (d.L1)   {-}5.165    0.217   {-}23.794    0.000   {-}5.591   {-}4.740}
+\CommentTok{\#   M\_dbts   (d.M)   {-}8.698    0.217   {-}40.020    0.000   {-}9.124   {-}8.272}
+\CommentTok{\#}
+\CommentTok{\# Covariances:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# L0\_male \textasciitilde{}\textasciitilde{}}
+\CommentTok{\#   L0\_soc\_env       {-}0.003    0.002    {-}1.167    0.243   {-}0.007    0.002}
+\CommentTok{\#}
+\CommentTok{\# Variances:}
+\CommentTok{\#                  Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\#  .A0\_PM2.5          0.099    0.002    41.100    0.000    0.094    0.103}
+\CommentTok{\#  .L1                0.219    0.002   135.196    0.000    0.216    0.222}
+\CommentTok{\#  .M\_diabetes        0.212    0.002   123.351    0.000    0.208    0.215}
+\CommentTok{\#  .Y\_qol           100.878    1.409    71.598    0.000   98.117  103.640}
+\CommentTok{\#   L0\_male           0.250    0.000 24999.950    0.000    0.250    0.250}
+\CommentTok{\#   L0\_soc\_env        0.229    0.001   166.381    0.000    0.227    0.232}
+\CommentTok{\#}
+\CommentTok{\# Defined Parameters:}
+\CommentTok{\#                Estimate  Std.Err  z{-}value   P(\textgreater{}|z|) ci.lower ci.upper}
+\CommentTok{\# path.A\_Y         {-}3.926    0.329   {-}11.945    0.000   {-}4.570   {-}3.282}
+\CommentTok{\# path.A\_L1\_Y      {-}1.168    0.095   {-}12.322    0.000   {-}1.354   {-}0.982}
+\CommentTok{\# path.A\_M\_Y       {-}0.625    0.138    {-}4.536    0.000   {-}0.895   {-}0.355}
+\CommentTok{\# path.A\_L1\_M\_Y    {-}0.382    0.035   {-}10.999    0.000   {-}0.451   {-}0.314}
+\CommentTok{\# MRDE             {-}5.093    0.336   {-}15.170    0.000   {-}5.751   {-}4.435}
+\CommentTok{\# MRIE             {-}1.007    0.139    {-}7.228    0.000   {-}1.280   {-}0.734}
+\CommentTok{\# CRDE             {-}5.476    0.343   {-}15.942    0.000   {-}6.149   {-}4.803}
+\CommentTok{\# CRIE             {-}0.625    0.138    {-}4.536    0.000   {-}0.895   {-}0.355}
+\CommentTok{\# total            {-}6.101    0.370   {-}16.500    0.000   {-}6.825   {-}5.376}
+\end{Highlighting}
+\end{Shaded}
 
 \chapter{Traditional regression models}\label{ChapTradRegModels}
 
@@ -744,50 +1052,51 @@ The estimation of 95\% confidence intervals could be obtained directly from the 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(sandwich)}
-
-\CommentTok{\# for the Quality of Life outcome}
-\NormalTok{ATE\_trad\_qol }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{ATE =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_ace"}\NormalTok{],}
-                     \AttributeTok{lo =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
-                       \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"A0\_ace"}\NormalTok{]),}
-                     \AttributeTok{hi =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
-                       \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"A0\_ace"}\NormalTok{]))}
+\NormalTok{?sandwich}
+\CommentTok{\# the sandwich() function returns a sandwich covariance matrix estimate}
+\DocumentationTok{\#\# for the Quality of Life outcome}
+\NormalTok{ATE\_trad\_qol }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{ATE =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{],}
+                     \AttributeTok{lo =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
+                       \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"A0\_PM2.5"}\NormalTok{]),}
+                     \AttributeTok{hi =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
+                       \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"A0\_PM2.5"}\NormalTok{]))}
 
 \NormalTok{ATE\_trad\_qol}
 \CommentTok{\# ATE = {-}7.210089 , IC95\% = [{-}7.978234 ; {-}6.441944]}
 
-\CommentTok{\# for death outcome}
-\NormalTok{ATE\_trad\_death }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{ATE =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_ace"}\NormalTok{],}
-                       \AttributeTok{lo =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
-                         \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"A0\_ace"}\NormalTok{]),}
-                       \AttributeTok{hi =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
-                         \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"A0\_ace"}\NormalTok{]))}
+\DocumentationTok{\#\# for death outcome}
+\NormalTok{ATE\_trad\_death }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{ATE =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{],}
+                       \AttributeTok{lo =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
+                         \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"A0\_PM2.5"}\NormalTok{]),}
+                       \AttributeTok{hi =} \FunctionTok{coef}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
+                         \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sandwich}\NormalTok{(trad\_ATE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"A0\_PM2.5"}\NormalTok{]))}
 \NormalTok{ATE\_trad\_death}
 \CommentTok{\# ATE = 0.07720726 , IC95\% = [0.04945859 ; 0.1049559]}
 
-\CommentTok{\# 95\% CI calculation applying a bootstrap procedure}
+\DocumentationTok{\#\# 95\% CI calculation applying a bootstrap procedure}
 \FunctionTok{library}\NormalTok{(boot)}
 \NormalTok{bootfunc }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(data,index)\{}
 \NormalTok{  boot\_dat }\OtherTok{\textless{}{-}}\NormalTok{ data[index,]}
-\NormalTok{  mod.qol }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{  mod.qol }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                 \AttributeTok{data =}\NormalTok{ boot\_dat)}
-\NormalTok{  mod.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{  mod.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                    \AttributeTok{family =} \FunctionTok{gaussian}\NormalTok{(}\StringTok{"identity"}\NormalTok{),}
                    \AttributeTok{data =}\NormalTok{ boot\_dat)}
-\NormalTok{  est }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\FunctionTok{coef}\NormalTok{(mod.qol)[}\StringTok{"A0\_ace"}\NormalTok{],}
-           \FunctionTok{coef}\NormalTok{(mod.death)[}\StringTok{"A0\_ace"}\NormalTok{])}
+\NormalTok{  est }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\FunctionTok{coef}\NormalTok{(mod.qol)[}\StringTok{"A0\_PM2.5"}\NormalTok{],}
+           \FunctionTok{coef}\NormalTok{(mod.death)[}\StringTok{"A0\_PM2.5"}\NormalTok{])}
   \FunctionTok{return}\NormalTok{(est)}
 \NormalTok{\}}
 
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
-\NormalTok{boot\_est }\OtherTok{\textless{}{-}} \FunctionTok{boot}\NormalTok{(df1\_int,bootfunc,}\AttributeTok{R=}\DecValTok{2000}\NormalTok{)}
+\NormalTok{boot\_est }\OtherTok{\textless{}{-}} \FunctionTok{boot}\NormalTok{(df1\_int, bootfunc, }\AttributeTok{R =} \DecValTok{1000}\NormalTok{)}
 
-\CommentTok{\# the 95\% CI for the estimation of the ATE of ACE on QoL is:}
+\DocumentationTok{\#\# the 95\% CI for the estimation of the ATE of ACE on QoL is:}
 \FunctionTok{boot.ci}\NormalTok{(boot\_est, }\AttributeTok{index =} \DecValTok{1}\NormalTok{, }\AttributeTok{type =} \StringTok{"norm"}\NormalTok{)}
-\CommentTok{\# ({-}7.978, {-}6.444 )}
+\CommentTok{\# ({-}7.955, {-}6.445 ) }
 
-\CommentTok{\# the 95\% CI for the estimation of the ATE of ACE on death is:}
+\DocumentationTok{\#\# the 95\% CI for the estimation of the ATE of ACE on death is:}
 \FunctionTok{boot.ci}\NormalTok{(boot\_est, }\AttributeTok{index =} \DecValTok{2}\NormalTok{, }\AttributeTok{type =} \StringTok{"norm"}\NormalTok{)}
-\CommentTok{\# ( 0.0502,  0.1040 )  }
+\CommentTok{\# ( 0.0501,  0.1046 )  }
 \end{Highlighting}
 \end{Shaded}
 
@@ -802,17 +1111,17 @@ Alternatively for binary outcomes, the total effect conditional on baseline conf
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{TE\_death\_model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{TE\_death\_model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                       \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{,}
                       \AttributeTok{data =}\NormalTok{ df1\_int)}
 \NormalTok{res\_TE\_death }\OtherTok{\textless{}{-}} \FunctionTok{summary}\NormalTok{(TE\_death\_model)}
-\NormalTok{tot.effect.death.OR }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{OR =} \FunctionTok{exp}\NormalTok{(}\FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"Estimate"}\NormalTok{]),}
-                            \AttributeTok{lo =} \FunctionTok{exp}\NormalTok{(}\FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"Estimate"}\NormalTok{] }\SpecialCharTok{{-}}
+\NormalTok{tot.effect.death.OR }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{OR =} \FunctionTok{exp}\NormalTok{(}\FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"Estimate"}\NormalTok{]),}
+                            \AttributeTok{lo =} \FunctionTok{exp}\NormalTok{(}\FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"Estimate"}\NormalTok{] }\SpecialCharTok{{-}}
                                        \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
-                                       \FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"Std. Error"}\NormalTok{]),}
-                            \AttributeTok{hi =} \FunctionTok{exp}\NormalTok{(}\FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"Estimate"}\NormalTok{] }\SpecialCharTok{+}
+                                       \FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"Std. Error"}\NormalTok{]),}
+                            \AttributeTok{hi =} \FunctionTok{exp}\NormalTok{(}\FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"Estimate"}\NormalTok{] }\SpecialCharTok{+}
                                        \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}
-                                       \FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_ace"}\NormalTok{,}\StringTok{"Std. Error"}\NormalTok{]))}
+                                       \FunctionTok{coef}\NormalTok{(res\_TE\_death)[}\StringTok{"A0\_PM2.5"}\NormalTok{,}\StringTok{"Std. Error"}\NormalTok{]))}
 \NormalTok{tot.effect.death.OR}
 \CommentTok{\# OR = 1.523254 , 95\% CI = [ 1.323317 ; 1.753398]}
 \end{Highlighting}
@@ -840,26 +1149,26 @@ If the outcome is binary, they suggest using the following logistic regression o
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{trad\_qol\_am }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking }\SpecialCharTok{+}
-\NormalTok{                    L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ L1,}
+\NormalTok{trad\_qol\_am }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes }\SpecialCharTok{+}
+\NormalTok{                    L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
                   \AttributeTok{data =}\NormalTok{ df1\_int)}
-\NormalTok{gamma.A.q }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_qol\_am)[}\StringTok{"A0\_ace"}\NormalTok{]}
-\NormalTok{gamma.M.q }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_qol\_am)[}\StringTok{"M\_smoking"}\NormalTok{]}
-\NormalTok{gamma.AM.q }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_qol\_am)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{]}
+\NormalTok{gamma.A.q }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_qol\_am)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
+\NormalTok{gamma.M.q }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_qol\_am)[}\StringTok{"M\_diabetes"}\NormalTok{]}
+\NormalTok{gamma.AM.q }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_qol\_am)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{]}
 
-\NormalTok{trad\_m }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ L1, }
+\NormalTok{trad\_m }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1, }
               \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{,}
               \AttributeTok{data =}\NormalTok{ df1\_int)}
 \NormalTok{beta}\FloatTok{.0} \OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_m)[}\StringTok{"(Intercept)"}\NormalTok{]}
-\NormalTok{beta.A }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_m)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{beta.A }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_m)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 
-\NormalTok{trad\_death\_am }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking }\SpecialCharTok{+}
-\NormalTok{                       L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ L1,}
+\NormalTok{trad\_death\_am }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes }\SpecialCharTok{+}
+\NormalTok{                       L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
                      \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{,}
                      \AttributeTok{data =}\NormalTok{ df1\_int)}
-\NormalTok{gamma.A.d }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_death\_am)[}\StringTok{"A0\_ace"}\NormalTok{]}
-\NormalTok{gamma.M.d }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_death\_am)[}\StringTok{"M\_smoking"}\NormalTok{]}
-\NormalTok{gamma.AM.d }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_death\_am)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{]}
+\NormalTok{gamma.A.d }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_death\_am)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
+\NormalTok{gamma.M.d }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_death\_am)[}\StringTok{"M\_diabetes"}\NormalTok{]}
+\NormalTok{gamma.AM.d }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(trad\_death\_am)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{]}
 \end{Highlighting}
 \end{Shaded}
 
@@ -891,13 +1200,13 @@ For binary outcomes, using parameters from equation \eqref{eq:binoutcomereg}, it
 \begin{Highlighting}[]
 \DocumentationTok{\#\#\# For a binary outcome}
 \DocumentationTok{\#\# setting the mediator to M=0}
-\NormalTok{trad\_OD\_CDE\_death\_m0 }\OtherTok{\textless{}{-}} \FunctionTok{exp}\NormalTok{(gamma.A.d }\SpecialCharTok{+}\NormalTok{ gamma.AM.d }\SpecialCharTok{*} \DecValTok{0}\NormalTok{)}
-\NormalTok{trad\_OD\_CDE\_death\_m0}
+\NormalTok{trad\_OR\_CDE\_death\_m0 }\OtherTok{\textless{}{-}} \FunctionTok{exp}\NormalTok{(gamma.A.d }\SpecialCharTok{+}\NormalTok{ gamma.AM.d }\SpecialCharTok{*} \DecValTok{0}\NormalTok{)}
+\NormalTok{trad\_OR\_CDE\_death\_m0}
 \CommentTok{\# OR\_CDE\_\{M=0\} = 1.442942 }
 
 \DocumentationTok{\#\# setting the mediator to M=1}
-\NormalTok{trad\_OD\_CDE\_death\_m1 }\OtherTok{\textless{}{-}} \FunctionTok{exp}\NormalTok{(gamma.A.d }\SpecialCharTok{+}\NormalTok{ gamma.AM.d }\SpecialCharTok{*} \DecValTok{1}\NormalTok{)}
-\NormalTok{trad\_OD\_CDE\_death\_m1}
+\NormalTok{trad\_OR\_CDE\_death\_m1 }\OtherTok{\textless{}{-}} \FunctionTok{exp}\NormalTok{(gamma.A.d }\SpecialCharTok{+}\NormalTok{ gamma.AM.d }\SpecialCharTok{*} \DecValTok{1}\NormalTok{)}
+\NormalTok{trad\_OR\_CDE\_death\_m1}
 \CommentTok{\# OR\_CDE\_\{M=1\} = 1.461464 }
 \end{Highlighting}
 \end{Shaded}
@@ -1042,22 +1351,23 @@ For continuous outcomes:
 \NormalTok{regmedint\_cont }\OtherTok{\textless{}{-}} \FunctionTok{regmedint}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
                             \DocumentationTok{\#\# Variables}
                             \AttributeTok{yvar =} \StringTok{"Y\_qol"}\NormalTok{,                   }\CommentTok{\# outcome variable}
-                            \AttributeTok{avar =} \StringTok{"A0\_ace"}\NormalTok{,                  }\CommentTok{\# exposure}
-                            \AttributeTok{mvar =} \StringTok{"M\_smoking"}\NormalTok{,               }\CommentTok{\# mediator}
+                            \AttributeTok{avar =} \StringTok{"A0\_PM2.5"}\NormalTok{,                }\CommentTok{\# exposure}
+                            \AttributeTok{mvar =} \StringTok{"M\_diabetes"}\NormalTok{,              }\CommentTok{\# mediator}
                             \AttributeTok{cvar =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,               }\CommentTok{\# confounders}
-                                     \StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{,}
+                                     \StringTok{"L0\_soc\_env"}\NormalTok{,}
                                      \StringTok{"L1"}\NormalTok{),}
                             \CommentTok{\#eventvar = "event",     \# only for survival outcome}
                             \DocumentationTok{\#\# Values at which effects are evaluated}
                             \AttributeTok{a0 =} \DecValTok{0}\NormalTok{,}
                             \AttributeTok{a1 =} \DecValTok{1}\NormalTok{,}
-                            \AttributeTok{m\_cde =} \DecValTok{0}\NormalTok{,              }\CommentTok{\# mediator level for the CDE}
+                            \AttributeTok{m\_cde =} \DecValTok{0}\NormalTok{,}
                             \AttributeTok{c\_cond =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{),                 }\CommentTok{\# covariate level}
                             \DocumentationTok{\#\# Model types}
                             \AttributeTok{mreg =} \StringTok{"logistic"}\NormalTok{,}
                             \AttributeTok{yreg =} \StringTok{"linear"}\NormalTok{,}
                             \DocumentationTok{\#\# Additional specification}
-                            \AttributeTok{interaction =} \ConstantTok{TRUE}\NormalTok{,}
+                            \AttributeTok{interaction =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# presence of A:M interaction term}
+                                                \CommentTok{\# in the outcome model}
                             \AttributeTok{casecontrol =} \ConstantTok{FALSE}\NormalTok{)}
 \FunctionTok{summary}\NormalTok{(regmedint\_cont)}
 \DocumentationTok{\#\#\#\# Mediation analysis}
@@ -1082,16 +1392,16 @@ For binary outcomes:
 \NormalTok{regmedint\_bin }\OtherTok{\textless{}{-}} \FunctionTok{regmedint}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
                             \DocumentationTok{\#\# Variables}
                             \AttributeTok{yvar =} \StringTok{"Y\_death"}\NormalTok{,                 }\CommentTok{\# outcome variable}
-                            \AttributeTok{avar =} \StringTok{"A0\_ace"}\NormalTok{,                  }\CommentTok{\# exposure}
-                            \AttributeTok{mvar =} \StringTok{"M\_smoking"}\NormalTok{,               }\CommentTok{\# mediator}
+                            \AttributeTok{avar =} \StringTok{"A0\_PM2.5"}\NormalTok{,                }\CommentTok{\# exposure}
+                            \AttributeTok{mvar =} \StringTok{"M\_diabetes"}\NormalTok{,              }\CommentTok{\# mediator}
                             \AttributeTok{cvar =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,               }\CommentTok{\# confounders}
-                                     \StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{,}
+                                     \StringTok{"L0\_soc\_env"}\NormalTok{,}
                                      \StringTok{"L1"}\NormalTok{),}
                             \CommentTok{\#eventvar = "event",     \# only for survival outcome}
                             \DocumentationTok{\#\# Values at which effects are evaluated}
                             \AttributeTok{a0 =} \DecValTok{0}\NormalTok{,}
                             \AttributeTok{a1 =} \DecValTok{1}\NormalTok{,}
-                            \AttributeTok{m\_cde =} \DecValTok{0}\NormalTok{,              }\CommentTok{\# mediator level for the CDE}
+                            \AttributeTok{m\_cde =} \DecValTok{0}\NormalTok{,}
                             \AttributeTok{c\_cond =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{),                 }\CommentTok{\# covariate level}
                             \DocumentationTok{\#\# Model types}
                             \AttributeTok{mreg =} \StringTok{"logistic"}\NormalTok{,}
@@ -1114,6 +1424,8 @@ For binary outcomes:
 \CommentTok{\# te   1.520479 1.316954 1.755457}
 \end{Highlighting}
 \end{Shaded}
+
+The \texttt{regmedint} package gives the same results as those calculated manually using the regression coefficients.
 
 \section{Three-way decomposition}\label{trad3way}
 
@@ -2161,7 +2473,7 @@ This Overall Effect can be decomposed into the sum of:
 \item
   a Marginal Randomised (or Interventional) Direct Effect: \(\text{MRDE}=\mathbb{E}\left[Y_{A=1,G_{A=0\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\)
 \item
-  a Marginal Randomised (or Interventional) Interect Effect: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\)
+  a Marginal Randomised (or Interventional) Indirect Effect: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\)
 \end{itemize}
 
 For this 2-way decomposition, we have to estimate 3 causal quantities: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]\), \(\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\) and \(\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\).
@@ -7530,6 +7842,15 @@ Conditional randomized & & \\
 \bibitem[\citeproctext]{ref-daniel2013}
 Daniel, R M, S N Cousens, B L De Stavola, M G Kenward, and J A C Sterne. 2013. {``Methods for Dealing with Time-Dependent Confounding.''} \emph{Statistics in Medicine} 32 (9): 1584--1618.
 
+\bibitem[\citeproctext]{ref-Iacobucci2008}
+Iacobucci, Dawn. 2008. \emph{Mediation Analysis}. Thousand Oaks, California: Sage.
+
+\bibitem[\citeproctext]{ref-Jak2023}
+Jak, Suzanne and Jorgensen, Terrence D. 2024. {``A `Lavaan` Compendium for Structural Equation Modeling in Educational Research.''} \url{https://tdjorgensen.github.io/SEM-in-Ed-compendium/}.
+
+\bibitem[\citeproctext]{ref-Jiang2023}
+Jiang, Ge. 2023. {``R Cookbook for Structural Equation Modeling.''} \url{https://gabriellajg.github.io/EPSY-579-R-Cookbook-for-SEM/}.
+
 \bibitem[\citeproctext]{ref-vanderlaan_book2011}
 Laan, Mark J. van der, and Sherri Rose. 2011. \emph{Targeted Learning: Causal Inference for Observational and Experimental Data.} 1st ed. Springer Series in Statistics. New York, NY: Springer.
 
@@ -7559,6 +7880,9 @@ VanderWeele, Tyler J. 2009. {``Marginal Structural Models for the Estimation of 
 
 \bibitem[\citeproctext]{ref-vanderweele2016}
 VanderWeele, Tyler J, and Eric J Tchetgen Tchetgen. 2017. {``Mediation Analysis with Time Varying Exposures and Mediators.''} \emph{J R Stat Soc Series B Stat Methodol} 79 (3): 917--38.
+
+\bibitem[\citeproctext]{ref-zheng2017longitudinal}
+Zheng, Wenjing, and Mark van der Laan. 2017. {``Longitudinal Mediation Analysis with Time-Varying Mediators and Exposures, with Application to Survival Outcomes.''} \emph{Journal of Causal Inference} 5 (2).
 
 \end{CSLReferences}
 
