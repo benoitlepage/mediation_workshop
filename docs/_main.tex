@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-10-11}
+\date{2024-10-12}
 
 \begin{document}
 \maketitle
@@ -1557,16 +1557,16 @@ and
 \end{Highlighting}
 \end{Shaded}
 
-In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is \(\approx 52.3\%\), and of this excess relative risk\ldots:
+In this example, the excess relative risk of the exposure to high levels of \(\text{PM}_{2.5}\) is \(\approx 52.3\%\), and of this excess relative risk\ldots:
 
 \begin{itemize}
 \tightlist
 \item
-  \(\approx 44.8\%\) is attributable to the PNDE of ACE,
+  \(\approx 44.8\%\) is attributable to the PNDE of \(\text{PM}_{2.5}\),
 \item
-  \(\approx 4.8\%\) is attributable to the PNIE of ACE through smoking,
+  \(\approx 4.8\%\) is attributable to the PNIE of \(\text{PM}_{2.5}\) through type-2 diabetes,
 \item
-  \(\approx 2.4\%\) is attributable to the mediated interactive effect between ACE and smoking.
+  \(\approx 2.4\%\) is attributable to the mediated interactive effect between \(\text{PM}_{2.5}\) and type-2 diabetes
 \end{itemize}
 
 Note: in this simulated data, the probability of death is around \(20\%\), so that the requirement of a rare outcome is not really fulfilled (usually, we would consider \(< 10\%\) to be acceptable).
@@ -1728,41 +1728,44 @@ and the component of the excess relative risk due to the reference interaction e
 \end{Highlighting}
 \end{Shaded}
 
-In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is \(\approx 52.3\%\), and of this excess relative risk\ldots:
+In this example, the excess relative risk of the exposure to high levels of \(\text{PM}_{2.5}\) is \(\approx 52.3\%\), and of this excess relative risk\ldots:
 
 \begin{itemize}
 \tightlist
 \item
-  \(\approx 40.2\%\) is attributable to the CDE of ACE,
+  \(\approx 40.2\%\) is attributable to the CDE of \(\text{PM}_{2.5}\),
 \item
-  \(\approx 4.8\%\) is attributable to the PNIE of ACE through smoking,
+  \(\approx 4.8\%\) is attributable to the PNIE of \(\text{PM}_{2.5}\) through type-2 diabetes,
 \item
-  \(\approx 2.4\%\) is attributable to the mediated interactive effect between ACE and smoking.
+  \(\approx 2.4\%\) is attributable to the mediated interactive effect between \(\text{PM}_{2.5}\) and type-2 diabetes
 \item
-  and \(\approx 4.6\%\) is attributable to the (ACE \(\ast\) smoking) reference interactive effect.
+  and \(\approx 4.6\%\) is attributable to the (\(\text{PM}_{2.5}\) \(\ast\) type-2 diabetes) reference interactive effect.
 \end{itemize}
 
 Note: in this simulated data, the probability of death is around \(20\%\), so that the requirement of a rare outcome is not really fulfilled (usually, we would consider \(< 10\%\) to be acceptable).
 
 \textbf{R package for 3-way and 4-way decomposition}
 
-The \texttt{CMAverse} R \href{https://bs1125.github.io/CMAverse/index.html}{package} (a suite of functions for causal mediation analysis) can be used for 3-way and 4-way decomposition. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.
+The \texttt{CMAverse} R \href{https://bs1125.github.io/CMAverse/index.html}{package} (a suite of functions for causal mediation analysis) can be used for 2-way, 3-way and 4-way decompositions. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.
+
+Standard errors and confidence intervals can be computed by delta-method or by bootstrap.
 
 For continuous outcomes:
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(CMAverse)}
+\NormalTok{?CMAverse}\SpecialCharTok{::}\NormalTok{cmest}
 
 \DocumentationTok{\#\#\# For the continuous outcome}
 \DocumentationTok{\#\# Closed{-}form parameter function estimation and delta method inferece}
 \NormalTok{res\_rb\_param\_delta }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
                             \AttributeTok{model =} \StringTok{"rb"}\NormalTok{, }\CommentTok{\# for "regression based" (rb) approach}
                             \AttributeTok{outcome =} \StringTok{"Y\_qol"}\NormalTok{,        }\CommentTok{\# outcome variable}
-                            \AttributeTok{exposure =} \StringTok{"A0\_ace"}\NormalTok{,      }\CommentTok{\# exposure variable}
-                            \AttributeTok{mediator =} \StringTok{"M\_smoking"}\NormalTok{,   }\CommentTok{\# mediator}
+                            \AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{,    }\CommentTok{\# exposure variable}
+                            \AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,  }\CommentTok{\# mediator}
                             \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,      }\CommentTok{\# confounders}
-                                      \StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{,}
+                                      \StringTok{"L0\_soc\_env"}\NormalTok{,}
                                       \StringTok{"L1"}\NormalTok{),}
                             \AttributeTok{EMint =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# exposures*mediator interaction}
                             \AttributeTok{mreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{), }\CommentTok{\# model of the mediator}
@@ -1773,7 +1776,7 @@ For continuous outcomes:
                             \AttributeTok{basecval =} \FunctionTok{list}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{),      }\CommentTok{\# covariate level}
                             \AttributeTok{estimation =} \StringTok{"paramfunc"}\NormalTok{, }\CommentTok{\#  closed{-}form parameter}
                                                       \CommentTok{\# function estimation}
-                            \AttributeTok{inference =} \StringTok{"delta"}\NormalTok{) }\CommentTok{\# IC95\% : delta method}
+                            \AttributeTok{inference =} \StringTok{"delta"}\NormalTok{) }\CommentTok{\# IC95\% : "delta" or "bootstrap"}
 \FunctionTok{summary}\NormalTok{(res\_rb\_param\_delta)}
 \CommentTok{\# Closed{-}form parameter function estimation with}
 \CommentTok{\# delta method standard errors, confidence intervals and p{-}values}
@@ -1797,7 +1800,7 @@ For continuous outcomes:
 \CommentTok{\#   {-}{-}{-}}
 \CommentTok{\#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1}
 
-\CommentTok{\# for the 3{-}way decomposition, the PNDE, PNIE, and MIE are given by:}
+\DocumentationTok{\#\# for the 3{-}way decomposition, the PNDE, PNIE, and MIE are given by:}
 \FunctionTok{data.frame}\NormalTok{(}\StringTok{"Estimate"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pe,}
            \StringTok{"lower95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.low,}
            \StringTok{"upper95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.high,}
@@ -1807,11 +1810,12 @@ For continuous outcomes:
 \CommentTok{\# pnie   {-}0.9095061 {-}1.1499166 {-}0.6690957 1.219025e{-}13}
 \CommentTok{\# intmed {-}0.5916840 {-}0.7954739 {-}0.3878941 1.266206e{-}08}
 
-\CommentTok{\# for the 4{-}way decomposition, the CDE(M=0), Intref, MIE and PNIE are given by:}
+\DocumentationTok{\#\# for the 4{-}way decomposition, the CDE(M=0), Intref, MIE and PNIE are given by:}
 \FunctionTok{data.frame}\NormalTok{(}\StringTok{"Estimate"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pe,}
            \StringTok{"lower95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.low,}
            \StringTok{"upper95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.high,}
-           \StringTok{"P.value"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pval)[}\FunctionTok{c}\NormalTok{(}\StringTok{"cde"}\NormalTok{,}\StringTok{"intref"}\NormalTok{,}\StringTok{"intmed"}\NormalTok{,}\StringTok{"pnie"}\NormalTok{),]}
+           \StringTok{"P.value"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pval)[}\FunctionTok{c}\NormalTok{(}\StringTok{"cde"}\NormalTok{,}\StringTok{"intref"}\NormalTok{,}
+                                                         \StringTok{"intmed"}\NormalTok{,}\StringTok{"pnie"}\NormalTok{),]}
 \CommentTok{\#          Estimate  lower95CI  upper95CI      P.value}
 \CommentTok{\# cde    {-}3.7152652 {-}4.5306145 {-}2.8999159 0.000000e+00}
 \CommentTok{\# intref {-}1.1298236 {-}1.4007600 {-}0.8588871 2.220446e{-}16}
@@ -1828,11 +1832,11 @@ For binary outcomes:
 \DocumentationTok{\#\# Closed{-}form parameter function estimation and delta method inferece}
 \NormalTok{res\_rb\_param\_delta }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
                             \AttributeTok{model =} \StringTok{"rb"}\NormalTok{, }\CommentTok{\# for "regression based" (rb) approach}
-                            \AttributeTok{outcome =} \StringTok{"Y\_death"}\NormalTok{,        }\CommentTok{\# outcome variable}
-                            \AttributeTok{exposure =} \StringTok{"A0\_ace"}\NormalTok{,      }\CommentTok{\# exposure variable}
-                            \AttributeTok{mediator =} \StringTok{"M\_smoking"}\NormalTok{,   }\CommentTok{\# mediator}
+                            \AttributeTok{outcome =} \StringTok{"Y\_death"}\NormalTok{,      }\CommentTok{\# outcome variable}
+                            \AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{,    }\CommentTok{\# exposure variable}
+                            \AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,  }\CommentTok{\# mediator}
                             \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,      }\CommentTok{\# confounders}
-                                      \StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{,}
+                                      \StringTok{"L0\_soc\_env"}\NormalTok{,}
                                       \StringTok{"L1"}\NormalTok{),}
                             \AttributeTok{EMint =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# exposures*mediator interaction}
                             \AttributeTok{mreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{), }\CommentTok{\# model of the mediator}
@@ -1870,31 +1874,30 @@ For binary outcomes:
 \CommentTok{\#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1}
 
 
-\CommentTok{\# for the 3{-}way decomposition, the excess relative risk due to}
-\CommentTok{\# the PNDE, PNIE and MIE are given by:}
+\DocumentationTok{\#\# for the 3{-}way decomposition, the excess relative risk due to}
+\DocumentationTok{\#\# the PNDE, PNIE and MIE are given by:}
 \FunctionTok{data.frame}\NormalTok{(}\StringTok{"Estimate"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pe }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{,}
            \StringTok{"lower95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.low }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{,}
-           \StringTok{"upper95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.high }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{)[}\FunctionTok{c}\NormalTok{(}\StringTok{"Rpnde"}\NormalTok{),]}
+           \StringTok{"upper95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.high }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{)[}\FunctionTok{c}\NormalTok{(}\StringTok{"Rpnde"}\NormalTok{,}\StringTok{"Rpnie"}\NormalTok{),]}
 \CommentTok{\#        Estimate lower95CI upper95CI}
-\CommentTok{\# Rpnde 0.4480347 0.2454699 0.6835449}
-\CommentTok{\# and}
+\CommentTok{\# Rpnde 0.44803473 0.24546995 0.68354491}
+\CommentTok{\# Rpnie 0.04835753 0.02928532 0.06778313}
+\CommentTok{\# and the excess relative risk due to MIE is given by:}
 \FunctionTok{data.frame}\NormalTok{(}\StringTok{"Estimate"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pe,}
            \StringTok{"lower95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.low,}
            \StringTok{"upper95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.high,}
-           \StringTok{"P.value"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pval)[}\FunctionTok{c}\NormalTok{(}\StringTok{"ERpnie"}\NormalTok{, }\StringTok{"ERintmed"}\NormalTok{),]}
+           \StringTok{"P.value"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pval)[}\FunctionTok{c}\NormalTok{(}\StringTok{"ERintmed"}\NormalTok{),]}
 \CommentTok{\#            Estimate   lower95CI  upper95CI      P.value}
-\CommentTok{\# ERpnie   0.04835753  0.02910970 0.06760535 8.473169e{-}07}
 \CommentTok{\# ERintmed 0.02408674 {-}0.02576124 0.07393472 3.436070e{-}01}
 
 
-
-
-\CommentTok{\# for the 4{-}way decomposition, the CDE(M=0), the excess relative risk due to}
-\CommentTok{\# CDE(M=0), Intref, MIE and PNIE are given by:}
+\DocumentationTok{\#\# for the 4{-}way decomposition, the CDE(M=0), the excess relative risk due to}
+\DocumentationTok{\#\# CDE(M=0), Intref, MIE and PNIE are given by}
 \FunctionTok{data.frame}\NormalTok{(}\StringTok{"Estimate"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pe,}
            \StringTok{"lower95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.low,}
            \StringTok{"upper95CI"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.ci.high,}
-           \StringTok{"P.value"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pval)[}\FunctionTok{c}\NormalTok{(}\StringTok{"ERcde"}\NormalTok{,}\StringTok{"ERintref"}\NormalTok{,}\StringTok{"ERintmed"}\NormalTok{,}\StringTok{"ERpnie"}\NormalTok{),]}
+           \StringTok{"P.value"} \OtherTok{=}\NormalTok{ res\_rb\_param\_delta}\SpecialCharTok{$}\NormalTok{effect.pval)[}\FunctionTok{c}\NormalTok{(}\StringTok{"ERcde"}\NormalTok{,}\StringTok{"ERintref"}\NormalTok{,}
+                                                         \StringTok{"ERintmed"}\NormalTok{,}\StringTok{"ERpnie"}\NormalTok{),]}
 \CommentTok{\#            Estimate   lower95CI  upper95CI      P.value}
 \CommentTok{\# ERcde    0.40204098  0.15315072 0.65093124 1.545523e{-}03}
 \CommentTok{\# ERintref 0.04599376 {-}0.04850084 0.14048835 3.400930e{-}01}

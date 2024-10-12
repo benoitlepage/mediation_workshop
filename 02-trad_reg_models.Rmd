@@ -528,11 +528,11 @@ comp_MIE_qol
 # 0.02408674
 ```
 
-In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is $\approx 52.3\%$, and of this excess relative risk...:
+In this example, the excess relative risk of the exposure to high levels of $\text{PM}_{2.5}$ is $\approx 52.3\%$, and of this excess relative risk...:
 
-- $\approx 44.8\%$ is attributable to the PNDE of ACE,
-- $\approx 4.8\%$ is attributable to the PNIE of ACE through smoking,
-- $\approx 2.4\%$ is attributable to the mediated interactive effect between ACE and smoking. 
+- $\approx 44.8\%$ is attributable to the PNDE of $\text{PM}_{2.5}$,
+- $\approx 4.8\%$ is attributable to the PNIE of $\text{PM}_{2.5}$ through type-2 diabetes,
+- $\approx 2.4\%$ is attributable to the mediated interactive effect between $\text{PM}_{2.5}$ and type-2 diabetes 
 
 Note: in this simulated data, the probability of death is around $20\%$, so that the requirement of a rare outcome is not really fulfilled (usually, we would consider $< 10\%$ to be acceptable).
 
@@ -689,33 +689,36 @@ comp_RIE_death
 # 0.04599376
 ```
 
-In this example, the excess relative risk of the exposure to adverse childhood (ACE) exposure is $\approx 52.3\%$, and of this excess relative risk...:
+In this example, the excess relative risk of the exposure to high levels of $\text{PM}_{2.5}$ is $\approx 52.3\%$, and of this excess relative risk...:
 
-- $\approx 40.2\%$ is attributable to the CDE of ACE,
-- $\approx 4.8\%$ is attributable to the PNIE of ACE through smoking,
-- $\approx 2.4\%$ is attributable to the mediated interactive effect between ACE and smoking. 
-- and $\approx 4.6\%$ is attributable to the (ACE $\ast$ smoking) reference interactive effect. 
+- $\approx 40.2\%$ is attributable to the CDE of $\text{PM}_{2.5}$,
+- $\approx 4.8\%$ is attributable to the PNIE of $\text{PM}_{2.5}$ through type-2 diabetes,
+- $\approx 2.4\%$ is attributable to the mediated interactive effect between $\text{PM}_{2.5}$ and type-2 diabetes 
+- and $\approx 4.6\%$ is attributable to the ($\text{PM}_{2.5}$ $\ast$ type-2 diabetes) reference interactive effect. 
 
 Note: in this simulated data, the probability of death is around $20\%$, so that the requirement of a rare outcome is not really fulfilled (usually, we would consider $< 10\%$ to be acceptable).
 
 
 **R package for 3-way and 4-way decomposition**
 
-The `CMAverse` R [package](https://bs1125.github.io/CMAverse/index.html) (a suite of functions for causal mediation analysis) can be used for 3-way and 4-way decomposition. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.
+The `CMAverse` R [package](https://bs1125.github.io/CMAverse/index.html) (a suite of functions for causal mediation analysis) can be used for 2-way, 3-way and 4-way decompositions. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.
+
+Standard errors and confidence intervals can be computed by delta-method or by bootstrap.
 
 For continuous outcomes:
 ```{r `cmavers_continuous, echo=TRUE, eval = FALSE}
 library(CMAverse)
+?CMAverse::cmest
 
 ### For the continuous outcome
 ## Closed-form parameter function estimation and delta method inferece
 res_rb_param_delta <- cmest(data = df1_int,
                             model = "rb", # for "regression based" (rb) approach
                             outcome = "Y_qol",        # outcome variable
-                            exposure = "A0_ace",      # exposure variable
-                            mediator = "M_smoking",   # mediator
+                            exposure = "A0_PM2.5",    # exposure variable
+                            mediator = "M_diabetes",  # mediator
                             basec = c("L0_male",      # confounders
-                                      "L0_parent_low_educ_lv",
+                                      "L0_soc_env",
                                       "L1"),
                             EMint = TRUE, # exposures*mediator interaction
                             mreg = list("logistic"), # model of the mediator
@@ -726,7 +729,7 @@ res_rb_param_delta <- cmest(data = df1_int,
                             basecval = list(0,0,0),      # covariate level
                             estimation = "paramfunc", #  closed-form parameter
                                                       # function estimation
-                            inference = "delta") # IC95% : delta method
+                            inference = "delta") # IC95% : "delta" or "bootstrap"
 summary(res_rb_param_delta)
 # Closed-form parameter function estimation with
 # delta method standard errors, confidence intervals and p-values
@@ -750,7 +753,7 @@ summary(res_rb_param_delta)
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-# for the 3-way decomposition, the PNDE, PNIE, and MIE are given by:
+## for the 3-way decomposition, the PNDE, PNIE, and MIE are given by:
 data.frame("Estimate" = res_rb_param_delta$effect.pe,
            "lower95CI" = res_rb_param_delta$effect.ci.low,
            "upper95CI" = res_rb_param_delta$effect.ci.high,
@@ -760,11 +763,12 @@ data.frame("Estimate" = res_rb_param_delta$effect.pe,
 # pnie   -0.9095061 -1.1499166 -0.6690957 1.219025e-13
 # intmed -0.5916840 -0.7954739 -0.3878941 1.266206e-08
 
-# for the 4-way decomposition, the CDE(M=0), Intref, MIE and PNIE are given by:
+## for the 4-way decomposition, the CDE(M=0), Intref, MIE and PNIE are given by:
 data.frame("Estimate" = res_rb_param_delta$effect.pe,
            "lower95CI" = res_rb_param_delta$effect.ci.low,
            "upper95CI" = res_rb_param_delta$effect.ci.high,
-           "P.value" = res_rb_param_delta$effect.pval)[c("cde","intref","intmed","pnie"),]
+           "P.value" = res_rb_param_delta$effect.pval)[c("cde","intref",
+                                                         "intmed","pnie"),]
 #          Estimate  lower95CI  upper95CI      P.value
 # cde    -3.7152652 -4.5306145 -2.8999159 0.000000e+00
 # intref -1.1298236 -1.4007600 -0.8588871 2.220446e-16
@@ -778,11 +782,11 @@ For binary outcomes:
 ## Closed-form parameter function estimation and delta method inferece
 res_rb_param_delta <- cmest(data = df1_int,
                             model = "rb", # for "regression based" (rb) approach
-                            outcome = "Y_death",        # outcome variable
-                            exposure = "A0_ace",      # exposure variable
-                            mediator = "M_smoking",   # mediator
+                            outcome = "Y_death",      # outcome variable
+                            exposure = "A0_PM2.5",    # exposure variable
+                            mediator = "M_diabetes",  # mediator
                             basec = c("L0_male",      # confounders
-                                      "L0_parent_low_educ_lv",
+                                      "L0_soc_env",
                                       "L1"),
                             EMint = TRUE, # exposures*mediator interaction
                             mreg = list("logistic"), # model of the mediator
@@ -820,31 +824,30 @@ summary(res_rb_param_delta)
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 
-# for the 3-way decomposition, the excess relative risk due to
-# the PNDE, PNIE and MIE are given by:
+## for the 3-way decomposition, the excess relative risk due to
+## the PNDE, PNIE and MIE are given by:
 data.frame("Estimate" = res_rb_param_delta$effect.pe - 1,
            "lower95CI" = res_rb_param_delta$effect.ci.low - 1,
-           "upper95CI" = res_rb_param_delta$effect.ci.high - 1)[c("Rpnde"),]
+           "upper95CI" = res_rb_param_delta$effect.ci.high - 1)[c("Rpnde","Rpnie"),]
 #        Estimate lower95CI upper95CI
-# Rpnde 0.4480347 0.2454699 0.6835449
-# and
+# Rpnde 0.44803473 0.24546995 0.68354491
+# Rpnie 0.04835753 0.02928532 0.06778313
+# and the excess relative risk due to MIE is given by:
 data.frame("Estimate" = res_rb_param_delta$effect.pe,
            "lower95CI" = res_rb_param_delta$effect.ci.low,
            "upper95CI" = res_rb_param_delta$effect.ci.high,
-           "P.value" = res_rb_param_delta$effect.pval)[c("ERpnie", "ERintmed"),]
+           "P.value" = res_rb_param_delta$effect.pval)[c("ERintmed"),]
 #            Estimate   lower95CI  upper95CI      P.value
-# ERpnie   0.04835753  0.02910970 0.06760535 8.473169e-07
 # ERintmed 0.02408674 -0.02576124 0.07393472 3.436070e-01
 
 
-
-
-# for the 4-way decomposition, the CDE(M=0), the excess relative risk due to
-# CDE(M=0), Intref, MIE and PNIE are given by:
+## for the 4-way decomposition, the CDE(M=0), the excess relative risk due to
+## CDE(M=0), Intref, MIE and PNIE are given by
 data.frame("Estimate" = res_rb_param_delta$effect.pe,
            "lower95CI" = res_rb_param_delta$effect.ci.low,
            "upper95CI" = res_rb_param_delta$effect.ci.high,
-           "P.value" = res_rb_param_delta$effect.pval)[c("ERcde","ERintref","ERintmed","ERpnie"),]
+           "P.value" = res_rb_param_delta$effect.pval)[c("ERcde","ERintref",
+                                                         "ERintmed","ERpnie"),]
 #            Estimate   lower95CI  upper95CI      P.value
 # ERcde    0.40204098  0.15315072 0.65093124 1.545523e-03
 # ERintref 0.04599376 -0.04850084 0.14048835 3.400930e-01

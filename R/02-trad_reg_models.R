@@ -440,7 +440,8 @@ par(mfrow = c(2,1))
 
 
 
-# Note: sensitivity analysis cannot be applied with both binary mediator and outcome
+# Note: sensitivity analysis from the package cannot be applied when the mediator
+#       and the outcome are both binary
 
 
 
@@ -504,9 +505,9 @@ comp_MIE_qol
 
 
 
-################################################################################
-######################### Four-way decomposition
-################################################################################
+# ---------------------------------------------------------------------------- #
+# Four-way decomposition ----
+# ---------------------------------------------------------------------------- #
 
 ### For a continuous outcome
 ## The CDE_(M=0) is:
@@ -575,7 +576,7 @@ comp_RIE_death
 
 
 
-#### Using the CMAverse package = Regression-Based Causal Mediation Analysis
+#### Using the CMAverse package = Regression-Based Causal Mediation Analysis ----
 #### with Interaction and Effect Modification Terms
 #### https://bs1125.github.io/CMAverse/
 library(CMAverse)
@@ -691,27 +692,25 @@ summary(res_rb_param_delta)
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 
-# for the 3-way decomposition, the excess relative risk due to
-# the PNDE, PNIE and MIE are given by:
+## for the 3-way decomposition, the excess relative risk due to
+## the PNDE, PNIE and MIE are given by:
 data.frame("Estimate" = res_rb_param_delta$effect.pe - 1,
            "lower95CI" = res_rb_param_delta$effect.ci.low - 1,
-           "upper95CI" = res_rb_param_delta$effect.ci.high - 1)[c("Rpnde"),]
+           "upper95CI" = res_rb_param_delta$effect.ci.high - 1)[c("Rpnde","Rpnie"),]
 #        Estimate lower95CI upper95CI
-# Rpnde 0.4480347 0.2454699 0.6835449
-# and
+# Rpnde 0.44803473 0.24546995 0.68354491
+# Rpnie 0.04835753 0.02928532 0.06778313
+# and the excess relative risk due to MIE is given by:
 data.frame("Estimate" = res_rb_param_delta$effect.pe,
            "lower95CI" = res_rb_param_delta$effect.ci.low,
            "upper95CI" = res_rb_param_delta$effect.ci.high,
-           "P.value" = res_rb_param_delta$effect.pval)[c("ERpnie", "ERintmed"),]
+           "P.value" = res_rb_param_delta$effect.pval)[c("ERintmed"),]
 #            Estimate   lower95CI  upper95CI      P.value
-# ERpnie   0.04835753  0.02910970 0.06760535 8.473169e-07
 # ERintmed 0.02408674 -0.02576124 0.07393472 3.436070e-01
 
 
-
-
-# for the 4-way decomposition, the CDE(M=0), the excess relative risk due to
-# CDE(M=0), Intref, MIE and PNIE are given by:
+## for the 4-way decomposition, the CDE(M=0), the excess relative risk due to
+## CDE(M=0), Intref, MIE and PNIE are given by
 data.frame("Estimate" = res_rb_param_delta$effect.pe,
            "lower95CI" = res_rb_param_delta$effect.ci.low,
            "upper95CI" = res_rb_param_delta$effect.ci.high,
