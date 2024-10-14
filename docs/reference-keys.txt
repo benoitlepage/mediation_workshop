@@ -6,6 +6,8 @@ eq:logittotaleffect
 eq:contoutcomereg
 eq:medreg
 eq:binoutcomereg
+fig:FigmediationPackage
+fig:Figmedsens
 eq:MSMATEmarg
 eq:MSMATEcond
 eq:MSMATEsex
@@ -38,6 +40,8 @@ ChapGcomp-CDE-ICE
 g-computation-by-ice-using-the-ltmle-package
 sequential-g-estimator
 estimation-of-natural-direct-nde-and-indirect-effects-nie
+simple-plug-in-estimator
+using-the-mediation-r-package
 estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie
 parametric-g-computation
 g-computation-by-iterative-conditional-expectation

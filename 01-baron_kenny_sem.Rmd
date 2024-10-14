@@ -34,6 +34,10 @@ The indirect effect can be calculated using:
   - or the "product of coefficient" method based on the 2nd and 3rd models: $\beta_A \times \gamma_M$.
 
 ```{r Baron_and_Kenny, echo=TRUE, eval = FALSE}
+## Import data 
+rm(list=ls())
+df1 <- read.csv(file = "./data/df1.csv")
+
 ## Model 1 to estimate the total effect:
 model.tot.A.QoL <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
                       data = df1)

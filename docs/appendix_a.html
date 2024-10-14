@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-12" />
+<meta name="date" content="2024-10-14" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -200,7 +200,11 @@ div.csl-indent {
 <li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-ICE"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
-<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a></li>
+<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#simple-plug-in-estimator"><i class="fa fa-check"></i><b>6.3.1</b> Simple “plug-in” estimator</a></li>
+<li class="chapter" data-level="6.3.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#using-the-mediation-r-package"><i class="fa fa-check"></i><b>6.3.2</b> Using the <code>mediation</code> R package</a></li>
+</ul></li>
 <li class="chapter" data-level="6.4" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.4</b> Estimation of “Marginal” Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)</a>
 <ul>
 <li class="chapter" data-level="6.4.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.4.1</b> Parametric g-computation</a></li>
@@ -322,66 +326,66 @@ P(Y_{death} = 1) &amp;=&amp; \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \be
 \end{array}\]</span>
 where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10)\)</span>.</p>
 <p>One can set the parameters of these structural equations using the following function <code>param.causal.model.1()</code>:</p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="appendix_a.html#cb54-1" tabindex="-1"></a>param.causal.model<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">A.M.interaction =</span> <span class="cn">NULL</span>) {</span>
-<span id="cb54-2"><a href="appendix_a.html#cb54-2" tabindex="-1"></a><span class="co"># L0</span></span>
-<span id="cb54-3"><a href="appendix_a.html#cb54-3" tabindex="-1"></a>p_L0_male <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
-<span id="cb54-4"><a href="appendix_a.html#cb54-4" tabindex="-1"></a>p_L0_soc_env <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
-<span id="cb54-5"><a href="appendix_a.html#cb54-5" tabindex="-1"></a></span>
-<span id="cb54-6"><a href="appendix_a.html#cb54-6" tabindex="-1"></a><span class="co"># A: A0_PM2.5 &lt;- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env ) </span></span>
-<span id="cb54-7"><a href="appendix_a.html#cb54-7" tabindex="-1"></a>b_A <span class="ot">&lt;-</span> <span class="fl">0.05</span>   <span class="co"># reference prevalence is 5%</span></span>
-<span id="cb54-8"><a href="appendix_a.html#cb54-8" tabindex="-1"></a>b_male_A <span class="ot">&lt;-</span> <span class="fl">0.04</span>  <span class="co"># + 0.04 for the effect of L0_male -&gt; A0_PM2.5</span></span>
-<span id="cb54-9"><a href="appendix_a.html#cb54-9" tabindex="-1"></a>b_soc_env_A <span class="ot">&lt;-</span> <span class="fl">0.06</span>  <span class="co"># +0.06 for the effect of L0_soc_env -&gt; A0_PM2.5</span></span>
-<span id="cb54-10"><a href="appendix_a.html#cb54-10" tabindex="-1"></a></span>
-<span id="cb54-11"><a href="appendix_a.html#cb54-11" tabindex="-1"></a><span class="co"># L1: intermediate confounder between M and Y, not influenced by A</span></span>
-<span id="cb54-12"><a href="appendix_a.html#cb54-12" tabindex="-1"></a>p_L1 <span class="ot">&lt;-</span> <span class="fl">0.3</span></span>
-<span id="cb54-13"><a href="appendix_a.html#cb54-13" tabindex="-1"></a></span>
-<span id="cb54-14"><a href="appendix_a.html#cb54-14" tabindex="-1"></a><span class="co"># M: M_diabetes &lt;- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env + 0.07 * L1 +</span></span>
-<span id="cb54-15"><a href="appendix_a.html#cb54-15" tabindex="-1"></a><span class="co">#                         0.1 * A0_PM2.5 ) </span></span>
-<span id="cb54-16"><a href="appendix_a.html#cb54-16" tabindex="-1"></a>b_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># reference prevalence is 20%</span></span>
-<span id="cb54-17"><a href="appendix_a.html#cb54-17" tabindex="-1"></a>b_male_M <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># +0.05 for the effect of L0_male -&gt; M_diabetes</span></span>
-<span id="cb54-18"><a href="appendix_a.html#cb54-18" tabindex="-1"></a>b_soc_env_M <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_soc_env -&gt; M_diabetes</span></span>
-<span id="cb54-19"><a href="appendix_a.html#cb54-19" tabindex="-1"></a>b_L1_M <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; M_diabetes</span></span>
-<span id="cb54-20"><a href="appendix_a.html#cb54-20" tabindex="-1"></a>b_A_M <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># +0.10 for the effect of A0_PM2.5 -&gt; M_diabetes</span></span>
-<span id="cb54-21"><a href="appendix_a.html#cb54-21" tabindex="-1"></a></span>
-<span id="cb54-22"><a href="appendix_a.html#cb54-22" tabindex="-1"></a><span class="co"># Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env + 0.05 * A0_PM2.5 +</span></span>
-<span id="cb54-23"><a href="appendix_a.html#cb54-23" tabindex="-1"></a><span class="co">#                   0.07 * L1 + 0.08 * M_diabetes +</span></span>
-<span id="cb54-24"><a href="appendix_a.html#cb54-24" tabindex="-1"></a><span class="co">#                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter ) </span></span>
-<span id="cb54-25"><a href="appendix_a.html#cb54-25" tabindex="-1"></a>b_Y <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># reference prevalence is 10%</span></span>
-<span id="cb54-26"><a href="appendix_a.html#cb54-26" tabindex="-1"></a>b_male_Y <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_male -&gt; Y</span></span>
-<span id="cb54-27"><a href="appendix_a.html#cb54-27" tabindex="-1"></a>b_soc_env_Y <span class="ot">&lt;-</span> <span class="fl">0.04</span> <span class="co"># +0.04 for the effect of L0_soc_env -&gt; Y</span></span>
-<span id="cb54-28"><a href="appendix_a.html#cb54-28" tabindex="-1"></a>b_A_Y <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># 0.05 for the effect of A0_PM2.5 -&gt; Y</span></span>
-<span id="cb54-29"><a href="appendix_a.html#cb54-29" tabindex="-1"></a>b_L1_Y <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; Y</span></span>
-<span id="cb54-30"><a href="appendix_a.html#cb54-30" tabindex="-1"></a>b_M_Y <span class="ot">&lt;-</span> <span class="fl">0.08</span> <span class="co"># 0.08 for the effect of M_diabetes -&gt; Y</span></span>
-<span id="cb54-31"><a href="appendix_a.html#cb54-31" tabindex="-1"></a>b_AM_Y <span class="ot">&lt;-</span> <span class="fl">0.03</span> <span class="co"># 0.03 for the interaction effect A0_PM2.5 * M_diabetes -&gt; Y</span></span>
-<span id="cb54-32"><a href="appendix_a.html#cb54-32" tabindex="-1"></a></span>
-<span id="cb54-33"><a href="appendix_a.html#cb54-33" tabindex="-1"></a><span class="co"># Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 -3.5 * L1 - </span></span>
-<span id="cb54-34"><a href="appendix_a.html#cb54-34" tabindex="-1"></a><span class="co">#                9 * M_diabetes -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + </span></span>
-<span id="cb54-35"><a href="appendix_a.html#cb54-35" tabindex="-1"></a><span class="co">#                rnorm(N, mean = 0, sd = 10)</span></span>
-<span id="cb54-36"><a href="appendix_a.html#cb54-36" tabindex="-1"></a>mu_Y <span class="ot">&lt;-</span> <span class="dv">75</span> <span class="co"># reference mean for QoL</span></span>
-<span id="cb54-37"><a href="appendix_a.html#cb54-37" tabindex="-1"></a>c_male_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="co"># -1 for the effect of L0_male -&gt; Y</span></span>
-<span id="cb54-38"><a href="appendix_a.html#cb54-38" tabindex="-1"></a>c_soc_env_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span> <span class="co"># -3 for the effect of L0_soc_env -&gt; Y</span></span>
-<span id="cb54-39"><a href="appendix_a.html#cb54-39" tabindex="-1"></a>c_A_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span> <span class="co"># -4 for the effect of A0_PM2.5 -&gt; Y</span></span>
-<span id="cb54-40"><a href="appendix_a.html#cb54-40" tabindex="-1"></a>c_L1_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">3.5</span> <span class="co"># -3.5 for the effect of L1 -&gt; Y</span></span>
-<span id="cb54-41"><a href="appendix_a.html#cb54-41" tabindex="-1"></a>c_M_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">9</span> <span class="co"># -9 for the effect of M_diabetes -&gt; Y</span></span>
-<span id="cb54-42"><a href="appendix_a.html#cb54-42" tabindex="-1"></a>c_AM_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span>  <span class="co"># - 5 for the interaction effect A0_PM2.5 * M_diabetes  -&gt; Y</span></span>
-<span id="cb54-43"><a href="appendix_a.html#cb54-43" tabindex="-1"></a>sd_Y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co"># standard deviation of the residuals</span></span>
-<span id="cb54-44"><a href="appendix_a.html#cb54-44" tabindex="-1"></a></span>
-<span id="cb54-45"><a href="appendix_a.html#cb54-45" tabindex="-1"></a><span class="co"># A*M interaction ?</span></span>
-<span id="cb54-46"><a href="appendix_a.html#cb54-46" tabindex="-1"></a>A.M.inter <span class="ot">&lt;-</span> A.M.interaction</span>
-<span id="cb54-47"><a href="appendix_a.html#cb54-47" tabindex="-1"></a></span>
-<span id="cb54-48"><a href="appendix_a.html#cb54-48" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="at">p_L0_male =</span> p_L0_male, <span class="at">p_L0_soc_env =</span> p_L0_soc_env, </span>
-<span id="cb54-49"><a href="appendix_a.html#cb54-49" tabindex="-1"></a>           <span class="at">b_A =</span> b_A, <span class="at">b_male_A =</span> b_male_A, <span class="at">b_soc_env_A =</span> b_soc_env_A, </span>
-<span id="cb54-50"><a href="appendix_a.html#cb54-50" tabindex="-1"></a>           <span class="at">p_L1 =</span> p_L1,</span>
-<span id="cb54-51"><a href="appendix_a.html#cb54-51" tabindex="-1"></a>           <span class="at">b_M =</span> b_M, <span class="at">b_male_M =</span> b_male_M, <span class="at">b_soc_env_M =</span> b_soc_env_M, </span>
-<span id="cb54-52"><a href="appendix_a.html#cb54-52" tabindex="-1"></a>            <span class="at">b_L1_M =</span> b_L1_M, <span class="at">b_A_M =</span> b_A_M,</span>
-<span id="cb54-53"><a href="appendix_a.html#cb54-53" tabindex="-1"></a>           <span class="at">b_Y =</span> b_Y, <span class="at">b_male_Y =</span> b_male_Y, <span class="at">b_soc_env_Y =</span> b_soc_env_Y, </span>
-<span id="cb54-54"><a href="appendix_a.html#cb54-54" tabindex="-1"></a>            <span class="at">b_A_Y =</span> b_A_Y, <span class="at">b_L1_Y =</span> b_L1_Y, <span class="at">b_M_Y =</span> b_M_Y, <span class="at">b_AM_Y =</span> b_AM_Y,</span>
-<span id="cb54-55"><a href="appendix_a.html#cb54-55" tabindex="-1"></a>           <span class="at">mu_Y =</span> mu_Y, <span class="at">c_male_Y =</span> c_male_Y, <span class="at">c_soc_env_Y =</span> c_soc_env_Y, </span>
-<span id="cb54-56"><a href="appendix_a.html#cb54-56" tabindex="-1"></a>            <span class="at">c_A_Y =</span> c_A_Y, <span class="at">c_L1_Y =</span> c_L1_Y, <span class="at">c_M_Y =</span> c_M_Y, <span class="at">c_AM_Y =</span> c_AM_Y, </span>
-<span id="cb54-57"><a href="appendix_a.html#cb54-57" tabindex="-1"></a>           <span class="at">sd_Y =</span> sd_Y, <span class="at">A.M.inter =</span> A.M.inter)</span>
-<span id="cb54-58"><a href="appendix_a.html#cb54-58" tabindex="-1"></a>  </span>
-<span id="cb54-59"><a href="appendix_a.html#cb54-59" tabindex="-1"></a><span class="fu">return</span>(coef)</span>
-<span id="cb54-60"><a href="appendix_a.html#cb54-60" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="appendix_a.html#cb59-1" tabindex="-1"></a>param.causal.model<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">A.M.interaction =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb59-2"><a href="appendix_a.html#cb59-2" tabindex="-1"></a><span class="co"># L0</span></span>
+<span id="cb59-3"><a href="appendix_a.html#cb59-3" tabindex="-1"></a>p_L0_male <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb59-4"><a href="appendix_a.html#cb59-4" tabindex="-1"></a>p_L0_soc_env <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
+<span id="cb59-5"><a href="appendix_a.html#cb59-5" tabindex="-1"></a></span>
+<span id="cb59-6"><a href="appendix_a.html#cb59-6" tabindex="-1"></a><span class="co"># A: A0_PM2.5 &lt;- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env ) </span></span>
+<span id="cb59-7"><a href="appendix_a.html#cb59-7" tabindex="-1"></a>b_A <span class="ot">&lt;-</span> <span class="fl">0.05</span>   <span class="co"># reference prevalence is 5%</span></span>
+<span id="cb59-8"><a href="appendix_a.html#cb59-8" tabindex="-1"></a>b_male_A <span class="ot">&lt;-</span> <span class="fl">0.04</span>  <span class="co"># + 0.04 for the effect of L0_male -&gt; A0_PM2.5</span></span>
+<span id="cb59-9"><a href="appendix_a.html#cb59-9" tabindex="-1"></a>b_soc_env_A <span class="ot">&lt;-</span> <span class="fl">0.06</span>  <span class="co"># +0.06 for the effect of L0_soc_env -&gt; A0_PM2.5</span></span>
+<span id="cb59-10"><a href="appendix_a.html#cb59-10" tabindex="-1"></a></span>
+<span id="cb59-11"><a href="appendix_a.html#cb59-11" tabindex="-1"></a><span class="co"># L1: intermediate confounder between M and Y, not influenced by A</span></span>
+<span id="cb59-12"><a href="appendix_a.html#cb59-12" tabindex="-1"></a>p_L1 <span class="ot">&lt;-</span> <span class="fl">0.3</span></span>
+<span id="cb59-13"><a href="appendix_a.html#cb59-13" tabindex="-1"></a></span>
+<span id="cb59-14"><a href="appendix_a.html#cb59-14" tabindex="-1"></a><span class="co"># M: M_diabetes &lt;- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env + 0.07 * L1 +</span></span>
+<span id="cb59-15"><a href="appendix_a.html#cb59-15" tabindex="-1"></a><span class="co">#                         0.1 * A0_PM2.5 ) </span></span>
+<span id="cb59-16"><a href="appendix_a.html#cb59-16" tabindex="-1"></a>b_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># reference prevalence is 20%</span></span>
+<span id="cb59-17"><a href="appendix_a.html#cb59-17" tabindex="-1"></a>b_male_M <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># +0.05 for the effect of L0_male -&gt; M_diabetes</span></span>
+<span id="cb59-18"><a href="appendix_a.html#cb59-18" tabindex="-1"></a>b_soc_env_M <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_soc_env -&gt; M_diabetes</span></span>
+<span id="cb59-19"><a href="appendix_a.html#cb59-19" tabindex="-1"></a>b_L1_M <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; M_diabetes</span></span>
+<span id="cb59-20"><a href="appendix_a.html#cb59-20" tabindex="-1"></a>b_A_M <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># +0.10 for the effect of A0_PM2.5 -&gt; M_diabetes</span></span>
+<span id="cb59-21"><a href="appendix_a.html#cb59-21" tabindex="-1"></a></span>
+<span id="cb59-22"><a href="appendix_a.html#cb59-22" tabindex="-1"></a><span class="co"># Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env + 0.05 * A0_PM2.5 +</span></span>
+<span id="cb59-23"><a href="appendix_a.html#cb59-23" tabindex="-1"></a><span class="co">#                   0.07 * L1 + 0.08 * M_diabetes +</span></span>
+<span id="cb59-24"><a href="appendix_a.html#cb59-24" tabindex="-1"></a><span class="co">#                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter ) </span></span>
+<span id="cb59-25"><a href="appendix_a.html#cb59-25" tabindex="-1"></a>b_Y <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># reference prevalence is 10%</span></span>
+<span id="cb59-26"><a href="appendix_a.html#cb59-26" tabindex="-1"></a>b_male_Y <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb59-27"><a href="appendix_a.html#cb59-27" tabindex="-1"></a>b_soc_env_Y <span class="ot">&lt;-</span> <span class="fl">0.04</span> <span class="co"># +0.04 for the effect of L0_soc_env -&gt; Y</span></span>
+<span id="cb59-28"><a href="appendix_a.html#cb59-28" tabindex="-1"></a>b_A_Y <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># 0.05 for the effect of A0_PM2.5 -&gt; Y</span></span>
+<span id="cb59-29"><a href="appendix_a.html#cb59-29" tabindex="-1"></a>b_L1_Y <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; Y</span></span>
+<span id="cb59-30"><a href="appendix_a.html#cb59-30" tabindex="-1"></a>b_M_Y <span class="ot">&lt;-</span> <span class="fl">0.08</span> <span class="co"># 0.08 for the effect of M_diabetes -&gt; Y</span></span>
+<span id="cb59-31"><a href="appendix_a.html#cb59-31" tabindex="-1"></a>b_AM_Y <span class="ot">&lt;-</span> <span class="fl">0.03</span> <span class="co"># 0.03 for the interaction effect A0_PM2.5 * M_diabetes -&gt; Y</span></span>
+<span id="cb59-32"><a href="appendix_a.html#cb59-32" tabindex="-1"></a></span>
+<span id="cb59-33"><a href="appendix_a.html#cb59-33" tabindex="-1"></a><span class="co"># Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 -3.5 * L1 - </span></span>
+<span id="cb59-34"><a href="appendix_a.html#cb59-34" tabindex="-1"></a><span class="co">#                9 * M_diabetes -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + </span></span>
+<span id="cb59-35"><a href="appendix_a.html#cb59-35" tabindex="-1"></a><span class="co">#                rnorm(N, mean = 0, sd = 10)</span></span>
+<span id="cb59-36"><a href="appendix_a.html#cb59-36" tabindex="-1"></a>mu_Y <span class="ot">&lt;-</span> <span class="dv">75</span> <span class="co"># reference mean for QoL</span></span>
+<span id="cb59-37"><a href="appendix_a.html#cb59-37" tabindex="-1"></a>c_male_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="co"># -1 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb59-38"><a href="appendix_a.html#cb59-38" tabindex="-1"></a>c_soc_env_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span> <span class="co"># -3 for the effect of L0_soc_env -&gt; Y</span></span>
+<span id="cb59-39"><a href="appendix_a.html#cb59-39" tabindex="-1"></a>c_A_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span> <span class="co"># -4 for the effect of A0_PM2.5 -&gt; Y</span></span>
+<span id="cb59-40"><a href="appendix_a.html#cb59-40" tabindex="-1"></a>c_L1_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">3.5</span> <span class="co"># -3.5 for the effect of L1 -&gt; Y</span></span>
+<span id="cb59-41"><a href="appendix_a.html#cb59-41" tabindex="-1"></a>c_M_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">9</span> <span class="co"># -9 for the effect of M_diabetes -&gt; Y</span></span>
+<span id="cb59-42"><a href="appendix_a.html#cb59-42" tabindex="-1"></a>c_AM_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span>  <span class="co"># - 5 for the interaction effect A0_PM2.5 * M_diabetes  -&gt; Y</span></span>
+<span id="cb59-43"><a href="appendix_a.html#cb59-43" tabindex="-1"></a>sd_Y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co"># standard deviation of the residuals</span></span>
+<span id="cb59-44"><a href="appendix_a.html#cb59-44" tabindex="-1"></a></span>
+<span id="cb59-45"><a href="appendix_a.html#cb59-45" tabindex="-1"></a><span class="co"># A*M interaction ?</span></span>
+<span id="cb59-46"><a href="appendix_a.html#cb59-46" tabindex="-1"></a>A.M.inter <span class="ot">&lt;-</span> A.M.interaction</span>
+<span id="cb59-47"><a href="appendix_a.html#cb59-47" tabindex="-1"></a></span>
+<span id="cb59-48"><a href="appendix_a.html#cb59-48" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="at">p_L0_male =</span> p_L0_male, <span class="at">p_L0_soc_env =</span> p_L0_soc_env, </span>
+<span id="cb59-49"><a href="appendix_a.html#cb59-49" tabindex="-1"></a>           <span class="at">b_A =</span> b_A, <span class="at">b_male_A =</span> b_male_A, <span class="at">b_soc_env_A =</span> b_soc_env_A, </span>
+<span id="cb59-50"><a href="appendix_a.html#cb59-50" tabindex="-1"></a>           <span class="at">p_L1 =</span> p_L1,</span>
+<span id="cb59-51"><a href="appendix_a.html#cb59-51" tabindex="-1"></a>           <span class="at">b_M =</span> b_M, <span class="at">b_male_M =</span> b_male_M, <span class="at">b_soc_env_M =</span> b_soc_env_M, </span>
+<span id="cb59-52"><a href="appendix_a.html#cb59-52" tabindex="-1"></a>            <span class="at">b_L1_M =</span> b_L1_M, <span class="at">b_A_M =</span> b_A_M,</span>
+<span id="cb59-53"><a href="appendix_a.html#cb59-53" tabindex="-1"></a>           <span class="at">b_Y =</span> b_Y, <span class="at">b_male_Y =</span> b_male_Y, <span class="at">b_soc_env_Y =</span> b_soc_env_Y, </span>
+<span id="cb59-54"><a href="appendix_a.html#cb59-54" tabindex="-1"></a>            <span class="at">b_A_Y =</span> b_A_Y, <span class="at">b_L1_Y =</span> b_L1_Y, <span class="at">b_M_Y =</span> b_M_Y, <span class="at">b_AM_Y =</span> b_AM_Y,</span>
+<span id="cb59-55"><a href="appendix_a.html#cb59-55" tabindex="-1"></a>           <span class="at">mu_Y =</span> mu_Y, <span class="at">c_male_Y =</span> c_male_Y, <span class="at">c_soc_env_Y =</span> c_soc_env_Y, </span>
+<span id="cb59-56"><a href="appendix_a.html#cb59-56" tabindex="-1"></a>            <span class="at">c_A_Y =</span> c_A_Y, <span class="at">c_L1_Y =</span> c_L1_Y, <span class="at">c_M_Y =</span> c_M_Y, <span class="at">c_AM_Y =</span> c_AM_Y, </span>
+<span id="cb59-57"><a href="appendix_a.html#cb59-57" tabindex="-1"></a>           <span class="at">sd_Y =</span> sd_Y, <span class="at">A.M.inter =</span> A.M.inter)</span>
+<span id="cb59-58"><a href="appendix_a.html#cb59-58" tabindex="-1"></a>  </span>
+<span id="cb59-59"><a href="appendix_a.html#cb59-59" tabindex="-1"></a><span class="fu">return</span>(coef)</span>
+<span id="cb59-60"><a href="appendix_a.html#cb59-60" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure" class="section level2 hasAnchor" number="10.2">
 <h2><span class="header-section-number">10.2</span> Second causal model: Data generating mechanism with mediator-outcome confounder affected by the exposure<a href="appendix_a.html#second-causal-model-data-generating-mechanism-with-mediator-outcome-confounder-affected-by-the-exposure" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -399,135 +403,135 @@ P(Y_{death} = 1) &amp;=&amp; \beta_{Y} + \beta_{male}^Y \times L(0)_{male} + \be
 \end{array}\]</span>
 where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10)\)</span>.</p>
 <p>One can set the parameters of these structural equations using the following function <code>param.causal.model.2()</code>:</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="appendix_a.html#cb55-1" tabindex="-1"></a>param.causal.model<span class="fl">.2</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">A.M.interaction =</span> <span class="cn">NULL</span>) {</span>
-<span id="cb55-2"><a href="appendix_a.html#cb55-2" tabindex="-1"></a><span class="co"># L0</span></span>
-<span id="cb55-3"><a href="appendix_a.html#cb55-3" tabindex="-1"></a>p_L0_male <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
-<span id="cb55-4"><a href="appendix_a.html#cb55-4" tabindex="-1"></a>p_L0_soc_env <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
-<span id="cb55-5"><a href="appendix_a.html#cb55-5" tabindex="-1"></a></span>
-<span id="cb55-6"><a href="appendix_a.html#cb55-6" tabindex="-1"></a><span class="co"># A: A0_PM2.5 &lt;- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env ) </span></span>
-<span id="cb55-7"><a href="appendix_a.html#cb55-7" tabindex="-1"></a>b_A <span class="ot">&lt;-</span> <span class="fl">0.05</span>   <span class="co"># reference prevalence is 5%</span></span>
-<span id="cb55-8"><a href="appendix_a.html#cb55-8" tabindex="-1"></a>b_male_A <span class="ot">&lt;-</span> <span class="fl">0.04</span>  <span class="co"># + 0.04 for the effect of L0_male -&gt; A0_PM2.5</span></span>
-<span id="cb55-9"><a href="appendix_a.html#cb55-9" tabindex="-1"></a>b_soc_env_A <span class="ot">&lt;-</span> <span class="fl">0.06</span>  <span class="co"># +0.06 for the effect of L0_soc_env -&gt; A0_PM2.5</span></span>
-<span id="cb55-10"><a href="appendix_a.html#cb55-10" tabindex="-1"></a></span>
-<span id="cb55-11"><a href="appendix_a.html#cb55-11" tabindex="-1"></a><span class="co"># L1: L1 &lt;- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_soc_env + </span></span>
-<span id="cb55-12"><a href="appendix_a.html#cb55-12" tabindex="-1"></a><span class="co">#                   0.2 * A0_PM2.5 ) </span></span>
-<span id="cb55-13"><a href="appendix_a.html#cb55-13" tabindex="-1"></a>b_L1 <span class="ot">&lt;-</span> <span class="fl">0.30</span>   <span class="co"># reference prevalence is 30%</span></span>
-<span id="cb55-14"><a href="appendix_a.html#cb55-14" tabindex="-1"></a>b_male_L1 <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.05</span>  <span class="co"># - 0.05 for the effect of L0_male -&gt; L1</span></span>
-<span id="cb55-15"><a href="appendix_a.html#cb55-15" tabindex="-1"></a>b_soc_env_L1 <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">0.08</span> <span class="co"># + 0.08 for the effect of L0_soc_env -&gt; L1</span></span>
-<span id="cb55-16"><a href="appendix_a.html#cb55-16" tabindex="-1"></a>b_A_L1 <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">0.2</span> <span class="co"># +0.2 for the effect of A0_PM2.5 -&gt; L1</span></span>
-<span id="cb55-17"><a href="appendix_a.html#cb55-17" tabindex="-1"></a></span>
-<span id="cb55-18"><a href="appendix_a.html#cb55-18" tabindex="-1"></a><span class="co"># M: M_diabetes &lt;- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env + </span></span>
-<span id="cb55-19"><a href="appendix_a.html#cb55-19" tabindex="-1"></a><span class="co">#                         0.2 * L1 + 0.1 * A0_PM2.5 ) </span></span>
-<span id="cb55-20"><a href="appendix_a.html#cb55-20" tabindex="-1"></a>b_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># reference prevalence is 20%</span></span>
-<span id="cb55-21"><a href="appendix_a.html#cb55-21" tabindex="-1"></a>b_male_M <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># +0.05 for the effect of L0_male -&gt; M_diabetes</span></span>
-<span id="cb55-22"><a href="appendix_a.html#cb55-22" tabindex="-1"></a>b_soc_env_M <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_soc_env -&gt; M_diabetes</span></span>
-<span id="cb55-23"><a href="appendix_a.html#cb55-23" tabindex="-1"></a>b_A_M <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># +0.10 for the effect of A0_PM2.5 -&gt; M_diabetes</span></span>
-<span id="cb55-24"><a href="appendix_a.html#cb55-24" tabindex="-1"></a>b_L1_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># +0.2 for the effect of L1 -&gt; M_diabetes</span></span>
-<span id="cb55-25"><a href="appendix_a.html#cb55-25" tabindex="-1"></a></span>
-<span id="cb55-26"><a href="appendix_a.html#cb55-26" tabindex="-1"></a><span class="co"># Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env + </span></span>
-<span id="cb55-27"><a href="appendix_a.html#cb55-27" tabindex="-1"></a><span class="co">#                   0.05 * A0_PM2.5 + 0.07 * L1 + 0.08 * M_diabetes +</span></span>
-<span id="cb55-28"><a href="appendix_a.html#cb55-28" tabindex="-1"></a><span class="co">#                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter ) </span></span>
-<span id="cb55-29"><a href="appendix_a.html#cb55-29" tabindex="-1"></a>b_Y <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># reference prevalence is 10%</span></span>
-<span id="cb55-30"><a href="appendix_a.html#cb55-30" tabindex="-1"></a>b_male_Y <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_male -&gt; Y</span></span>
-<span id="cb55-31"><a href="appendix_a.html#cb55-31" tabindex="-1"></a>b_soc_env_Y <span class="ot">&lt;-</span> <span class="fl">0.04</span> <span class="co"># +0.04 for the effect of L0_soc_env -&gt; Y</span></span>
-<span id="cb55-32"><a href="appendix_a.html#cb55-32" tabindex="-1"></a>b_A_Y <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># 0.05 for the effect of A0_PM2.5 -&gt; Y</span></span>
-<span id="cb55-33"><a href="appendix_a.html#cb55-33" tabindex="-1"></a>b_L1_Y <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; Y</span></span>
-<span id="cb55-34"><a href="appendix_a.html#cb55-34" tabindex="-1"></a>b_M_Y <span class="ot">&lt;-</span> <span class="fl">0.08</span> <span class="co"># 0.08 for the effect of M_diabetes -&gt; Y</span></span>
-<span id="cb55-35"><a href="appendix_a.html#cb55-35" tabindex="-1"></a>b_AM_Y <span class="ot">&lt;-</span> <span class="fl">0.03</span> <span class="co"># 0.03 for the interaction effect A0_PM2.5 * M_diabetes -&gt; Y</span></span>
-<span id="cb55-36"><a href="appendix_a.html#cb55-36" tabindex="-1"></a></span>
-<span id="cb55-37"><a href="appendix_a.html#cb55-37" tabindex="-1"></a><span class="co"># Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 +</span></span>
-<span id="cb55-38"><a href="appendix_a.html#cb55-38" tabindex="-1"></a><span class="co">#                -3.5 * L1 - 9 * M_diabetes + </span></span>
-<span id="cb55-39"><a href="appendix_a.html#cb55-39" tabindex="-1"></a><span class="co">#                -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + rnorm(N, mean = 0, sd = 10)</span></span>
-<span id="cb55-40"><a href="appendix_a.html#cb55-40" tabindex="-1"></a>mu_Y <span class="ot">&lt;-</span> <span class="dv">75</span> <span class="co"># reference mean for QoL</span></span>
-<span id="cb55-41"><a href="appendix_a.html#cb55-41" tabindex="-1"></a>c_male_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="co"># -1 for the effect of L0_male -&gt; Y</span></span>
-<span id="cb55-42"><a href="appendix_a.html#cb55-42" tabindex="-1"></a>c_soc_env_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span> <span class="co"># -3 for the effect of L0_soc_env -&gt; Y</span></span>
-<span id="cb55-43"><a href="appendix_a.html#cb55-43" tabindex="-1"></a>c_A_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span> <span class="co"># -4 for the effect of A0_PM2.5 -&gt; Y</span></span>
-<span id="cb55-44"><a href="appendix_a.html#cb55-44" tabindex="-1"></a>c_L1_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span> <span class="co"># -5 for the effect of L1 -&gt; Y</span></span>
-<span id="cb55-45"><a href="appendix_a.html#cb55-45" tabindex="-1"></a>c_M_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">9</span> <span class="co"># -9 for the effect of M_diabetes -&gt; Y</span></span>
-<span id="cb55-46"><a href="appendix_a.html#cb55-46" tabindex="-1"></a>c_AM_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span>  <span class="co"># - 5 for the interaction effect A0_PM2.5 * M_diabetes  -&gt; Y</span></span>
-<span id="cb55-47"><a href="appendix_a.html#cb55-47" tabindex="-1"></a>sd_Y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co"># standard deviation of the residuals</span></span>
-<span id="cb55-48"><a href="appendix_a.html#cb55-48" tabindex="-1"></a></span>
-<span id="cb55-49"><a href="appendix_a.html#cb55-49" tabindex="-1"></a><span class="co"># A*M interaction ?</span></span>
-<span id="cb55-50"><a href="appendix_a.html#cb55-50" tabindex="-1"></a>A.M.inter <span class="ot">&lt;-</span> A.M.interaction</span>
-<span id="cb55-51"><a href="appendix_a.html#cb55-51" tabindex="-1"></a></span>
-<span id="cb55-52"><a href="appendix_a.html#cb55-52" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="at">p_L0_male =</span> p_L0_male, <span class="at">p_L0_soc_env =</span> p_L0_soc_env, </span>
-<span id="cb55-53"><a href="appendix_a.html#cb55-53" tabindex="-1"></a>           <span class="at">b_A =</span> b_A, <span class="at">b_male_A =</span> b_male_A, <span class="at">b_soc_env_A =</span> b_soc_env_A, </span>
-<span id="cb55-54"><a href="appendix_a.html#cb55-54" tabindex="-1"></a>           <span class="at">b_L1 =</span> b_L1, <span class="at">b_male_L1 =</span> b_male_L1, <span class="at">b_soc_env_L1 =</span> b_soc_env_L1, </span>
-<span id="cb55-55"><a href="appendix_a.html#cb55-55" tabindex="-1"></a>            <span class="at">b_A_L1 =</span> b_A_L1,</span>
-<span id="cb55-56"><a href="appendix_a.html#cb55-56" tabindex="-1"></a>           <span class="at">b_M =</span> b_M, <span class="at">b_male_M =</span> b_male_M, <span class="at">b_soc_env_M =</span> b_soc_env_M, </span>
-<span id="cb55-57"><a href="appendix_a.html#cb55-57" tabindex="-1"></a>            <span class="at">b_L1_M =</span> b_L1_M, <span class="at">b_A_M =</span> b_A_M,</span>
-<span id="cb55-58"><a href="appendix_a.html#cb55-58" tabindex="-1"></a>           <span class="at">b_Y =</span> b_Y, <span class="at">b_male_Y =</span> b_male_Y, <span class="at">b_soc_env_Y =</span> b_soc_env_Y, </span>
-<span id="cb55-59"><a href="appendix_a.html#cb55-59" tabindex="-1"></a>            <span class="at">b_A_Y =</span> b_A_Y, <span class="at">b_L1_Y =</span> b_L1_Y, <span class="at">b_M_Y =</span> b_M_Y, <span class="at">b_AM_Y =</span> b_AM_Y,</span>
-<span id="cb55-60"><a href="appendix_a.html#cb55-60" tabindex="-1"></a>           <span class="at">mu_Y =</span> mu_Y, <span class="at">c_male_Y =</span> c_male_Y, <span class="at">c_soc_env_Y =</span> c_soc_env_Y, </span>
-<span id="cb55-61"><a href="appendix_a.html#cb55-61" tabindex="-1"></a>            <span class="at">c_A_Y =</span> c_A_Y, <span class="at">c_L1_Y =</span> c_L1_Y, <span class="at">c_M_Y =</span> c_M_Y, <span class="at">c_AM_Y =</span> c_AM_Y, </span>
-<span id="cb55-62"><a href="appendix_a.html#cb55-62" tabindex="-1"></a>              <span class="at">sd_Y =</span> sd_Y, <span class="at">A.M.inter =</span> A.M.inter)</span>
-<span id="cb55-63"><a href="appendix_a.html#cb55-63" tabindex="-1"></a>  </span>
-<span id="cb55-64"><a href="appendix_a.html#cb55-64" tabindex="-1"></a>  <span class="fu">return</span>(coef)</span>
-<span id="cb55-65"><a href="appendix_a.html#cb55-65" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="appendix_a.html#cb60-1" tabindex="-1"></a>param.causal.model<span class="fl">.2</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">A.M.interaction =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb60-2"><a href="appendix_a.html#cb60-2" tabindex="-1"></a><span class="co"># L0</span></span>
+<span id="cb60-3"><a href="appendix_a.html#cb60-3" tabindex="-1"></a>p_L0_male <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb60-4"><a href="appendix_a.html#cb60-4" tabindex="-1"></a>p_L0_soc_env <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
+<span id="cb60-5"><a href="appendix_a.html#cb60-5" tabindex="-1"></a></span>
+<span id="cb60-6"><a href="appendix_a.html#cb60-6" tabindex="-1"></a><span class="co"># A: A0_PM2.5 &lt;- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env ) </span></span>
+<span id="cb60-7"><a href="appendix_a.html#cb60-7" tabindex="-1"></a>b_A <span class="ot">&lt;-</span> <span class="fl">0.05</span>   <span class="co"># reference prevalence is 5%</span></span>
+<span id="cb60-8"><a href="appendix_a.html#cb60-8" tabindex="-1"></a>b_male_A <span class="ot">&lt;-</span> <span class="fl">0.04</span>  <span class="co"># + 0.04 for the effect of L0_male -&gt; A0_PM2.5</span></span>
+<span id="cb60-9"><a href="appendix_a.html#cb60-9" tabindex="-1"></a>b_soc_env_A <span class="ot">&lt;-</span> <span class="fl">0.06</span>  <span class="co"># +0.06 for the effect of L0_soc_env -&gt; A0_PM2.5</span></span>
+<span id="cb60-10"><a href="appendix_a.html#cb60-10" tabindex="-1"></a></span>
+<span id="cb60-11"><a href="appendix_a.html#cb60-11" tabindex="-1"></a><span class="co"># L1: L1 &lt;- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_soc_env + </span></span>
+<span id="cb60-12"><a href="appendix_a.html#cb60-12" tabindex="-1"></a><span class="co">#                   0.2 * A0_PM2.5 ) </span></span>
+<span id="cb60-13"><a href="appendix_a.html#cb60-13" tabindex="-1"></a>b_L1 <span class="ot">&lt;-</span> <span class="fl">0.30</span>   <span class="co"># reference prevalence is 30%</span></span>
+<span id="cb60-14"><a href="appendix_a.html#cb60-14" tabindex="-1"></a>b_male_L1 <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.05</span>  <span class="co"># - 0.05 for the effect of L0_male -&gt; L1</span></span>
+<span id="cb60-15"><a href="appendix_a.html#cb60-15" tabindex="-1"></a>b_soc_env_L1 <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">0.08</span> <span class="co"># + 0.08 for the effect of L0_soc_env -&gt; L1</span></span>
+<span id="cb60-16"><a href="appendix_a.html#cb60-16" tabindex="-1"></a>b_A_L1 <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">0.2</span> <span class="co"># +0.2 for the effect of A0_PM2.5 -&gt; L1</span></span>
+<span id="cb60-17"><a href="appendix_a.html#cb60-17" tabindex="-1"></a></span>
+<span id="cb60-18"><a href="appendix_a.html#cb60-18" tabindex="-1"></a><span class="co"># M: M_diabetes &lt;- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env + </span></span>
+<span id="cb60-19"><a href="appendix_a.html#cb60-19" tabindex="-1"></a><span class="co">#                         0.2 * L1 + 0.1 * A0_PM2.5 ) </span></span>
+<span id="cb60-20"><a href="appendix_a.html#cb60-20" tabindex="-1"></a>b_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># reference prevalence is 20%</span></span>
+<span id="cb60-21"><a href="appendix_a.html#cb60-21" tabindex="-1"></a>b_male_M <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># +0.05 for the effect of L0_male -&gt; M_diabetes</span></span>
+<span id="cb60-22"><a href="appendix_a.html#cb60-22" tabindex="-1"></a>b_soc_env_M <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_soc_env -&gt; M_diabetes</span></span>
+<span id="cb60-23"><a href="appendix_a.html#cb60-23" tabindex="-1"></a>b_A_M <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># +0.10 for the effect of A0_PM2.5 -&gt; M_diabetes</span></span>
+<span id="cb60-24"><a href="appendix_a.html#cb60-24" tabindex="-1"></a>b_L1_M <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="co"># +0.2 for the effect of L1 -&gt; M_diabetes</span></span>
+<span id="cb60-25"><a href="appendix_a.html#cb60-25" tabindex="-1"></a></span>
+<span id="cb60-26"><a href="appendix_a.html#cb60-26" tabindex="-1"></a><span class="co"># Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env + </span></span>
+<span id="cb60-27"><a href="appendix_a.html#cb60-27" tabindex="-1"></a><span class="co">#                   0.05 * A0_PM2.5 + 0.07 * L1 + 0.08 * M_diabetes +</span></span>
+<span id="cb60-28"><a href="appendix_a.html#cb60-28" tabindex="-1"></a><span class="co">#                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter ) </span></span>
+<span id="cb60-29"><a href="appendix_a.html#cb60-29" tabindex="-1"></a>b_Y <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="co"># reference prevalence is 10%</span></span>
+<span id="cb60-30"><a href="appendix_a.html#cb60-30" tabindex="-1"></a>b_male_Y <span class="ot">&lt;-</span> <span class="fl">0.06</span> <span class="co"># +0.06 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb60-31"><a href="appendix_a.html#cb60-31" tabindex="-1"></a>b_soc_env_Y <span class="ot">&lt;-</span> <span class="fl">0.04</span> <span class="co"># +0.04 for the effect of L0_soc_env -&gt; Y</span></span>
+<span id="cb60-32"><a href="appendix_a.html#cb60-32" tabindex="-1"></a>b_A_Y <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># 0.05 for the effect of A0_PM2.5 -&gt; Y</span></span>
+<span id="cb60-33"><a href="appendix_a.html#cb60-33" tabindex="-1"></a>b_L1_Y <span class="ot">&lt;-</span> <span class="fl">0.07</span> <span class="co"># +0.07 for the effect of L1 -&gt; Y</span></span>
+<span id="cb60-34"><a href="appendix_a.html#cb60-34" tabindex="-1"></a>b_M_Y <span class="ot">&lt;-</span> <span class="fl">0.08</span> <span class="co"># 0.08 for the effect of M_diabetes -&gt; Y</span></span>
+<span id="cb60-35"><a href="appendix_a.html#cb60-35" tabindex="-1"></a>b_AM_Y <span class="ot">&lt;-</span> <span class="fl">0.03</span> <span class="co"># 0.03 for the interaction effect A0_PM2.5 * M_diabetes -&gt; Y</span></span>
+<span id="cb60-36"><a href="appendix_a.html#cb60-36" tabindex="-1"></a></span>
+<span id="cb60-37"><a href="appendix_a.html#cb60-37" tabindex="-1"></a><span class="co"># Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 +</span></span>
+<span id="cb60-38"><a href="appendix_a.html#cb60-38" tabindex="-1"></a><span class="co">#                -3.5 * L1 - 9 * M_diabetes + </span></span>
+<span id="cb60-39"><a href="appendix_a.html#cb60-39" tabindex="-1"></a><span class="co">#                -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + rnorm(N, mean = 0, sd = 10)</span></span>
+<span id="cb60-40"><a href="appendix_a.html#cb60-40" tabindex="-1"></a>mu_Y <span class="ot">&lt;-</span> <span class="dv">75</span> <span class="co"># reference mean for QoL</span></span>
+<span id="cb60-41"><a href="appendix_a.html#cb60-41" tabindex="-1"></a>c_male_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span> <span class="co"># -1 for the effect of L0_male -&gt; Y</span></span>
+<span id="cb60-42"><a href="appendix_a.html#cb60-42" tabindex="-1"></a>c_soc_env_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">3</span> <span class="co"># -3 for the effect of L0_soc_env -&gt; Y</span></span>
+<span id="cb60-43"><a href="appendix_a.html#cb60-43" tabindex="-1"></a>c_A_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span> <span class="co"># -4 for the effect of A0_PM2.5 -&gt; Y</span></span>
+<span id="cb60-44"><a href="appendix_a.html#cb60-44" tabindex="-1"></a>c_L1_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span> <span class="co"># -5 for the effect of L1 -&gt; Y</span></span>
+<span id="cb60-45"><a href="appendix_a.html#cb60-45" tabindex="-1"></a>c_M_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">9</span> <span class="co"># -9 for the effect of M_diabetes -&gt; Y</span></span>
+<span id="cb60-46"><a href="appendix_a.html#cb60-46" tabindex="-1"></a>c_AM_Y <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">5</span>  <span class="co"># - 5 for the interaction effect A0_PM2.5 * M_diabetes  -&gt; Y</span></span>
+<span id="cb60-47"><a href="appendix_a.html#cb60-47" tabindex="-1"></a>sd_Y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="co"># standard deviation of the residuals</span></span>
+<span id="cb60-48"><a href="appendix_a.html#cb60-48" tabindex="-1"></a></span>
+<span id="cb60-49"><a href="appendix_a.html#cb60-49" tabindex="-1"></a><span class="co"># A*M interaction ?</span></span>
+<span id="cb60-50"><a href="appendix_a.html#cb60-50" tabindex="-1"></a>A.M.inter <span class="ot">&lt;-</span> A.M.interaction</span>
+<span id="cb60-51"><a href="appendix_a.html#cb60-51" tabindex="-1"></a></span>
+<span id="cb60-52"><a href="appendix_a.html#cb60-52" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="at">p_L0_male =</span> p_L0_male, <span class="at">p_L0_soc_env =</span> p_L0_soc_env, </span>
+<span id="cb60-53"><a href="appendix_a.html#cb60-53" tabindex="-1"></a>           <span class="at">b_A =</span> b_A, <span class="at">b_male_A =</span> b_male_A, <span class="at">b_soc_env_A =</span> b_soc_env_A, </span>
+<span id="cb60-54"><a href="appendix_a.html#cb60-54" tabindex="-1"></a>           <span class="at">b_L1 =</span> b_L1, <span class="at">b_male_L1 =</span> b_male_L1, <span class="at">b_soc_env_L1 =</span> b_soc_env_L1, </span>
+<span id="cb60-55"><a href="appendix_a.html#cb60-55" tabindex="-1"></a>            <span class="at">b_A_L1 =</span> b_A_L1,</span>
+<span id="cb60-56"><a href="appendix_a.html#cb60-56" tabindex="-1"></a>           <span class="at">b_M =</span> b_M, <span class="at">b_male_M =</span> b_male_M, <span class="at">b_soc_env_M =</span> b_soc_env_M, </span>
+<span id="cb60-57"><a href="appendix_a.html#cb60-57" tabindex="-1"></a>            <span class="at">b_L1_M =</span> b_L1_M, <span class="at">b_A_M =</span> b_A_M,</span>
+<span id="cb60-58"><a href="appendix_a.html#cb60-58" tabindex="-1"></a>           <span class="at">b_Y =</span> b_Y, <span class="at">b_male_Y =</span> b_male_Y, <span class="at">b_soc_env_Y =</span> b_soc_env_Y, </span>
+<span id="cb60-59"><a href="appendix_a.html#cb60-59" tabindex="-1"></a>            <span class="at">b_A_Y =</span> b_A_Y, <span class="at">b_L1_Y =</span> b_L1_Y, <span class="at">b_M_Y =</span> b_M_Y, <span class="at">b_AM_Y =</span> b_AM_Y,</span>
+<span id="cb60-60"><a href="appendix_a.html#cb60-60" tabindex="-1"></a>           <span class="at">mu_Y =</span> mu_Y, <span class="at">c_male_Y =</span> c_male_Y, <span class="at">c_soc_env_Y =</span> c_soc_env_Y, </span>
+<span id="cb60-61"><a href="appendix_a.html#cb60-61" tabindex="-1"></a>            <span class="at">c_A_Y =</span> c_A_Y, <span class="at">c_L1_Y =</span> c_L1_Y, <span class="at">c_M_Y =</span> c_M_Y, <span class="at">c_AM_Y =</span> c_AM_Y, </span>
+<span id="cb60-62"><a href="appendix_a.html#cb60-62" tabindex="-1"></a>              <span class="at">sd_Y =</span> sd_Y, <span class="at">A.M.inter =</span> A.M.inter)</span>
+<span id="cb60-63"><a href="appendix_a.html#cb60-63" tabindex="-1"></a>  </span>
+<span id="cb60-64"><a href="appendix_a.html#cb60-64" tabindex="-1"></a>  <span class="fu">return</span>(coef)</span>
+<span id="cb60-65"><a href="appendix_a.html#cb60-65" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="simulation-of-the-four-data-sets-used-in-examples" class="section level2 hasAnchor" number="10.3">
 <h2><span class="header-section-number">10.3</span> Simulation of the four data sets used in examples<a href="appendix_a.html#simulation-of-the-four-data-sets-used-in-examples" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div id="data-sets-generated-from-the-causal-model-1" class="section level3 hasAnchor" number="10.3.1">
 <h3><span class="header-section-number">10.3.1</span> Data sets generated from the causal model 1<a href="appendix_a.html#data-sets-generated-from-the-causal-model-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The following function <code>gen.data.causal.model.1</code> can be used to simulate data sets using the parameters defined previously in the <code>param.causal.model.1</code> function.</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="appendix_a.html#cb56-1" tabindex="-1"></a>gen.data.causal.model<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(N, A.M.inter) { <span class="co"># input parameters are the </span></span>
-<span id="cb56-2"><a href="appendix_a.html#cb56-2" tabindex="-1"></a>  <span class="co">#   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1</span></span>
-<span id="cb56-3"><a href="appendix_a.html#cb56-3" tabindex="-1"></a>  </span>
-<span id="cb56-4"><a href="appendix_a.html#cb56-4" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">param.causal.model.1</span>(<span class="at">A.M.interaction =</span> A.M.inter)</span>
-<span id="cb56-5"><a href="appendix_a.html#cb56-5" tabindex="-1"></a>    </span>
-<span id="cb56-6"><a href="appendix_a.html#cb56-6" tabindex="-1"></a>  <span class="co"># baseline confounders: parent&#39;s educational level=L0_soc_env &amp; sex=L0_male</span></span>
-<span id="cb56-7"><a href="appendix_a.html#cb56-7" tabindex="-1"></a>  L0_male <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_male&quot;</span>]) </span>
-<span id="cb56-8"><a href="appendix_a.html#cb56-8" tabindex="-1"></a>  L0_soc_env <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_soc_env&quot;</span>])  </span>
-<span id="cb56-9"><a href="appendix_a.html#cb56-9" tabindex="-1"></a>  </span>
-<span id="cb56-10"><a href="appendix_a.html#cb56-10" tabindex="-1"></a>  <span class="co"># exposure: A0_PM2.5</span></span>
-<span id="cb56-11"><a href="appendix_a.html#cb56-11" tabindex="-1"></a>  A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span>  b[<span class="st">&quot;b_A&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb56-12"><a href="appendix_a.html#cb56-12" tabindex="-1"></a>                     b[<span class="st">&quot;b_male_A&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb56-13"><a href="appendix_a.html#cb56-13" tabindex="-1"></a>                     b[<span class="st">&quot;b_soc_env_A&quot;</span>] <span class="sc">*</span> L0_soc_env ) </span>
-<span id="cb56-14"><a href="appendix_a.html#cb56-14" tabindex="-1"></a>  </span>
-<span id="cb56-15"><a href="appendix_a.html#cb56-15" tabindex="-1"></a>  <span class="co"># intermediate confounder between M_diabetes and Y, not affected by A0 L1</span></span>
-<span id="cb56-16"><a href="appendix_a.html#cb56-16" tabindex="-1"></a>  L1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L1&quot;</span>])</span>
-<span id="cb56-17"><a href="appendix_a.html#cb56-17" tabindex="-1"></a>  </span>
-<span id="cb56-18"><a href="appendix_a.html#cb56-18" tabindex="-1"></a>  <span class="co"># mediator: M_diabetes</span></span>
-<span id="cb56-19"><a href="appendix_a.html#cb56-19" tabindex="-1"></a>  M_diabetes <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_M&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb56-20"><a href="appendix_a.html#cb56-20" tabindex="-1"></a>                        b[<span class="st">&quot;b_male_M&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb56-21"><a href="appendix_a.html#cb56-21" tabindex="-1"></a>                        b[<span class="st">&quot;b_soc_env_M&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
-<span id="cb56-22"><a href="appendix_a.html#cb56-22" tabindex="-1"></a>                        b[<span class="st">&quot;b_A_M&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
-<span id="cb56-23"><a href="appendix_a.html#cb56-23" tabindex="-1"></a>                        b[<span class="st">&quot;b_L1_M&quot;</span>] <span class="sc">*</span> L1) </span>
-<span id="cb56-24"><a href="appendix_a.html#cb56-24" tabindex="-1"></a></span>
-<span id="cb56-25"><a href="appendix_a.html#cb56-25" tabindex="-1"></a>  <span class="co"># Y_death </span></span>
-<span id="cb56-26"><a href="appendix_a.html#cb56-26" tabindex="-1"></a>  Y_death <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_Y&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb56-27"><a href="appendix_a.html#cb56-27" tabindex="-1"></a>                      b[<span class="st">&quot;b_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb56-28"><a href="appendix_a.html#cb56-28" tabindex="-1"></a>                      b[<span class="st">&quot;b_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
-<span id="cb56-29"><a href="appendix_a.html#cb56-29" tabindex="-1"></a>                      b[<span class="st">&quot;b_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> </span>
-<span id="cb56-30"><a href="appendix_a.html#cb56-30" tabindex="-1"></a>                      b[<span class="st">&quot;b_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
-<span id="cb56-31"><a href="appendix_a.html#cb56-31" tabindex="-1"></a>                      b[<span class="st">&quot;b_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span></span>
-<span id="cb56-32"><a href="appendix_a.html#cb56-32" tabindex="-1"></a>                      b[<span class="st">&quot;b_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) </span>
-<span id="cb56-33"><a href="appendix_a.html#cb56-33" tabindex="-1"></a>  </span>
-<span id="cb56-34"><a href="appendix_a.html#cb56-34" tabindex="-1"></a>  <span class="co"># Y_qol </span></span>
-<span id="cb56-35"><a href="appendix_a.html#cb56-35" tabindex="-1"></a>  Y_qol <span class="ot">&lt;-</span> ( b[<span class="st">&quot;mu_Y&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb56-36"><a href="appendix_a.html#cb56-36" tabindex="-1"></a>               b[<span class="st">&quot;c_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb56-37"><a href="appendix_a.html#cb56-37" tabindex="-1"></a>               b[<span class="st">&quot;c_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span></span>
-<span id="cb56-38"><a href="appendix_a.html#cb56-38" tabindex="-1"></a>               b[<span class="st">&quot;c_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
-<span id="cb56-39"><a href="appendix_a.html#cb56-39" tabindex="-1"></a>               b[<span class="st">&quot;c_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
-<span id="cb56-40"><a href="appendix_a.html#cb56-40" tabindex="-1"></a>               b[<span class="st">&quot;c_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span> </span>
-<span id="cb56-41"><a href="appendix_a.html#cb56-41" tabindex="-1"></a>               b[<span class="st">&quot;c_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) <span class="sc">+</span> </span>
-<span id="cb56-42"><a href="appendix_a.html#cb56-42" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> b[<span class="st">&quot;sd_Y&quot;</span>])</span>
-<span id="cb56-43"><a href="appendix_a.html#cb56-43" tabindex="-1"></a>  </span>
-<span id="cb56-44"><a href="appendix_a.html#cb56-44" tabindex="-1"></a>  <span class="co"># data.frame</span></span>
-<span id="cb56-45"><a href="appendix_a.html#cb56-45" tabindex="-1"></a>  data.sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(L0_male, L0_soc_env, A0_PM2<span class="fl">.5</span>, L1, M_diabetes, </span>
-<span id="cb56-46"><a href="appendix_a.html#cb56-46" tabindex="-1"></a>                         Y_death, Y_qol)</span>
-<span id="cb56-47"><a href="appendix_a.html#cb56-47" tabindex="-1"></a></span>
-<span id="cb56-48"><a href="appendix_a.html#cb56-48" tabindex="-1"></a>  <span class="fu">return</span>( data.sim )</span>
-<span id="cb56-49"><a href="appendix_a.html#cb56-49" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="appendix_a.html#cb61-1" tabindex="-1"></a>gen.data.causal.model<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(N, A.M.inter) { <span class="co"># input parameters are the </span></span>
+<span id="cb61-2"><a href="appendix_a.html#cb61-2" tabindex="-1"></a>  <span class="co">#   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1</span></span>
+<span id="cb61-3"><a href="appendix_a.html#cb61-3" tabindex="-1"></a>  </span>
+<span id="cb61-4"><a href="appendix_a.html#cb61-4" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">param.causal.model.1</span>(<span class="at">A.M.interaction =</span> A.M.inter)</span>
+<span id="cb61-5"><a href="appendix_a.html#cb61-5" tabindex="-1"></a>    </span>
+<span id="cb61-6"><a href="appendix_a.html#cb61-6" tabindex="-1"></a>  <span class="co"># baseline confounders: parent&#39;s educational level=L0_soc_env &amp; sex=L0_male</span></span>
+<span id="cb61-7"><a href="appendix_a.html#cb61-7" tabindex="-1"></a>  L0_male <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_male&quot;</span>]) </span>
+<span id="cb61-8"><a href="appendix_a.html#cb61-8" tabindex="-1"></a>  L0_soc_env <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_soc_env&quot;</span>])  </span>
+<span id="cb61-9"><a href="appendix_a.html#cb61-9" tabindex="-1"></a>  </span>
+<span id="cb61-10"><a href="appendix_a.html#cb61-10" tabindex="-1"></a>  <span class="co"># exposure: A0_PM2.5</span></span>
+<span id="cb61-11"><a href="appendix_a.html#cb61-11" tabindex="-1"></a>  A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span>  b[<span class="st">&quot;b_A&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb61-12"><a href="appendix_a.html#cb61-12" tabindex="-1"></a>                     b[<span class="st">&quot;b_male_A&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb61-13"><a href="appendix_a.html#cb61-13" tabindex="-1"></a>                     b[<span class="st">&quot;b_soc_env_A&quot;</span>] <span class="sc">*</span> L0_soc_env ) </span>
+<span id="cb61-14"><a href="appendix_a.html#cb61-14" tabindex="-1"></a>  </span>
+<span id="cb61-15"><a href="appendix_a.html#cb61-15" tabindex="-1"></a>  <span class="co"># intermediate confounder between M_diabetes and Y, not affected by A0 L1</span></span>
+<span id="cb61-16"><a href="appendix_a.html#cb61-16" tabindex="-1"></a>  L1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L1&quot;</span>])</span>
+<span id="cb61-17"><a href="appendix_a.html#cb61-17" tabindex="-1"></a>  </span>
+<span id="cb61-18"><a href="appendix_a.html#cb61-18" tabindex="-1"></a>  <span class="co"># mediator: M_diabetes</span></span>
+<span id="cb61-19"><a href="appendix_a.html#cb61-19" tabindex="-1"></a>  M_diabetes <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_M&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb61-20"><a href="appendix_a.html#cb61-20" tabindex="-1"></a>                        b[<span class="st">&quot;b_male_M&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb61-21"><a href="appendix_a.html#cb61-21" tabindex="-1"></a>                        b[<span class="st">&quot;b_soc_env_M&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
+<span id="cb61-22"><a href="appendix_a.html#cb61-22" tabindex="-1"></a>                        b[<span class="st">&quot;b_A_M&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
+<span id="cb61-23"><a href="appendix_a.html#cb61-23" tabindex="-1"></a>                        b[<span class="st">&quot;b_L1_M&quot;</span>] <span class="sc">*</span> L1) </span>
+<span id="cb61-24"><a href="appendix_a.html#cb61-24" tabindex="-1"></a></span>
+<span id="cb61-25"><a href="appendix_a.html#cb61-25" tabindex="-1"></a>  <span class="co"># Y_death </span></span>
+<span id="cb61-26"><a href="appendix_a.html#cb61-26" tabindex="-1"></a>  Y_death <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb61-27"><a href="appendix_a.html#cb61-27" tabindex="-1"></a>                      b[<span class="st">&quot;b_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb61-28"><a href="appendix_a.html#cb61-28" tabindex="-1"></a>                      b[<span class="st">&quot;b_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
+<span id="cb61-29"><a href="appendix_a.html#cb61-29" tabindex="-1"></a>                      b[<span class="st">&quot;b_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> </span>
+<span id="cb61-30"><a href="appendix_a.html#cb61-30" tabindex="-1"></a>                      b[<span class="st">&quot;b_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb61-31"><a href="appendix_a.html#cb61-31" tabindex="-1"></a>                      b[<span class="st">&quot;b_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span></span>
+<span id="cb61-32"><a href="appendix_a.html#cb61-32" tabindex="-1"></a>                      b[<span class="st">&quot;b_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) </span>
+<span id="cb61-33"><a href="appendix_a.html#cb61-33" tabindex="-1"></a>  </span>
+<span id="cb61-34"><a href="appendix_a.html#cb61-34" tabindex="-1"></a>  <span class="co"># Y_qol </span></span>
+<span id="cb61-35"><a href="appendix_a.html#cb61-35" tabindex="-1"></a>  Y_qol <span class="ot">&lt;-</span> ( b[<span class="st">&quot;mu_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb61-36"><a href="appendix_a.html#cb61-36" tabindex="-1"></a>               b[<span class="st">&quot;c_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb61-37"><a href="appendix_a.html#cb61-37" tabindex="-1"></a>               b[<span class="st">&quot;c_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span></span>
+<span id="cb61-38"><a href="appendix_a.html#cb61-38" tabindex="-1"></a>               b[<span class="st">&quot;c_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
+<span id="cb61-39"><a href="appendix_a.html#cb61-39" tabindex="-1"></a>               b[<span class="st">&quot;c_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb61-40"><a href="appendix_a.html#cb61-40" tabindex="-1"></a>               b[<span class="st">&quot;c_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span> </span>
+<span id="cb61-41"><a href="appendix_a.html#cb61-41" tabindex="-1"></a>               b[<span class="st">&quot;c_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) <span class="sc">+</span> </span>
+<span id="cb61-42"><a href="appendix_a.html#cb61-42" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> b[<span class="st">&quot;sd_Y&quot;</span>])</span>
+<span id="cb61-43"><a href="appendix_a.html#cb61-43" tabindex="-1"></a>  </span>
+<span id="cb61-44"><a href="appendix_a.html#cb61-44" tabindex="-1"></a>  <span class="co"># data.frame</span></span>
+<span id="cb61-45"><a href="appendix_a.html#cb61-45" tabindex="-1"></a>  data.sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(L0_male, L0_soc_env, A0_PM2<span class="fl">.5</span>, L1, M_diabetes, </span>
+<span id="cb61-46"><a href="appendix_a.html#cb61-46" tabindex="-1"></a>                         Y_death, Y_qol)</span>
+<span id="cb61-47"><a href="appendix_a.html#cb61-47" tabindex="-1"></a></span>
+<span id="cb61-48"><a href="appendix_a.html#cb61-48" tabindex="-1"></a>  <span class="fu">return</span>( data.sim )</span>
+<span id="cb61-49"><a href="appendix_a.html#cb61-49" tabindex="-1"></a>}</span></code></pre></div>
 <p>Applying a sample size N=10000, we generate the <code>df1.csv</code> and <code>df1_int.csv</code> data sets.</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="appendix_a.html#cb57-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb57-2"><a href="appendix_a.html#cb57-2" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
-<span id="cb57-3"><a href="appendix_a.html#cb57-3" tabindex="-1"></a><span class="fu">write.csv</span>(df1, <span class="at">file =</span> <span class="st">&quot;data/df1.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb57-4"><a href="appendix_a.html#cb57-4" tabindex="-1"></a></span>
-<span id="cb57-5"><a href="appendix_a.html#cb57-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb57-6"><a href="appendix_a.html#cb57-6" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
-<span id="cb57-7"><a href="appendix_a.html#cb57-7" tabindex="-1"></a><span class="fu">write.csv</span>(df1_int, <span class="at">file =</span> <span class="st">&quot;data/df1_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="appendix_a.html#cb58-1" tabindex="-1"></a><span class="fu">head</span>(df1)</span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="appendix_a.html#cb62-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb62-2"><a href="appendix_a.html#cb62-2" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
+<span id="cb62-3"><a href="appendix_a.html#cb62-3" tabindex="-1"></a><span class="fu">write.csv</span>(df1, <span class="at">file =</span> <span class="st">&quot;data/df1.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb62-4"><a href="appendix_a.html#cb62-4" tabindex="-1"></a></span>
+<span id="cb62-5"><a href="appendix_a.html#cb62-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb62-6"><a href="appendix_a.html#cb62-6" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.1</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
+<span id="cb62-7"><a href="appendix_a.html#cb62-7" tabindex="-1"></a><span class="fu">write.csv</span>(df1_int, <span class="at">file =</span> <span class="st">&quot;data/df1_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="appendix_a.html#cb63-1" tabindex="-1"></a><span class="fu">head</span>(df1)</span></code></pre></div>
 <pre><code>##   L0_male L0_soc_env A0_PM2.5 L1 M_diabetes Y_death    Y_qol
 ## 1       0          1        0  1          0       0 93.41819
 ## 2       1          1        1  1          0       1 64.03221
@@ -535,7 +539,7 @@ where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10
 ## 4       1          0        0  0          0       0 89.77055
 ## 5       1          1        0  0          0       0 77.22353
 ## 6       1          1        0  0          1       0 73.87975</code></pre>
-<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="appendix_a.html#cb60-1" tabindex="-1"></a><span class="fu">head</span>(df1_int)</span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="appendix_a.html#cb65-1" tabindex="-1"></a><span class="fu">head</span>(df1_int)</span></code></pre></div>
 <pre><code>##   L0_male L0_soc_env A0_PM2.5 L1 M_diabetes Y_death    Y_qol
 ## 1       0          1        0  1          0       0 93.41819
 ## 2       1          1        1  1          0       1 64.03221
@@ -547,67 +551,67 @@ where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10
 <div id="data-sets-generated-from-the-causal-model-2" class="section level3 hasAnchor" number="10.3.2">
 <h3><span class="header-section-number">10.3.2</span> Data sets generated from the causal model 2<a href="appendix_a.html#data-sets-generated-from-the-causal-model-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The following function <code>gen.data.causal.model.2</code> can be used to simulate data sets using the parameters defined previously in the <code>param.causal.model.2</code> function.</p>
-<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="appendix_a.html#cb62-1" tabindex="-1"></a>gen.data.causal.model<span class="fl">.2</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(N, A.M.inter) { <span class="co"># input parameters are the </span></span>
-<span id="cb62-2"><a href="appendix_a.html#cb62-2" tabindex="-1"></a>  <span class="co">#   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1</span></span>
-<span id="cb62-3"><a href="appendix_a.html#cb62-3" tabindex="-1"></a>  </span>
-<span id="cb62-4"><a href="appendix_a.html#cb62-4" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">param.causal.model.2</span>(<span class="at">A.M.interaction =</span> A.M.inter)</span>
-<span id="cb62-5"><a href="appendix_a.html#cb62-5" tabindex="-1"></a>    </span>
-<span id="cb62-6"><a href="appendix_a.html#cb62-6" tabindex="-1"></a>  <span class="co"># baseline confounders: parent&#39;s educational level=L0_soc_env &amp; sex=L0_male</span></span>
-<span id="cb62-7"><a href="appendix_a.html#cb62-7" tabindex="-1"></a>  L0_male <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_male&quot;</span>]) </span>
-<span id="cb62-8"><a href="appendix_a.html#cb62-8" tabindex="-1"></a>  L0_soc_env <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_soc_env&quot;</span>])  </span>
-<span id="cb62-9"><a href="appendix_a.html#cb62-9" tabindex="-1"></a>  </span>
-<span id="cb62-10"><a href="appendix_a.html#cb62-10" tabindex="-1"></a>  <span class="co"># exposure: A0_PM2.5</span></span>
-<span id="cb62-11"><a href="appendix_a.html#cb62-11" tabindex="-1"></a>  A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span>  b[<span class="st">&quot;b_A&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb62-12"><a href="appendix_a.html#cb62-12" tabindex="-1"></a>                     b[<span class="st">&quot;b_male_A&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb62-13"><a href="appendix_a.html#cb62-13" tabindex="-1"></a>                     b[<span class="st">&quot;b_soc_env_A&quot;</span>] <span class="sc">*</span> L0_soc_env ) </span>
-<span id="cb62-14"><a href="appendix_a.html#cb62-14" tabindex="-1"></a>  </span>
-<span id="cb62-15"><a href="appendix_a.html#cb62-15" tabindex="-1"></a>  <span class="co"># intermediate confounder between M_diabetes and Y, </span></span>
-<span id="cb62-16"><a href="appendix_a.html#cb62-16" tabindex="-1"></a>  L1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_L1&quot;</span>] <span class="sc">+</span></span>
-<span id="cb62-17"><a href="appendix_a.html#cb62-17" tabindex="-1"></a>                 b[<span class="st">&quot;b_male_L1&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span></span>
-<span id="cb62-18"><a href="appendix_a.html#cb62-18" tabindex="-1"></a>                 b[<span class="st">&quot;b_soc_env_L1&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
-<span id="cb62-19"><a href="appendix_a.html#cb62-19" tabindex="-1"></a>                 b[<span class="st">&quot;b_A_L1&quot;</span>]<span class="sc">*</span> A0_PM2<span class="fl">.5</span>)</span>
-<span id="cb62-20"><a href="appendix_a.html#cb62-20" tabindex="-1"></a>  </span>
-<span id="cb62-21"><a href="appendix_a.html#cb62-21" tabindex="-1"></a>  <span class="co"># mediator: M_diabetes</span></span>
-<span id="cb62-22"><a href="appendix_a.html#cb62-22" tabindex="-1"></a>  M_diabetes <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_M&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb62-23"><a href="appendix_a.html#cb62-23" tabindex="-1"></a>                        b[<span class="st">&quot;b_male_M&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb62-24"><a href="appendix_a.html#cb62-24" tabindex="-1"></a>                        b[<span class="st">&quot;b_soc_env_M&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
-<span id="cb62-25"><a href="appendix_a.html#cb62-25" tabindex="-1"></a>                        b[<span class="st">&quot;b_A_M&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
-<span id="cb62-26"><a href="appendix_a.html#cb62-26" tabindex="-1"></a>                        b[<span class="st">&quot;b_L1_M&quot;</span>] <span class="sc">*</span> L1) </span>
-<span id="cb62-27"><a href="appendix_a.html#cb62-27" tabindex="-1"></a></span>
-<span id="cb62-28"><a href="appendix_a.html#cb62-28" tabindex="-1"></a>  <span class="co"># Y_death </span></span>
-<span id="cb62-29"><a href="appendix_a.html#cb62-29" tabindex="-1"></a>  Y_death <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_Y&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb62-30"><a href="appendix_a.html#cb62-30" tabindex="-1"></a>                      b[<span class="st">&quot;b_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb62-31"><a href="appendix_a.html#cb62-31" tabindex="-1"></a>                      b[<span class="st">&quot;b_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
-<span id="cb62-32"><a href="appendix_a.html#cb62-32" tabindex="-1"></a>                      b[<span class="st">&quot;b_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> </span>
-<span id="cb62-33"><a href="appendix_a.html#cb62-33" tabindex="-1"></a>                      b[<span class="st">&quot;b_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
-<span id="cb62-34"><a href="appendix_a.html#cb62-34" tabindex="-1"></a>                      b[<span class="st">&quot;b_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span></span>
-<span id="cb62-35"><a href="appendix_a.html#cb62-35" tabindex="-1"></a>                      b[<span class="st">&quot;b_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) </span>
-<span id="cb62-36"><a href="appendix_a.html#cb62-36" tabindex="-1"></a>  </span>
-<span id="cb62-37"><a href="appendix_a.html#cb62-37" tabindex="-1"></a>  <span class="co"># Y_qol </span></span>
-<span id="cb62-38"><a href="appendix_a.html#cb62-38" tabindex="-1"></a>  Y_qol <span class="ot">&lt;-</span> ( b[<span class="st">&quot;mu_Y&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb62-39"><a href="appendix_a.html#cb62-39" tabindex="-1"></a>               b[<span class="st">&quot;c_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
-<span id="cb62-40"><a href="appendix_a.html#cb62-40" tabindex="-1"></a>               b[<span class="st">&quot;c_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span></span>
-<span id="cb62-41"><a href="appendix_a.html#cb62-41" tabindex="-1"></a>               b[<span class="st">&quot;c_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
-<span id="cb62-42"><a href="appendix_a.html#cb62-42" tabindex="-1"></a>               b[<span class="st">&quot;c_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
-<span id="cb62-43"><a href="appendix_a.html#cb62-43" tabindex="-1"></a>               b[<span class="st">&quot;c_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span> </span>
-<span id="cb62-44"><a href="appendix_a.html#cb62-44" tabindex="-1"></a>               b[<span class="st">&quot;c_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) <span class="sc">+</span> </span>
-<span id="cb62-45"><a href="appendix_a.html#cb62-45" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> b[<span class="st">&quot;sd_Y&quot;</span>])</span>
-<span id="cb62-46"><a href="appendix_a.html#cb62-46" tabindex="-1"></a>  </span>
-<span id="cb62-47"><a href="appendix_a.html#cb62-47" tabindex="-1"></a>  <span class="co"># data.frame</span></span>
-<span id="cb62-48"><a href="appendix_a.html#cb62-48" tabindex="-1"></a>  data.sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(L0_male, L0_soc_env, A0_PM2<span class="fl">.5</span>, L1, M_diabetes, </span>
-<span id="cb62-49"><a href="appendix_a.html#cb62-49" tabindex="-1"></a>                         Y_death, Y_qol)</span>
-<span id="cb62-50"><a href="appendix_a.html#cb62-50" tabindex="-1"></a></span>
-<span id="cb62-51"><a href="appendix_a.html#cb62-51" tabindex="-1"></a>  <span class="fu">return</span>( data.sim )</span>
-<span id="cb62-52"><a href="appendix_a.html#cb62-52" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="appendix_a.html#cb67-1" tabindex="-1"></a>gen.data.causal.model<span class="fl">.2</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(N, A.M.inter) { <span class="co"># input parameters are the </span></span>
+<span id="cb67-2"><a href="appendix_a.html#cb67-2" tabindex="-1"></a>  <span class="co">#   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1</span></span>
+<span id="cb67-3"><a href="appendix_a.html#cb67-3" tabindex="-1"></a>  </span>
+<span id="cb67-4"><a href="appendix_a.html#cb67-4" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">param.causal.model.2</span>(<span class="at">A.M.interaction =</span> A.M.inter)</span>
+<span id="cb67-5"><a href="appendix_a.html#cb67-5" tabindex="-1"></a>    </span>
+<span id="cb67-6"><a href="appendix_a.html#cb67-6" tabindex="-1"></a>  <span class="co"># baseline confounders: parent&#39;s educational level=L0_soc_env &amp; sex=L0_male</span></span>
+<span id="cb67-7"><a href="appendix_a.html#cb67-7" tabindex="-1"></a>  L0_male <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_male&quot;</span>]) </span>
+<span id="cb67-8"><a href="appendix_a.html#cb67-8" tabindex="-1"></a>  L0_soc_env <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;p_L0_soc_env&quot;</span>])  </span>
+<span id="cb67-9"><a href="appendix_a.html#cb67-9" tabindex="-1"></a>  </span>
+<span id="cb67-10"><a href="appendix_a.html#cb67-10" tabindex="-1"></a>  <span class="co"># exposure: A0_PM2.5</span></span>
+<span id="cb67-11"><a href="appendix_a.html#cb67-11" tabindex="-1"></a>  A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span>  b[<span class="st">&quot;b_A&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb67-12"><a href="appendix_a.html#cb67-12" tabindex="-1"></a>                     b[<span class="st">&quot;b_male_A&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb67-13"><a href="appendix_a.html#cb67-13" tabindex="-1"></a>                     b[<span class="st">&quot;b_soc_env_A&quot;</span>] <span class="sc">*</span> L0_soc_env ) </span>
+<span id="cb67-14"><a href="appendix_a.html#cb67-14" tabindex="-1"></a>  </span>
+<span id="cb67-15"><a href="appendix_a.html#cb67-15" tabindex="-1"></a>  <span class="co"># intermediate confounder between M_diabetes and Y, </span></span>
+<span id="cb67-16"><a href="appendix_a.html#cb67-16" tabindex="-1"></a>  L1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_L1&quot;</span>] <span class="sc">+</span></span>
+<span id="cb67-17"><a href="appendix_a.html#cb67-17" tabindex="-1"></a>                 b[<span class="st">&quot;b_male_L1&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span></span>
+<span id="cb67-18"><a href="appendix_a.html#cb67-18" tabindex="-1"></a>                 b[<span class="st">&quot;b_soc_env_L1&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
+<span id="cb67-19"><a href="appendix_a.html#cb67-19" tabindex="-1"></a>                 b[<span class="st">&quot;b_A_L1&quot;</span>]<span class="sc">*</span> A0_PM2<span class="fl">.5</span>)</span>
+<span id="cb67-20"><a href="appendix_a.html#cb67-20" tabindex="-1"></a>  </span>
+<span id="cb67-21"><a href="appendix_a.html#cb67-21" tabindex="-1"></a>  <span class="co"># mediator: M_diabetes</span></span>
+<span id="cb67-22"><a href="appendix_a.html#cb67-22" tabindex="-1"></a>  M_diabetes <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_M&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb67-23"><a href="appendix_a.html#cb67-23" tabindex="-1"></a>                        b[<span class="st">&quot;b_male_M&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb67-24"><a href="appendix_a.html#cb67-24" tabindex="-1"></a>                        b[<span class="st">&quot;b_soc_env_M&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
+<span id="cb67-25"><a href="appendix_a.html#cb67-25" tabindex="-1"></a>                        b[<span class="st">&quot;b_A_M&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
+<span id="cb67-26"><a href="appendix_a.html#cb67-26" tabindex="-1"></a>                        b[<span class="st">&quot;b_L1_M&quot;</span>] <span class="sc">*</span> L1) </span>
+<span id="cb67-27"><a href="appendix_a.html#cb67-27" tabindex="-1"></a></span>
+<span id="cb67-28"><a href="appendix_a.html#cb67-28" tabindex="-1"></a>  <span class="co"># Y_death </span></span>
+<span id="cb67-29"><a href="appendix_a.html#cb67-29" tabindex="-1"></a>  Y_death <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> b[<span class="st">&quot;b_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb67-30"><a href="appendix_a.html#cb67-30" tabindex="-1"></a>                      b[<span class="st">&quot;b_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb67-31"><a href="appendix_a.html#cb67-31" tabindex="-1"></a>                      b[<span class="st">&quot;b_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span> </span>
+<span id="cb67-32"><a href="appendix_a.html#cb67-32" tabindex="-1"></a>                      b[<span class="st">&quot;b_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> </span>
+<span id="cb67-33"><a href="appendix_a.html#cb67-33" tabindex="-1"></a>                      b[<span class="st">&quot;b_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb67-34"><a href="appendix_a.html#cb67-34" tabindex="-1"></a>                      b[<span class="st">&quot;b_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span></span>
+<span id="cb67-35"><a href="appendix_a.html#cb67-35" tabindex="-1"></a>                      b[<span class="st">&quot;b_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) </span>
+<span id="cb67-36"><a href="appendix_a.html#cb67-36" tabindex="-1"></a>  </span>
+<span id="cb67-37"><a href="appendix_a.html#cb67-37" tabindex="-1"></a>  <span class="co"># Y_qol </span></span>
+<span id="cb67-38"><a href="appendix_a.html#cb67-38" tabindex="-1"></a>  Y_qol <span class="ot">&lt;-</span> ( b[<span class="st">&quot;mu_Y&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb67-39"><a href="appendix_a.html#cb67-39" tabindex="-1"></a>               b[<span class="st">&quot;c_male_Y&quot;</span>] <span class="sc">*</span> L0_male <span class="sc">+</span> </span>
+<span id="cb67-40"><a href="appendix_a.html#cb67-40" tabindex="-1"></a>               b[<span class="st">&quot;c_soc_env_Y&quot;</span>] <span class="sc">*</span> L0_soc_env <span class="sc">+</span></span>
+<span id="cb67-41"><a href="appendix_a.html#cb67-41" tabindex="-1"></a>               b[<span class="st">&quot;c_A_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span></span>
+<span id="cb67-42"><a href="appendix_a.html#cb67-42" tabindex="-1"></a>               b[<span class="st">&quot;c_L1_Y&quot;</span>] <span class="sc">*</span> L1 <span class="sc">+</span></span>
+<span id="cb67-43"><a href="appendix_a.html#cb67-43" tabindex="-1"></a>               b[<span class="st">&quot;c_M_Y&quot;</span>] <span class="sc">*</span> M_diabetes <span class="sc">+</span> </span>
+<span id="cb67-44"><a href="appendix_a.html#cb67-44" tabindex="-1"></a>               b[<span class="st">&quot;c_AM_Y&quot;</span>] <span class="sc">*</span> A0_PM2<span class="fl">.5</span> <span class="sc">*</span> M_diabetes <span class="sc">*</span> A.M.inter ) <span class="sc">+</span> </span>
+<span id="cb67-45"><a href="appendix_a.html#cb67-45" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> b[<span class="st">&quot;sd_Y&quot;</span>])</span>
+<span id="cb67-46"><a href="appendix_a.html#cb67-46" tabindex="-1"></a>  </span>
+<span id="cb67-47"><a href="appendix_a.html#cb67-47" tabindex="-1"></a>  <span class="co"># data.frame</span></span>
+<span id="cb67-48"><a href="appendix_a.html#cb67-48" tabindex="-1"></a>  data.sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(L0_male, L0_soc_env, A0_PM2<span class="fl">.5</span>, L1, M_diabetes, </span>
+<span id="cb67-49"><a href="appendix_a.html#cb67-49" tabindex="-1"></a>                         Y_death, Y_qol)</span>
+<span id="cb67-50"><a href="appendix_a.html#cb67-50" tabindex="-1"></a></span>
+<span id="cb67-51"><a href="appendix_a.html#cb67-51" tabindex="-1"></a>  <span class="fu">return</span>( data.sim )</span>
+<span id="cb67-52"><a href="appendix_a.html#cb67-52" tabindex="-1"></a>}</span></code></pre></div>
 <p>Applying a sample size N=10000, we generate the <code>df2.csv</code> and <code>df2_int.csv</code> data sets.</p>
-<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="appendix_a.html#cb63-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb63-2"><a href="appendix_a.html#cb63-2" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
-<span id="cb63-3"><a href="appendix_a.html#cb63-3" tabindex="-1"></a><span class="fu">write.csv</span>(df2, <span class="at">file =</span> <span class="st">&quot;data/df2.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb63-4"><a href="appendix_a.html#cb63-4" tabindex="-1"></a></span>
-<span id="cb63-5"><a href="appendix_a.html#cb63-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb63-6"><a href="appendix_a.html#cb63-6" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
-<span id="cb63-7"><a href="appendix_a.html#cb63-7" tabindex="-1"></a><span class="fu">write.csv</span>(df2_int, <span class="at">file =</span> <span class="st">&quot;data/df2_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="appendix_a.html#cb64-1" tabindex="-1"></a><span class="fu">tail</span>(df2)</span></code></pre></div>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="appendix_a.html#cb68-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb68-2"><a href="appendix_a.html#cb68-2" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">0</span>)</span>
+<span id="cb68-3"><a href="appendix_a.html#cb68-3" tabindex="-1"></a><span class="fu">write.csv</span>(df2, <span class="at">file =</span> <span class="st">&quot;data/df2.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb68-4"><a href="appendix_a.html#cb68-4" tabindex="-1"></a></span>
+<span id="cb68-5"><a href="appendix_a.html#cb68-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb68-6"><a href="appendix_a.html#cb68-6" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">gen.data.causal.model.2</span>(<span class="at">N=</span><span class="dv">10000</span>, <span class="at">A.M.inter=</span><span class="dv">1</span>)</span>
+<span id="cb68-7"><a href="appendix_a.html#cb68-7" tabindex="-1"></a><span class="fu">write.csv</span>(df2_int, <span class="at">file =</span> <span class="st">&quot;data/df2_int.csv&quot;</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="appendix_a.html#cb69-1" tabindex="-1"></a><span class="fu">tail</span>(df2)</span></code></pre></div>
 <pre><code>##       L0_male L0_soc_env A0_PM2.5 L1 M_diabetes Y_death    Y_qol
 ## 9995        0          1        0  1          1       0 53.25115
 ## 9996        0          1        0  0          1       0 66.36484
@@ -615,7 +619,7 @@ where <span class="math inline">\(\varepsilon_Y \sim \mathcal{N}(0,\sigma_Y = 10
 ## 9998        1          1        0  0          1       0 41.30248
 ## 9999        0          0        0  1          0       0 85.60169
 ## 10000       1          1        0  0          0       0 61.56969</code></pre>
-<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="appendix_a.html#cb66-1" tabindex="-1"></a><span class="fu">tail</span>(df2_int)</span></code></pre></div>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="appendix_a.html#cb71-1" tabindex="-1"></a><span class="fu">tail</span>(df2_int)</span></code></pre></div>
 <pre><code>##       L0_male L0_soc_env A0_PM2.5 L1 M_diabetes Y_death    Y_qol
 ## 9995        0          1        0  1          1       0 53.25115
 ## 9996        0          1        0  0          1       0 66.36484

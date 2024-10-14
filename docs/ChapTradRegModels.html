@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-12" />
+<meta name="date" content="2024-10-14" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -200,7 +200,11 @@ div.csl-indent {
 <li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-ICE"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
-<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a></li>
+<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#simple-plug-in-estimator"><i class="fa fa-check"></i><b>6.3.1</b> Simple “plug-in” estimator</a></li>
+<li class="chapter" data-level="6.3.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#using-the-mediation-r-package"><i class="fa fa-check"></i><b>6.3.2</b> Using the <code>mediation</code> R package</a></li>
+</ul></li>
 <li class="chapter" data-level="6.4" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.4</b> Estimation of “Marginal” Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)</a>
 <ul>
 <li class="chapter" data-level="6.4.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.4.1</b> Parametric g-computation</a></li>
@@ -320,27 +324,31 @@ div.csl-indent {
   \tag{5.1}
 \end{equation}\]</span></p>
 <p><span class="math display">\[ \hat{\Psi}_{\text{trad}}^{\text{ATE}} = \hat{\alpha}_A\]</span></p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="ChapTradRegModels.html#cb9-1" tabindex="-1"></a><span class="co"># For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5), </span></span>
-<span id="cb9-2"><a href="ChapTradRegModels.html#cb9-2" tabindex="-1"></a><span class="co"># adjusted for the baseline confounders L(0):</span></span>
-<span id="cb9-3"><a href="ChapTradRegModels.html#cb9-3" tabindex="-1"></a>trad_ATE_qol <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb9-4"><a href="ChapTradRegModels.html#cb9-4" tabindex="-1"></a>                   <span class="at">data =</span> df1_int)</span>
-<span id="cb9-5"><a href="ChapTradRegModels.html#cb9-5" tabindex="-1"></a></span>
-<span id="cb9-6"><a href="ChapTradRegModels.html#cb9-6" tabindex="-1"></a><span class="co"># For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and</span></span>
-<span id="cb9-7"><a href="ChapTradRegModels.html#cb9-7" tabindex="-1"></a><span class="co"># identity link, adjusted for the baseline confounders:</span></span>
-<span id="cb9-8"><a href="ChapTradRegModels.html#cb9-8" tabindex="-1"></a>trad_ATE_death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb9-9"><a href="ChapTradRegModels.html#cb9-9" tabindex="-1"></a>                      <span class="at">family =</span> <span class="fu">gaussian</span>(<span class="st">&quot;identity&quot;</span>),</span>
-<span id="cb9-10"><a href="ChapTradRegModels.html#cb9-10" tabindex="-1"></a>                      <span class="at">data =</span> df1_int)</span>
-<span id="cb9-11"><a href="ChapTradRegModels.html#cb9-11" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="ChapTradRegModels.html#cb9-12" tabindex="-1"></a><span class="co"># Use the regression coefficient of the exposure (A0_PM2.5) to estimate the ATE</span></span>
-<span id="cb9-13"><a href="ChapTradRegModels.html#cb9-13" tabindex="-1"></a>ATE_trad_qol <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(trad_ATE_qol)[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
-<span id="cb9-14"><a href="ChapTradRegModels.html#cb9-14" tabindex="-1"></a><span class="co"># -7.210089</span></span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="ChapTradRegModels.html#cb9-1" tabindex="-1"></a><span class="do">## Import data</span></span>
+<span id="cb9-2"><a href="ChapTradRegModels.html#cb9-2" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb9-3"><a href="ChapTradRegModels.html#cb9-3" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;./data/df1_int.csv&quot;</span>)</span>
+<span id="cb9-4"><a href="ChapTradRegModels.html#cb9-4" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="ChapTradRegModels.html#cb9-5" tabindex="-1"></a><span class="do">## For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5), </span></span>
+<span id="cb9-6"><a href="ChapTradRegModels.html#cb9-6" tabindex="-1"></a><span class="do">## adjusted for the baseline confounders L(0):</span></span>
+<span id="cb9-7"><a href="ChapTradRegModels.html#cb9-7" tabindex="-1"></a>trad_ATE_qol <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
+<span id="cb9-8"><a href="ChapTradRegModels.html#cb9-8" tabindex="-1"></a>                   <span class="at">data =</span> df1_int)</span>
+<span id="cb9-9"><a href="ChapTradRegModels.html#cb9-9" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="ChapTradRegModels.html#cb9-10" tabindex="-1"></a><span class="do">## For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and</span></span>
+<span id="cb9-11"><a href="ChapTradRegModels.html#cb9-11" tabindex="-1"></a><span class="do">## identity link, adjusted for the baseline confounders:</span></span>
+<span id="cb9-12"><a href="ChapTradRegModels.html#cb9-12" tabindex="-1"></a>trad_ATE_death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
+<span id="cb9-13"><a href="ChapTradRegModels.html#cb9-13" tabindex="-1"></a>                      <span class="at">family =</span> <span class="fu">gaussian</span>(<span class="st">&quot;identity&quot;</span>),</span>
+<span id="cb9-14"><a href="ChapTradRegModels.html#cb9-14" tabindex="-1"></a>                      <span class="at">data =</span> df1_int)</span>
 <span id="cb9-15"><a href="ChapTradRegModels.html#cb9-15" tabindex="-1"></a></span>
-<span id="cb9-16"><a href="ChapTradRegModels.html#cb9-16" tabindex="-1"></a>ATE_trad_death <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(trad_ATE_death)[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
-<span id="cb9-17"><a href="ChapTradRegModels.html#cb9-17" tabindex="-1"></a><span class="co"># 0.07720726</span></span></code></pre></div>
+<span id="cb9-16"><a href="ChapTradRegModels.html#cb9-16" tabindex="-1"></a><span class="do">## Use the regression coefficient of the exposure (A0_PM2.5) to estimate the ATE</span></span>
+<span id="cb9-17"><a href="ChapTradRegModels.html#cb9-17" tabindex="-1"></a>ATE_trad_qol <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(trad_ATE_qol)[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
+<span id="cb9-18"><a href="ChapTradRegModels.html#cb9-18" tabindex="-1"></a><span class="co"># -7.210089</span></span>
+<span id="cb9-19"><a href="ChapTradRegModels.html#cb9-19" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="ChapTradRegModels.html#cb9-20" tabindex="-1"></a>ATE_trad_death <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(trad_ATE_death)[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
+<span id="cb9-21"><a href="ChapTradRegModels.html#cb9-21" tabindex="-1"></a><span class="co"># 0.07720726</span></span></code></pre></div>
 <p>The estimation of 95% confidence intervals could be obtained directly from the linear regression with quantitative outcomes (equation <a href="ChapTradRegModels.html#eq:regtotaleffect">(5.1)</a>). However, using a robust (sandwich) variance estimator or applying a bootstrap procedure is recommended <span class="citation">(<a href="#ref-naimi2020">Naimi and Whitcomb 2020</a>)</span>.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="ChapTradRegModels.html#cb10-1" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
 <span id="cb10-2"><a href="ChapTradRegModels.html#cb10-2" tabindex="-1"></a>?sandwich</span>
-<span id="cb10-3"><a href="ChapTradRegModels.html#cb10-3" tabindex="-1"></a><span class="co"># the sandwich() function returns a sandwich covariance matrix estimate</span></span>
+<span id="cb10-3"><a href="ChapTradRegModels.html#cb10-3" tabindex="-1"></a><span class="do">## the sandwich() function returns a sandwich covariance matrix estimate</span></span>
 <span id="cb10-4"><a href="ChapTradRegModels.html#cb10-4" tabindex="-1"></a><span class="do">## for the Quality of Life outcome</span></span>
 <span id="cb10-5"><a href="ChapTradRegModels.html#cb10-5" tabindex="-1"></a>ATE_trad_qol <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">ATE =</span> <span class="fu">coef</span>(trad_ATE_qol)[<span class="st">&quot;A0_PM2.5&quot;</span>],</span>
 <span id="cb10-6"><a href="ChapTradRegModels.html#cb10-6" tabindex="-1"></a>                     <span class="at">lo =</span> <span class="fu">coef</span>(trad_ATE_qol)[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">-</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>) <span class="sc">*</span></span>
@@ -881,6 +889,7 @@ The RIE can be estimated by:
 <p><strong>R package for 3-way and 4-way decomposition</strong></p>
 <p>The <code>CMAverse</code> R <a href="https://bs1125.github.io/CMAverse/index.html">package</a> (a suite of functions for causal mediation analysis) can be used for 2-way, 3-way and 4-way decompositions. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.</p>
 <p>Standard errors and confidence intervals can be computed by delta-method or by bootstrap.</p>
+<p>Note that the results from regression based methods (applying the <code>estimation = "paramfunc"</code> argument) are not marginal expectations, but conditional expectations of direct, indirect, total, and interaction effects.</p>
 <p>For continuous outcomes:</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="ChapTradRegModels.html#cb23-1" tabindex="-1"></a><span class="fu">library</span>(CMAverse)</span>
 <span id="cb23-2"><a href="ChapTradRegModels.html#cb23-2" tabindex="-1"></a>?CMAverse<span class="sc">::</span>cmest</span>

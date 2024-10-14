@@ -29,18 +29,22 @@ The regression coefficient of the exposure variable $A$ is used to estimate the 
 $$ \hat{\Psi}_{\text{trad}}^{\text{ATE}} = \hat{\alpha}_A$$
 
 ```{r trad_reg_ATE, echo=TRUE, eval = FALSE}
-# For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5), 
-# adjusted for the baseline confounders L(0):
+## Import data
+rm(list=ls())
+df1_int <- read.csv(file = "./data/df1_int.csv")
+
+## For quantitative outcomes, apply a linear regression of Y on A (A0_PM2.5), 
+## adjusted for the baseline confounders L(0):
 trad_ATE_qol <- lm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
                    data = df1_int)
 
-# For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and
-# identity link, adjusted for the baseline confounders:
+## For binary outcomes, apply a GLM of Y on A with a Gaussian distribution and
+## identity link, adjusted for the baseline confounders:
 trad_ATE_death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                       family = gaussian("identity"),
                       data = df1_int)
 
-# Use the regression coefficient of the exposure (A0_PM2.5) to estimate the ATE
+## Use the regression coefficient of the exposure (A0_PM2.5) to estimate the ATE
 ATE_trad_qol <- coefficients(trad_ATE_qol)["A0_PM2.5"]
 # -7.210089
 
@@ -53,7 +57,7 @@ The estimation of 95\% confidence intervals could be obtained directly from the 
 ```{r trad_reg_ATE_ic95, echo=TRUE, eval = FALSE}
 library(sandwich)
 ?sandwich
-# the sandwich() function returns a sandwich covariance matrix estimate
+## the sandwich() function returns a sandwich covariance matrix estimate
 ## for the Quality of Life outcome
 ATE_trad_qol <- list(ATE = coef(trad_ATE_qol)["A0_PM2.5"],
                      lo = coef(trad_ATE_qol)["A0_PM2.5"] - qnorm(0.975) *
@@ -704,6 +708,8 @@ Note: in this simulated data, the probability of death is around $20\%$, so that
 The `CMAverse` R [package](https://bs1125.github.io/CMAverse/index.html) (a suite of functions for causal mediation analysis) can be used for 2-way, 3-way and 4-way decompositions. Estimations of the CDE(M=0), PNIE, MIE and INTref presented above can be obtained as we show in the following example.
 
 Standard errors and confidence intervals can be computed by delta-method or by bootstrap.
+
+Note that the results from regression based methods (applying the `estimation = "paramfunc"` argument) are not marginal expectations, but conditional expectations of direct, indirect, total, and interaction effects.
 
 For continuous outcomes:
 ```{r `cmavers_continuous, echo=TRUE, eval = FALSE}

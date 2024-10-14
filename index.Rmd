@@ -31,6 +31,7 @@ Depending on the estimator, some R packages might be necessary:
 - `sandwich` [package](https://sandwich.r-forge.r-project.org/articles/sandwich.html)
 - `boot` [package](https://cran.r-project.org/web/packages/boot/index.html)
 - `regmedint` [package](https://kaz-yos.github.io/regmedint/)
+- `mediation` [package](https://imai.fas.harvard.edu/research/files/mediationR2.pdf)
 - `ltmle` [package](http://joshuaschwab.github.io/ltmle/)
 - `SuperLearner` [package](http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html)
 

@@ -12,14 +12,14 @@ df2_int <- read.csv(file = "data/df2_int.csv")
 # ---------------------------------------------------------------------------- #
 
 # 1. Estimate Qbar
-Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv, family = "binomial", data = df2_int)
-Q.tot.qol <- glm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv, family = "gaussian", data = df2_int)
+Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env, family = "binomial", data = df2_int)
+Q.tot.qol <- glm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env, family = "gaussian", data = df2_int)
 
 # 2. Predict an outcome for each subject, setting A=0 and A=1
 # prepare data sets used to predict the outcome under the counterfactual scenarios setting A=0 and A=1
 data.A1 <- data.A0 <- df2_int
-data.A1$A0_ace <- 1
-data.A0$A0_ace <- 0
+data.A1$A0_PM2.5 <- 1
+data.A0$A0_PM2.5 <- 0
 
 # predict values
 Y1.death.pred <- predict(Q.tot.death, newdata = data.A1, type = "response")
@@ -41,7 +41,7 @@ ATE.qol.gcomp
 ### 95% CI calculation applying a bootstrap procedure
 
 set.seed(1234)
-B <- 2000
+B <- 1000
 bootstrap.estimates <- data.frame(matrix(NA, nrow = B, ncol = 2))
 colnames(bootstrap.estimates) <- c("boot.death.est", "boot.qol.est")
 for (b in 1:B){
@@ -49,14 +49,16 @@ for (b in 1:B){
   bootIndices <- sample(1:nrow(df2_int), replace=T)
   bootData <- df2_int[bootIndices,]
 
-  if ( round(b/100, 0) == b/100 ) print(paste0("bootstrap number ",b))
+  if (round(b/100, 0) == b/100 ) print(paste0("bootstrap number ",b))
 
-  Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv, family = "binomial", data = bootData)
-  Q.tot.qol <- glm(Y_qol ~ A0_ace + L0_male + L0_parent_low_educ_lv, family = "gaussian", data = bootData)
+  Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
+                     family = "binomial", data = bootData)
+  Q.tot.qol <- glm(Y_qol ~ A0_PM2.5 + L0_male + L0_soc_env,
+                   family = "gaussian", data = bootData)
 
   boot.A.1 <- boot.A.0 <- bootData
-  boot.A.1$A0_ace <- 1
-  boot.A.0$A0_ace <- 0
+  boot.A.1$A0_PM2.5 <- 1
+  boot.A.0$A0_PM2.5 <- 0
 
   Y1.death.boot <- predict(Q.tot.death, newdata = boot.A.1, type = "response")
   Y0.death.boot <- predict(Q.tot.death, newdata = boot.A.0, type = "response")
@@ -71,12 +73,12 @@ for (b in 1:B){
 IC95.ATE.death <- c(ATE.death.gcomp - qnorm(0.975)*sd(bootstrap.estimates[,"boot.death.est"]),
                     ATE.death.gcomp + qnorm(0.975)*sd(bootstrap.estimates[,"boot.death.est"]) )
 IC95.ATE.death
-# [1] 0.05571017 0.10970624
+# [1] 0.05612907 0.10928734
 
 IC95.ATE.qol <- c(ATE.qol.gcomp - qnorm(0.975)*sd(bootstrap.estimates[,"boot.qol.est"]),
                   ATE.qol.gcomp + qnorm(0.975)*sd(bootstrap.estimates[,"boot.qol.est"]) )
 IC95.ATE.qol
-# [1] -9.156051 -7.565331
+# [1] -9.157856 -7.563526
 
 
 
@@ -88,21 +90,21 @@ IC95.ATE.qol
 ## II.1) parametric g-computation ----------------------------------------------
 # ---------------------------------------------------------------------------- #
 rm(list=ls())
-df2_int <- read.csv(file = "df2_int.csv")
+df2_int <- read.csv(file = "./data/df2_int.csv")
 
 
 # a. fit parametric models to estimate the density of intermediate confounders
-L1.model <- glm(L1 ~ L0_male + L0_parent_low_educ_lv + A0_ace, family = "binomial", data = df2_int)
+L1.model <- glm(L1 ~ L0_male + L0_soc_env + A0_PM2.5, family = "binomial", data = df2_int)
 
 # b. fit parametric models for the outcome
-Y2.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 + M_smoking + A0_ace:M_smoking, family = "binomial", data = df2_int)
-Y2.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 + M_smoking + A0_ace:M_smoking, family = "gaussian", data = df2_int)
+Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 + M_diabetes + A0_PM2.5:M_diabetes, family = "binomial", data = df2_int)
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 + M_diabetes + A0_PM2.5:M_diabetes, family = "gaussian", data = df2_int)
 
 # c. simulate L1 values under the counterfactual scenarios setting A0=0 or A0=1
 set.seed(54321)
 data.A0  <- data.A1 <- df2_int
-data.A0$A0_ace <- 0
-data.A1$A0_ace <- 1
+data.A0$A0_PM2.5 <- 0
+data.A1$A0_PM2.5 <- 1
 p.L1.A0 <- predict(L1.model, newdata = data.A0, type="response")
 p.L1.A1 <- predict(L1.model, newdata = data.A1, type="response")
 sim.L1.A0 <- rbinom(n = nrow(df2_int), size = 1, prob = p.L1.A0)
@@ -121,20 +123,20 @@ data.A1.M0$L1 <- sim.L1.A1
 data.A1.M1$L1 <- sim.L1.A1
 
 # set M to 0 or 1
-data.A0.M0$M_smoking <- 0
-data.A0.M1$M_smoking <- 1
-data.A1.M0$M_smoking <- 0
-data.A1.M1$M_smoking <- 1
+data.A0.M0$M_diabetes <- 0
+data.A0.M1$M_diabetes <- 1
+data.A1.M0$M_diabetes <- 0
+data.A1.M1$M_diabetes <- 1
 
-p.death.A0.M0 <- predict(Y2.death.model, newdata = data.A0.M0, type="response")
-p.death.A1.M0 <- predict(Y2.death.model, newdata = data.A1.M0, type="response")
-p.death.A0.M1 <- predict(Y2.death.model, newdata = data.A0.M1, type="response")
-p.death.A1.M1 <- predict(Y2.death.model, newdata = data.A1.M1, type="response")
+p.death.A0.M0 <- predict(Y.death.model, newdata = data.A0.M0, type = "response")
+p.death.A1.M0 <- predict(Y.death.model, newdata = data.A1.M0, type = "response")
+p.death.A0.M1 <- predict(Y.death.model, newdata = data.A0.M1, type = "response")
+p.death.A1.M1 <- predict(Y.death.model, newdata = data.A1.M1, type = "response")
 
-m.qol.A0.M0 <- predict(Y2.qol.model, newdata = data.A0.M0, type="response")
-m.qol.A1.M0 <- predict(Y2.qol.model, newdata = data.A1.M0, type="response")
-m.qol.A0.M1 <- predict(Y2.qol.model, newdata = data.A0.M1, type="response")
-m.qol.A1.M1 <- predict(Y2.qol.model, newdata = data.A1.M1, type="response")
+m.qol.A0.M0 <- predict(Y.qol.model, newdata = data.A0.M0, type = "response")
+m.qol.A1.M0 <- predict(Y.qol.model, newdata = data.A1.M0, type = "response")
+m.qol.A0.M1 <- predict(Y.qol.model, newdata = data.A0.M1, type = "response")
+m.qol.A1.M1 <- predict(Y.qol.model, newdata = data.A1.M1, type = "response")
 
 # e. Estimate CDE
 # CDE setting M=0
@@ -163,11 +165,11 @@ rm(list=ls())
 df2_int <- read.csv(file = "data/df2_int.csv")
 
 # 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
-Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                       M_smoking + A0_ace:M_smoking,
+Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                       M_diabetes + A0_PM2.5:M_diabetes,
                      family = "binomial", data = df2_int)
-Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                     M_smoking + A0_ace:M_smoking,
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                     M_diabetes + A0_PM2.5:M_diabetes,
                    family = "gaussian", data = df2_int)
 
 # 2) Generate predicted values by evaluating the regression setting the exposure
@@ -176,17 +178,17 @@ Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
 data.Ais0.Mis0 <- data.Ais0.Mis1 <- df2_int
 data.Ais1.Mis0 <- data.Ais1.Mis1 <- df2_int
 
-data.Ais0.Mis0$A0_ace <- 0
-data.Ais0.Mis0$M_smoking <- 0
+data.Ais0.Mis0$A0_PM2.5 <- 0
+data.Ais0.Mis0$M_diabetes <- 0
 
-data.Ais0.Mis1$A0_ace <- 0
-data.Ais0.Mis1$M_smoking <- 1
+data.Ais0.Mis1$A0_PM2.5 <- 0
+data.Ais0.Mis1$M_diabetes <- 1
 
-data.Ais1.Mis0$A0_ace <- 1
-data.Ais1.Mis0$M_smoking <- 0
+data.Ais1.Mis0$A0_PM2.5 <- 1
+data.Ais1.Mis0$M_diabetes <- 0
 
-data.Ais1.Mis1$A0_ace <- 1
-data.Ais1.Mis1$M_smoking <- 1
+data.Ais1.Mis1$A0_PM2.5 <- 1
+data.Ais1.Mis1$M_diabetes <- 1
 
 
 Q.L2.death.A0M0 <- predict(Y.death.model, newdata = data.Ais0.Mis0, type="response")
@@ -202,22 +204,22 @@ Q.L2.qol.A1M1 <- predict(Y.qol.model, newdata = data.Ais1.Mis1, type="response")
 
 # 3) Regress the predicted values conditional on the exposure A
 #    and baseline confounders L(0)
-L1.death.A0M0.model <- glm(Q.L2.death.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0M0.model <- glm(Q.L2.death.A0M0 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
-L1.death.A0M1.model <- glm(Q.L2.death.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0M1.model <- glm(Q.L2.death.A0M1 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
-L1.death.A1M0.model <- glm(Q.L2.death.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A1M0.model <- glm(Q.L2.death.A1M0 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
-L1.death.A1M1.model <- glm(Q.L2.death.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A1M1.model <- glm(Q.L2.death.A1M1 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
 
-L1.qol.A0M0.model <- glm(Q.L2.qol.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0M0.model <- glm(Q.L2.qol.A0M0 ~ L0_male + L0_soc_env + A0_PM2.5,
                          family = "gaussian", data = df2_int)
-L1.qol.A0M1.model <- glm(Q.L2.qol.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0M1.model <- glm(Q.L2.qol.A0M1 ~ L0_male + L0_soc_env + A0_PM2.5,
                          family = "gaussian", data = df2_int)
-L1.qol.A1M0.model <- glm(Q.L2.qol.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A1M0.model <- glm(Q.L2.qol.A1M0 ~ L0_male + L0_soc_env + A0_PM2.5,
                          family = "gaussian", data = df2_int)
-L1.qol.A1M1.model <- glm(Q.L2.qol.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A1M1.model <- glm(Q.L2.qol.A1M1 ~ L0_male + L0_soc_env + A0_PM2.5,
                          family = "gaussian", data = df2_int)
 
 # 4) generate predicted values by evaluating the regression at exposure
@@ -255,7 +257,7 @@ CDE.qol.m1.gcomp.ice
 ### G-computation by iterative conditional expectation using the ltmle package
 library(ltmle)
 rm(list=ls())
-df2_int <- read.csv(file = "df2_int.csv")
+df2_int <- read.csv(file = "./data/df2_int.csv")
 df.death <- subset(df2_int, select = -Y_qol)
 df.qol <- subset(df2_int, select = -Y_death)
 
@@ -267,16 +269,16 @@ df.qol <- subset(df2_int, select = -Y_death)
 # without any consequences on the estimation.
 
 # 1) define Q formulas (Qbar_L1 and Qbar_Y functions)
-Q_formulas.death <- c(L1 = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
-                      Y_death = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
-                                 A0_ace * M_smoking")
-Q_formulas.qol <- c(L1 = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
-                    Y_qol = "Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
-                             A0_ace * M_smoking")
+Q_formulas.death <- c(L1 = "Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5",
+                      Y_death = "Q.kplus1 ~ L0_male + L0_soc_env + L1 +
+                                 A0_PM2.5 * M_diabetes")
+Q_formulas.qol <- c(L1 = "Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5",
+                    Y_qol = "Q.kplus1 ~ L0_male + L0_soc_env + L1 +
+                             A0_PM2.5 * M_diabetes")
 # 2) define g formulas (needed for the ltmle package) but they are not used
 #    with the g-computation estimator
-g_formulas <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
-                "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+g_formulas <- c("A0_PM2.5 ~ L0_male + L0_soc_env",
+                "M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1")
 
 
 # arguments:
@@ -309,7 +311,7 @@ g_formulas <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
 
 # with binary outcome, CDE(M=1) = P(Y_{A=1,M=0} = 1) - P(Y_{A=0,M=0} = 1)
 ltmle.gcomp.CDE.M0 <- ltmle(data = df.death,
-                            Anodes = c("A0_ace", "M_smoking"),
+                            Anodes = c("A0_PM2.5", "M_diabetes"),
                             Lnodes = c("L1"),
                             Ynodes = c("Y_death"), # binary outcome
                             survivalOutcome = FALSE,
@@ -340,7 +342,7 @@ summary(ltmle.gcomp.CDE.M0)
 
 # with continuous outcome, CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
 ltmle.gcomp.CDE.M1 <- ltmle(data = df.qol,
-                            Anodes = c("A0_ace", "M_smoking"),
+                            Anodes = c("A0_PM2.5", "M_diabetes"),
                             Lnodes = c("L1"),
                             Ynodes = c("Y_qol"), # continous outcome
                             survivalOutcome = FALSE,
@@ -369,6 +371,9 @@ summary(ltmle.gcomp.CDE.M1)
 #    95% Conf Interval: (-11.529, -9.335) those 95%CI should not be used
 #                      => apply a bootstrap computation instead
 
+# For quantitative outcomes, the outcome is first transformed into a continuous variable
+# with [0;1] range: Y' = (Y - min(Y)) / (max(Y) - min(Y)) to run a quasi-binomial
+# regression, and then estimations are back-transformed on the original scale.
 
 # ---------------------------------------------------------------------------- #
 ## II.3) Sequential g-estimator ------------------------------------------------
@@ -376,29 +381,29 @@ summary(ltmle.gcomp.CDE.M1)
 # Approach described for continuous outcome.
 # Extension for binary outcomes using OR, in case-control studies, is described in Vansteelandt et al. Epidemiology 20(6);2009.
 rm(list=ls())
-df2_int <- read.csv(file = "df2_int.csv")
+df2_int <- read.csv(file = "./data/df2_int.csv")
 
 # 1) Regress the outcome on past
-Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                     M_smoking + A0_ace:M_smoking,
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                     M_diabetes + A0_PM2.5:M_diabetes,
                    family = "gaussian", data = df2_int)
 
-# 2) Calculate a residual outcome Y - (coef.M * M_smoking) - (coef.A0:M * A0:M)
+# 2) Calculate a residual outcome Y - (coef.M * M_diabetes) - (coef.A0:M * A0:M)
 Y.res <- (df2_int$Y_qol -
-            (Y.qol.model$coefficients["M_smoking"] * df2_int$M_smoking) -
-            (Y.qol.model$coefficients["A0_ace:M_smoking"] * df2_int$A0_ace *
-               df2_int$M_smoking) )
+            (Y.qol.model$coefficients["M_diabetes"] * df2_int$M_diabetes) -
+            (Y.qol.model$coefficients["A0_PM2.5:M_diabetes"] * df2_int$A0_PM2.5 *
+               df2_int$M_diabetes) )
 
 # 3) Regress the residual outcome on the exposure A and baseline confounders L(0)
-Y.res.model <- glm(Y.res ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+Y.res.model <- glm(Y.res ~ L0_male + L0_soc_env + A0_PM2.5,
                    family = "gaussian", data = df2_int)
 
 # 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:
-CDE.qol.m0.seq <- Y.res.model$coefficients["A0_ace"] + 0*Y.qol.model$coefficients["A0_ace:M_smoking"]
+CDE.qol.m0.seq <- (Y.res.model$coefficients["A0_PM2.5"] + 0*Y.qol.model$coefficients["A0_PM2.5:M_diabetes"])
 CDE.qol.m0.seq
 # -4.869509
 
-CDE.qol.m1.seq <- Y.res.model$coefficients["A0_ace"] + 1*Y.qol.model$coefficients["A0_ace:M_smoking"]
+CDE.qol.m1.seq <- (Y.res.model$coefficients["A0_PM2.5"] + 1*Y.qol.model$coefficients["A0_PM2.5:M_diabetes"])
 CDE.qol.m1.seq
 # -10.38144
 
@@ -406,9 +411,309 @@ CDE.qol.m1.seq
 # ---------------------------------------------------------------------------- #
 # III) Estimation of Marginal Randomized Direct and Indirect Effects -----------
 # ---------------------------------------------------------------------------- #
+# When Natural Direct Effects and Natural Indirect Effects are identifiable (i.e. making
+# the assumption that the confounder $L(1)$ of the $M-Y$ relationship is NOT affected
+# by the exposure $A$ as in Causal model 1, in Figure \@ref(fig:figDAGM1)), estimation
+# are based on traditional regression models as described in chapter \@ref(ChapTradRegModels).
+
+### by hand ----
+## For the example, we will use the df1_int.csv data set (with an A*M interaction
+## effect on the outcome, but no intermediate confounder affected by the exposure)
+rm(list=ls())
+df1_int <- read.csv(file = "./data/df1_int.csv")
+
+## 1) Regress a model of the mediator and models of the outcome (for binary and
+##    continuous outcomes)
+# Estimate a model of the mediator (logistic regression)
+trad_m <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + L1, # il semble qu'il faut aussi ajuster sur L1 ici ? sur simulation, c'est mieux sans ajuster sur L1 # de plus, régression logistique => non-collapsibility cela peut jouer
+              family = "binomial",
+              data = df1_int)
+
+# Estimate models of the outcome (for continuous and binary outcomes)
+trad_qol_am <- lm(Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+                    L0_male + L0_soc_env + L1,
+                  data = df1_int)
+
+trad_death_am <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+                       L0_male + L0_soc_env + L1,
+                     family = "binomial",
+                     data = df1_int)
+
+## 2) Generate predicted values for every combination of A={0,1} and M={0,1}
+## 2.a) Predict counterfactual probabilities of the mediator
+data.Ais0 <- data.Ais1 <- df1_int
+data.Ais0$A0_PM2.5 <- 0
+data.Ais1$A0_PM2.5 <- 1
+
+# Predict the counterfactual probabilities
+# P(M_{A=0}|l(0),l(1)) and  P(M_{A=0}|l(0),l(1))
+P.M.Ais0 <- predict(trad_m, newdata = data.Ais0, type = "response")
+P.M.Ais1 <- predict(trad_m, newdata = data.Ais1, type = "response")
+
+## 2.b) Predict counterfactual expected values of the outcomes
+data.Ais0.Mis0 <- data.Ais0.Mis1 <- df1_int
+data.Ais1.Mis0 <- data.Ais1.Mis1 <- df1_int
+
+data.Ais0.Mis0$A0_PM2.5 <- 0
+data.Ais0.Mis0$M_diabetes <- 0
+
+data.Ais0.Mis1$A0_PM2.5 <- 0
+data.Ais0.Mis1$M_diabetes <- 1
+
+data.Ais1.Mis0$A0_PM2.5 <- 1
+data.Ais1.Mis0$M_diabetes <- 0
+
+data.Ais1.Mis1$A0_PM2.5 <- 1
+data.Ais1.Mis1$M_diabetes <- 1
+
+# Predict E(Y_{am} | l(0),l(1))
+Q.death.A0M0 <- predict(trad_death_am, newdata = data.Ais0.Mis0, type="response")
+Q.death.A0M1 <- predict(trad_death_am, newdata = data.Ais0.Mis1, type="response")
+Q.death.A1M0 <- predict(trad_death_am, newdata = data.Ais1.Mis0, type="response")
+Q.death.A1M1 <- predict(trad_death_am, newdata = data.Ais1.Mis1, type="response")
+
+Q.qol.A0M0 <- predict(trad_qol_am, newdata = data.Ais0.Mis0, type="response")
+Q.qol.A0M1 <- predict(trad_qol_am, newdata = data.Ais0.Mis1, type="response")
+Q.qol.A1M0 <- predict(trad_qol_am, newdata = data.Ais1.Mis0, type="response")
+Q.qol.A1M1 <- predict(trad_qol_am, newdata = data.Ais1.Mis1, type="response")
+
+
+## 3) Plug-in the predicted values in the g-formula and estimate the population mean
+PNDE.death.gcomp <- mean((Q.death.A1M0 - Q.death.A0M0) * (1 - P.M.Ais0) +
+                           (Q.death.A1M1 - Q.death.A0M1) * P.M.Ais0)
+# [1] 0.0638596
+TNDE.death.gcomp <- mean(Q.death.A1M0 * ((1 - P.M.Ais1) - (1 - P.M.Ais0)) +
+                           Q.death.A1M1 * (P.M.Ais1 - P.M.Ais0) )
+# [1] 0.01044539
+
+PNDE.qol.gcomp <- mean((Q.qol.A1M0 - Q.qol.A0M0) * (1 - P.M.Ais0) +
+                           (Q.qol.A1M1 - Q.qol.A0M1) * P.M.Ais0)
+# [1] -5.310172
+TNDE.qol.gcomp <- mean(Q.qol.A1M0 * ((1 - P.M.Ais1) - (1 - P.M.Ais0)) +
+                         Q.qol.A1M1 * (P.M.Ais1 - P.M.Ais0) )
+# [1] -1.774295
+
+
+### CMAverse ----
+library(CMAverse)
+set.seed(1234)
+res_rb_param_delta <- cmest(data = df1_int,
+                            model = "rb", # for "regression based" (rb) approach
+                            outcome = "Y_qol",        # outcome variable
+                            exposure = "A0_PM2.5",    # exposure variable
+                            mediator = "M_diabetes",  # mediator
+                            basec = c("L0_male",      # confounders
+                                      "L0_soc_env",
+                                      "L1"),
+                            EMint = TRUE, # exposures*mediator interaction
+                            mreg = list("logistic"), # model of the mediator
+                            yreg = "linear",       # model of the outcome
+                            astar = 0,
+                            a = 1,
+                            mval = list(0),
+                            estimation = "imputation", #  closed-form parameter
+                            # function estimation
+                            inference = "bootstrap") # IC95% : "delta" or "bootstrap"
+summary(res_rb_param_delta)
+#                Estimate Std.error  95% CIL 95% CIU  P.val
+#   cde          -3.71527   0.43363 -4.70609  -2.992 <2e-16 ***
+#   pnde         -5.29375   0.36149 -6.13190  -4.662 <2e-16 *** vs -5.310172
+#   tnde         -5.98108   0.35602 -6.76670  -5.336 <2e-16 ***
+#   pnie         -1.05652   0.14171 -1.30038  -0.784 <2e-16 ***
+#   tnie         -1.74384   0.23636 -2.16969  -1.305 <2e-16 *** vs -1.774295
+#   te           -7.03759   0.40445 -7.83478  -6.252 <2e-16 ***
+
+set.seed(1234)
+res_rb_param_delta <- cmest(data = df1_int,
+                            model = "rb", # for "regression based" (rb) approach
+                            outcome = "Y_death",        # outcome variable
+                            exposure = "A0_PM2.5",    # exposure variable
+                            mediator = "M_diabetes",  # mediator
+                            basec = c("L0_male",      # confounders
+                                      "L0_soc_env",
+                                      "L1"),
+                            EMint = TRUE, # exposures*mediator interaction
+                            mreg = list("logistic"), # model of the mediator
+                            yreg = "linear",       # model of the outcome
+                            astar = 0,
+                            a = 1,
+                            mval = list(0),
+                            estimation = "imputation", #  closed-form parameter
+                            # function estimation
+                            inference = "bootstrap") # IC95% : "delta" or "bootstrap"
+summary(res_rb_param_delta)
+#                 Estimate Std.error   95% CIL 95% CIU  P.val
+#   cde           0.060001  0.016971  0.029741   0.096 <2e-16 ***
+#   pnde          0.064743  0.013036  0.040779   0.094 <2e-16 *** vs 0.0638596
+#   tnde          0.066644  0.012808  0.041684   0.095 <2e-16 ***
+#   pnie          0.006696  0.001666  0.005635   0.012 <2e-16 ***
+#   tnie          0.008597  0.003576  0.003856   0.018   0.02 *    vs 0.01044539
+#   te            0.073340  0.012905  0.049302   0.102 <2e-16 ***
+
+
+
+### mediation package ----
+### MORE LIKE PARAMETRIC G-COMPUTATION based on traditional regressions +++
+#### Using the "mediation" package : R Package for Causal Mediation Analysis
+library(mediation)
+## We will use the model of the mediator (logistic regression)
+trad_m
+# Call:  glm(formula = M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env +
+#              L1, family = "binomial", data = df1_int)
+#
+# Coefficients:
+#   (Intercept)     A0_PM2.5      L0_male   L0_soc_env           L1
+#       -1.3788       0.5626       0.2586       0.3305       0.3346
+
+## We will use the models of the outcome (for continuous and binary outcomes)
+trad_qol_am
+# Call:
+#   lm(formula = Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+#        L0_male + L0_soc_env + L1, data = df1_int)
+#
+# Coefficients:
+# (Intercept) A0_PM2.5  M_diabetes  L0_male L0_soc_env       L1  A0_PM2.5:M_diabetes
+#    74.7669   -3.7153     -8.6317  -0.7235    -2.8899  -3.4280              -5.6154
+
+trad_death_am
+# Call:  glm(formula = Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+#              L0_male + L0_soc_env + L1, family = "binomial", data = df1_int)
+#
+# Coefficients:
+# (Intercept) A0_PM2.5  M_diabetes  L0_male L0_soc_env       L1  A0_PM2.5:M_diabetes
+#    -2.06294  0.36668     0.40921  0.29249    0.36360  0.44716              0.01275
+
+## Use the mediate() function to estimate the TNDE, PNIE
+# estimations relies on quasi-bayesian Monte Carlo method (especially for continuous
+# mediators) => set seed for reproducibility
+set.seed(2024)
+
+## For the quantitative outcome
+mediation.res.qol <- mediate(trad_m,                   # model of the mediator
+                             trad_qol_am,              # model of the outcome)
+                             treat = "A0_PM2.5",       # exposure
+                             mediator = "M_diabetes",  # mediator
+                             robustSE = TRUE,          # estimate sandwich SEs
+                             sims = 100)               # better to use >= 1000
+summary(mediation.res.qol)
+#                            Estimate 95% CI Lower 95% CI Upper p-value
+#   ACME (control)             -1.074       -1.356        -0.82  <2e-16 *** PNIE
+#   ACME (treated)             -1.778       -2.239        -1.38  <2e-16 *** TNIE
+#   ADE (control)              -5.301       -5.950        -4.63  <2e-16 *** PNDE
+#   ADE (treated)              -6.005       -6.646        -5.27  <2e-16 *** TNDE
+#   Total Effect               -7.079       -7.768        -6.24  <2e-16 ***
+#   Prop. Mediated (control)    0.151        0.118         0.19  <2e-16 ***
+#   Prop. Mediated (treated)    0.251        0.197         0.31  <2e-16 ***
+#   ACME (average)             -1.426       -1.811        -1.11  <2e-16 ***
+#   ADE (average)              -5.653       -6.267        -4.95  <2e-16 ***
+#   Prop. Mediated (average)    0.201        0.160         0.25  <2e-16 ***
+
+## We can plot the estimations
+plot(mediation.res.qol)
+
+## For the binary outcome
+mediation.res.death <- mediate(trad_m,                   # model of the mediator
+                               trad_death_am,            # model of the outcome)
+                               treat = "A0_PM2.5",       # exposure
+                               mediator = "M_diabetes",  # mediator
+                               robustSE = TRUE,          # estimate sandwich SEs
+                               sims = 100)               # better to use >= 1000
+summary(mediation.res.death)
+#                          Estimate 95% CI Lower 95% CI Upper p-value
+# ACME (control)            0.00860      0.00569         0.01  <2e-16 *** PNIE
+# ACME (treated)            0.00979      0.00377         0.02  <2e-16 *** TNIE
+# ADE (control)             0.06543      0.03658         0.09  <2e-16 *** PNDE
+# ADE (treated)             0.06662      0.03946         0.09  <2e-16 *** TNDE
+# Total Effect              0.07522      0.04800         0.10  <2e-16 ***
+# Prop. Mediated (control)  0.11172      0.07323         0.18  <2e-16 ***
+# Prop. Mediated (treated)  0.13066      0.05714         0.22  <2e-16 ***
+# ACME (average)            0.00920      0.00567         0.01  <2e-16 ***
+# ADE (average)             0.06603      0.03803         0.09  <2e-16 ***
+# Prop. Mediated (average)  0.12119      0.07330         0.20  <2e-16 ***
+
+## Sensitivity analysis to test sequential ignorability (assess the possible existence
+## of unobserved (baseline) confounders of the M-Y relationship)
+trad_m <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
+              family = binomial("probit"), # sensitivity analysis works only for
+              # probit models
+              data = df1_int)
+set.seed(1234)
+mediation.res.qol <- mediate(trad_m,                   # model of the mediator
+                             trad_qol_am,              # model of the outcome)
+                             treat = "A0_PM2.5",       # exposure
+                             mediator = "M_diabetes",  # mediator
+                             robustSE = TRUE,          # estimate sandwich SEs
+                             # long = TRUE,
+                             sims = 100)               # better to use >= 1000
+summary(mediation.res.qol)
+#                            Estimate 95% CI Lower 95% CI Upper p-value
+#   ACME (control)             -1.075       -1.430        -0.73  <2e-16 ***
+#   ACME (treated)             -1.772       -2.353        -1.14  <2e-16 ***
+#   ADE (control)              -5.365       -5.961        -4.76  <2e-16 ***
+#   ADE (treated)              -6.063       -6.638        -5.56  <2e-16 ***
+#   Total Effect               -7.138       -7.823        -6.48  <2e-16 ***
+#   Prop. Mediated (control)    0.153        0.109         0.19  <2e-16 ***
+#   Prop. Mediated (treated)    0.251        0.172         0.32  <2e-16 ***
+#   ACME (average)             -1.424       -1.884        -0.94  <2e-16 ***
+#   ADE (average)              -5.714       -6.283        -5.14  <2e-16 ***
+#   Prop. Mediated (average)    0.202        0.142         0.25  <2e-16 ***
+
+sensisitivy <- medsens(mediation.res.qol,
+                       rho.by = 0.1, # sensitivity parameter = correlation between
+                       # the residuals of the mediator & outcome regressions
+                       # here, rho varies from -0.9 to +0.9 by 0.1 increments
+                       effect.type = "both", # "direct", "indirect" or "both"
+                       sims = 100)
+# If there exist unobserved (baseline) confounders of the M-Y relationship, we expect
+# that rho is no longer zero.
+# The sensitivity analysis is conducted by varying the value of rho and examining
+# how the estimated ACME and ADE change.
+summary(sensisitivy)
+# Mediation Sensitivity Analysis: Average Mediation Effect
+# Sensitivity Region: ACME for Control Group
+#         Rho ACME(control) 95% CI Lower 95% CI Upper R^2_M*R^2_Y* R^2_M~R^2_Y~
+#   [1,] -0.6        0.0474      -0.0093       0.1229         0.36       0.2647
+#
+# Rho at which ACME for Control Group = 0: -0.6
+# R^2_M*R^2_Y* at which ACME for Control Group = 0: 0.36
+# R^2_M~R^2_Y~ at which ACME for Control Group = 0: 0.2647
+#
+# Rho at which ACME for Treatment Group = 0: -0.9
+# R^2_M*R^2_Y* at which ACME for Treatment Group = 0: 0.81
+# R^2_M~R^2_Y~ at which ACME for Treatment Group = 0: 0.5956
+#
+# Mediation Sensitivity Analysis: Average Direct Effect
+# Rho at which ADE for Control Group = 0: 0.8
+# R^2_M*R^2_Y* at which ADE for Control Group = 0: 0.64
+# R^2_M~R^2_Y~ at which ADE for Control Group = 0: 0.4706
+#
+# Rho at which ADE for Treatment Group = 0: 0.8
+# R^2_M*R^2_Y* at which ADE for Treatment Group = 0: 0.64
+# R^2_M~R^2_Y~ at which ADE for Treatment Group = 0: 0.4706
+
+par(mfrow = c(2,2))
+plot(sensisitivy)
+par(mfrow = c(2,1))
+
+# Here, for PNIE, the confidence interval of the ACME (PNIE) contain zero when rho=-0.6
+# R^2 correspond to
+# When the product of the residual variance explained by the omitted confounding
+# is 0.36, the point estimate of PNIE = 0
+# When the product of the total variance explained by the omitted confounding
+# is 0.27, the point estimate of PNIE = 0
+# => The risk that PNIE is cancelled because of unmeasured M-Y confounding
+#    seems low in our example (it requires rather strong correlations)
+
+# Note: sensitivity analysis from the package cannot be applied when the mediator
+#       and the outcome are both binary
+
 
 # ---------------------------------------------------------------------------- #
-## III.1) parametric g-computation ---------------------------------------------
+# IV) Estimation of Marginal Randomized Direct and Indirect Effects -----------
+# ---------------------------------------------------------------------------- #
+
+# ---------------------------------------------------------------------------- #
+## IV.1) parametric g-computation ---------------------------------------------
 # ---------------------------------------------------------------------------- #
 # described in Lin et al. Epidemiology 2017;28(2):266-74
 # The approach is described as an adaptation of the parametric g-computation presented for controlled direct effects.
@@ -417,7 +722,8 @@ CDE.qol.m1.seq
 # 1) Fit parametric models for the observed data for the time-varying confounders L(1), the mediator M and the outcome Y
 
 # 2) Estimate the joint distribution of time-varying
-
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
 
 set.seed(54321)
 
@@ -432,26 +738,26 @@ for (k in 1:25) {
   ## 1) Fit parametric models for the observed data for the time-varying
   ##    confounders L(1), the mediator M and the outcome Y
   ### 1a) fit parametric models of the confounders and mediators given the past
-  L1.model <- glm(L1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+  L1.model <- glm(L1 ~ L0_male + L0_soc_env + A0_PM2.5,
                   family = "binomial", data = df2_int)
-  M.model <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1,
+  M.model <- glm(M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
                  family = "binomial", data = df2_int)
   ### 1b) fit parametric models of the outcomes given the past
-  Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                         M_smoking + A0_ace:M_smoking,
+  Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                         M_diabetes + A0_PM2.5:M_diabetes,
                        family = "binomial", data = df2_int)
-  Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                       M_smoking + A0_ace:M_smoking,
+  Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                       M_diabetes + A0_PM2.5:M_diabetes,
                      family = "gaussian", data = df2_int)
 
   ## 2) Estimate the joint distribution of time-varying confounders and of the
-  ##    mediator under the counterfactual scenarios setting A0_ace = 1 or 0
+  ##    mediator under the counterfactual scenarios setting A0_PM2.5 = 1 or 0
 
-  # set the exposure A0_ace to 0 or 1 in two new counterfactual data sets
+  # set the exposure A0_PM2.5 to 0 or 1 in two new counterfactual data sets
   data.A0  <- data.A1 <- df2_int
-  data.A0$A0_ace <- 0
-  data.A1$A0_ace <- 1
-  # simulate L1 values under the counterfactual exposures A0_ace=0 or A0_ace=1
+  data.A0$A0_PM2.5 <- 0
+  data.A1$A0_PM2.5 <- 1
+  # simulate L1 values under the counterfactual exposures A0_PM2.5=0 or A0_PM2.5=1
   p.L1.A0 <- predict(L1.model, newdata = data.A0, type="response")
   p.L1.A1 <- predict(L1.model, newdata = data.A1, type="response")
   sim.L1.A0 <- rbinom(n = nrow(df2_int), size = 1, prob = p.L1.A0)
@@ -463,7 +769,7 @@ for (k in 1:25) {
   data.A0.L$L1 <- sim.L1.A0
   data.A1.L$L1 <- sim.L1.A1
 
-  # simulate M values under the counterfactual exposures A0_ace=0 or A0_ace=1
+  # simulate M values under the counterfactual exposures A0_PM2.5=0 or A0_PM2.5=1
   p.M.A0 <- predict(M.model, newdata = data.A0.L, type="response")
   p.M.A1 <- predict(M.model, newdata = data.A1.L, type="response")
   sim.M.A0 <- rbinom(n = nrow(df2_int), size = 1, prob = p.M.A0)
@@ -480,11 +786,11 @@ for (k in 1:25) {
   data.A0.G0 <- data.A0.G1 <- data.A0.L
   data.A1.G0 <- data.A1.G1 <- data.A1.L
 
-  data.A0.G0$M_smoking <- marg.M.A0
-  # data.A0.G1$M_smoking <- marg.M.A1 # note: this data set will not be useful
+  data.A0.G0$M_diabetes <- marg.M.A0
+  # data.A0.G1$M_diabetes <- marg.M.A1 # note: this data set will not be useful
 
-  data.A1.G0$M_smoking <- marg.M.A0
-  data.A1.G1$M_smoking <- marg.M.A1
+  data.A1.G0$M_diabetes <- marg.M.A0
+  data.A1.G1$M_diabetes <- marg.M.A1
 
   # simulate the average outcome using the models fitted at step 1)
   p.death.A1.G1 <- predict(Y.death.model, newdata = data.A1.G1, type="response")
@@ -524,7 +830,7 @@ rNIE.qol
 # bootstrap samples of the original data set.
 
 # ---------------------------------------------------------------------------- #
-## III.2) G-computation by iterative conditional expectation--------------------
+## IV.2) G-computation by iterative conditional expectation--------------------
 # ---------------------------------------------------------------------------- #
 rm(list=ls())
 df2_int <- read.csv(file = "data/df2_int.csv")
@@ -539,15 +845,15 @@ df2_int <- read.csv(file = "data/df2_int.csv")
 ##    value to A=0 or A=1
 ### 1a) Fit parametric models for the mediator M, conditional on the exposure A and
 ###    baseline confounder Pr(M=1|A,L(0)) (but not conditional on L(1))
-G.model <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+G.model <- glm(M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5,
                family = "binomial", data = df2_int)
 
 ### 1b) generate predicted probabilites by evaluating the regression setting the
 ###     exposure value to A=0 or to A=1
 # create datasets corresponding to the counterfactual scenarios setting A=0 and A=1
 data.Ais0  <- data.Ais1 <- df2_int
-data.Ais0$A0_ace <- 0
-data.Ais1$A0_ace <- 1
+data.Ais0$A0_PM2.5 <- 0
+data.Ais1$A0_PM2.5 <- 1
 
 # estimate G_{A=0|L(0)} = Pr(M=1|A=0,L(0)) and G_{A=1|L(0)} = Pr(M=1|A=1,L(0))
 G.Ais0.L0 <-predict(G.model, newdata = data.Ais0, type="response")
@@ -559,18 +865,18 @@ G.Ais1.L0 <-predict(G.model, newdata = data.Ais1, type="response")
 ##    value to M=0 or to M=1
 ##    then calculate a weighted sum of the predicted Q.L2, with weights given by G
 ### 2a) fit parametric models of the outcomes given the past
-Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                       M_smoking + A0_ace:M_smoking,
+Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                       M_diabetes + A0_PM2.5:M_diabetes,
                      family = "binomial", data = df2_int)
-Y.qol.model <- glm(Y_qol ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                     M_smoking + A0_ace:M_smoking,
+Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                     M_diabetes + A0_PM2.5:M_diabetes,
                    family = "gaussian", data = df2_int)
 
 ### 2b) generate predicted values by evaluating the regression setting the mediator
 ###     value to M=0 or to M=1
 data.Mis0  <- data.Mis1 <- df2_int
-data.Mis0$M_smoking <- 0
-data.Mis1$M_smoking <- 1
+data.Mis0$M_diabetes <- 0
+data.Mis1$M_diabetes <- 1
 
 Q.L2.death.Mis0 <- predict(Y.death.model, newdata = data.Mis0, type="response")
 Q.L2.death.Mis1 <- predict(Y.death.model, newdata = data.Mis1, type="response")
@@ -600,18 +906,18 @@ Q.L2.qol.A1.G1 <- Q.L2.qol.Mis1 * G.Ais1.L0 + Q.L2.qol.Mis0 * (1 - G.Ais1.L0)
 ##    value to A=0 or to A=1
 ### 3a) Fit parametric models for the predicted values barQ.L2 conditional on the
 ###    exposure A and baseline confounders L(0)
-L1.death.A0.G0.model <- glm(Q.L2.death.A0.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0.G0.model <- glm(Q.L2.death.A0.G0 ~ L0_male + L0_soc_env + A0_PM2.5,
                             family = "quasibinomial", data = df2_int)
-L1.death.A1.G0.model <- glm(Q.L2.death.A1.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A1.G0.model <- glm(Q.L2.death.A1.G0 ~ L0_male + L0_soc_env + A0_PM2.5,
                             family = "quasibinomial", data = df2_int)
-L1.death.A1.G1.model <- glm(Q.L2.death.A1.G1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A1.G1.model <- glm(Q.L2.death.A1.G1 ~ L0_male + L0_soc_env + A0_PM2.5,
                             family = "quasibinomial", data = df2_int)
 
-L1.qol.A0.G0.model <- glm(Q.L2.qol.A0.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A0.G0.model <- glm(Q.L2.qol.A0.G0 ~ L0_male + L0_soc_env + A0_PM2.5,
                           family = "gaussian", data = df2_int)
-L1.qol.A1.G0.model <- glm(Q.L2.qol.A1.G0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A1.G0.model <- glm(Q.L2.qol.A1.G0 ~ L0_male + L0_soc_env + A0_PM2.5,
                           family = "gaussian", data = df2_int)
-L1.qol.A1.G1.model <- glm(Q.L2.qol.A1.G1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.qol.A1.G1.model <- glm(Q.L2.qol.A1.G1 ~ L0_male + L0_soc_env + A0_PM2.5,
                           family = "gaussian", data = df2_int)
 
 ### 3b) generate predicted values by evaluating the regression setting the exposure
@@ -647,15 +953,15 @@ MRIE.qol
 
 
 # ---------------------------------------------------------------------------- #
-# IV) CMAverse -----------
+# V) CMAverse ----
 # ---------------------------------------------------------------------------- #
 # The DAG for this scientific setting is:
 # devtools::install_github("BS1125/CMAverse")
 library(CMAverse)
 rm(list=ls())
 df2_int <- read.csv(file = "data/df2_int.csv")
-cmdag(outcome = "Y_death", exposure = "A0_ace", mediator = "M_smoking",
-      basec = c("L0_male", "L0_parent_low_educ_lv"), postc = "L1", node = TRUE, text_col = "white")
+cmdag(outcome = "Y_death", exposure = "A0_PM2.5", mediator = "M_diabetes",
+      basec = c("L0_male", "L0_soc_env"), postc = "L1", node = TRUE, text_col = "white")
 # The CMAverse package can be used to estimate CDE, rNDE and rNIE by parametric g-computation
 # (using the 'gformula' option in the )
 
@@ -665,10 +971,10 @@ set.seed(1234)
 res_gformula_Qol <- cmest(data = df2_int,
                          model = "gformula", # for parametric g-computation
                          outcome = "Y_qol", # outcome variable
-                         exposure = "A0_ace", # exposure variable
-                         mediator = "M_smoking", # mediator
+                         exposure = "A0_PM2.5", # exposure variable
+                         mediator = "M_diabetes", # mediator
                          basec = c("L0_male",
-                                   "L0_parent_low_educ_lv"), # confounders
+                                   "L0_soc_env"), # confounders
                          postc = "L1", # intermediate confounder (post-exposure)
                          EMint = TRUE, # exposures*mediator interaction
                          mreg = list("logistic"), # g(M=1|L1,A,L0)
@@ -686,46 +992,46 @@ summary(res_gformula_Qol)
 ### 1) Estimation of Qbar.Y = P(Y=1|M,L1,A,L0) with A*M interaction,
 ### Outcome regression:
 # Call:
-#   glm(formula = Y_qol ~ A0_ace + M_smoking + A0_ace * M_smoking +
-#         L0_male + L0_parent_low_educ_lv + L1, family = gaussian(),
+#   glm(formula = Y_qol ~ A0_PM2.5 + M_diabetes + A0_PM2.5 * M_diabetes +
+#         L0_male + L0_soc_env + L1, family = gaussian(),
 #       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
 # Coefficients:
 #   Estimate Std. Error t value Pr(>|t|)
 # (Intercept)            74.8247     0.2133 350.823  < 2e-16 ***
-#   A0_ace                 -3.7014     0.4295  -8.617  < 2e-16 ***
-#   M_smoking              -8.6336     0.2331 -37.042  < 2e-16 ***
+#   A0_PM2.5                 -3.7014     0.4295  -8.617  < 2e-16 ***
+#   M_diabetes              -8.6336     0.2331 -37.042  < 2e-16 ***
 #   L0_male                -0.7280     0.2019  -3.605 0.000313 ***
-#   L0_parent_low_educ_lv  -2.8828     0.2116 -13.621  < 2e-16 ***
+#   L0_soc_env             -2.8828     0.2116 -13.621  < 2e-16 ***
 #   L1                     -5.1668     0.2189 -23.608  < 2e-16 ***
-#   A0_ace:M_smoking       -5.5119     0.6440  -8.559  < 2e-16 ***
+#   A0_PM2.5:M_diabetes       -5.5119     0.6440  -8.559  < 2e-16 ***
 
 ### 2) Estimation of g(M=1|L1,A,L0), model of the mediator
 ### Mediator regressions:
 # Call:
-#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +
+#   glm(formula = M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env +
 #         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
 #       weights = getCall(x$reg.output$mreg[[1L]])$weights)
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 # (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
-#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
+#   A0_PM2.5                 0.30994    0.06668   4.648 3.35e-06 ***
 #   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
-#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
+#   L0_soc_env  0.30628    0.04650   6.587 4.50e-11 ***
 #   L1                     0.86045    0.04493  19.152  < 2e-16 ***
 
 ### 3) Estimation of Qbar.L1 = P(L1=1|A,L0), model of intermediate confounder
 ### Regressions for mediator-outcome confounders affected by the exposure:
 # Call:
-#   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+#   glm(formula = L1 ~ A0_PM2.5 + L0_male + L0_soc_env,
 #       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,
 #       weights = getCall(x$reg.output$postcreg[[1L]])$weights)
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 # (Intercept)           -0.86983    0.04292 -20.267  < 2e-16 ***
-#   A0_ace                 0.94354    0.06475  14.572  < 2e-16 ***
+#   A0_PM2.5                 0.94354    0.06475  14.572  < 2e-16 ***
 #   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***
-#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***
+#   L0_soc_env  0.32047    0.04556   7.034 2.01e-12 ***
 
 ### 4) Effect decomposition on the mean difference scale via the g-formula approach
 #
@@ -780,8 +1086,12 @@ res_gformula_Qol$effect.pe["cde"]
 (res_gformula_Qol$effect.pe["te"] - res_gformula_Qol$effect.pe["rpnde"] -
     res_gformula_Qol$effect.pe["rpnie"])
 # -0.897894
+## Check that MI = rTNIE - rPNIE = rTNDE - rPNDE
+(res_gformula_Qol$effect.pe["rtnie"] - res_gformula_Qol$effect.pe["rpnie"])
+(res_gformula_Qol$effect.pe["rtnde"] - res_gformula_Qol$effect.pe["rpnde"])
+# -0.897894
 res_gformula_Qol$effect.pe["rintmed"]
-# -0.897894 # we have MI = TE - rPNDE - rPNIE
+# -0.897894 # we have MI = TE - rPNDE - rPNIE = rTNIE - rPNIE = rTNDE - rPNDE
 
 ## Check that RE = PNDE - CDE_{M=0}
 res_gformula_Qol$effect.pe["rpnde"] - res_gformula_Qol$effect.pe["cde"]
@@ -793,14 +1103,14 @@ res_gformula_Qol$effect.pe["rintref"]
 ## The g-formula Approach
 set.seed(1234)
 res_gformula_OR <- cmest(data = df2_int,
-                         # data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                         # data.frame(df2_int[,c("L0_male","L0_soc_env","A0_PM2.5")],
                          #                L1=as.factor(df2_int$L1),
-                         #                df2_int[,c("M_smoking","Y_death")]),
+                         #                df2_int[,c("M_diabetes","Y_death")]),
                       model = "gformula",
                       outcome = "Y_death",
-                      exposure = "A0_ace",
-                      mediator = "M_smoking",
-                      basec = c("L0_male", "L0_parent_low_educ_lv"),
+                      exposure = "A0_PM2.5",
+                      mediator = "M_diabetes",
+                      basec = c("L0_male", "L0_soc_env"),
                       postc = "L1",
                       EMint = TRUE,
                       mreg = list("logistic"), # g(M=1|L1,A,L0)
@@ -821,19 +1131,19 @@ summary(res_gformula_OR)
 # # Outcome regression:
 #
 # Call:
-#   glm(formula = Y_death ~ A0_ace + M_smoking + A0_ace * M_smoking +
-#         L0_male + L0_parent_low_educ_lv + L1, family = binomial(),
+#   glm(formula = Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5 * M_diabetes +
+#         L0_male + L0_soc_env + L1, family = binomial(),
 #       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 #   (Intercept)           -2.04033    0.05855 -34.849  < 2e-16 ***
-#   A0_ace                 0.28922    0.10123   2.857  0.00428 **
-#   M_smoking              0.44406    0.05569   7.974 1.53e-15 ***
+#   A0_PM2.5                 0.28922    0.10123   2.857  0.00428 **
+#   M_diabetes              0.44406    0.05569   7.974 1.53e-15 ***
 #   L0_male                0.26913    0.04996   5.387 7.15e-08 ***
-#   L0_parent_low_educ_lv  0.34603    0.05432   6.370 1.89e-10 ***
+#   L0_soc_env  0.34603    0.05432   6.370 1.89e-10 ***
 #   L11                    0.42894    0.05195   8.257  < 2e-16 ***
-#   A0_ace:M_smoking       0.04387    0.14311   0.307  0.75919
+#   A0_PM2.5:M_diabetes       0.04387    0.14311   0.307  0.75919
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
@@ -850,16 +1160,16 @@ summary(res_gformula_OR)
 # # Mediator regressions:
 #
 # Call:
-#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +
+#   glm(formula = M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env +
 #         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
 #       weights = getCall(x$reg.output$mreg[[1L]])$weights)
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 #   (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
-#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
+#   A0_PM2.5                 0.30994    0.06668   4.648 3.35e-06 ***
 #   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
-#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
+#   L0_soc_env  0.30628    0.04650   6.587 4.50e-11 ***
 #   L11                    0.86045    0.04493  19.152  < 2e-16 ***
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
@@ -877,16 +1187,16 @@ summary(res_gformula_OR)
 # # Regressions for mediator-outcome confounders affected by the exposure:
 #
 # Call:
-#   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+#   glm(formula = L1 ~ A0_PM2.5 + L0_male + L0_soc_env,
 #       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,
 #       weights = getCall(x$reg.output$postcreg[[1L]])$weights)
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 #   (Intercept)           -0.86983    0.04292 -20.267  < 2e-16 ***
-#   A0_ace                 0.94354    0.06475  14.572  < 2e-16 ***
+#   A0_PM2.5                 0.94354    0.06475  14.572  < 2e-16 ***
 #   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***
-#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***
+#   L0_soc_env  0.32047    0.04556   7.034 2.01e-12 ***
 #   ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
@@ -949,14 +1259,14 @@ summary(res_gformula_OR)
 # setting do(M=0) for the controlled direct effect
 set.seed(12345)
 res_gformula_RD_M0 <- cmest(data = df2_int,
-                            # data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+                            # data.frame(df2_int[,c("L0_male","L0_soc_env","A0_PM2.5")],
                             #                   L1=as.factor(df2_int$L1),
-                            #                   df2_int[,c("M_smoking","Y_death")]),
+                            #                   df2_int[,c("M_diabetes","Y_death")]),
                             model = "gformula",
                             outcome = "Y_death",
-                            exposure = "A0_ace",
-                            mediator = "M_smoking",
-                            basec = c("L0_male", "L0_parent_low_educ_lv"),
+                            exposure = "A0_PM2.5",
+                            mediator = "M_diabetes",
+                            basec = c("L0_male", "L0_soc_env"),
                             postc = "L1",
                             EMint = TRUE,
                             mreg = list("logistic"),
@@ -973,46 +1283,46 @@ res_gformula_RD_M0 <- cmest(data = df2_int,
 summary(res_gformula_RD_M0)
 ## 1) Outcome regression: Qbar.L2 = P(Y=1|M,L1,A,L0) with A*M interaction
 # Call:
-#   glm(formula = Y_death ~ A0_ace + M_smoking + A0_ace * M_smoking +
-#         L0_male + L0_parent_low_educ_lv + L1, family = gaussian(),
+#   glm(formula = Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5 * M_diabetes +
+#         L0_male + L0_soc_env + L1, family = gaussian(),
 #       data = getCall(x$reg.output$yreg)$data, weights = getCall(x$reg.output$yreg)$weights)
 #
 # Coefficients:
 #   Estimate Std. Error t value Pr(>|t|)
 #   (Intercept)           0.100674   0.008574  11.742  < 2e-16 ***
-#   A0_ace                0.046456   0.017268   2.690  0.00715 **
-#   M_smoking             0.074378   0.009370   7.938 2.27e-15 ***
+#   A0_PM2.5                0.046456   0.017268   2.690  0.00715 **
+#   M_diabetes             0.074378   0.009370   7.938 2.27e-15 ***
 #   L0_male               0.043661   0.008117   5.379 7.67e-08 ***
-#   L0_parent_low_educ_lv 0.053711   0.008508   6.313 2.86e-10 ***
+#   L0_soc_env 0.053711   0.008508   6.313 2.86e-10 ***
 #   L11                   0.073753   0.008798   8.383  < 2e-16 ***
-#   A0_ace:M_smoking      0.030159   0.025887   1.165  0.24404
+#   A0_PM2.5:M_diabetes      0.030159   0.025887   1.165  0.24404
 
 ## 2) Mediator regressions:  g(M=1|L1,A,L0)
 # Call:
-#   glm(formula = M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv +
+#   glm(formula = M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env +
 #         L1, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data,
 #       weights = getCall(x$reg.output$mreg[[1L]])$weights)
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 #   (Intercept)           -1.36249    0.04783 -28.488  < 2e-16 ***
-#   A0_ace                 0.30994    0.06668   4.648 3.35e-06 ***
+#   A0_PM2.5                 0.30994    0.06668   4.648 3.35e-06 ***
 #   L0_male                0.24661    0.04369   5.644 1.66e-08 ***
-#   L0_parent_low_educ_lv  0.30628    0.04650   6.587 4.50e-11 ***
+#   L0_soc_env  0.30628    0.04650   6.587 4.50e-11 ***
 #   L11                    0.86045    0.04493  19.152  < 2e-16 ***
 
 ## 3) Regressions for mediator-outcome confounders affected by the exposure: Qbar.L1 = P(L1=1|A,L0)
 # Call:
-#   glm(formula = L1 ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+#   glm(formula = L1 ~ A0_PM2.5 + L0_male + L0_soc_env,
 #       family = binomial(), data = getCall(x$reg.output$postcreg[[1L]])$data,
 #       weights = getCall(x$reg.output$postcreg[[1L]])$weights)
 #
 # Coefficients:
 #   Estimate Std. Error z value Pr(>|z|)
 #   (Intercept)           -0.86983    0.04292 -20.267  < 2e-16 ***
-#   A0_ace                 0.94354    0.06475  14.572  < 2e-16 ***
+#   A0_PM2.5                 0.94354    0.06475  14.572  < 2e-16 ***
 #   L0_male               -0.19827    0.04289  -4.622 3.80e-06 ***
-#   L0_parent_low_educ_lv  0.32047    0.04556   7.034 2.01e-12 ***
+#   L0_soc_env  0.32047    0.04556   7.034 2.01e-12 ***
 
 ## 4) Effect decomposition on the mean difference scale via the g-formula approach
 # Direct counterfactual imputation estimation with
@@ -1079,14 +1389,14 @@ res_gformula_RD_M0$effect.pe["rintref"]
 
 ### setting do(M=1) for the controlled direct effect
 set.seed(12345)
-res_gformula_RD_M1 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+res_gformula_RD_M1 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_soc_env","A0_PM2.5")],
                                               L1=as.factor(df2_int$L1),
-                                              df2_int[,c("M_smoking","Y_death")]),
+                                              df2_int[,c("M_diabetes","Y_death")]),
                             model = "gformula",
                             outcome = "Y_death",
-                            exposure = "A0_ace",
-                            mediator = "M_smoking",
-                            basec = c("L0_male", "L0_parent_low_educ_lv"),
+                            exposure = "A0_PM2.5",
+                            mediator = "M_diabetes",
+                            basec = c("L0_male", "L0_soc_env"),
                             postc = "L1",
                             EMint = TRUE,
                             mreg = list("logistic"),
@@ -1123,14 +1433,14 @@ summary(res_gformula_RD_M1)
 
 ### For quantitative outcomes
 set.seed(12345)
-res_gformula_QoL_M0 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+res_gformula_QoL_M0 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_soc_env","A0_PM2.5")],
                                               L1=as.factor(df2_int$L1),
-                                              df2_int[,c("M_smoking","Y_qol")]),
+                                              df2_int[,c("M_diabetes","Y_qol")]),
                             model = "gformula",
                             outcome = "Y_qol",
-                            exposure = "A0_ace",
-                            mediator = "M_smoking",
-                            basec = c("L0_male", "L0_parent_low_educ_lv"),
+                            exposure = "A0_PM2.5",
+                            mediator = "M_diabetes",
+                            basec = c("L0_male", "L0_soc_env"),
                             postc = "L1",
                             EMint = TRUE,
                             mreg = list("logistic"),
@@ -1165,14 +1475,14 @@ summary(res_gformula_QoL_M0)
 #   rpe            0.414086  0.025973  0.389092   0.424 <2e-16 ***
 
 set.seed(12345)
-res_gformula_QoL_M1 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_parent_low_educ_lv","A0_ace")],
+res_gformula_QoL_M1 <- cmest(data = data.frame(df2_int[,c("L0_male","L0_soc_env","A0_PM2.5")],
                                                L1=as.factor(df2_int$L1),
-                                               df2_int[,c("M_smoking","Y_qol")]),
+                                               df2_int[,c("M_diabetes","Y_qol")]),
                              model = "gformula",
                              outcome = "Y_qol",
-                             exposure = "A0_ace",
-                             mediator = "M_smoking",
-                             basec = c("L0_male", "L0_parent_low_educ_lv"),
+                             exposure = "A0_PM2.5",
+                             mediator = "M_diabetes",
+                             basec = c("L0_male", "L0_soc_env"),
                              postc = "L1",
                              EMint = TRUE,
                              mreg = list("logistic"),
@@ -1206,3 +1516,10 @@ summary(res_gformula_QoL_M1)
 #   rpm             0.20573   0.03601   0.15377   0.202 <2e-16 ***
 #   rint           -0.36750   0.04870  -0.43127  -0.366 <2e-16 ***
 #   rpe            -0.24194   0.06707  -0.33730  -0.247 <2e-16 ***
+
+
+
+# ---------------------------------------------------------------------------- #
+# VI) Estimation of Marginal Randomized Direct and Indirect Effects -----------
+# ---------------------------------------------------------------------------- #
+

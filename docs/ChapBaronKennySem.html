@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-12" />
+<meta name="date" content="2024-10-14" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -200,7 +200,11 @@ div.csl-indent {
 <li class="chapter" data-level="6.2.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#ChapGcomp-CDE-ICE"><i class="fa fa-check"></i><b>6.2.2</b> G-computation by iterative conditional expectation</a></li>
 <li class="chapter" data-level="6.2.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#sequential-g-estimator"><i class="fa fa-check"></i><b>6.2.3</b> Sequential g-estimator</a></li>
 </ul></li>
-<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a></li>
+<li class="chapter" data-level="6.3" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.3</b> Estimation of Natural Direct (NDE) and Indirect Effects (NIE)</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#simple-plug-in-estimator"><i class="fa fa-check"></i><b>6.3.1</b> Simple “plug-in” estimator</a></li>
+<li class="chapter" data-level="6.3.2" data-path="ChapGcomp.html"><a href="ChapGcomp.html#using-the-mediation-r-package"><i class="fa fa-check"></i><b>6.3.2</b> Using the <code>mediation</code> R package</a></li>
+</ul></li>
 <li class="chapter" data-level="6.4" data-path="ChapGcomp.html"><a href="ChapGcomp.html#estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie"><i class="fa fa-check"></i><b>6.4</b> Estimation of “Marginal” Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)</a>
 <ul>
 <li class="chapter" data-level="6.4.1" data-path="ChapGcomp.html"><a href="ChapGcomp.html#parametric-g-computation"><i class="fa fa-check"></i><b>6.4.1</b> Parametric g-computation</a></li>
@@ -333,97 +337,101 @@ div.csl-indent {
 <li>the “difference in coefficient” method based on the 1st and 3rd models: <span class="math inline">\(\theta_A - \gamma_A\)</span>,</li>
 <li>or the “product of coefficient” method based on the 2nd and 3rd models: <span class="math inline">\(\beta_A \times \gamma_M\)</span>.</li>
 </ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="ChapBaronKennySem.html#cb1-1" tabindex="-1"></a><span class="do">## Model 1 to estimate the total effect:</span></span>
-<span id="cb1-2"><a href="ChapBaronKennySem.html#cb1-2" tabindex="-1"></a>model.tot.A.QoL <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb1-3"><a href="ChapBaronKennySem.html#cb1-3" tabindex="-1"></a>                      <span class="at">data =</span> df1)</span>
-<span id="cb1-4"><a href="ChapBaronKennySem.html#cb1-4" tabindex="-1"></a><span class="fu">summary</span>(model.tot.A.QoL)</span>
-<span id="cb1-5"><a href="ChapBaronKennySem.html#cb1-5" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb1-6"><a href="ChapBaronKennySem.html#cb1-6" tabindex="-1"></a><span class="co">#               Estimate Std. Error t value Pr(&gt;|t|)</span></span>
-<span id="cb1-7"><a href="ChapBaronKennySem.html#cb1-7" tabindex="-1"></a><span class="co">#   (Intercept)  71.8820     0.2155 333.565  &lt; 2e-16 ***</span></span>
-<span id="cb1-8"><a href="ChapBaronKennySem.html#cb1-8" tabindex="-1"></a><span class="co">#   A0_PM2.5     -5.0961     0.3486 -14.617  &lt; 2e-16 *** &lt;- Total effect</span></span>
-<span id="cb1-9"><a href="ChapBaronKennySem.html#cb1-9" tabindex="-1"></a><span class="co">#   L0_male      -1.1486     0.2194  -5.235 1.68e-07 ***</span></span>
-<span id="cb1-10"><a href="ChapBaronKennySem.html#cb1-10" tabindex="-1"></a><span class="co">#   L0_soc_env   -3.4441     0.2295 -15.005  &lt; 2e-16 ***</span></span>
-<span id="cb1-11"><a href="ChapBaronKennySem.html#cb1-11" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="ChapBaronKennySem.html#cb1-12" tabindex="-1"></a><span class="co"># The total effect of being exposed to high levels of PM_2.5 on Quality of life</span></span>
-<span id="cb1-13"><a href="ChapBaronKennySem.html#cb1-13" tabindex="-1"></a><span class="co"># is approximately equal to an average decrease of -5.1 on the QoL scale,</span></span>
-<span id="cb1-14"><a href="ChapBaronKennySem.html#cb1-14" tabindex="-1"></a><span class="co"># given by the A0_PM2.5 coefficient:</span></span>
-<span id="cb1-15"><a href="ChapBaronKennySem.html#cb1-15" tabindex="-1"></a>model.tot.A.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
-<span id="cb1-16"><a href="ChapBaronKennySem.html#cb1-16" tabindex="-1"></a><span class="co"># -5.096057</span></span>
-<span id="cb1-17"><a href="ChapBaronKennySem.html#cb1-17" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="ChapBaronKennySem.html#cb1-18" tabindex="-1"></a><span class="do">## Model 2 to estimate the effect of the exposure on the mediator</span></span>
-<span id="cb1-19"><a href="ChapBaronKennySem.html#cb1-19" tabindex="-1"></a><span class="do">## because the mediator is binary, we might want to use a logistic or probit regression</span></span>
-<span id="cb1-20"><a href="ChapBaronKennySem.html#cb1-20" tabindex="-1"></a><span class="do">## for example</span></span>
-<span id="cb1-21"><a href="ChapBaronKennySem.html#cb1-21" tabindex="-1"></a>logit.model.A.M <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_diabetes <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb1-22"><a href="ChapBaronKennySem.html#cb1-22" tabindex="-1"></a>                       <span class="at">data =</span> df1, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>)</span>
-<span id="cb1-23"><a href="ChapBaronKennySem.html#cb1-23" tabindex="-1"></a><span class="fu">summary</span>(logit.model.A.M)</span>
-<span id="cb1-24"><a href="ChapBaronKennySem.html#cb1-24" tabindex="-1"></a><span class="co"># effects estimated on the logit scale:</span></span>
-<span id="cb1-25"><a href="ChapBaronKennySem.html#cb1-25" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb1-26"><a href="ChapBaronKennySem.html#cb1-26" tabindex="-1"></a><span class="co">#                          Estimate Std. Error z value Pr(&gt;|z|)</span></span>
-<span id="cb1-27"><a href="ChapBaronKennySem.html#cb1-27" tabindex="-1"></a><span class="co">#   (Intercept) -1.27152    0.04584 -27.736  &lt; 2e-16 ***</span></span>
-<span id="cb1-28"><a href="ChapBaronKennySem.html#cb1-28" tabindex="-1"></a><span class="co">#   A0_PM2.5     0.56168    0.06537   8.592  &lt; 2e-16 *** &lt;- effect of A on M</span></span>
-<span id="cb1-29"><a href="ChapBaronKennySem.html#cb1-29" tabindex="-1"></a><span class="co">#   L0_male      0.25455    0.04425   5.753 8.77e-09 ***</span></span>
-<span id="cb1-30"><a href="ChapBaronKennySem.html#cb1-30" tabindex="-1"></a><span class="co">#   L0_soc_env   0.32683    0.04731   6.908 4.91e-12 ***</span></span>
-<span id="cb1-31"><a href="ChapBaronKennySem.html#cb1-31" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefficients</span>(logit.model.A.M)[<span class="st">&quot;A0_PM2.5&quot;</span>])</span>
-<span id="cb1-32"><a href="ChapBaronKennySem.html#cb1-32" tabindex="-1"></a><span class="co"># Odds ratio = 1.753609  for the effect of being exposed to high levels of PM_2.5</span></span>
-<span id="cb1-33"><a href="ChapBaronKennySem.html#cb1-33" tabindex="-1"></a><span class="co"># on the mediator (probability of type 2 diabetes)</span></span>
-<span id="cb1-34"><a href="ChapBaronKennySem.html#cb1-34" tabindex="-1"></a></span>
-<span id="cb1-35"><a href="ChapBaronKennySem.html#cb1-35" tabindex="-1"></a><span class="do">## Model 3 to estimate the direct effect of the exposure (conditional on the outcome) and</span></span>
-<span id="cb1-36"><a href="ChapBaronKennySem.html#cb1-36" tabindex="-1"></a><span class="do">## the effect of M on Y, adjusted for confounders of the A-Y and M-Y relationships</span></span>
-<span id="cb1-37"><a href="ChapBaronKennySem.html#cb1-37" tabindex="-1"></a>model.A.M.QoL <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> M_diabetes <span class="sc">+</span> L1 <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb1-38"><a href="ChapBaronKennySem.html#cb1-38" tabindex="-1"></a>                    <span class="at">data =</span> df1)</span>
-<span id="cb1-39"><a href="ChapBaronKennySem.html#cb1-39" tabindex="-1"></a><span class="fu">summary</span>(model.A.M.QoL)</span>
-<span id="cb1-40"><a href="ChapBaronKennySem.html#cb1-40" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb1-41"><a href="ChapBaronKennySem.html#cb1-41" tabindex="-1"></a><span class="co">#               Estimate Std. Error t value Pr(&gt;|t|)</span></span>
-<span id="cb1-42"><a href="ChapBaronKennySem.html#cb1-42" tabindex="-1"></a><span class="co">#   (Intercept)  74.7858     0.2130 351.178  &lt; 2e-16 ***</span></span>
-<span id="cb1-43"><a href="ChapBaronKennySem.html#cb1-43" tabindex="-1"></a><span class="co">#   A0_PM2.5     -3.9650     0.3212 -12.345  &lt; 2e-16 *** &lt;- Direct effect</span></span>
-<span id="cb1-44"><a href="ChapBaronKennySem.html#cb1-44" tabindex="-1"></a><span class="co">#   M_diabetes   -8.7138     0.2221 -39.237  &lt; 2e-16 *** &lt;- effect of M on Y</span></span>
-<span id="cb1-45"><a href="ChapBaronKennySem.html#cb1-45" tabindex="-1"></a><span class="co">#   L1           -3.4252     0.2212 -15.483  &lt; 2e-16 ***</span></span>
-<span id="cb1-46"><a href="ChapBaronKennySem.html#cb1-46" tabindex="-1"></a><span class="co">#   L0_male      -0.7193     0.2017  -3.566 0.000364 ***</span></span>
-<span id="cb1-47"><a href="ChapBaronKennySem.html#cb1-47" tabindex="-1"></a><span class="co">#   L0_soc_env   -2.8876     0.2112 -13.674  &lt; 2e-16 ***</span></span>
-<span id="cb1-48"><a href="ChapBaronKennySem.html#cb1-48" tabindex="-1"></a></span>
-<span id="cb1-49"><a href="ChapBaronKennySem.html#cb1-49" tabindex="-1"></a><span class="co"># The direct effect of PM_2.5 is approximately -4.0 given by the A0_PM2.5 coefficient</span></span>
-<span id="cb1-50"><a href="ChapBaronKennySem.html#cb1-50" tabindex="-1"></a>model.A.M.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
-<span id="cb1-51"><a href="ChapBaronKennySem.html#cb1-51" tabindex="-1"></a><span class="co"># -3.965038</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="ChapBaronKennySem.html#cb1-1" tabindex="-1"></a><span class="do">## Import data </span></span>
+<span id="cb1-2"><a href="ChapBaronKennySem.html#cb1-2" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb1-3"><a href="ChapBaronKennySem.html#cb1-3" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;./data/df1.csv&quot;</span>)</span>
+<span id="cb1-4"><a href="ChapBaronKennySem.html#cb1-4" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="ChapBaronKennySem.html#cb1-5" tabindex="-1"></a><span class="do">## Model 1 to estimate the total effect:</span></span>
+<span id="cb1-6"><a href="ChapBaronKennySem.html#cb1-6" tabindex="-1"></a>model.tot.A.QoL <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
+<span id="cb1-7"><a href="ChapBaronKennySem.html#cb1-7" tabindex="-1"></a>                      <span class="at">data =</span> df1)</span>
+<span id="cb1-8"><a href="ChapBaronKennySem.html#cb1-8" tabindex="-1"></a><span class="fu">summary</span>(model.tot.A.QoL)</span>
+<span id="cb1-9"><a href="ChapBaronKennySem.html#cb1-9" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb1-10"><a href="ChapBaronKennySem.html#cb1-10" tabindex="-1"></a><span class="co">#               Estimate Std. Error t value Pr(&gt;|t|)</span></span>
+<span id="cb1-11"><a href="ChapBaronKennySem.html#cb1-11" tabindex="-1"></a><span class="co">#   (Intercept)  71.8820     0.2155 333.565  &lt; 2e-16 ***</span></span>
+<span id="cb1-12"><a href="ChapBaronKennySem.html#cb1-12" tabindex="-1"></a><span class="co">#   A0_PM2.5     -5.0961     0.3486 -14.617  &lt; 2e-16 *** &lt;- Total effect</span></span>
+<span id="cb1-13"><a href="ChapBaronKennySem.html#cb1-13" tabindex="-1"></a><span class="co">#   L0_male      -1.1486     0.2194  -5.235 1.68e-07 ***</span></span>
+<span id="cb1-14"><a href="ChapBaronKennySem.html#cb1-14" tabindex="-1"></a><span class="co">#   L0_soc_env   -3.4441     0.2295 -15.005  &lt; 2e-16 ***</span></span>
+<span id="cb1-15"><a href="ChapBaronKennySem.html#cb1-15" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="ChapBaronKennySem.html#cb1-16" tabindex="-1"></a><span class="co"># The total effect of being exposed to high levels of PM_2.5 on Quality of life</span></span>
+<span id="cb1-17"><a href="ChapBaronKennySem.html#cb1-17" tabindex="-1"></a><span class="co"># is approximately equal to an average decrease of -5.1 on the QoL scale,</span></span>
+<span id="cb1-18"><a href="ChapBaronKennySem.html#cb1-18" tabindex="-1"></a><span class="co"># given by the A0_PM2.5 coefficient:</span></span>
+<span id="cb1-19"><a href="ChapBaronKennySem.html#cb1-19" tabindex="-1"></a>model.tot.A.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
+<span id="cb1-20"><a href="ChapBaronKennySem.html#cb1-20" tabindex="-1"></a><span class="co"># -5.096057</span></span>
+<span id="cb1-21"><a href="ChapBaronKennySem.html#cb1-21" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="ChapBaronKennySem.html#cb1-22" tabindex="-1"></a><span class="do">## Model 2 to estimate the effect of the exposure on the mediator</span></span>
+<span id="cb1-23"><a href="ChapBaronKennySem.html#cb1-23" tabindex="-1"></a><span class="do">## because the mediator is binary, we might want to use a logistic or probit regression</span></span>
+<span id="cb1-24"><a href="ChapBaronKennySem.html#cb1-24" tabindex="-1"></a><span class="do">## for example</span></span>
+<span id="cb1-25"><a href="ChapBaronKennySem.html#cb1-25" tabindex="-1"></a>logit.model.A.M <span class="ot">&lt;-</span> <span class="fu">glm</span>(M_diabetes <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
+<span id="cb1-26"><a href="ChapBaronKennySem.html#cb1-26" tabindex="-1"></a>                       <span class="at">data =</span> df1, <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>)</span>
+<span id="cb1-27"><a href="ChapBaronKennySem.html#cb1-27" tabindex="-1"></a><span class="fu">summary</span>(logit.model.A.M)</span>
+<span id="cb1-28"><a href="ChapBaronKennySem.html#cb1-28" tabindex="-1"></a><span class="co"># effects estimated on the logit scale:</span></span>
+<span id="cb1-29"><a href="ChapBaronKennySem.html#cb1-29" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb1-30"><a href="ChapBaronKennySem.html#cb1-30" tabindex="-1"></a><span class="co">#                          Estimate Std. Error z value Pr(&gt;|z|)</span></span>
+<span id="cb1-31"><a href="ChapBaronKennySem.html#cb1-31" tabindex="-1"></a><span class="co">#   (Intercept) -1.27152    0.04584 -27.736  &lt; 2e-16 ***</span></span>
+<span id="cb1-32"><a href="ChapBaronKennySem.html#cb1-32" tabindex="-1"></a><span class="co">#   A0_PM2.5     0.56168    0.06537   8.592  &lt; 2e-16 *** &lt;- effect of A on M</span></span>
+<span id="cb1-33"><a href="ChapBaronKennySem.html#cb1-33" tabindex="-1"></a><span class="co">#   L0_male      0.25455    0.04425   5.753 8.77e-09 ***</span></span>
+<span id="cb1-34"><a href="ChapBaronKennySem.html#cb1-34" tabindex="-1"></a><span class="co">#   L0_soc_env   0.32683    0.04731   6.908 4.91e-12 ***</span></span>
+<span id="cb1-35"><a href="ChapBaronKennySem.html#cb1-35" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefficients</span>(logit.model.A.M)[<span class="st">&quot;A0_PM2.5&quot;</span>])</span>
+<span id="cb1-36"><a href="ChapBaronKennySem.html#cb1-36" tabindex="-1"></a><span class="co"># Odds ratio = 1.753609  for the effect of being exposed to high levels of PM_2.5</span></span>
+<span id="cb1-37"><a href="ChapBaronKennySem.html#cb1-37" tabindex="-1"></a><span class="co"># on the mediator (probability of type 2 diabetes)</span></span>
+<span id="cb1-38"><a href="ChapBaronKennySem.html#cb1-38" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="ChapBaronKennySem.html#cb1-39" tabindex="-1"></a><span class="do">## Model 3 to estimate the direct effect of the exposure (conditional on the outcome) and</span></span>
+<span id="cb1-40"><a href="ChapBaronKennySem.html#cb1-40" tabindex="-1"></a><span class="do">## the effect of M on Y, adjusted for confounders of the A-Y and M-Y relationships</span></span>
+<span id="cb1-41"><a href="ChapBaronKennySem.html#cb1-41" tabindex="-1"></a>model.A.M.QoL <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y_qol <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> M_diabetes <span class="sc">+</span> L1 <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
+<span id="cb1-42"><a href="ChapBaronKennySem.html#cb1-42" tabindex="-1"></a>                    <span class="at">data =</span> df1)</span>
+<span id="cb1-43"><a href="ChapBaronKennySem.html#cb1-43" tabindex="-1"></a><span class="fu">summary</span>(model.A.M.QoL)</span>
+<span id="cb1-44"><a href="ChapBaronKennySem.html#cb1-44" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb1-45"><a href="ChapBaronKennySem.html#cb1-45" tabindex="-1"></a><span class="co">#               Estimate Std. Error t value Pr(&gt;|t|)</span></span>
+<span id="cb1-46"><a href="ChapBaronKennySem.html#cb1-46" tabindex="-1"></a><span class="co">#   (Intercept)  74.7858     0.2130 351.178  &lt; 2e-16 ***</span></span>
+<span id="cb1-47"><a href="ChapBaronKennySem.html#cb1-47" tabindex="-1"></a><span class="co">#   A0_PM2.5     -3.9650     0.3212 -12.345  &lt; 2e-16 *** &lt;- Direct effect</span></span>
+<span id="cb1-48"><a href="ChapBaronKennySem.html#cb1-48" tabindex="-1"></a><span class="co">#   M_diabetes   -8.7138     0.2221 -39.237  &lt; 2e-16 *** &lt;- effect of M on Y</span></span>
+<span id="cb1-49"><a href="ChapBaronKennySem.html#cb1-49" tabindex="-1"></a><span class="co">#   L1           -3.4252     0.2212 -15.483  &lt; 2e-16 ***</span></span>
+<span id="cb1-50"><a href="ChapBaronKennySem.html#cb1-50" tabindex="-1"></a><span class="co">#   L0_male      -0.7193     0.2017  -3.566 0.000364 ***</span></span>
+<span id="cb1-51"><a href="ChapBaronKennySem.html#cb1-51" tabindex="-1"></a><span class="co">#   L0_soc_env   -2.8876     0.2112 -13.674  &lt; 2e-16 ***</span></span>
 <span id="cb1-52"><a href="ChapBaronKennySem.html#cb1-52" tabindex="-1"></a></span>
-<span id="cb1-53"><a href="ChapBaronKennySem.html#cb1-53" tabindex="-1"></a><span class="do">## Following the Baron &amp; Kenny Steps, we would conclude that :</span></span>
-<span id="cb1-54"><a href="ChapBaronKennySem.html#cb1-54" tabindex="-1"></a><span class="co"># - There is a significant total effect of PM_2.5 on Quality of Life (Model 1)</span></span>
-<span id="cb1-55"><a href="ChapBaronKennySem.html#cb1-55" tabindex="-1"></a><span class="co"># - There is a significant effect of PM_2.5 on the mediator (diabetes) (Model 2)</span></span>
-<span id="cb1-56"><a href="ChapBaronKennySem.html#cb1-56" tabindex="-1"></a><span class="co"># - There is a significant effect of the mediator (diabetes) on Qol (model 3)</span></span>
-<span id="cb1-57"><a href="ChapBaronKennySem.html#cb1-57" tabindex="-1"></a><span class="co"># - The direct effect is significantly non-null</span></span>
-<span id="cb1-58"><a href="ChapBaronKennySem.html#cb1-58" tabindex="-1"></a><span class="co"># =&gt; Conclusion: Diabetes partially mediates the relationship between PM_2.5 and QoL</span></span>
-<span id="cb1-59"><a href="ChapBaronKennySem.html#cb1-59" tabindex="-1"></a></span>
-<span id="cb1-60"><a href="ChapBaronKennySem.html#cb1-60" tabindex="-1"></a><span class="do">### Estimation of the indirect effect:</span></span>
-<span id="cb1-61"><a href="ChapBaronKennySem.html#cb1-61" tabindex="-1"></a><span class="do">### We can apply the difference in coefficient method to estimate the indirect effect:</span></span>
-<span id="cb1-62"><a href="ChapBaronKennySem.html#cb1-62" tabindex="-1"></a><span class="do">### substract the direct effect from the Total effect:</span></span>
-<span id="cb1-63"><a href="ChapBaronKennySem.html#cb1-63" tabindex="-1"></a>ind.effect.dif.meth <span class="ot">&lt;-</span> (model.tot.A.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">-</span></span>
-<span id="cb1-64"><a href="ChapBaronKennySem.html#cb1-64" tabindex="-1"></a>                          model.A.M.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>])</span>
-<span id="cb1-65"><a href="ChapBaronKennySem.html#cb1-65" tabindex="-1"></a><span class="co"># -1.131019</span></span>
-<span id="cb1-66"><a href="ChapBaronKennySem.html#cb1-66" tabindex="-1"></a><span class="co"># the indirect effect is approximately -1.1</span></span>
-<span id="cb1-67"><a href="ChapBaronKennySem.html#cb1-67" tabindex="-1"></a><span class="co"># The confidence interval of the indirect effect can be computed by bootstrap.</span></span>
-<span id="cb1-68"><a href="ChapBaronKennySem.html#cb1-68" tabindex="-1"></a></span>
-<span id="cb1-69"><a href="ChapBaronKennySem.html#cb1-69" tabindex="-1"></a><span class="co"># Because the mediator is binary and we applied a logistic regression for Model 2,</span></span>
-<span id="cb1-70"><a href="ChapBaronKennySem.html#cb1-70" tabindex="-1"></a><span class="co"># we cannot apply the product of coefficients combining a coefficient from</span></span>
-<span id="cb1-71"><a href="ChapBaronKennySem.html#cb1-71" tabindex="-1"></a><span class="co"># Model 2 (logit scale) and from Model 3 (difference scale)</span></span>
+<span id="cb1-53"><a href="ChapBaronKennySem.html#cb1-53" tabindex="-1"></a><span class="co"># The direct effect of PM_2.5 is approximately -4.0 given by the A0_PM2.5 coefficient</span></span>
+<span id="cb1-54"><a href="ChapBaronKennySem.html#cb1-54" tabindex="-1"></a>model.A.M.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
+<span id="cb1-55"><a href="ChapBaronKennySem.html#cb1-55" tabindex="-1"></a><span class="co"># -3.965038</span></span>
+<span id="cb1-56"><a href="ChapBaronKennySem.html#cb1-56" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="ChapBaronKennySem.html#cb1-57" tabindex="-1"></a><span class="do">## Following the Baron &amp; Kenny Steps, we would conclude that :</span></span>
+<span id="cb1-58"><a href="ChapBaronKennySem.html#cb1-58" tabindex="-1"></a><span class="co"># - There is a significant total effect of PM_2.5 on Quality of Life (Model 1)</span></span>
+<span id="cb1-59"><a href="ChapBaronKennySem.html#cb1-59" tabindex="-1"></a><span class="co"># - There is a significant effect of PM_2.5 on the mediator (diabetes) (Model 2)</span></span>
+<span id="cb1-60"><a href="ChapBaronKennySem.html#cb1-60" tabindex="-1"></a><span class="co"># - There is a significant effect of the mediator (diabetes) on Qol (model 3)</span></span>
+<span id="cb1-61"><a href="ChapBaronKennySem.html#cb1-61" tabindex="-1"></a><span class="co"># - The direct effect is significantly non-null</span></span>
+<span id="cb1-62"><a href="ChapBaronKennySem.html#cb1-62" tabindex="-1"></a><span class="co"># =&gt; Conclusion: Diabetes partially mediates the relationship between PM_2.5 and QoL</span></span>
+<span id="cb1-63"><a href="ChapBaronKennySem.html#cb1-63" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="ChapBaronKennySem.html#cb1-64" tabindex="-1"></a><span class="do">### Estimation of the indirect effect:</span></span>
+<span id="cb1-65"><a href="ChapBaronKennySem.html#cb1-65" tabindex="-1"></a><span class="do">### We can apply the difference in coefficient method to estimate the indirect effect:</span></span>
+<span id="cb1-66"><a href="ChapBaronKennySem.html#cb1-66" tabindex="-1"></a><span class="do">### substract the direct effect from the Total effect:</span></span>
+<span id="cb1-67"><a href="ChapBaronKennySem.html#cb1-67" tabindex="-1"></a>ind.effect.dif.meth <span class="ot">&lt;-</span> (model.tot.A.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">-</span></span>
+<span id="cb1-68"><a href="ChapBaronKennySem.html#cb1-68" tabindex="-1"></a>                          model.A.M.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>])</span>
+<span id="cb1-69"><a href="ChapBaronKennySem.html#cb1-69" tabindex="-1"></a><span class="co"># -1.131019</span></span>
+<span id="cb1-70"><a href="ChapBaronKennySem.html#cb1-70" tabindex="-1"></a><span class="co"># the indirect effect is approximately -1.1</span></span>
+<span id="cb1-71"><a href="ChapBaronKennySem.html#cb1-71" tabindex="-1"></a><span class="co"># The confidence interval of the indirect effect can be computed by bootstrap.</span></span>
 <span id="cb1-72"><a href="ChapBaronKennySem.html#cb1-72" tabindex="-1"></a></span>
-<span id="cb1-73"><a href="ChapBaronKennySem.html#cb1-73" tabindex="-1"></a><span class="do">### Model 2bis</span></span>
-<span id="cb1-74"><a href="ChapBaronKennySem.html#cb1-74" tabindex="-1"></a><span class="co"># Surprisingly, another possibility is to run a linear model of the binary mediator</span></span>
-<span id="cb1-75"><a href="ChapBaronKennySem.html#cb1-75" tabindex="-1"></a><span class="co"># instead of the logistic regression to apply the &quot;product of coefficient method&quot;</span></span>
-<span id="cb1-76"><a href="ChapBaronKennySem.html#cb1-76" tabindex="-1"></a><span class="co"># in order to estimate the indirect effect:</span></span>
-<span id="cb1-77"><a href="ChapBaronKennySem.html#cb1-77" tabindex="-1"></a>linear.model.A.M <span class="ot">&lt;-</span> <span class="fu">lm</span>(M_diabetes <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb1-78"><a href="ChapBaronKennySem.html#cb1-78" tabindex="-1"></a>                       <span class="at">data =</span> df1)</span>
-<span id="cb1-79"><a href="ChapBaronKennySem.html#cb1-79" tabindex="-1"></a><span class="fu">summary</span>(linear.model.A.M)</span>
-<span id="cb1-80"><a href="ChapBaronKennySem.html#cb1-80" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
-<span id="cb1-81"><a href="ChapBaronKennySem.html#cb1-81" tabindex="-1"></a><span class="co">#             Estimate Std. Error t value Pr(&gt;|t|)</span></span>
-<span id="cb1-82"><a href="ChapBaronKennySem.html#cb1-82" tabindex="-1"></a><span class="co"># (Intercept) 0.215398   0.008929  24.123  &lt; 2e-16 ***</span></span>
-<span id="cb1-83"><a href="ChapBaronKennySem.html#cb1-83" tabindex="-1"></a><span class="co"># A0_PM2.5    0.127180   0.014446   8.804  &lt; 2e-16 *** &lt;- effect of A on M</span></span>
-<span id="cb1-84"><a href="ChapBaronKennySem.html#cb1-84" tabindex="-1"></a><span class="co"># L0_male     0.052363   0.009091   5.760 8.67e-09 ***</span></span>
-<span id="cb1-85"><a href="ChapBaronKennySem.html#cb1-85" tabindex="-1"></a><span class="co"># L0_soc_env  0.065806   0.009511   6.919 4.83e-12 ***</span></span>
-<span id="cb1-86"><a href="ChapBaronKennySem.html#cb1-86" tabindex="-1"></a></span>
-<span id="cb1-87"><a href="ChapBaronKennySem.html#cb1-87" tabindex="-1"></a><span class="do">## product of coefficient method:</span></span>
-<span id="cb1-88"><a href="ChapBaronKennySem.html#cb1-88" tabindex="-1"></a>ind.effect.prod.meth <span class="ot">&lt;-</span> (linear.model.A.M<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">*</span></span>
-<span id="cb1-89"><a href="ChapBaronKennySem.html#cb1-89" tabindex="-1"></a>                           model.A.M.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;M_diabetes&quot;</span>])</span>
-<span id="cb1-90"><a href="ChapBaronKennySem.html#cb1-90" tabindex="-1"></a><span class="co"># -1.108213</span></span>
-<span id="cb1-91"><a href="ChapBaronKennySem.html#cb1-91" tabindex="-1"></a><span class="co"># which also gives an indirect effect of approximately -1.1</span></span></code></pre></div>
+<span id="cb1-73"><a href="ChapBaronKennySem.html#cb1-73" tabindex="-1"></a><span class="co"># Because the mediator is binary and we applied a logistic regression for Model 2,</span></span>
+<span id="cb1-74"><a href="ChapBaronKennySem.html#cb1-74" tabindex="-1"></a><span class="co"># we cannot apply the product of coefficients combining a coefficient from</span></span>
+<span id="cb1-75"><a href="ChapBaronKennySem.html#cb1-75" tabindex="-1"></a><span class="co"># Model 2 (logit scale) and from Model 3 (difference scale)</span></span>
+<span id="cb1-76"><a href="ChapBaronKennySem.html#cb1-76" tabindex="-1"></a></span>
+<span id="cb1-77"><a href="ChapBaronKennySem.html#cb1-77" tabindex="-1"></a><span class="do">### Model 2bis</span></span>
+<span id="cb1-78"><a href="ChapBaronKennySem.html#cb1-78" tabindex="-1"></a><span class="co"># Surprisingly, another possibility is to run a linear model of the binary mediator</span></span>
+<span id="cb1-79"><a href="ChapBaronKennySem.html#cb1-79" tabindex="-1"></a><span class="co"># instead of the logistic regression to apply the &quot;product of coefficient method&quot;</span></span>
+<span id="cb1-80"><a href="ChapBaronKennySem.html#cb1-80" tabindex="-1"></a><span class="co"># in order to estimate the indirect effect:</span></span>
+<span id="cb1-81"><a href="ChapBaronKennySem.html#cb1-81" tabindex="-1"></a>linear.model.A.M <span class="ot">&lt;-</span> <span class="fu">lm</span>(M_diabetes <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
+<span id="cb1-82"><a href="ChapBaronKennySem.html#cb1-82" tabindex="-1"></a>                       <span class="at">data =</span> df1)</span>
+<span id="cb1-83"><a href="ChapBaronKennySem.html#cb1-83" tabindex="-1"></a><span class="fu">summary</span>(linear.model.A.M)</span>
+<span id="cb1-84"><a href="ChapBaronKennySem.html#cb1-84" tabindex="-1"></a><span class="co"># Coefficients:</span></span>
+<span id="cb1-85"><a href="ChapBaronKennySem.html#cb1-85" tabindex="-1"></a><span class="co">#             Estimate Std. Error t value Pr(&gt;|t|)</span></span>
+<span id="cb1-86"><a href="ChapBaronKennySem.html#cb1-86" tabindex="-1"></a><span class="co"># (Intercept) 0.215398   0.008929  24.123  &lt; 2e-16 ***</span></span>
+<span id="cb1-87"><a href="ChapBaronKennySem.html#cb1-87" tabindex="-1"></a><span class="co"># A0_PM2.5    0.127180   0.014446   8.804  &lt; 2e-16 *** &lt;- effect of A on M</span></span>
+<span id="cb1-88"><a href="ChapBaronKennySem.html#cb1-88" tabindex="-1"></a><span class="co"># L0_male     0.052363   0.009091   5.760 8.67e-09 ***</span></span>
+<span id="cb1-89"><a href="ChapBaronKennySem.html#cb1-89" tabindex="-1"></a><span class="co"># L0_soc_env  0.065806   0.009511   6.919 4.83e-12 ***</span></span>
+<span id="cb1-90"><a href="ChapBaronKennySem.html#cb1-90" tabindex="-1"></a></span>
+<span id="cb1-91"><a href="ChapBaronKennySem.html#cb1-91" tabindex="-1"></a><span class="do">## product of coefficient method:</span></span>
+<span id="cb1-92"><a href="ChapBaronKennySem.html#cb1-92" tabindex="-1"></a>ind.effect.prod.meth <span class="ot">&lt;-</span> (linear.model.A.M<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">*</span></span>
+<span id="cb1-93"><a href="ChapBaronKennySem.html#cb1-93" tabindex="-1"></a>                           model.A.M.QoL<span class="sc">$</span>coefficients[<span class="st">&quot;M_diabetes&quot;</span>])</span>
+<span id="cb1-94"><a href="ChapBaronKennySem.html#cb1-94" tabindex="-1"></a><span class="co"># -1.108213</span></span>
+<span id="cb1-95"><a href="ChapBaronKennySem.html#cb1-95" tabindex="-1"></a><span class="co"># which also gives an indirect effect of approximately -1.1</span></span></code></pre></div>
 <p>The Baron &amp; Kenny approach is usually applied for continuous outcomes, using linear regressions. It is less adapted for binary outcomes.</p>
 <p>However, as for the binary mediator, some authors suggested that using linear regressions of the mediator and the outcome could still give some results.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="ChapBaronKennySem.html#cb2-1" tabindex="-1"></a><span class="do">### Baron &amp; Kenny approach for binary outcomes:</span></span>
