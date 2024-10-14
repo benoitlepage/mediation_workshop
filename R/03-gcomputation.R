@@ -1520,6 +1520,105 @@ summary(res_gformula_QoL_M1)
 
 
 # ---------------------------------------------------------------------------- #
-# VI) Estimation of Marginal Randomized Direct and Indirect Effects -----------
+# VI) Estimation of Conditional Randomized Direct and Indirect Effects ----
 # ---------------------------------------------------------------------------- #
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
 
+## 1) Q^{a,a'}_R2 =  Y
+Q.death_R2 <- df2_int$Y_death
+Q.qol_R2 <- df2_int$Y_qol
+
+## 2) Obtain Q^{a,a'}_L1, Q^{a,a'}_M1, Q^{a,a'}_R1
+## 2.a) Obtain Q^{a,a'}_L1
+# Regress Q^{a,a'}_R2 on observed values (L(0),A,L(1),M)
+L1.model.death <- glm(Q.death_R2 ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                        M_diabetes + A0_PM2.5:M_diabetes,
+                      family = "binomial", data = df2_int)
+L1.model.qol <- glm(Q.qol_R2 ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                      M_diabetes + A0_PM2.5:M_diabetes,
+                    family = "gaussian", data = df2_int)
+
+# Evaluate the fitted function at the observed mediator M and covariate history L(1),L(0)
+# and the intervened exposure A = a
+data.Ais0 <- data.Ais1 <- df2_int
+data.Ais0$A0_PM2.5 <- 0
+data.Ais1$A0_PM2.5 <- 1
+
+# We will need 3 counterfactual quantities Q^{a,a'}: Q^{1,1}, Q^{1,0} and Q^{0,0}
+Q11.death.L1 <- predict(L1.model.death, newdata = data.Ais1, type = "response")
+Q10.death.L1 <- predict(L1.model.death, newdata = data.Ais1, type = "response")
+Q00.death.L1 <- predict(L1.model.death, newdata = data.Ais0, type = "response")
+
+Q11.qol.L1 <- predict(L1.model.qol, newdata = data.Ais1, type = "response")
+Q10.qol.L1 <- predict(L1.model.qol, newdata = data.Ais1, type = "response")
+Q00.qol.L1 <- predict(L1.model.qol, newdata = data.Ais0, type = "response")
+
+## 2.b) Obtain Q^{a,a'}_M1
+# Regress Q^{a,a'}_L1 on observed values (L(0),A,L(1))
+M1.model.death.11 <- glm(Q11.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "quasibinomial", data = df2_int)
+M1.model.death.10 <- glm(Q10.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "quasibinomial", data = df2_int)
+M1.model.death.00 <- glm(Q00.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "quasibinomial", data = df2_int)
+
+M1.model.qol.11 <- glm(Q11.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                       family = "gaussian", data = df2_int)
+M1.model.qol.10 <- glm(Q10.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                       family = "gaussian", data = df2_int)
+M1.model.qol.00 <- glm(Q00.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                       family = "gaussian", data = df2_int)
+
+# Evaluate the fitted function at the observed covariate history L(1),L(0)
+# and the intervened exposure A = a'
+Q11.death.M1 <- predict(M1.model.death.11, newdata = data.Ais1, type = "response")
+Q10.death.M1 <- predict(M1.model.death.10, newdata = data.Ais0, type = "response")
+Q00.death.M1 <- predict(M1.model.death.00, newdata = data.Ais0, type = "response")
+
+Q11.qol.M1 <- predict(M1.model.qol.11, newdata = data.Ais1, type = "response")
+Q10.qol.M1 <- predict(M1.model.qol.10, newdata = data.Ais0, type = "response")
+Q00.qol.M1 <- predict(M1.model.qol.00, newdata = data.Ais0, type = "response")
+
+## 2.c) Obtain Q^{a,a'}_R1
+# Regress Q^{a,a'}_M1 on observed values (L(0),A)
+R1.model.death.11 <- glm(Q11.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "quasibinomial", data = df2_int)
+R1.model.death.10 <- glm(Q10.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "quasibinomial", data = df2_int)
+R1.model.death.00 <- glm(Q00.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "quasibinomial", data = df2_int)
+
+R1.model.qol.11 <- glm(Q11.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                       family = "gaussian", data = df2_int)
+R1.model.qol.10 <- glm(Q10.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                       family = "gaussian", data = df2_int)
+R1.model.qol.00 <- glm(Q00.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                       family = "gaussian", data = df2_int)
+
+# Evaluate the fitted function at the observed covariate history L(0)
+# and the intervened exposure A = a
+Q11.death.R1 <- predict(R1.model.death.11, newdata = data.Ais1, type = "response")
+Q10.death.R1 <- predict(R1.model.death.10, newdata = data.Ais1, type = "response")
+Q00.death.R1 <- predict(R1.model.death.00, newdata = data.Ais0, type = "response")
+
+Q11.qol.R1 <- predict(R1.model.qol.11, newdata = data.Ais1, type = "response")
+Q10.qol.R1 <- predict(R1.model.qol.10, newdata = data.Ais1, type = "response")
+Q00.qol.R1 <- predict(R1.model.qol.00, newdata = data.Ais0, type = "response")
+
+## 4) Estimate the Conditional Randomized Direct and Indirect Effects
+## For death
+CRDE.death <- mean(Q10.death.R1) - mean(Q00.death.R1)
+CRDE.death
+# [1] 0.07585836
+CRIE.death <- mean(Q11.death.R1) - mean(Q10.death.R1)
+CRIE.death
+# [1] 0.006802907
+
+## For quality of life
+CRDE.qol <- mean(Q10.qol.R1) - mean(Q00.qol.R1)
+CRDE.qol
+# [1] -7.278295
+CRIE.qol <- mean(Q11.qol.R1) - mean(Q10.qol.R1)
+CRIE.qol
+# [1] -1.015901
