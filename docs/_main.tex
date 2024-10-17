@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-10-14}
+\date{2024-10-17}
 
 \begin{document}
 \maketitle
@@ -2037,7 +2037,7 @@ The controlled direct effect \(\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \
 
 The g-formula for a CDE (\(\mathbb{E}(Y_{A=a^\prime,M=m})\)) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
 
-\(\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\right( L(1)=l(1) | a^\prime,l(0) \left) \right] \times P\left( L(0)=l(0) \right)\)
+\(\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\left( L(1)=l(1) | a^\prime,l(0) \right) \right] \times P\left( L(0)=l(0) \right)\)
 
 In our simple example with a binary exposure \(A\), a binary mediator \(M\) and a binary intermediate confounder \(L(1)\), it is still possible to apply the substitution approach (corresponding to a non-parametric g-computation estimation) by estimating the following components of the g-formula:
 
@@ -2810,9 +2810,9 @@ For the TNDE and PNDE,
 
 We can conclude that the possibility of the PNIE and the TNIE cancelling out because of unmeasured M-Y confounding is unlikely in our example (it requires rather strong correlations).
 
-\section{Estimation of ``Marginal'' Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)}\label{estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie}
+\section{Estimation of ``Marginal'' Randomized/Interventional Natural Direct (MRDE) and Indirect Effects (MRIE)}\label{estimation-of-marginal-randomizedinterventional-natural-direct-mrde-and-indirect-effects-mrie}
 
-When we assume that the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2, Figure \ref{fig:figDAGM2}), an ``interventional analogue'' of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.Lin et al. (\citeproc{ref-lin2017}{2017}) For these effects, counterfactual scenarios are defined by setting different values for the exposure (\(A = 0\) or \(A=1\)) and random draw in the distribution \(G_{A=a^\prime \mid L(0)}\) of the mediator (conditional on baseline counfounders \(L(0)\)) under the counterfactual scenario setting \(A=a^\prime\).
+When we assume that the intermediate confounder \(L(1)\) of the \(M-Y\) relationship is affected by the exposure \(A\) (Causal model 2, Figure \ref{fig:figDAGM2}), an ``interventional analogue'' of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.(\citeproc{ref-vanderweele2016}{VanderWeele and Tchetgen Tchetgen 2017}) (\citeproc{ref-lin2017}{Lin et al. 2017}) For these effects, counterfactual scenarios are defined by setting different values for the exposure (\(A = 0\) or \(A=1\)) and random draw in the distribution \(G_{A=a^\prime \mid L(0)}\) of the mediator (conditional on baseline counfounders \(L(0)\)) under the counterfactual scenario setting \(A=a^\prime\).
 
 An Overall (Total) Effect can be defined by the contrast \(\text{OE} = \mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\).
 
@@ -2826,7 +2826,7 @@ This Overall Effect can be decomposed into the sum of:
   a Marginal Randomised (or Interventional) Indirect Effect: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\)
 \end{itemize}
 
-For this 2-way decomposition, we have to estimate 3 causal quantities: \(\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]\), \(\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\) and \(\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\).
+For this 2-way decomposition, we have to estimate 3 causal quantities: \(\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]\), \(\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]\) and \(\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]\).
 
 Under the identifiability conditions, in particular:
 
@@ -3513,6 +3513,218 @@ Using the \texttt{CMAverse} package,
   the randomized total natural indirect effect is \(rTNIE = P\left(Y_{A=1,G_{A=1\mid L(0)}} =1\right) - P\left(Y_{A=1,G_{A=0\mid L(0)}} =1\right)\approx 0.013\)
 \end{itemize}
 
+\section{Estimation of ``Conditional'' Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)}\label{estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie}
+
+Zheng and van der Laan (\citeproc{ref-zheng2017longitudinal}{Zheng and van der Laan 2017}) described ``Conditional'' Randomized Direct and Indirect Effects, using random draws from the counterfactual distribution of the mediator, conditional on both \(L(0)\) and \(L(1)\). The Average Total Effect (ATE) can be decomposed into the sum of :
+
+\begin{itemize}
+\tightlist
+\item
+  a Conditional Randomized Natural Direct Effect (CRDE):
+  \(\text{CRDE}=\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0),L(1)})-\mathbb{E}(Y_{0,\Gamma_{0} \mid L(0), L(1)})\)
+\item
+  and Conditional Randomized Natural Indirect Effect (CRIE)
+  \(\text{CRIE}=\mathbb{E}(Y_{1,\Gamma_{1} \mid L(0), L(1)})-\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0), L(1)})\)
+\end{itemize}
+
+For this 2-way decomposition, we have to estimate 3 causal quantities: \(\mathbb{E}(Y_{1,\Gamma_{1} \mid L(0), L(1)})\), \(\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0), L(1)})\) and \(\mathbb{E}(Y_{0,\Gamma_{0} \mid L(0), L(1)})\).
+
+Under the identifiability conditions, in particular:
+
+\begin{itemize}
+\tightlist
+\item
+  no unmeasured confounding between \(A\) and \(Y\), given \(L(0)\)
+\item
+  no unmeasured confounding between \(M\) and \(Y\), given \(A\), \(L(0)\) and \(L(1)\)
+\item
+  no unmeasured confounding between \(A\) and \(M\), given \(L(0)\)
+\item
+  and no unmeasured confounding between \(A\) and \(L(1)\), given \(L(0)\)
+\end{itemize}
+
+the quantity of \(\mathbb{E}(Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)})\) can be estimated by the g-formula:
+\begin{multline*}
+\mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right]=\sum_{l(0),l(1),m} \mathbb{E}\left(Y \mid m,l(1),A=a,l(0),\right) \times P[L(1)=l(1) \mid a,l(0)] \\
+  \times P[M=m \mid l(1), a^\prime, l(0)] \times P(L(0)=l(0))
+\end{multline*}
+These causal effects can be estimated by g-computation, IPTW, or TMLE. The G-computation approach is described below.
+
+\subsection{G-computation by iterative conditional expectation (simple substitution estimator)}\label{g-computation-by-iterative-conditional-expectation-simple-substitution-estimator}
+
+We describe below the g-computation algorithm (``non targeted substitution estimator'') which is described in (\citeproc{ref-zheng2017longitudinal}{Zheng and van der Laan 2017}).
+
+The following steps are applied to estimate the quantity \(\Psi^{a,a^\prime} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right]\):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Define \(\bar{Q}^{a,a^\prime}_{R_2} = Y\)
+\item
+  Calculate \(\bar{Q}^{a,a^\prime}_{L_1}\), \(\bar{Q}^{a,a^\prime}_{M_1}\) and \(\bar{Q}^{a,a^\prime}_{R_1}\)
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Regress \(\bar{Q}^{a,a^\prime}_{R_2}\) on the observed values of \(\{M,L(1),A,L(0)\}\),
+  \begin{equation*}
+      \mathbb{E}\left(\bar{Q}^{a,a^\prime}_{R_2} \mid M,L(1),A,L(0) \right) = \mathbb{E}\left(Y \mid M,L(1),A,L(0) \right)
+    \end{equation*}
+  Evaluate the fitted function at the observed mediator and covariates histories \(\{L(1),M,L(0)\}\) and the intervened exposure \(A=a\). This gives the estimates
+  \begin{equation*} 
+      \hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0)) = \mathbb{E}\left( Y \mid A = a,L(1),M,L(0) \right)
+    \end{equation*}
+\item
+  Regress the predicted value \(\hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0))\) on the observed values of \(\{L(1),A,L(0)\}\)
+  \begin{equation*}
+      \mathbb{E}\left(\hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0)) \mid L(1),A,L(0) \right)
+    \end{equation*}
+  Then, evaluate the fitted function at the observed covariates histories \(\{L(1),L(0)\}\) and the intervened exposure \(A=a^\prime\). This gives the estimates
+  \begin{equation*} 
+      \hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0)) = \mathbb{E}\left( \hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0)) \mid A = a^\prime,L(1),L(0) \right)
+    \end{equation*}
+\item
+  Regress the predicted value \(\hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0))\) on the observed values of \(\{A,L(0)\}\)
+  \begin{equation*}
+      \mathbb{E}\left(\hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0)) \mid A,L(0) \right)
+    \end{equation*}
+  Then, evaluate the fitted function at the observed covariates histories \(\{L(0)\}\) and the intervened exposure \(A=a\). This gives the estimates
+  \begin{equation*} 
+      \hat{\bar{Q}}^{a,a^\prime}_{R_1}(L(0)) = \mathbb{E}\left( \hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0)) \mid A = a,L(0) \right)
+    \end{equation*}
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  We have now estimated \(\hat{\bar{Q}}^{a,a^\prime}_{R_1}(L(0))\) for each individual.
+  \begin{align*}
+   \hat{\Psi}^{a,a^\prime} &= \frac{1}{n} \sum_{i=1}^n \hat{\bar{Q}}^{a,a^\prime}_{R_1}(L(0)) \\
+   \text{CRDE} &= \hat{\Psi}^{1,0} - \hat{\Psi}^{0,0} \\
+   \text{CRIE} &= \hat{\Psi}^{1,1} - \hat{\Psi}^{1,0} \\
+    \end{align*}
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
+\DocumentationTok{\#\# 1) Q\^{}\{a,a\textquotesingle{}\}\_R2 =  Y}
+\NormalTok{Q.death\_R2 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death}
+\NormalTok{Q.qol\_R2 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol}
+
+\DocumentationTok{\#\# 2) Obtain Q\^{}\{a,a\textquotesingle{}\}\_L1, Q\^{}\{a,a\textquotesingle{}\}\_M1, Q\^{}\{a,a\textquotesingle{}\}\_R1}
+\DocumentationTok{\#\# 2.a) Obtain Q\^{}\{a,a\textquotesingle{}\}\_L1}
+\CommentTok{\# Regress Q\^{}\{a,a\textquotesingle{}\}\_R2 on observed values (L(0),A,L(1),M)}
+\NormalTok{L1.model.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.death\_R2 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                        M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
+                      \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{L1.model.qol }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.qol\_R2 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                      M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
+                    \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\CommentTok{\# Evaluate the fitted function at the observed mediator M and covariate history L(1),L(0)}
+\CommentTok{\# and the intervened exposure A = a}
+\NormalTok{data.Ais0 }\OtherTok{\textless{}{-}}\NormalTok{ data.Ais1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
+\NormalTok{data.Ais0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.Ais1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+
+\CommentTok{\# We will need 3 counterfactual quantities Q\^{}\{a,a\textquotesingle{}\}: Q\^{}\{1,1\}, Q\^{}\{1,0\} and Q\^{}\{0,0\}}
+\NormalTok{Q11.death.L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model.death, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q10.death.L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model.death, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q00.death.L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model.death, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\NormalTok{Q11.qol.L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model.qol, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q10.qol.L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model.qol, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q00.qol.L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(L1.model.qol, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\# 2.b) Obtain Q\^{}\{a,a\textquotesingle{}\}\_M1}
+\CommentTok{\# Regress Q\^{}\{a,a\textquotesingle{}\}\_L1 on observed values (L(0),A,L(1))}
+\NormalTok{M1.model.death}\FloatTok{.11} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q11.death.L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+                         \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{M1.model.death}\FloatTok{.10} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q10.death.L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+                         \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{M1.model.death}\FloatTok{.00} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q00.death.L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+                         \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\NormalTok{M1.model.qol}\FloatTok{.11} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q11.qol.L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+                       \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{M1.model.qol}\FloatTok{.10} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q10.qol.L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+                       \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{M1.model.qol}\FloatTok{.00} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q00.qol.L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+                       \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\CommentTok{\# Evaluate the fitted function at the observed covariate history L(1),L(0)}
+\CommentTok{\# and the intervened exposure A = a\textquotesingle{}}
+\NormalTok{Q11.death.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M1.model.death}\FloatTok{.11}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q10.death.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M1.model.death}\FloatTok{.10}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q00.death.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M1.model.death}\FloatTok{.00}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\NormalTok{Q11.qol.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M1.model.qol}\FloatTok{.11}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q10.qol.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M1.model.qol}\FloatTok{.10}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q00.qol.M1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(M1.model.qol}\FloatTok{.00}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\# 2.c) Obtain Q\^{}\{a,a\textquotesingle{}\}\_R1}
+\CommentTok{\# Regress Q\^{}\{a,a\textquotesingle{}\}\_M1 on observed values (L(0),A)}
+\NormalTok{R1.model.death}\FloatTok{.11} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q11.death.M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                         \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{R1.model.death}\FloatTok{.10} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q10.death.M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                         \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{R1.model.death}\FloatTok{.00} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q00.death.M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                         \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\NormalTok{R1.model.qol}\FloatTok{.11} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q11.qol.M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                       \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{R1.model.qol}\FloatTok{.10} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q10.qol.M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                       \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{R1.model.qol}\FloatTok{.00} \OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q00.qol.M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                       \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\CommentTok{\# Evaluate the fitted function at the observed covariate history L(0)}
+\CommentTok{\# and the intervened exposure A = a}
+\NormalTok{Q11.death.R1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(R1.model.death}\FloatTok{.11}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q10.death.R1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(R1.model.death}\FloatTok{.10}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q00.death.R1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(R1.model.death}\FloatTok{.00}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\NormalTok{Q11.qol.R1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(R1.model.qol}\FloatTok{.11}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q10.qol.R1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(R1.model.qol}\FloatTok{.10}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{Q00.qol.R1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(R1.model.qol}\FloatTok{.00}\NormalTok{, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\DocumentationTok{\#\# 4) Estimate the Conditional Randomized Direct and Indirect Effects}
+\DocumentationTok{\#\# For death}
+\NormalTok{CRDE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q10.death.R1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q00.death.R1)}
+\NormalTok{CRDE.death}
+\CommentTok{\# [1] 0.07585836}
+\NormalTok{CRIE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q11.death.R1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q10.death.R1)}
+\NormalTok{CRIE.death}
+\CommentTok{\# [1] 0.006802907}
+
+\DocumentationTok{\#\# For quality of life}
+\NormalTok{CRDE.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q10.qol.R1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q00.qol.R1)}
+\NormalTok{CRDE.qol}
+\CommentTok{\# [1] {-}7.278295}
+\NormalTok{CRIE.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q11.qol.R1) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(Q10.qol.R1)}
+\NormalTok{CRIE.qol}
+\CommentTok{\# [1] {-}1.015901}
+\end{Highlighting}
+\end{Shaded}
+
+Results are close to the estimations obtained previously with parametric g-computation.
+
+\begin{itemize}
+\tightlist
+\item
+  the conditional ``randomized'' Natural Indirect effect is \(\text{CRIE} \approx +0.7\%\) on death and \(\text{CRIE} \approx -1.0\) on quality of life. This indirect effect corresponds to the specific path \(A \rightarrow M \rightarrow Y\) (and can also contain the mediated interactive effect of due to the \(A \ast M\) interaction on \(Y\)).
+\item
+  the conditional ``randomized'' Natural Direct effect is \(\text{CRDE} \approx +7.6\%\) on death and \(\text{CRDE} \approx -7.3\) on quality of life. This direct effect corresponds to the combination of the paths \(A \rightarrow Y\), \(A \rightarrow L(1) \rightarrow Y\) and \(A \rightarrow L(1) \rightarrow M \rightarrow Y\).
+\end{itemize}
+
+95\% confidence intervals can be calculated by bootstrap.
+
 \chapter{Inverse Probability of Treatment Weighting (IPTW)}\label{ChapIptw}
 
 \section{Estimation of the Average total effect}\label{estimation-of-the-average-total-effect}
@@ -3541,30 +3753,30 @@ The following steps describe the implementation of the IPTW estimator
 \begin{Shaded}
 \begin{Highlighting}[]
 \DocumentationTok{\#\# 1. Estimate g}
-\NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv, }
+\NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env, }
            \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
 \DocumentationTok{\#\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
-\CommentTok{\# predict the probabilities P(A0\_ace=1|L(0)) \& P(A0\_ace=0|L(0))}
+\CommentTok{\# predict the probabilities P(A0\_PM2.5=1|L(0)) \& P(A0\_PM2.5=0|L(0))}
 \NormalTok{pred.g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.g0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.L}
 \CommentTok{\# the predicted probability of the observed treatment A=a\_i is :}
 \NormalTok{gA.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
-\NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
-\NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
+\NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{gA.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
 
 \DocumentationTok{\#\# 3. Apply weights corresponding to the inverse of the predicted probability}
 \NormalTok{wt }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ gA.L}
 
 \DocumentationTok{\#\# 4. Use the empirical mean of the weighted outcome}
 \CommentTok{\# point estimates:}
-\NormalTok{IPTW.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{{-}}
-  \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death)}
+\NormalTok{IPTW.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{{-}}
+  \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death)}
 \NormalTok{IPTW.death}
 \CommentTok{\# [1] 0.08224947}
 
-\NormalTok{IPTW.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{{-}}
-  \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol)}
+\NormalTok{IPTW.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{{-}}
+  \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol)}
 \NormalTok{IPTW.qol}
 \CommentTok{\# [1] {-}8.436797}
 \end{Highlighting}
@@ -3585,17 +3797,17 @@ The estimation algorithm is the same as for IPTW, but taking into account any no
 \DocumentationTok{\#\# 3. For example, applying g\^{}*(A) = 1}
 \DocumentationTok{\#\# 4. Applying the stabilized estimator}
 \CommentTok{\# point estimates:}
-\NormalTok{s.IPTW.death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/}
-                   \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
-\NormalTok{  (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/}
-     \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
+\NormalTok{s.IPTW.death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/}
+                   \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
+\NormalTok{  (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/}
+     \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
 \NormalTok{s.IPTW.death}
 \CommentTok{\# [1] 0.08294185}
 
-\NormalTok{s.IPTW.qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/}
-                 \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
-\NormalTok{  (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/}
-     \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
+\NormalTok{s.IPTW.qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/}
+                 \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
+\NormalTok{  (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/}
+     \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
 \NormalTok{s.IPTW.qol}
 \CommentTok{\# [1] {-}8.291992}
 \end{Highlighting}
@@ -3630,27 +3842,27 @@ The following steps describe the implementation of the IPTW estimator
 \begin{Shaded}
 \begin{Highlighting}[]
 \DocumentationTok{\#\# 1. Estimate gA and gM}
-\NormalTok{gA.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv, }
+\NormalTok{gA.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env, }
             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{gM.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1, }
+\NormalTok{gM.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1, }
             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
 \DocumentationTok{\#\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
-\CommentTok{\# predict the probabilities P(A0\_ace=1|L(0)) \& P(A0\_ace=0|L(0))}
+\CommentTok{\# predict the probabilities P(A0\_PM2.5=1|L(0)) \& P(A0\_PM2.5=0|L(0))}
 \NormalTok{pred.gA1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(gA.L, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.gA0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.gA1.L}
 \CommentTok{\# the predicted probability of the observed treatment A\_i=a is :}
 \NormalTok{gAobs.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
-\NormalTok{gAobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gA1.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
-\NormalTok{gAobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gA0.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
+\NormalTok{gAobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gA1.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{gAobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gA0.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
 
 \CommentTok{\# predict the probabilities P(M=1|L(0),A,L(1)) \& P(M=0|L(0),A,L(1))}
 \NormalTok{pred.gM1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(gM.L, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.gM0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.gM1.L}
 \CommentTok{\# the predicted probability of the observed treatment M\_i=m is :}
 \NormalTok{gMobs.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
-\NormalTok{gMobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM1.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
-\NormalTok{gMobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM0.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
+\NormalTok{gMobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM1.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{gMobs.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM0.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
 
 \DocumentationTok{\#\# 3. Apply weights corresponding to the inverse of the predicted probability}
 \NormalTok{wt\_A }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ gAobs.L}
@@ -3659,39 +3871,39 @@ The following steps describe the implementation of the IPTW estimator
 
 \DocumentationTok{\#\# 4. Use the empirical mean of the weighted outcome}
 \CommentTok{\# point estimates of CDE, setting M=0}
-\NormalTok{CDE\_IPTW\_m0\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_IPTW\_m0\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                             df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{{-}}
-                        \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                               df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+                        \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                               df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                               df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death))}
 \NormalTok{CDE\_IPTW\_m0\_death}
 \CommentTok{\# [1] 0.05874684}
 
-\NormalTok{CDE\_IPTW\_m0\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                           df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_IPTW\_m0\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                           df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                           df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{{-}}
-                      \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+                      \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                             df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol))}
 \NormalTok{CDE\_IPTW\_m0\_qol}
 \CommentTok{\# [1] {-}5.341138}
 
 \CommentTok{\# point estimates of CDE, setting M=1}
-\NormalTok{CDE\_IPTW\_m1\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_IPTW\_m1\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                             df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{{-}}
-                        \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                               df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+                        \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                               df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                               df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death))}
 \NormalTok{CDE\_IPTW\_m1\_death}
 \CommentTok{\# [1] 0.101733}
 
-\NormalTok{CDE\_IPTW\_m1\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                           df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_IPTW\_m1\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                           df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                           df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{{-}}
-                      \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+                      \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                             df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                             df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol))}
 \NormalTok{CDE\_IPTW\_m1\_qol}
 \CommentTok{\# [1] {-}8.185866}
@@ -3711,66 +3923,197 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 \begin{Highlighting}[]
 \DocumentationTok{\#\# 4. Applying the stabilized estimator}
 \CommentTok{\# point estimates of CDE, setting M=0:}
-\NormalTok{CDE\_sIPTW\_m0\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_sIPTW\_m0\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{))) }\SpecialCharTok{{-}}
-\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{))) }\SpecialCharTok{{-}}
+\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
 \NormalTok{CDE\_sIPTW\_m0\_death}
 \CommentTok{\# [1] 0.0601292}
 
-\NormalTok{CDE\_sIPTW\_m0\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_sIPTW\_m0\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{))) }\SpecialCharTok{{-}}
-\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{))) }\SpecialCharTok{{-}}
+\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{)))}
 \NormalTok{CDE\_sIPTW\_m0\_qol}
 \CommentTok{\# [1] {-}4.966328}
 
 \CommentTok{\# point estimates of CDE, setting M=1:}
-\NormalTok{CDE\_sIPTW\_m1\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_sIPTW\_m1\_death }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
-\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
+\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{)))}
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{)))}
 \NormalTok{CDE\_sIPTW\_m1\_death}
 \CommentTok{\# [1] 0.09030186}
 
-\NormalTok{CDE\_sIPTW\_m1\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+\NormalTok{CDE\_sIPTW\_m1\_qol }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
-\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{))) }\SpecialCharTok{{-}}
+\NormalTok{                         (}\FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                              df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*} 
 \NormalTok{                              df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol) }\SpecialCharTok{/} 
-                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
-\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_smoking }\SpecialCharTok{==} \DecValTok{1}\NormalTok{)))}
+                         \FunctionTok{mean}\NormalTok{(wt }\SpecialCharTok{*} \FunctionTok{as.numeric}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{\&} 
+\NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{)))}
 \NormalTok{CDE\_sIPTW\_m1\_qol}
 \CommentTok{\# [1] {-}10.03045}
 \end{Highlighting}
 \end{Shaded}
 
+\section{Estimation of ``Conditional'' Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)}\label{estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1}
+
+\subsection{IPTW for the CRDE and CRIE}\label{iptw-for-the-crde-and-crie}
+
+Zheng and van der Laan (\citeproc{ref-zheng2017longitudinal}{Zheng and van der Laan 2017}) described ``Conditional'' Randomized Direct and Indirect Effects, using random draws from the counterfactual distribution of the mediator, conditional on both \(L(0)\) and \(L(1)\). The Average Total Effect (ATE) can be decomposed into the sum of :
+
+\begin{itemize}
+\tightlist
+\item
+  a Conditional Randomized Natural Direct Effect (CRDE):
+  \(\text{CRDE}=\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0),L(1)})-\mathbb{E}(Y_{0,\Gamma_{0} \mid L(0), L(1)})\),
+\item
+  and Conditional Randomized Natural Indirect Effect (CRIE)
+  \(\text{CRIE}=\mathbb{E}(Y_{1,\Gamma_{1} \mid L(0), L(1)})-\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0), L(1)})\).
+\end{itemize}
+
+Under the identifiability conditions, the quantity of \(\mathbb{E}(Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)})\) can be estimated by IPTW:
+\begin{equation*}
+  \Psi^{a,a^\prime}_\text{IPTW} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right] = \frac{1}{n} \sum_{i=1}^n D_\text{IPTW}^{a,a^\prime} \text{ where } D_\text{IPTW}^{a,a^\prime} = Y \frac{I(A=a)}{p_A{a\mid L(0)}} \frac{p_M(M \mid A=a^\prime,L(1),L(0))}{p_M(M \mid A=a,L(1),L(0))}
+\end{equation*}
+
+and the variance of the estimator \(\Psi^{a,a^\prime}_\text{IPTW}\) is \(\text{var}\left(\Psi^{a,a^\prime}_\text{IPTW}\right) = \frac{\text{var}\left(D_\text{IPTW}^{a,a^\prime}\right)}{n}\), which can be used to estimate 90\% confidence intervals.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df2\_int.csv"}\NormalTok{)}
+
+\DocumentationTok{\#\# In order to estimate Psi\^{}\{a,a\textquotesingle{}\}}
+\DocumentationTok{\#\# 1. Estimate gA and gM}
+\NormalTok{gA }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
+          \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\NormalTok{gM }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+          \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+
+\DocumentationTok{\#\# 2. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# predict the probabilities P(A0\_PM2.5=1|L(0)) \& P(A0\_PM2.5=0|L(0))}
+\NormalTok{pred.gA1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(gA, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{pred.gA0 }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.gA1}
+\CommentTok{\# the predicted probability of the observed treatment A\_i=a is :}
+\NormalTok{gAobs }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gAobs[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gA1[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{gAobs[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gA0[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
+
+\CommentTok{\# predict the probabilities}
+\CommentTok{\# P(M=1|L(0),A=1,L(1)) \& P(M=0|L(0),A=1,L(1)) setting A = 1}
+\CommentTok{\# and P(M=1|L(0),A=0,L(1)) \& P(M=0|L(0),A=0,L(1)) setting A = 0}
+\NormalTok{data.Ais0 }\OtherTok{\textless{}{-}}\NormalTok{ data.Ais1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
+\NormalTok{data.Ais0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.Ais1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+
+\NormalTok{pred.gM1.Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(gM, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{pred.gM0.Ais1 }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.gM1.Ais1}
+\CommentTok{\# the predicted probability of the observed treatment M\_i=m is :}
+\NormalTok{gMobs.Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gMobs.Ais1[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM1.Ais1[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{gMobs.Ais1[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM0.Ais1[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
+
+\NormalTok{pred.gM1.Ais0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(gM, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{pred.gM0.Ais0 }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.gM1.Ais0}
+\CommentTok{\# the predicted probability of the observed treatment M\_i=m is :}
+\NormalTok{gMobs.Ais0 }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gMobs.Ais0[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM1.Ais0[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{gMobs.Ais0[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.gM0.Ais0[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]}
+
+\DocumentationTok{\#\# 3. Calculate D\^{}\{a,a\textquotesingle{}\} {-} influence curve of the IPTW estimator}
+\NormalTok{D.death}\FloatTok{.11} \OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{I}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ gAobs) }\SpecialCharTok{*}
+\NormalTok{                 (gMobs.Ais1 }\SpecialCharTok{/}\NormalTok{ gMobs.Ais1))}
+\NormalTok{D.death}\FloatTok{.10} \OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{I}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ gAobs) }\SpecialCharTok{*}
+\NormalTok{                 (gMobs.Ais0 }\SpecialCharTok{/}\NormalTok{ gMobs.Ais1))}
+\NormalTok{D.death}\FloatTok{.00} \OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_death }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{I}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ gAobs) }\SpecialCharTok{*}
+\NormalTok{                 (gMobs.Ais0 }\SpecialCharTok{/}\NormalTok{ gMobs.Ais0))}
+
+\NormalTok{D.qol}\FloatTok{.11} \OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{I}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ gAobs) }\SpecialCharTok{*}
+\NormalTok{               (gMobs.Ais1 }\SpecialCharTok{/}\NormalTok{ gMobs.Ais1))}
+\NormalTok{D.qol}\FloatTok{.10} \OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{I}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ gAobs) }\SpecialCharTok{*}
+\NormalTok{               (gMobs.Ais0 }\SpecialCharTok{/}\NormalTok{ gMobs.Ais1))}
+\NormalTok{D.qol}\FloatTok{.00} \OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{Y\_qol }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{I}\NormalTok{(df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ gAobs) }\SpecialCharTok{*}
+\NormalTok{               (gMobs.Ais0 }\SpecialCharTok{/}\NormalTok{ gMobs.Ais0))}
+
+\DocumentationTok{\#\# 4. Calculate CRDE and CRIE}
+\DocumentationTok{\#\# For death}
+\NormalTok{CRDE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(D.death}\FloatTok{.10}\NormalTok{) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(D.death}\FloatTok{.00}\NormalTok{)}
+\NormalTok{CRDE.death}
+\CommentTok{\# [1] 0.07405068}
+\NormalTok{CRIE.death }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(D.death}\FloatTok{.11}\NormalTok{) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(D.death}\FloatTok{.10}\NormalTok{)}
+\NormalTok{CRIE.death}
+\CommentTok{\# [1] 0.00819879}
+
+\DocumentationTok{\#\# For quality of life}
+\NormalTok{CRDE.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(D.qol}\FloatTok{.10}\NormalTok{) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(D.qol}\FloatTok{.00}\NormalTok{)}
+\NormalTok{CRDE.qol}
+\CommentTok{\# [1] {-}7.563116}
+\NormalTok{CRIE.qol }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(D.qol}\FloatTok{.11}\NormalTok{) }\SpecialCharTok{{-}} \FunctionTok{mean}\NormalTok{(D.qol}\FloatTok{.10}\NormalTok{)}
+\NormalTok{CRIE.qol}
+\CommentTok{\# [1] {-}0.8736813}
+
+\DocumentationTok{\#\# 5. Calculate 95\% CI based on the influence curve D\^{}\{a,a\textquotesingle{}\}}
+\CommentTok{\# the variance of the estimator Psi\^{}\{a,a\textquotesingle{}\} = mean(D\^{}\{a,a\textquotesingle{}\}) is var(D\^{}\{a,a\textquotesingle{}\}) / n)}
+\NormalTok{se.CRDE.death }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{var}\NormalTok{(D.death}\FloatTok{.10} \SpecialCharTok{{-}}\NormalTok{ D.death}\FloatTok{.00}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{nrow}\NormalTok{(df2\_int))}
+\FunctionTok{c}\NormalTok{(CRDE.death }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRDE.death,}
+\NormalTok{  CRDE.death }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRDE.death)}
+\CommentTok{\# [1] 0.04141535 0.10668602}
+\NormalTok{se.CRIE.death }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{var}\NormalTok{(D.death}\FloatTok{.11} \SpecialCharTok{{-}}\NormalTok{ D.death}\FloatTok{.10}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{nrow}\NormalTok{(df2\_int))}
+\FunctionTok{c}\NormalTok{(CRIE.death }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRIE.death,}
+\NormalTok{  CRIE.death }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRIE.death)}
+\CommentTok{\# [1] 0.003380238 0.013017342}
+
+\NormalTok{se.CRDE.qol }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{var}\NormalTok{(D.qol}\FloatTok{.10} \SpecialCharTok{{-}}\NormalTok{ D.qol}\FloatTok{.00}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{nrow}\NormalTok{(df2\_int))}
+\FunctionTok{c}\NormalTok{(CRDE.qol }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRDE.qol,}
+\NormalTok{  CRDE.qol }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRDE.qol)}
+\CommentTok{\# [1] {-}11.748095  {-}3.378137}
+\NormalTok{se.CRIE.qol }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{var}\NormalTok{(D.qol}\FloatTok{.11} \SpecialCharTok{{-}}\NormalTok{ D.qol}\FloatTok{.10}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{nrow}\NormalTok{(df2\_int))}
+\FunctionTok{c}\NormalTok{(CRIE.qol }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRIE.qol,}
+\NormalTok{  CRIE.qol }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\FloatTok{0.975}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ se.CRIE.qol)}
+\CommentTok{\# [1] {-}1.4111404 {-}0.3362223}
+\end{Highlighting}
+\end{Shaded}
+
+Results are close to the estimations obtained by g-computation. IPTW estimations are know to be more sensitive to positivity issues, with larger confidence intervals (they can be too conservative with more than 95\% coverage).
+
+\begin{itemize}
+\tightlist
+\item
+  the conditional ``randomized'' Natural Indirect effect is \(\text{CRIE} \approx +0.8\%, \quad 95\%CI=[0.3\%,1.3\%]\) on death and \(\text{CRIE} \approx -0.9, \quad 95\%CI=[-1.4,-0.3]\) on quality of life. This indirect effect corresponds to the specific path \(A \rightarrow M \rightarrow Y\) (and can also contain the mediated interactive effect of due to the \(A \ast M\) interaction on \(Y\)).
+\item
+  the conditional ``randomized'' Natural Direct effect is \(\text{CRDE} \approx +7.4\, \quad 95\%CI=[4.1\%,10.7\%]\) on death and \(\text{CRDE} \approx -7.6, \quad 95\%CI=[-11.7,-3.4]\) on quality of life. This direct effect corresponds to the combination of the paths \(A \rightarrow Y\), \(A \rightarrow L(1) \rightarrow Y\) and \(A \rightarrow L(1) \rightarrow M \rightarrow Y\).
+\end{itemize}
+
+95\% confidence intervals can be calculated by bootstrap.
+
 \chapter{Marginal structural models}\label{msm_chapter}
 
 Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome (\(Y_a\) or \(Y_{am}\) for example) and the exposure(s) \(A\) and mediators \(M\). It also possible to summarize the relationship according to a subset of the baseline confounders if it is relevant for the scientific question.
 
-To illustrate the application of MSMs, we will first use the data simulated from the Causal model 1 (with an \(A \ast M\) interaction effect on the outcome) where the exposure \(A\) doesn't affect the counfonder \(L(1)\) between the mediator and the outcome.
+To illustrate the application of MSMs, we will first use the data simulated from the Causal model 1 (with an \(A \ast M\) interaction effect on the outcome) where the exposure \(A\) doesn't affect the confounder \(L(1)\) between the mediator and the outcome.
 
 \section{MSM for the Average Total Effect (ATE)}\label{msm_ATE_paragraph}
 
@@ -3794,7 +4137,7 @@ Such a model is not very useful for a binary exposure. It would be much more use
 It is also possible to define MSMs adjusted for a subset \(V\) of the baseline confounders (\(V \subset L(0)\)). Such MSMs can be useful to estimate conditional effects. For example it is possible to define an average ``conditional'' total effect \(\text{ATE}|L(0)\) (instead of the marginal ATE defined above), projecting the counterfactual outcomes on a parametric model such as the following:
 
 \begin{equation} 
-  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{low.educ.} L_\text{low.educ.}(0)
+  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{soc.env.} L_\text{soc.env.}(0)
   \label{eq:MSMATEcond}
 \end{equation}
 
@@ -3833,19 +4176,22 @@ As in chapter \ref{ChapIptw}, the ``no-unmeasured confounding'' assumption is ad
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1. Denominator of the weight}
 \CommentTok{\# 1a. Estimate g(A=a\_i|L(0)) (denominator of the weight)}
-\NormalTok{g.A.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{g.A.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
            \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 
 \CommentTok{\# 1b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
-\CommentTok{\# predict the probabilities P(A0\_ace=1 \& P(A0\_ace=0)}
+\CommentTok{\# predict the probabilities P(A0\_PM2.5 = 1) \& P(A0\_PM2.5 = 0)}
 \NormalTok{pred.g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.g0.L }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.L}
 \CommentTok{\# the predicted probability of the observed treatment P(A = a\_i | L(0)) is :}
 \NormalTok{gAi.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
 
 \DocumentationTok{\#\# 2. Numerator of the weight}
 \CommentTok{\# The numerator of the weight can be 1 for simple weights,}
@@ -3853,17 +4199,17 @@ As in chapter \ref{ChapIptw}, the ``no-unmeasured confounding'' assumption is ad
 \CommentTok{\# with less observation. Stabilized weights enable a weaker positivity assumption.}
 
 \CommentTok{\# 2a. Estimate g(A=a\_i | sex) (numerator of the stabilized weight)}
-\NormalTok{g.A.sex }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male,}
-           \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+\NormalTok{g.A.sex }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male,}
+               \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 
 \CommentTok{\# 2b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
-\CommentTok{\# predict the probabilities P(A0\_ace=1 | sex) \& P(A0\_ace=0 | sex)}
+\CommentTok{\# predict the probabilities P(A0\_PM2.5 = 1 | sex) \& P(A0\_PM2.5 = 0 | sex)}
 \NormalTok{pred.g1.sex }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.sex, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 \NormalTok{pred.g0.sex }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pred.g1.sex}
 \CommentTok{\# the predicted probability of the observed treatment P(A = a\_i | sex) is :}
 \NormalTok{gAi.sex }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{gAi.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{gAi.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\NormalTok{gAi.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g1.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ pred.g0.sex[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
 
 \DocumentationTok{\#\# 3. Define individual weights:}
 \CommentTok{\# We can use simple weights w = 1 / g(A=a\_i | L(0))}
@@ -3874,47 +4220,76 @@ As in chapter \ref{ChapIptw}, the ``no-unmeasured confounding'' assumption is ad
 
 \CommentTok{\# we can see that stabilized weights have less extreme values}
 \FunctionTok{par}\NormalTok{(}\AttributeTok{mfcol =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{))}
-\FunctionTok{boxplot}\NormalTok{(w }\SpecialCharTok{\textasciitilde{}}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace)}
-\FunctionTok{boxplot}\NormalTok{(sw }\SpecialCharTok{\textasciitilde{}}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace)}
+\FunctionTok{boxplot}\NormalTok{(w }\SpecialCharTok{\textasciitilde{}}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{)}
+\FunctionTok{boxplot}\NormalTok{(sw }\SpecialCharTok{\textasciitilde{}}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{)}
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfcol =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{))}
+
+\DocumentationTok{\#\# applying these weights creates a pseudo{-}population were the baseline}
+\DocumentationTok{\#\# confounders are balanced, relative to the exposure:}
+\DocumentationTok{\#\# before applying weights to the individuals:}
+\FunctionTok{table}\NormalTok{(df1\_int}\SpecialCharTok{$}\NormalTok{L0\_male, df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{, }\AttributeTok{deparse.level =} \DecValTok{2}\NormalTok{)}
+\CommentTok{\#                df1\_int$A0\_PM2.5}
+\CommentTok{\# df1\_int$L0\_male    0    1}
+\CommentTok{\#               0 4527  463}
+\CommentTok{\#               1 4349  661}
+\FunctionTok{prop.table}\NormalTok{(}\FunctionTok{table}\NormalTok{(df1\_int}\SpecialCharTok{$}\NormalTok{L0\_male, df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{, }\AttributeTok{deparse.level =} \DecValTok{2}\NormalTok{),}
+           \AttributeTok{margin =} \DecValTok{2}\NormalTok{)}
+\CommentTok{\#                          df1\_int$A0\_PM2.5}
+\CommentTok{\# df1\_int$L0\_male         0         1}
+\CommentTok{\#               0 0.5100270 0.4119217}
+\CommentTok{\#               1 0.4899730 0.5880783   \# sex is unbalanced: 49\% versus 59\%}
+
+\DocumentationTok{\#\# after applying weights to the individuals:}
+\FunctionTok{library}\NormalTok{(questionr) }\CommentTok{\# The questionr package enables to describe weighted populations}
+\FunctionTok{wtd.table}\NormalTok{(}\AttributeTok{x =}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_male, }\AttributeTok{y =}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{,}
+          \AttributeTok{weights =}\NormalTok{ w)}
+\CommentTok{\#          0        1}
+\CommentTok{\# 0 4989.425 4918.462}
+\CommentTok{\# 1 5010.862 5057.676}
+\FunctionTok{prop.table}\NormalTok{(}\FunctionTok{wtd.table}\NormalTok{(}\AttributeTok{x =}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_male, }\AttributeTok{y =}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\NormalTok{,}
+                     \AttributeTok{weights =}\NormalTok{ w), }\AttributeTok{margin =} \DecValTok{2}\NormalTok{)}
+\CommentTok{\#           0         1}
+\CommentTok{\# 0 0.4989282 0.4930227}
+\CommentTok{\# 1 0.5010718 0.5069773 \# sex is balanced in the weighted population}
 
 \DocumentationTok{\#\# 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)}
 \CommentTok{\# a GLM with gaussian family can be applied to estimate risk differences}
 \CommentTok{\# (for relative risk or rate ratios, we can apply a Poisson family; }
 \CommentTok{\#  for OR, we can apply a binomial family)}
-\NormalTok{msm1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{*}\NormalTok{L0\_male,}
-           \AttributeTok{weights =}\NormalTok{ w, }\CommentTok{\# applying the simple weight}
+\NormalTok{msm1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{*}\NormalTok{L0\_male,}
+           \AttributeTok{weights =}\NormalTok{ w,}
            \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
            \AttributeTok{data =}\NormalTok{ df1\_int)}
 \FunctionTok{coef}\NormalTok{(msm1)}
-\CommentTok{\# (Intercept)         A0\_ace        L0\_male A0\_ace:L0\_male}
-\CommentTok{\# 0.17573472     0.03589627     0.04598911     0.04136896}
+\CommentTok{\# (Intercept)         A0\_PM2.5          L0\_male A0\_PM2.5:L0\_male}
+\CommentTok{\#  0.17573472       0.05883228       0.04598911       0.03077614}
 
-\NormalTok{msm2 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{*}\NormalTok{L0\_male,}
-            \AttributeTok{weights =}\NormalTok{ sw, }\CommentTok{\# applying the stabilized weight}
+\NormalTok{msm2 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{*}\NormalTok{L0\_male,}
+            \AttributeTok{weights =}\NormalTok{ sw,}
             \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
             \AttributeTok{data =}\NormalTok{ df1\_int)}
 \FunctionTok{coef}\NormalTok{(msm2)}
-\CommentTok{\# (Intercept)         A0\_ace        L0\_male A0\_ace:L0\_male}
-\CommentTok{\# 0.17573472     0.03589627     0.04598911     0.04136896}
+\CommentTok{\# (Intercept)         A0\_PM2.5          L0\_male A0\_PM2.5:L0\_male}
+\CommentTok{\#  0.17573472       0.05883228       0.04598911       0.03077614}
 
 \DocumentationTok{\#\# 5. Estimate the ATE stratified by sex}
-\CommentTok{\# According to the MSM1 (with simple weights)}
-\NormalTok{ATE.msm1.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_ace"}\NormalTok{]}
-\CommentTok{\# 0.03589627}
-\NormalTok{ATE.msm1.male1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_ace:L0\_male"}\NormalTok{]}
-\CommentTok{\# 0.07726522}
+\CommentTok{\# According to MSM1 (with simple weights)}
+\NormalTok{ATE.msm1.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
+\CommentTok{\# 0.05883228}
+\NormalTok{ATE.msm1.male1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm1)[}\StringTok{"A0\_PM2.5:L0\_male"}\NormalTok{]}
+\CommentTok{\# 0.08960842}
 
 \CommentTok{\# According to the MSM2 (with stabilized weights)}
-\NormalTok{ATE.msm2.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_ace"}\NormalTok{]}
-\CommentTok{\# 0.03589627}
-\NormalTok{ATE.msm2.male1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_ace:L0\_male"}\NormalTok{]}
-\CommentTok{\# 0.07726522}
+\NormalTok{ATE.msm2.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
+\CommentTok{\# 0.05883228}
+\NormalTok{ATE.msm2.male1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm2)[}\StringTok{"A0\_PM2.5:L0\_male"}\NormalTok{]}
+\CommentTok{\# 0.08960842}
 \CommentTok{\# The results are the same because there is no violation of the positivity assumption}
 \CommentTok{\# In case of positivity violation, stabilized weights would give more accurate estimates}
 \end{Highlighting}
 \end{Shaded}
 
-The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.6\% in women and +7.7\% in men.
+The ATE estimates of death probability using an MSM estimated by IPTW are respectively +5.9\% in women and +9.0\% in men.
 
 95\% confidence intervals can be calculated by bootstrap.
 
@@ -3961,8 +4336,11 @@ The following steps can be applied:
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1. Estimate Qbar}
-\NormalTok{Q.tot.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{Q.tot.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                    \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# The final result would be sligthly different if we apply a binomial family.}
 
@@ -3971,8 +4349,8 @@ The following steps can be applied:
 \CommentTok{\# prepare data sets used to predict the outcome under the counterfactual}
 \CommentTok{\# scenarios setting A=0 and A=1}
 \NormalTok{data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0 }\OtherTok{\textless{}{-}}\NormalTok{ df1\_int}
-\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
-\NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
 
 \CommentTok{\# predict values under the same name in the corresponding counterfactual dataset}
 \NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{Ya.death.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.tot.death, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
@@ -3985,19 +4363,19 @@ The following steps can be applied:
 
 \DocumentationTok{\#\# 4. fit the MSM: E(Y\_a|sex)}
 \CommentTok{\# a GLM with gaussian family can be applied to estimate risk differences}
-\NormalTok{MSM.ATE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Ya.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{L0\_male,}
+\NormalTok{MSM.ATE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Ya.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{L0\_male,}
                      \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
                      \AttributeTok{data =}\NormalTok{ data}\FloatTok{.2}\NormalTok{scenarios)}
 \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)}
-\CommentTok{\#  (Intercept)         A0\_ace        L0\_male A0\_ace:L0\_male}
-\CommentTok{\# 1.743994e{-}01   7.720726e{-}02   4.874750e{-}02   4.802530e{-}16}
+\CommentTok{\#  (Intercept)         A0\_PM2.5          L0\_male A0\_PM2.5:L0\_male }
+\CommentTok{\# 1.743994e{-}01     7.720726e{-}02     4.874750e{-}02     5.087110e{-}16}
 
 \DocumentationTok{\#\# 5. Estimate the ATE stratified by sex}
 \CommentTok{\# According to MSM.ATE.gcomp}
-\NormalTok{ATE.MSM.gcomp.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{ATE.MSM.gcomp.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.07720726}
-\NormalTok{ATE.MSM.gcomp.male1 }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+}
-                          \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_ace:L0\_male"}\NormalTok{])}
+\NormalTok{ATE.MSM.gcomp.male1 }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+}
+                          \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_PM2.5:L0\_male"}\NormalTok{])}
 \CommentTok{\# 0.07720726}
 \CommentTok{\# The results are the same in both strata, because in the first Qbar model,}
 \CommentTok{\# we did not include any (A * sex) interaction term}
@@ -4047,51 +4425,54 @@ where \(sw_i\) is the product of two weights \(sw_i = sw_{A,i} \times sw_{M,i}\)
 
 \(sw_{A,i}=\frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)}\) and \(sw_{M,i}=\frac{P(M=m_i \mid A=a_i)}{P(M = m_i \mid A=a_i,L(0)=l(0)_i), L(1)=l(1)_i}\).
 
-The ``no-unmeasured confounding'' assumption is addressed by the application of weights \(sw_i\), which balance confounders \(L(0)\) relative to the exposure-outcome \(A-Y\) relationship, and balance the set of confounders \(\{L(0),A,L(1)\}\) relative to the mediator-outcome \(M-Y\) relationship.
+The ``no-unmeasured confounding'' assumption is addressed by the application of weights \(sw_i\), which balances confounders \(L(0)\) relative to the exposure-outcome \(A-Y\) relationship, and balance the set of confounders \(\{L(0),A,L(1)\}\) relative to the mediator-outcome \(M-Y\) relationship.
 
-Importantly, this approach for the estimation of the controlled direct effect \(\text{CDE}_m\) by IPTW is also valid if the exposure \(A\) affects the intermediate confounder \(L(1)\) (as with the Causal model 2).
+\subsubsection{Example 1, with no intermediate confounder affected by the exposure}\label{example-1-with-no-intermediate-confounder-affected-by-the-exposure}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \DocumentationTok{\#\#\# MSM of CDE, estimated by IPTW {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1. Stabilized weight for the exposure sw\_\{A,i\}}
 \CommentTok{\# 1a. Estimate g(A=a\_i|L(0)) (denominator of the weight)}
-\NormalTok{g.A.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{g.A.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
              \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# 1b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
 \CommentTok{\# the predicted probability of the observed treatment g(A = a\_i | L(0)) is :}
 \NormalTok{gAi.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi.L[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
 
 \CommentTok{\# 1c. Estimate g(A=a\_i) (numerator of the weight)}
-\NormalTok{g.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}} \DecValTok{1}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+\NormalTok{g.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}} \DecValTok{1}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# 1d. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
 \CommentTok{\# the predicted probability of the observed treatment g(A = a\_i) is :}
 \NormalTok{gAi }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{gAi[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{gAi[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\NormalTok{gAi[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
 
 \CommentTok{\# 1e. Calculate the weight for the exposure A: sw\_\{A,i\}}
 \NormalTok{sw\_Ai }\OtherTok{\textless{}{-}}\NormalTok{ gAi }\SpecialCharTok{/}\NormalTok{ gAi.L}
 
 \DocumentationTok{\#\# 2. Stabilized weight for the mediator sw\_\{M,i\}}
 \CommentTok{\# 2a. Estimate g(M=m\_i|L(0),A,L(1)) (denominator of the weight)}
-\NormalTok{g.M.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1,}
+\NormalTok{g.M.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
              \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# 2b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
 \CommentTok{\# the predicted probability of the observed treatment g(A = a\_i | L(0)) is :}
 \NormalTok{gMi.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{gMi.L[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{gMi.L[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.M.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\NormalTok{gMi.L[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gMi.L[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.M.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
 
 \CommentTok{\# 2c. Estimate g(M=m\_i|A) (numerator of the weight)}
-\NormalTok{g.M.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+\NormalTok{g.M.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# 2d. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
 \CommentTok{\# the predicted probability of the observed treatment g(M = m\_i|A) is :}
 \NormalTok{gMi.A }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{gMi.A[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{gMi.A[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.M.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\NormalTok{gMi.A[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gMi.A[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.M.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
 \CommentTok{\# 2e. Calculate the weight for the mediator M: sw\_\{M,i\}}
 \NormalTok{sw\_Mi }\OtherTok{\textless{}{-}}\NormalTok{ gMi.A }\SpecialCharTok{/}\NormalTok{ gMi.L}
 
@@ -4100,23 +4481,277 @@ Importantly, this approach for the estimation of the controlled direct effect \(
 
 \DocumentationTok{\#\# 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)}
 \CommentTok{\# a GLM with gaussian family can be applied to estimate risk differences}
-\NormalTok{msm\_cde }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{*}\NormalTok{M\_smoking,}
+\NormalTok{msm\_cde }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{*}\NormalTok{M\_diabetes,}
                \AttributeTok{weights =}\NormalTok{ sw\_cde,}
                \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
                \AttributeTok{data =}\NormalTok{ df1\_int)}
 \FunctionTok{coef}\NormalTok{(msm\_cde)}
-\CommentTok{\# (Intercept)           A0\_ace        M\_smoking A0\_ace:M\_smoking }
-\CommentTok{\#  0.17891689       0.06798282       0.06729724      {-}0.00495314}
+\CommentTok{\# (Intercept)            A0\_PM2.5          M\_diabetes A0\_PM2.5:M\_diabetes }
+\CommentTok{\#  0.17891689          0.06798282          0.06729724         {-}0.00495314}
 
 \DocumentationTok{\#\# 5. Estimate CDE for m=0 and for m=1 using the MSM\textquotesingle{}s coefficients}
-\NormalTok{CDE\_mis0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{CDE\_mis0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.06798282}
-\NormalTok{CDE\_mis1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{]}
+\NormalTok{CDE\_mis1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{]}
 \CommentTok{\# 0.06302968}
 \end{Highlighting}
 \end{Shaded}
 
 In this example, our estimates of the controlled direct effects are \(CDE_{M=0} = 6.8\%\) and \(CDE_{M=1} = 6.3\%\). Confidence intervals can be calculated by bootstrap.
+
+Importantly, this approach for the estimation of the controlled direct effect \(\text{CDE}_m\) by IPTW is also valid if the exposure \(A\) affects the intermediate confounder \(L(1)\) (as with the Causal model 2).
+
+\subsubsection{Example 2, with intermediate confounder affected by the exposure}\label{example-2-with-intermediate-confounder-affected-by-the-exposure}
+
+Below, we estimate the CDE by hand, and using the \texttt{ltmle} package and the \texttt{CMAverse} package
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\# MSM of CDE, estimated by IPTW}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
+\DocumentationTok{\#\# 1. Stabilized weight for the exposure sw\_\{A,i\}}
+\CommentTok{\# 1a. Estimate g(A=a\_i|L(0)) (denominator of the weight)}
+\NormalTok{g.A.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
+             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\CommentTok{\# 1b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# the predicted probability of the observed treatment g(A = a\_i | L(0)) is :}
+\NormalTok{gAi.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gAi.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi.L[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.A.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+
+\CommentTok{\# 1c. Estimate g(A=a\_i) (numerator of the weight)}
+\NormalTok{g.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}} \DecValTok{1}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\CommentTok{\# 1d. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# the predicted probability of the observed treatment g(A = a\_i) is :}
+\NormalTok{gAi }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gAi[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gAi[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+
+\CommentTok{\# 1e. Calculate the weight for the exposure A: sw\_\{A,i\}}
+\NormalTok{sw\_Ai }\OtherTok{\textless{}{-}}\NormalTok{ gAi }\SpecialCharTok{/}\NormalTok{ gAi.L}
+
+\DocumentationTok{\#\# 2. Stabilized weight for the mediator sw\_\{M,i\}}
+\CommentTok{\# 2a. Estimate g(M=m\_i|L(0),A,L(1)) (denominator of the weight)}
+\NormalTok{g.M.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1,}
+             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\CommentTok{\# 2b. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# the predicted probability of the observed treatment g(A = a\_i | L(0)) is :}
+\NormalTok{gMi.L }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gMi.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gMi.L[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.M.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+
+\CommentTok{\# 2c. Estimate g(M=m\_i|A) (numerator of the weight)}
+\NormalTok{g.M.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
+\CommentTok{\# 2d. Predict each individual\textquotesingle{}s probability of being exposed to her own exposure}
+\CommentTok{\# the predicted probability of the observed treatment g(M = m\_i|A) is :}
+\NormalTok{gMi.A }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df2\_int))}
+\NormalTok{gMi.A[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{gMi.A[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{predict}\NormalTok{(g.M.A, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{))[df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{]}
+\CommentTok{\# 2e. Calculate the weight for the mediator M: sw\_\{M,i\}}
+\NormalTok{sw\_Mi }\OtherTok{\textless{}{-}}\NormalTok{ gMi.A }\SpecialCharTok{/}\NormalTok{ gMi.L}
+
+\DocumentationTok{\#\# 3. Define the individual stabilized weight for the CDE\_m}
+\NormalTok{sw\_cde }\OtherTok{\textless{}{-}}\NormalTok{ sw\_Ai }\SpecialCharTok{*}\NormalTok{ sw\_Mi}
+
+\DocumentationTok{\#\# 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)}
+\CommentTok{\# a GLM with gaussian family can be applied to estimate risk differences}
+\NormalTok{msm\_cde }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{*}\NormalTok{M\_diabetes,}
+               \AttributeTok{weights =}\NormalTok{ sw\_cde,}
+               \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
+               \AttributeTok{data =}\NormalTok{ df2\_int)}
+\FunctionTok{coef}\NormalTok{(msm\_cde)}
+\CommentTok{\# (Intercept)            A0\_PM2.5          M\_diabetes A0\_PM2.5:M\_diabetes}
+\CommentTok{\#  0.17932146          0.06012920          0.07239661          0.03017266}
+
+\DocumentationTok{\#\# 5. Estimate CDE for m=0 and for m=1 using the MSM\textquotesingle{}s coefficients}
+\NormalTok{CDE\_mis0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
+\CommentTok{\# 0.0601292}
+\NormalTok{CDE\_mis1 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(msm\_cde)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{]}
+\CommentTok{\# 0.09030186}
+
+
+\DocumentationTok{\#\#\# Estimation by IPTW using ltmle package}
+\FunctionTok{library}\NormalTok{(ltmle)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5"}\NormalTok{,}
+           \AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + L1 +}
+\StringTok{                    A0\_PM2.5 * M\_diabetes"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env"}\NormalTok{,}
+           \StringTok{"M\_diabetes \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5 + L1"}\NormalTok{)}
+\NormalTok{data\_binary }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_soc\_env,}
+\NormalTok{                                          A0\_PM2}\FloatTok{.5}\NormalTok{, L1,}
+\NormalTok{                                          M\_diabetes, Y\_death))}
+\NormalTok{CDE\_ltmle\_M0\_death }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
+                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
+                            \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
+                            \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
+                            \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
+                            \AttributeTok{Qform =}\NormalTok{ Qform,}
+                            \AttributeTok{gform =}\NormalTok{ gform,}
+                            \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=0)}
+                                        \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=0)}
+                            \AttributeTok{SL.library =} \ConstantTok{NULL}\NormalTok{,}
+                            \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
+                            \AttributeTok{iptw.only =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# for only IPTW estimations (no TMLE)}
+                            \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
+                            \AttributeTok{variance.method =} \StringTok{"iptw"}\NormalTok{) }\CommentTok{\# IPTW influence curve}
+\CommentTok{\# CDE with M=0}
+\FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M0\_death, }\AttributeTok{estimator =} \StringTok{"iptw"}\NormalTok{)}\SpecialCharTok{$}\NormalTok{effect.measures}\SpecialCharTok{$}\NormalTok{ATE}
+\CommentTok{\# $estimate}
+\CommentTok{\# [1] 0.0601292}
+\CommentTok{\# $CI}
+\CommentTok{\#            2.5\%      97.5\%}
+\CommentTok{\# [1,] 0.02424819 0.09601021}
+
+\NormalTok{CDE\_ltmle\_M1\_death }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
+                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
+                            \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
+                            \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
+                            \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
+                            \AttributeTok{Qform =}\NormalTok{ Qform,}
+                            \AttributeTok{gform =}\NormalTok{ gform,}
+                            \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=0)}
+                                        \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=0)}
+                            \AttributeTok{SL.library =} \ConstantTok{NULL}\NormalTok{,}
+                            \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
+                            \AttributeTok{iptw.only =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# for only IPTW estimations (no TMLE)}
+                            \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
+                            \AttributeTok{variance.method =} \StringTok{"iptw"}\NormalTok{) }\CommentTok{\# IPTW influence curve}
+\CommentTok{\# CDE with M=1}
+\FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M1\_death, }\AttributeTok{estimator =} \StringTok{"iptw"}\NormalTok{)}\SpecialCharTok{$}\NormalTok{effect.measures}\SpecialCharTok{$}\NormalTok{ATE}
+\CommentTok{\# $estimate}
+\CommentTok{\# [1] 0.09030186}
+\CommentTok{\# $CI}
+\CommentTok{\#            2.5\%     97.5\%}
+\CommentTok{\# [1,] 0.04084792 0.1397558}
+
+\DocumentationTok{\#\# we obtain the same results as the IPTW estimation by hand}
+
+
+\DocumentationTok{\#\#\# Estimation by IPTW using ltmle package}
+\FunctionTok{library}\NormalTok{(CMAverse)}
+\FunctionTok{library}\NormalTok{(CMAverse)}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+\FunctionTok{cmdag}\NormalTok{(}\AttributeTok{outcome =} \StringTok{"Y\_death"}\NormalTok{, }\AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{, }\AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,}
+      \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{, }\StringTok{"L0\_soc\_env"}\NormalTok{), }\AttributeTok{postc =} \StringTok{"L1"}\NormalTok{, }\AttributeTok{node =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{text\_col =} \StringTok{"white"}\NormalTok{)}
+\CommentTok{\# In this setting, we can use the marginal structural model and the $g${-}formula approach. The results are shown below.}
+
+\DocumentationTok{\#\# The Marginal Structural Model}
+\NormalTok{res\_msm\_RD }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df2\_int,}
+                    \AttributeTok{model =} \StringTok{"msm"}\NormalTok{,}
+                    \AttributeTok{outcome =} \StringTok{"Y\_death"}\NormalTok{,}
+                    \AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{,}
+                    \AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,}
+                    \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{, }\StringTok{"L0\_soc\_env"}\NormalTok{),}
+                    \AttributeTok{postc =} \StringTok{"L1"}\NormalTok{,}
+                    \AttributeTok{EMint =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# E*M interaction}
+                    \AttributeTok{ereg =} \StringTok{"logistic"}\NormalTok{,}
+                    \AttributeTok{yreg =} \StringTok{"linear"}\NormalTok{, }\CommentTok{\# MSM is a linear regression (to get RD)}
+                    \AttributeTok{mreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{),}
+                    \AttributeTok{wmnomreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{),}
+                    \AttributeTok{wmdenomreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{),}
+                    \AttributeTok{astar =} \DecValTok{0}\NormalTok{, }\CommentTok{\#E(Y\_\{A=0,M=1\})}
+                    \AttributeTok{a =} \DecValTok{1}\NormalTok{,  }\CommentTok{\#E(Y\_\{A=1,M=1\})}
+                    \AttributeTok{mval =} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\NormalTok{), }\CommentTok{\# for the CDE, set mediator to M=1}
+                    \AttributeTok{estimation =} \StringTok{"imputation"}\NormalTok{,}
+                    \AttributeTok{inference =} \StringTok{"bootstrap"}\NormalTok{,}
+                    \AttributeTok{nboot =} \DecValTok{2}\NormalTok{)}
+
+\FunctionTok{summary}\NormalTok{(res\_msm\_RD)}
+\CommentTok{\# Causal Mediation Analysis}
+\CommentTok{\# \# Outcome regression:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = Y\_death \textasciitilde{} A0\_PM2.5 + M\_diabetes + A0\_PM2.5 * M\_diabetes, }
+\CommentTok{\#       family = gaussian(), data = getCall(x$reg.output$yreg)$data, }
+\CommentTok{\#       weights = getCall(x$reg.output$yreg)$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                       Estimate Std. Error t value Pr(\textgreater{}|t|)      \# MSM coef}
+\CommentTok{\#   (Intercept)         0.179321   0.005242  34.210  \textless{} 2e{-}16 ***  \# are the}
+\CommentTok{\#   A0\_PM2.5            0.060129   0.017253   3.485 0.000494 ***  \# same as}
+\CommentTok{\#   M\_diabetes          0.072397   0.009242   7.834 5.21e{-}15 ***  \# calculation}
+\CommentTok{\#   A0\_PM2.5:M\_diabetes 0.030173   0.025895   1.165 0.243960      \# by hand}
+\CommentTok{\#}
+\CommentTok{\# \# Mediator regressions: }
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = M\_diabetes \textasciitilde{} A0\_PM2.5, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data, }
+\CommentTok{\#       weights = getCall(x$reg.output$mreg[[1L]])$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error z value Pr(\textgreater{}|z|)    }
+\CommentTok{\#   (Intercept) {-}0.73432    0.02268 {-}32.384  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5     0.51531    0.06422   8.024 1.02e{-}15 ***}
+\CommentTok{\# }
+\CommentTok{\# \# Mediator regressions for weighting (denominator): }
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = M\_diabetes \textasciitilde{} A0\_PM2.5 + L0\_male + L0\_soc\_env + }
+\CommentTok{\#         L1, family = binomial(), data = getCall(x$reg.output$wmdenomreg[[1L]])$data, }
+\CommentTok{\#       weights = getCall(x$reg.output$wmdenomreg[[1L]])$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error z value Pr(\textgreater{}|z|)    }
+\CommentTok{\#   (Intercept) {-}1.36249    0.04783 {-}28.488  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5     0.30994    0.06668   4.648 3.35e{-}06 ***}
+\CommentTok{\#   L0\_male      0.24661    0.04369   5.644 1.66e{-}08 ***}
+\CommentTok{\#   L0\_soc\_env   0.30628    0.04650   6.587 4.50e{-}11 ***}
+\CommentTok{\#   L1           0.86045    0.04493  19.152  \textless{} 2e{-}16 ***}
+\CommentTok{\# }
+\CommentTok{\# \# Mediator regressions for weighting (nominator): }
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = M\_diabetes \textasciitilde{} A0\_PM2.5, family = binomial(), data = getCall(x$reg.output$wmnomreg[[1L]])$data, }
+\CommentTok{\#       weights = getCall(x$reg.output$wmnomreg[[1L]])$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error z value Pr(\textgreater{}|z|)    }
+\CommentTok{\#   (Intercept) {-}0.74205    0.02271 {-}32.680   \textless{}2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5     0.55288    0.06408   8.628   \textless{}2e{-}16 ***}
+\CommentTok{\# }
+\CommentTok{\# \# Exposure regression for weighting: }
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env, family = binomial(), }
+\CommentTok{\#       data = getCall(x$reg.output$ereg)$data, weights = getCall(x$reg.output$ereg)$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error z value Pr(\textgreater{}|z|)    }
+\CommentTok{\#   (Intercept) {-}2.73244    0.07425 {-}36.799  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male      0.40580    0.06447   6.294 3.09e{-}10 ***}
+\CommentTok{\#   L0\_soc\_env   0.64060    0.07350   8.716  \textless{} 2e{-}16 ***}
+\CommentTok{\# }
+\CommentTok{\# \# Effect decomposition on the mean difference scale via the marginal structural model}
+\CommentTok{\# Direct counterfactual imputation estimation with }
+\CommentTok{\# bootstrap standard errors, percentile confidence intervals and p{-}values }
+\CommentTok{\#                   Estimate  Std.error    95\% CIL 95\% CIU  P.val    }
+\CommentTok{\#   cde            9.030e{-}02  1.601e{-}02  6.094e{-}02   0.082 \textless{}2e{-}16 *** \# same result}
+\CommentTok{\#   rpnde          7.003e{-}02  1.600e{-}02  5.838e{-}02   0.080 \textless{}2e{-}16 ***}
+\CommentTok{\#   rtnde          7.374e{-}02  1.597e{-}02  5.888e{-}02   0.080 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpnie          8.903e{-}03  9.159e{-}04  8.284e{-}03   0.010 \textless{}2e{-}16 ***}
+\CommentTok{\#   rtnie          1.261e{-}02  9.523e{-}04  8.738e{-}03   0.010 \textless{}2e{-}16 ***}
+\CommentTok{\#   te             8.265e{-}02  1.505e{-}02  6.839e{-}02   0.089 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintref       {-}2.027e{-}02  7.341e{-}06 {-}2.571e{-}03  {-}0.003 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintmed        3.710e{-}03  3.634e{-}05  4.542e{-}04   0.001 \textless{}2e{-}16 ***}
+\CommentTok{\#   cde(prop)      1.093e+00  2.940e{-}02  8.907e{-}01   0.930 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintref(prop) {-}2.452e{-}01  6.289e{-}03 {-}3.752e{-}02  {-}0.029 \textless{}2e{-}16 ***}
+\CommentTok{\#   rintmed(prop)  4.489e{-}02  1.662e{-}03  5.140e{-}03   0.007 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpnie(prop)    1.077e{-}01  3.403e{-}02  9.376e{-}02   0.139 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpm            1.526e{-}01  3.569e{-}02  9.890e{-}02   0.147 \textless{}2e{-}16 ***}
+\CommentTok{\#   rint          {-}2.004e{-}01  4.627e{-}03 {-}3.014e{-}02  {-}0.024 \textless{}2e{-}16 ***}
+\CommentTok{\#   rpe           {-}9.263e{-}02  2.940e{-}02  6.983e{-}02   0.109 \textless{}2e{-}16 ***}
+\CommentTok{\#   {-}{-}{-}}
+\CommentTok{\#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1}
+\CommentTok{\# }
+\CommentTok{\#  (cde: controlled direct effect; }
+\CommentTok{\#  rpnde: randomized analogue of pure natural direct effect; }
+\CommentTok{\#  rtnde: randomized analogue of total natural direct effect; }
+\CommentTok{\#  rpnie: randomized analogue of pure natural indirect effect; }
+\CommentTok{\#  rtnie: randomized analogue of total natural indirect effect; }
+\CommentTok{\#  te: total effect; rintref: randomized analogue of reference interaction; }
+\CommentTok{\#  rintmed: randomized analogue of mediated interaction; }
+\CommentTok{\#  cde(prop): proportion cde; }
+\CommentTok{\#  rintref(prop): proportion rintref; }
+\CommentTok{\#  rintmed(prop): proportion rintmed; }
+\CommentTok{\#  rpnie(prop): proportion rpnie; }
+\CommentTok{\#  rpm: randomized analogue of overall proportion mediated; }
+\CommentTok{\#  rint: randomized analogue of overall proportion attributable to interaction; }
+\CommentTok{\#  rpe: randomized analogue of overall proportion eliminated)}
+\end{Highlighting}
+\end{Shaded}
 
 \subsection{Estimation of the MSM coefficients by G-computation}\label{estimation-of-the-msm-coefficients-by-g-computation}
 
@@ -4156,10 +4791,13 @@ Note that the algorithm described below is correct only if the exposure \(A\) do
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\#\# MSM of CDE, estimated by G{-}computation {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
 \DocumentationTok{\#\# 1. Estimate Qbar(A,M,L0,L1)}
-\NormalTok{Q.cde.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+} 
-\NormalTok{                     L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ L1,}
+\NormalTok{Q.cde.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes }\SpecialCharTok{+} 
+\NormalTok{                     L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
                    \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# The final result would be sligthly different if we applied a binomial family}
 \CommentTok{\# The Gaussian family corresponds to the true generating model in this example.}
@@ -4168,17 +4806,17 @@ Note that the algorithm described below is correct only if the exposure \(A\) do
 \CommentTok{\# Prepare data sets that will be used to predict the outcome under the counterfactual}
 \CommentTok{\# 4 counterfactual scenarios setting (A=0,M=0), (A=1,M=0), (A=0,M=1) and (A=1,M=1)}
 \NormalTok{data.A0M0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1M0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0M1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1M1 }\OtherTok{\textless{}{-}}\NormalTok{ df1\_int}
-\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
-\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{0}
 
-\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
-\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{0}
 
-\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
-\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{1}
 
-\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
-\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{1}
 
 \CommentTok{\# predict values under the same name in the corresponding counterfactual dataset}
 \NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{Yam.death.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.cde.death, }\AttributeTok{newdata =}\NormalTok{ data.A0M0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
@@ -4191,21 +4829,21 @@ Note that the algorithm described below is correct only if the exposure \(A\) do
 \NormalTok{data}\FloatTok{.4}\NormalTok{scenarios }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(data.A0M0, data.A1M0,data.A0M1,data.A1M1)}
 
 \DocumentationTok{\#\# 4. fit the MSM: E(Y\_am) = alpha\_0 + alpha\_A a + alpha\_M m + alpha\_AM a:m}
-\NormalTok{MSM.CDE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Yam.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{  M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+\NormalTok{MSM.CDE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Yam.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{  M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
                      \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\CommentTok{\# gaussian family for risk differences}
                      \AttributeTok{data =}\NormalTok{ data}\FloatTok{.4}\NormalTok{scenarios)}
 \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)}
-\CommentTok{\# (Intercept)           A0\_ace        M\_smoking A0\_ace:M\_smoking}
-\CommentTok{\#  0.17968603       0.06000138       0.06757214       0.01918153}
+\CommentTok{\# (Intercept)            A0\_PM2.5          M\_diabetes A0\_PM2.5:M\_diabetes }
+\CommentTok{\#  0.17968603          0.06000138          0.06757214          0.01918153}
 
 \DocumentationTok{\#\# 5. Estimate the CDE(M=m)}
 \CommentTok{\# CDE(M=0) = E(Y\_\{A=1,M=0\}) {-} E(Y\_\{A=0,M=0\})}
-\NormalTok{CDE\_mis0\_gcomp }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{CDE\_mis0\_gcomp }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.06000138}
 
 \CommentTok{\# CDE(M=1) = E(Y\_\{A=1,M=1\}) {-} E(Y\_\{A=0,M=1\})}
-\NormalTok{CDE\_mis1\_gcomp }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+}
-                     \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{])}
+\NormalTok{CDE\_mis1\_gcomp }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+}
+                     \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{])}
 \CommentTok{\# 0.07918291}
 
 \CommentTok{\# Note: Applying a binomial family for the first Qbar model would result in two}
@@ -4221,26 +4859,29 @@ Here is an example applying G-computation by iterative conditional expectation:
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\#\# MSM of CDE, estimated by G{-}computation (by ICE) {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
 \DocumentationTok{\#\# 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)}
-\NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
-\NormalTok{                       M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+\NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
+\NormalTok{                       M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
                      \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
 \DocumentationTok{\#\# 1b) Generate predicted values by evaluating the regression  }
 \DocumentationTok{\#\#     under the 4 counterfactual scenarios}
 \NormalTok{data.A0M0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1M0 }\OtherTok{\textless{}{-}}\NormalTok{ data.A0M1 }\OtherTok{\textless{}{-}}\NormalTok{ data.A1M1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
-\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
-\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A0M0}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{0}
 
-\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
-\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1M0}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{0}
 
-\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{0}
-\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{data.A0M1}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{1}
 
-\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
-\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{M\_smoking }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1M1}\SpecialCharTok{$}\NormalTok{M\_diabetes }\OtherTok{\textless{}{-}} \DecValTok{1}
 
 \NormalTok{Q.Y.death.A0M0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.A0M0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{Q.Y.death.A1M0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Y.death.model, }\AttributeTok{newdata =}\NormalTok{ data.A1M0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
@@ -4249,13 +4890,13 @@ Here is an example applying G-computation by iterative conditional expectation:
 
 \DocumentationTok{\#\# 2a) Regress the predicted values conditional on the observed exposure A}
 \DocumentationTok{\#\#    and baseline confounders L(0)}
-\NormalTok{L1.death.A0M0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A0M0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.death.A0M0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A0M0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{L1.death.A1M0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A1M0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.death.A1M0.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A1M0 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{L1.death.A0M1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A0M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.death.A0M1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A0M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{L1.death.A1M1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A1M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ A0\_ace,}
+\NormalTok{L1.death.A1M1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Q.Y.death.A1M1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{,}
                            \AttributeTok{family =} \StringTok{"quasibinomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 
 
@@ -4276,21 +4917,21 @@ Here is an example applying G-computation by iterative conditional expectation:
 \NormalTok{data}\FloatTok{.4}\NormalTok{scenarios }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(data.A0M0, data.A1M0,data.A0M1,data.A1M1)}
 
 \DocumentationTok{\#\# 4. fit the MSM: E(Y\_am) = alpha\_0 + alpha\_A a + alpha\_M m + alpha\_AM a:m}
-\NormalTok{MSM.CDE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Yam.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{  M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking,}
+\NormalTok{MSM.CDE.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Yam.death.pred }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{  M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
                      \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\CommentTok{\# gaussian family for risk differences}
                      \AttributeTok{data =}\NormalTok{ data}\FloatTok{.4}\NormalTok{scenarios)}
 \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)}
-\CommentTok{\# (Intercept)           A0\_ace        M\_smoking A0\_ace:M\_smoking}
-\CommentTok{\#  0.17974947       0.06342833       0.07366466       0.02469485}
+\CommentTok{\# (Intercept)            A0\_PM2.5          M\_diabetes A0\_PM2.5:M\_diabetes }
+\CommentTok{\#  0.17974947          0.06342833          0.07366466          0.02469485}
 
 \DocumentationTok{\#\# 5. Estimate the CDE(M=m)}
 \CommentTok{\# CDE(M=0) = E(Y\_\{A=1,M=0\}) {-} E(Y\_\{A=0,M=0\})}
-\NormalTok{CDE\_mis0\_gcomp\_ice }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{]}
+\NormalTok{CDE\_mis0\_gcomp\_ice }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
 \CommentTok{\# 0.06342833}
 
 \CommentTok{\# CDE(M=1) = E(Y\_\{A=1,M=1\}) {-} E(Y\_\{A=0,M=1\})}
-\NormalTok{CDE\_mis1\_gcomp\_ice }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+}
-                         \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{])}
+\NormalTok{CDE\_mis1\_gcomp\_ice }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+}
+                         \FunctionTok{coef}\NormalTok{(MSM.CDE.gcomp)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{])}
 \CommentTok{\# 0.08812318}
 \end{Highlighting}
 \end{Shaded}
@@ -4300,18 +4941,18 @@ The example above (MSM estimation using G-computation by ICE) corresponds to the
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(ltmle)}
-\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{,}
-           \AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + L1 +}
-\StringTok{                    A0\_ace * M\_smoking"}\NormalTok{)}
-\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{,}
-           \StringTok{"M\_smoking \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace + L1"}\NormalTok{)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5"}\NormalTok{,}
+           \AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + L1 +}
+\StringTok{                    A0\_PM2.5 * M\_diabetes"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env"}\NormalTok{,}
+           \StringTok{"M\_diabetes \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5 + L1"}\NormalTok{)}
 \CommentTok{\# in this example of g{-}computation, the propensity scores \textquotesingle{}gform\textquotesingle{} will not be used}
 
-\NormalTok{data\_binary }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_parent\_low\_educ\_lv,}
-\NormalTok{                                          A0\_ace, L1,}
-\NormalTok{                                          M\_smoking, Y\_death))}
+\NormalTok{data\_binary }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_soc\_env,}
+\NormalTok{                                          A0\_PM2}\FloatTok{.5}\NormalTok{, L1,}
+\NormalTok{                                          M\_diabetes, Y\_death))}
 \NormalTok{CDE\_ltmle\_M0 }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
-                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
                       \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
                       \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
                       \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
@@ -4319,7 +4960,7 @@ The example above (MSM estimation using G-computation by ICE) corresponds to the
                       \AttributeTok{gform =}\NormalTok{ gform,}
                       \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=0)}
                                   \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=0)}
-                      \AttributeTok{SL.library =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# call glm() instead of SuperLearner}
+                      \AttributeTok{SL.library =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# calls glm() instead of SuperLearner}
                       \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
                       \AttributeTok{gcomp =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# to apply g{-}computation}
                       \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
@@ -4328,7 +4969,7 @@ The example above (MSM estimation using G-computation by ICE) corresponds to the
 \CommentTok{\#   Parameter Estimate:  0.06342833}
 
 \NormalTok{CDE\_ltmle\_M1 }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
-                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
                       \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
                       \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
                       \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
@@ -4336,7 +4977,7 @@ The example above (MSM estimation using G-computation by ICE) corresponds to the
                       \AttributeTok{gform =}\NormalTok{ gform,}
                       \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{), }\CommentTok{\# counterfactual intervention do(A=1,M=0)}
                                   \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{)), }\CommentTok{\# counterfactual intervention do(A=0,M=0)}
-                      \AttributeTok{SL.library =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# call glm() instead of SuperLearner}
+                      \AttributeTok{SL.library =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# calls glm() instead of SuperLearner}
                       \AttributeTok{estimate.time =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# estimate computation time?}
                       \AttributeTok{gcomp =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# to apply g{-}computation}
                       \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
@@ -4430,86 +5071,84 @@ In order to fit the 2nd MSM \eqref{eq:MSM-Indirect-model2}, we can use a logisti
 \NormalTok{sw\_Ai }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
 
 \CommentTok{\# 1b. sw\_Mi = g(M=m\_i | A,L(0)) / g(M=m\_i | A,L(0),L(1))}
-\NormalTok{g.M.AL0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{g.M.AL0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
                \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \NormalTok{g.Mis1.AL0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.AL0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{sw\_M.num }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{sw\_M.num[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Mis1.AL0[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{sw\_M.num[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Mis1.AL0[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
+\NormalTok{sw\_M.num[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Mis1.AL0[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{sw\_M.num[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Mis1.AL0[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
 
-\NormalTok{g.M.AL0L1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv }\SpecialCharTok{+}\NormalTok{ L1,}
+\NormalTok{g.M.AL0L1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
                  \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \NormalTok{g.Mis1.AL0L1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.M.AL0L1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{sw\_M.denom }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{sw\_M.denom[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Mis1.AL0L1[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{sw\_M.denom[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Mis1.AL0L1[df1\_int}\SpecialCharTok{$}\NormalTok{M\_smoking}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
+\NormalTok{sw\_M.denom[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Mis1.AL0L1[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{sw\_M.denom[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Mis1.AL0L1[df1\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
 
 \NormalTok{sw\_msm1 }\OtherTok{\textless{}{-}}\NormalTok{ sw\_Ai }\SpecialCharTok{*}\NormalTok{ sw\_M.num }\SpecialCharTok{/}\NormalTok{ sw\_M.denom}
 
 \DocumentationTok{\#\# 2. Estimate coefficients of the MSM1}
-\NormalTok{MSM1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ M\_smoking }\SpecialCharTok{+}\NormalTok{ A0\_ace}\SpecialCharTok{:}\NormalTok{M\_smoking }\SpecialCharTok{+}
-\NormalTok{              L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{MSM1 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes }\SpecialCharTok{+}
+\NormalTok{              L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
             \AttributeTok{weights =}\NormalTok{ sw\_msm1,}
             \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
             \AttributeTok{data =}\NormalTok{ df1\_int)}
 \FunctionTok{coef}\NormalTok{(MSM1)}
-\CommentTok{\# (Intercept)                A0\_ace             M\_smoking}
-\CommentTok{\#  0.12033221            0.06381257            0.06691712}
-\CommentTok{\#     L0\_male L0\_parent\_low\_educ\_lv      A0\_ace:M\_smoking}
-\CommentTok{\#  0.04671886            0.05521263            0.01652446}
+\CommentTok{\# (Intercept)     A0\_PM2.5  M\_diabetes    L0\_male L0\_soc\_env  A0\_PM2.5:M\_diabetes}
+\CommentTok{\#  0.12033221   0.06381257  0.06691712 0.04671886 0.05521263           0.01652446}
 
 \DocumentationTok{\#\# 3. Stabilized weight for the MSM2}
 \CommentTok{\# 3a. sw\_A = g(A=a\_i) / g(A=a\_i | L(0))}
 \CommentTok{\# numerator}
-\NormalTok{g.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}} \DecValTok{1}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+\NormalTok{g.A }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}} \DecValTok{1}\NormalTok{, }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \NormalTok{g.Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{sw\_msm2.num }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{sw\_msm2.num[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Ais1[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{sw\_msm2.num[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Ais1[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
+\NormalTok{sw\_msm2.num[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Ais1[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{sw\_msm2.num[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Ais1[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
 
 \CommentTok{\# denominator}
-\NormalTok{g.A.L0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{g.A.L0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
               \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \NormalTok{g.Ais1.L0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{sw\_msm2.denom }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
-\NormalTok{sw\_msm2.denom[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Ais1.L0[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
-\NormalTok{sw\_msm2.denom[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Ais1.L0[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_ace}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
+\NormalTok{sw\_msm2.denom[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ g.Ais1.L0[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{1}\NormalTok{]}
+\NormalTok{sw\_msm2.denom[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ g.Ais1.L0[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5}\SpecialCharTok{==}\DecValTok{0}\NormalTok{])}
 
 \CommentTok{\# stabilized weight}
 \NormalTok{sw\_msm2 }\OtherTok{\textless{}{-}}\NormalTok{ sw\_msm2.num }\SpecialCharTok{/}\NormalTok{ sw\_msm2.denom}
 
 \DocumentationTok{\#\# 3. Estimate coefficients of the MSM2}
-\NormalTok{MSM2 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_smoking }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{MSM2 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(M\_diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
             \AttributeTok{weights =}\NormalTok{ sw\_msm2,}
             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{,}
             \AttributeTok{data =}\NormalTok{ df1\_int)}
 \FunctionTok{coef}\NormalTok{(MSM2)}
-\CommentTok{\# (Intercept)                A0\_ace               L0\_male L0\_parent\_low\_educ\_lv}
-\CommentTok{\#  {-}1.2723106             0.5883720             0.2566129             0.3270087}
+\CommentTok{\# (Intercept)    A0\_PM2.5     L0\_male   L0\_soc\_env}
+\CommentTok{\#  {-}1.2723106   0.5883720   0.2566129    0.3270087}
 
 \DocumentationTok{\#\# 4. Estimate PNDE conditional on L(0), and the marginal value of PNDE}
 \CommentTok{\# a = 1 and a* = 0}
 \CommentTok{\# PNDE|L(0) = (a {-} a*)[alpha\_A + alpha\_AM.g\^{}{-}1(a\^{}*,l(0))]}
-\NormalTok{g.minus1.A0 }\OtherTok{\textless{}{-}} \FunctionTok{plogis}\NormalTok{(}\FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"(Intercept)"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{*} \DecValTok{0} \SpecialCharTok{+}
+\NormalTok{g.minus1.A0 }\OtherTok{\textless{}{-}} \FunctionTok{plogis}\NormalTok{(}\FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"(Intercept)"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{*} \DecValTok{0} \SpecialCharTok{+}
                       \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"L0\_male"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_male }\SpecialCharTok{+}
-                      \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_parent\_low\_educ\_lv)}
+                      \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"L0\_soc\_env"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_soc\_env)}
 
 \CommentTok{\# PNDE conditional on L(0)}
-\NormalTok{PNDE\_L0 }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{+}
-                        \FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ g.minus1.A0)}
+\NormalTok{PNDE\_L0 }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}} \DecValTok{0}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+}
+                        \FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ g.minus1.A0)}
 \CommentTok{\# marginal PNDE}
 \NormalTok{PNDE }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(PNDE\_L0)}
 \CommentTok{\# [1] 0.06850657}
 
 \DocumentationTok{\#\# 4. Estimate TNIE conditional on L(0), and the marginal value of TNIE}
 \CommentTok{\# TNIE|L(0) = [g\^{}{-}1(a,l(0)) {-} g\^{}{-}1(a\^{}*,l(0))] * (alpha\_M + alpha\_AM * a)}
-\NormalTok{g.minus1.A1 }\OtherTok{\textless{}{-}} \FunctionTok{plogis}\NormalTok{(}\FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"(Intercept)"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"A0\_ace"}\NormalTok{] }\SpecialCharTok{*} \DecValTok{1} \SpecialCharTok{+}
+\NormalTok{g.minus1.A1 }\OtherTok{\textless{}{-}} \FunctionTok{plogis}\NormalTok{(}\FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"(Intercept)"}\NormalTok{] }\SpecialCharTok{+} \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{*} \DecValTok{1} \SpecialCharTok{+}
                         \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"L0\_male"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_male }\SpecialCharTok{+}
-                        \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"L0\_parent\_low\_educ\_lv"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_parent\_low\_educ\_lv)}
+                        \FunctionTok{coef}\NormalTok{(MSM2)[}\StringTok{"L0\_soc\_env"}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ df1\_int}\SpecialCharTok{$}\NormalTok{L0\_soc\_env)}
 
 \CommentTok{\# TNIE conditional on L(0)}
-\NormalTok{TNIE\_L0 }\OtherTok{\textless{}{-}}\NormalTok{ (g.minus1.A1 }\SpecialCharTok{{-}}\NormalTok{ g.minus1.A0) }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"M\_smoking"}\NormalTok{] }\SpecialCharTok{+}
-                                            \FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"A0\_ace:M\_smoking"}\NormalTok{] }\SpecialCharTok{*} \DecValTok{1}\NormalTok{)}
+\NormalTok{TNIE\_L0 }\OtherTok{\textless{}{-}}\NormalTok{ (g.minus1.A1 }\SpecialCharTok{{-}}\NormalTok{ g.minus1.A0) }\SpecialCharTok{*}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"M\_diabetes"}\NormalTok{] }\SpecialCharTok{+}
+                                            \FunctionTok{coef}\NormalTok{(MSM1)[}\StringTok{"A0\_PM2.5:M\_diabetes"}\NormalTok{] }\SpecialCharTok{*} \DecValTok{1}\NormalTok{)}
 \CommentTok{\# marginal PNDE}
 \NormalTok{TNIE }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(TNIE\_L0)}
 \CommentTok{\# [1] 0.01096799}
