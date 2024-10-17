@@ -4,9 +4,9 @@ rm(list=ls())
 
 df2_int <- read.csv(file = "data/df2_int.csv")
 
-################################################################################
-######################### Estimation of the Average Total Effect (ATE)
-################################################################################
+# ---------------------------------------------------------------------------- #
+# Estimation of the Average Total Effect (ATE) ----
+# ---------------------------------------------------------------------------- #
 library(ltmle)
 
 Qform <- c(Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace")
@@ -56,9 +56,9 @@ head(Psi_Ais1$IC$tmle)
 # [1]  0.0001003559  4.2532581791  0.0569935644 -0.0280052148  0.0569935644  0.0569935644
 
 
-########################
-### manual calculation:
-########################
+# ---------------------------------------------------------------------------- #
+## manual calculation: ----
+# ---------------------------------------------------------------------------- #
 ## 1) Estimate Qbar and predict Qbar when A0_ace is set to 1
 Q.fit <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
              family = "binomial", data = df2_int)
@@ -245,8 +245,9 @@ Psi_ATE_tmle$fit$Q
 # algorithms. The final model from the step-by-step procedure was much probably
 # a main term glm.
 
-
-################################################################################
+# ---------------------------------------------------------------------------- #
+## CDE using ltmle ----
+# ---------------------------------------------------------------------------- #
 ### CDE
 ## for binary outcomes
 library(ltmle)
@@ -319,9 +320,9 @@ summary(CDE_ltmle_M1_death)
 #  95% Conf Interval: (0.047736, 0.14182)
 
 
-
-## for continuous outcomes
-#############################
+# ---------------------------------------------------------------------------- #
+## CDE for continuous outcomes ----
+# ---------------------------------------------------------------------------- #
 data_continuous <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
                                               A0_ace, L1,
                                               M_smoking, Y_qol))
@@ -373,3 +374,307 @@ summary(CDE_ltmle_M1_qol)
 #    Estimated Std Err:  0.544
 #              p-value:  <2e-16
 #    95% Conf Interval: (-11.285, -9.1523)
+
+
+# ---------------------------------------------------------------------------- #
+# Randomized Marginal Direct and Indirect effects ----
+# ---------------------------------------------------------------------------- #
+# remotes::install_github("nhejazi/medoutcon")
+# https://arxiv.org/pdf/1912.09936
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
+library(medoutcon)
+## binary outcome ----
+### one-step ----
+### compute one-step estimate of the interventional direct effect
+set.seed(1234)
+os_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "direct",
+                   estimator = "onestep")
+os_de
+# Interventional Direct Effect
+# Estimator: onestep
+# Estimate: 0.069
+# Std. Error: 0.015
+# 95% CI: [0.041, 0.098]
+
+os_de$theta
+# [1] 0.06929891
+
+sqrt(os_de$var)
+# [1] 0.01459662
+
+set.seed(1234)
+os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "indirect",
+                   estimator = "onestep")
+os_ie
+# Interventional Indirect Effect
+# Estimator: onestep
+# Estimate: 0.013
+# Std. Error: 0.004
+# 95% CI: [0.006, 0.021]
+
+os_ie$theta
+# [1] 0.01313771
+
+### Estimate counterfactuals E(Y_{a,G_{a*}})
+set.seed(1234)
+EY_1M0 <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")],
+                      A = df2_int$A0_PM2.5,
+                      Z = df2_int$L1,
+                      M = df2_int$M_diabetes,
+                      Y = df2_int$Y_death,
+                      contrast = c(1,0),
+                      estimator = "onestep")
+EY_1M0
+# Counterfactual TSM
+# Contrast: A = 1, M(A = 0)
+# Estimator: onestep
+# Estimate: 0.272
+# Std. Error: 0.014
+# 95% CI: [0.246, 0.301]
+
+EY_0M0 <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")],
+                    A = df2_int$A0_PM2.5,
+                    Z = df2_int$L1,
+                    M = df2_int$M_diabetes,
+                    Y = df2_int$Y_death,
+                    contrast = c(0,0),
+                    estimator = "onestep")
+EY_0M0
+# Counterfactual TSM
+# Contrast: A = 0, M(A = 0)
+# Estimator: onestep
+# Estimate: 0.203
+# Std. Error: 0.004
+# 95% CI: [0.195, 0.212]
+
+## randomized Natural Direct Effect =
+rNDE <- EY_1M0$theta - EY_0M0$theta
+# [1] 0.06924538
+
+## se
+se_rNDE <- sqrt(var(EY_1M0$eif - EY_0M0$eif) / nrow(df2_int))
+# [1] 0.01459598
+
+## 95%CI
+c(rNDE - qnorm(0.975) * se_rNDE,
+  rNDE + qnorm(0.975) * se_rNDE)
+# [1] 0.04063779 0.09785298
+
+### tmle ----
+### compute tmle estimate of the interventional direct effect & indirect effects
+set.seed(1234)
+tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "direct",
+                   estimator = "tmle")
+tmle_de
+# Interventional Direct Effect
+# Estimator: tmle
+# Estimate: 0.043  <- ?? biased !
+# Std. Error: 0.015
+# 95% CI: [0.014, 0.072]
+
+tmle_de$theta
+# [1] 0.04293817
+
+sqrt(tmle_de$var)
+# [1] 0.01459662
+
+set.seed(1234)
+tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "indirect",
+                   estimator = "tmle")
+tmle_ie
+# Interventional Indirect Effect
+# Estimator: tmle
+# Estimate: 0.013
+# Std. Error: 0.004
+# 95% CI: [0.006, 0.02]
+
+
+## continuous outcome ----
+### one-step ----
+### compute one-step estimate of the interventional direct effect
+set.seed(1234)
+os_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_qol, # numeric vector
+                   effect = "direct",
+                   estimator = "onestep")
+os_de
+# Interventional Direct Effect
+# Estimator: onestep
+# Estimate: -6.66
+# Std. Error: 0.353
+# 95% CI: [-7.352, -5.969]
+
+set.seed(1234)
+os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_qol, # numeric vector
+                   effect = "indirect",
+                   estimator = "onestep")
+os_ie
+# Interventional Indirect Effect
+# Estimator: onestep
+# Estimate: -1.649
+# Std. Error: 0.178
+# 95% CI: [-1.998, -1.3]
+
+### tmle ----
+### compute tmle estimate of the interventional direct effect & indirect effects
+set.seed(1234)
+tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_qol, # numeric vector
+                     effect = "direct",
+                     estimator = "tmle")
+tmle_de
+# Interventional Direct Effect
+# Estimator: tmle
+# Estimate: -4.81   <- still weird - should we use more
+# Std. Error: 0.353
+# 95% CI: [-5.501, -4.118]
+
+set.seed(1234)
+tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_qol, # numeric vector
+                     effect = "indirect",
+                     estimator = "tmle")
+tmle_ie
+# Interventional Indirect Effect
+# Estimator: tmle
+# Estimate: -1.713
+# Std. Error: 0.178
+# 95% CI: [-2.062, -1.364]
+
+
+### checking the biased estimate by tmle ----
+set.seed(1234)
+tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_death, # numeric vector
+                     effect = "direct",
+                     g_learners = sl3::Lrnr_hal9001$new(),
+                     h_learners = sl3::Lrnr_hal9001$new(),
+                     b_learners = sl3::Lrnr_hal9001$new(),
+                     q_learners = sl3::Lrnr_hal9001$new(),
+                     r_learners = sl3::Lrnr_hal9001$new(),
+                     u_learners = sl3::Lrnr_hal9001$new(),
+                     v_learners = sl3::Lrnr_hal9001$new(),
+                     d_learners = sl3::Lrnr_hal9001$new(),
+                     estimator = "tmle")
+tmle_de
+# Interventional Direct Effect
+# Estimator: tmle
+# Estimate: 0.043     # calculation is longer but still biased ...
+# Std. Error: 0.015
+# 95% CI: [0.015, 0.072]
+
+
+### Example from N Hejazi github
+# produces a simple data set based on ca causal model with mediation
+library(data.table)
+set.seed(1584)
+make_example_data <- function(n_obs = 1000) {
+  ## baseline covariates
+  w_1 <- rbinom(n_obs, 1, prob = 0.6)
+  w_2 <- rbinom(n_obs, 1, prob = 0.3)
+  w_3 <- rbinom(n_obs, 1, prob = pmin(0.2 + (w_1 + w_2) / 3, 1))
+  w <- cbind(w_1, w_2, w_3)
+  w_names <- paste("W", seq_len(ncol(w)), sep = "_")
+
+  ## exposure
+  a <- as.numeric(rbinom(n_obs, 1, plogis(rowSums(w) - 2)))
+
+  ## mediator-outcome confounder affected by treatment
+  z <- rbinom(n_obs, 1, plogis(rowMeans(-log(2) + w - a) + 0.2))
+
+  ## mediator -- could be multivariate
+  m <- rbinom(n_obs, 1, plogis(rowSums(log(3) * w[, -3] + a - z)))
+  m_names <- "M"
+
+  ## outcome
+  y <- rbinom(n_obs, 1, plogis(1 / (rowSums(w) - z + a + m)))
+
+  ## construct output
+  dat <- as.data.table(cbind(w = w, a = a, z = z, m = m, y = y))
+  setnames(dat, c(w_names, "A", "Z", m_names, "Y"))
+  return(dat)
+}
+
+# set seed and simulate example data
+example_data <- make_example_data()
+library(stringr)
+w_names <- str_subset(colnames(example_data), "W")
+m_names <- str_subset(colnames(example_data), "M")
+
+# quick look at the data
+head(example_data)
+#>    W_1 W_2 W_3 A Z M Y
+#> 1:   1   0   1 0 0 0 1
+#> 2:   0   1   0 0 0 1 0
+#> 3:   1   1   1 1 0 1 1
+#> 4:   0   1   1 0 0 1 0
+#> 5:   0   0   0 0 0 1 1
+#> 6:   1   0   1 1 0 1 0
+
+# compute one-step estimate of the interventional direct effect
+os_de <- medoutcon(W = example_data[, ..w_names],
+                   A = example_data$A,
+                   Z = example_data$Z,
+                   M = example_data[, ..m_names],
+                   Y = example_data$Y,
+                   effect = "direct",
+                   estimator = "onestep")
+os_de
+#> Interventional Direct Effect
+#> Estimator: onestep
+#> Estimate: -0.065
+#> Std. Error: 0.054
+#> 95% CI: [-0.17, 0.041]
+
+# compute targeted minimum loss estimate of the interventional direct effect
+tmle_de <- medoutcon(W = example_data[, ..w_names],
+                     A = example_data$A,
+                     Z = example_data$Z,
+                     M = example_data[, ..m_names],
+                     Y = example_data$Y,
+                     effect = "direct",
+                     estimator = "tmle")
+tmle_de
+#> Interventional Direct Effect
+#> Estimator: tmle
+#> Estimate: -0.06
+#> Std. Error: 0.058
+#> 95% CI: [-0.173, 0.053]

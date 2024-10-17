@@ -2,7 +2,7 @@
 
 Marginal structural models (MSM) are parametric models that are used to summarize the relationship between the counterfactual outcome ($Y_a$ or $Y_{am}$ for example) and the exposure(s) $A$ and mediators $M$. It also possible to summarize the relationship according to a subset of the baseline confounders if it is relevant for the scientific question.
 
-To illustrate the application of MSMs, we will first use the data simulated from the Causal model 1 (with an $A \ast M$ interaction effect on the outcome) where the exposure $A$ doesn't affect the counfonder $L(1)$ between the mediator and the outcome.
+To illustrate the application of MSMs, we will first use the data simulated from the Causal model 1 (with an $A \ast M$ interaction effect on the outcome) where the exposure $A$ doesn't affect the confounder $L(1)$ between the mediator and the outcome.
 
 ## MSM for the Average Total Effect (ATE) {#msm_ATE_paragraph}
 
@@ -26,7 +26,7 @@ Such a model is not very useful for a binary exposure. It would be much more use
 It is also possible to define MSMs adjusted for a subset $V$ of the baseline confounders ($V \subset L(0)$). Such MSMs can be useful to estimate conditional effects. For example it is possible to define an average "conditional" total effect $\text{ATE}|L(0)$ (instead of the marginal ATE defined above), projecting the counterfactual outcomes on a parametric model such as the following: 
 
 \begin{equation} 
-  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{low.educ.} L_\text{low.educ.}(0)
+  \mathbb{E}(Y_a \mid L(0)) = \alpha_0 + \alpha_A a + \alpha_\text{male} L_\text{male}(0) + \alpha_\text{soc.env.} L_\text{soc.env.}(0)
   (\#eq:MSMATEcond)
 \end{equation}
 
@@ -64,19 +64,22 @@ where $w_i=\frac{1}{P(A=a_i \mid L(0)=l(0)_i)}$ or $sw_i=\frac{P(A=a_i \mid L_\t
 As in chapter \@ref(ChapIptw), the "no-unmeasured confounding" assumption is addressed by the application of weights $w_i$ or $sw_i$, which balance confounders $L(0)$ relative to the exposure $A$.
 
 ```{r Psi_ATE_bysex_MSM, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+
 ## 1. Denominator of the weight
 # 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)
-g.A.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+g.A.L <- glm(A0_PM2.5 ~ L0_male + L0_soc_env,
            family = "binomial", data = df1_int)
 
 # 1b. Predict each individual's probability of being exposed to her own exposure
-# predict the probabilities P(A0_ace=1 & P(A0_ace=0)
+# predict the probabilities P(A0_PM2.5 = 1) & P(A0_PM2.5 = 0)
 pred.g1.L <- predict(g.A.L, type="response")
 pred.g0.L <- 1 - pred.g1.L
 # the predicted probability of the observed treatment P(A = a_i | L(0)) is :
 gAi.L <- rep(NA, nrow(df1_int))
-gAi.L[df1_int$A0_ace==1] <- pred.g1.L[df1_int$A0_ace==1]
-gAi.L[df1_int$A0_ace==0] <- pred.g0.L[df1_int$A0_ace==0]
+gAi.L[df1_int$A0_PM2.5==1] <- pred.g1.L[df1_int$A0_PM2.5==1]
+gAi.L[df1_int$A0_PM2.5==0] <- pred.g0.L[df1_int$A0_PM2.5==0]
 
 ## 2. Numerator of the weight
 # The numerator of the weight can be 1 for simple weights,
@@ -84,17 +87,17 @@ gAi.L[df1_int$A0_ace==0] <- pred.g0.L[df1_int$A0_ace==0]
 # with less observation. Stabilized weights enable a weaker positivity assumption.
 
 # 2a. Estimate g(A=a_i | sex) (numerator of the stabilized weight)
-g.A.sex <- glm(A0_ace ~ L0_male,
-           family = "binomial", data = df1_int)
+g.A.sex <- glm(A0_PM2.5 ~ L0_male,
+               family = "binomial", data = df1_int)
 
 # 2b. Predict each individual's probability of being exposed to her own exposure
-# predict the probabilities P(A0_ace=1 | sex) & P(A0_ace=0 | sex)
+# predict the probabilities P(A0_PM2.5 = 1 | sex) & P(A0_PM2.5 = 0 | sex)
 pred.g1.sex <- predict(g.A.sex, type="response")
 pred.g0.sex <- 1 - pred.g1.sex
 # the predicted probability of the observed treatment P(A = a_i | sex) is :
 gAi.sex <- rep(NA, nrow(df1_int))
-gAi.sex[df1_int$A0_ace==1] <- pred.g1.sex[df1_int$A0_ace==1]
-gAi.sex[df1_int$A0_ace==0] <- pred.g0.sex[df1_int$A0_ace==0]
+gAi.sex[df1_int$A0_PM2.5==1] <- pred.g1.sex[df1_int$A0_PM2.5==1]
+gAi.sex[df1_int$A0_PM2.5==0] <- pred.g0.sex[df1_int$A0_PM2.5==0]
 
 ## 3. Define individual weights:
 # We can use simple weights w = 1 / g(A=a_i | L(0))
@@ -105,46 +108,75 @@ sw <- gAi.sex / gAi.L
 
 # we can see that stabilized weights have less extreme values
 par(mfcol = c(1,2))
-boxplot(w ~ df1_int$A0_ace)
-boxplot(sw ~ df1_int$A0_ace)
+boxplot(w ~ df1_int$A0_PM2.5)
+boxplot(sw ~ df1_int$A0_PM2.5)
+par(mfcol = c(1,1))
+
+## applying these weights creates a pseudo-population were the baseline
+## confounders are balanced, relative to the exposure:
+## before applying weights to the individuals:
+table(df1_int$L0_male, df1_int$A0_PM2.5, deparse.level = 2)
+#                df1_int$A0_PM2.5
+# df1_int$L0_male    0    1
+#               0 4527  463
+#               1 4349  661
+prop.table(table(df1_int$L0_male, df1_int$A0_PM2.5, deparse.level = 2),
+           margin = 2)
+#                          df1_int$A0_PM2.5
+# df1_int$L0_male         0         1
+#               0 0.5100270 0.4119217
+#               1 0.4899730 0.5880783   # sex is unbalanced: 49% versus 59%
+
+## after applying weights to the individuals:
+library(questionr) # The questionr package enables to describe weighted populations
+wtd.table(x = df1_int$L0_male, y = df1_int$A0_PM2.5,
+          weights = w)
+#          0        1
+# 0 4989.425 4918.462
+# 1 5010.862 5057.676
+prop.table(wtd.table(x = df1_int$L0_male, y = df1_int$A0_PM2.5,
+                     weights = w), margin = 2)
+#           0         1
+# 0 0.4989282 0.4930227
+# 1 0.5010718 0.5069773 # sex is balanced in the weighted population
 
 ## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
 # a GLM with gaussian family can be applied to estimate risk differences
 # (for relative risk or rate ratios, we can apply a Poisson family; 
 #  for OR, we can apply a binomial family)
-msm1 <- glm(Y_death ~ A0_ace + L0_male + A0_ace*L0_male,
-           weights = w, # applying the simple weight
+msm1 <- glm(Y_death ~ A0_PM2.5 + L0_male + A0_PM2.5*L0_male,
+           weights = w,
            family = "gaussian",
            data = df1_int)
 coef(msm1)
-# (Intercept)         A0_ace        L0_male A0_ace:L0_male
-# 0.17573472     0.03589627     0.04598911     0.04136896
+# (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male
+#  0.17573472       0.05883228       0.04598911       0.03077614
 
-msm2 <- glm(Y_death ~ A0_ace + L0_male + A0_ace*L0_male,
-            weights = sw, # applying the stabilized weight
+msm2 <- glm(Y_death ~ A0_PM2.5 + L0_male + A0_PM2.5*L0_male,
+            weights = sw,
             family = "gaussian",
             data = df1_int)
 coef(msm2)
-# (Intercept)         A0_ace        L0_male A0_ace:L0_male
-# 0.17573472     0.03589627     0.04598911     0.04136896
+# (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male
+#  0.17573472       0.05883228       0.04598911       0.03077614
 
 ## 5. Estimate the ATE stratified by sex
-# According to the MSM1 (with simple weights)
-ATE.msm1.male0 <- coef(msm1)["A0_ace"]
-# 0.03589627
-ATE.msm1.male1 <- coef(msm1)["A0_ace"] + coef(msm1)["A0_ace:L0_male"]
-# 0.07726522
+# According to MSM1 (with simple weights)
+ATE.msm1.male0 <- coef(msm1)["A0_PM2.5"]
+# 0.05883228
+ATE.msm1.male1 <- coef(msm1)["A0_PM2.5"] + coef(msm1)["A0_PM2.5:L0_male"]
+# 0.08960842
 
 # According to the MSM2 (with stabilized weights)
-ATE.msm2.male0 <- coef(msm2)["A0_ace"]
-# 0.03589627
-ATE.msm2.male1 <- coef(msm2)["A0_ace"] + coef(msm2)["A0_ace:L0_male"]
-# 0.07726522
+ATE.msm2.male0 <- coef(msm2)["A0_PM2.5"]
+# 0.05883228
+ATE.msm2.male1 <- coef(msm2)["A0_PM2.5"] + coef(msm2)["A0_PM2.5:L0_male"]
+# 0.08960842
 # The results are the same because there is no violation of the positivity assumption
 # In case of positivity violation, stabilized weights would give more accurate estimates
 ```
 
-The ATE estimates of death probability using an MSM estimated by IPTW are respectively +3.6\% in women and +7.7\% in men.
+The ATE estimates of death probability using an MSM estimated by IPTW are respectively +5.9\% in women and +9.0\% in men.
 
 95\% confidence intervals can be calculated by bootstrap.
 
@@ -172,8 +204,11 @@ The following steps can be applied:
 
 
 ```{r Psi_ATE_bysex_MSM_gcomp, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+
 ## 1. Estimate Qbar
-Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
                    family = "gaussian", data = df1_int)
 # The final result would be sligthly different if we apply a binomial family.
 
@@ -182,8 +217,8 @@ Q.tot.death <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
 # prepare data sets used to predict the outcome under the counterfactual
 # scenarios setting A=0 and A=1
 data.A1 <- data.A0 <- df1_int
-data.A1$A0_ace <- 1
-data.A0$A0_ace <- 0
+data.A1$A0_PM2.5 <- 1
+data.A0$A0_PM2.5 <- 0
 
 # predict values under the same name in the corresponding counterfactual dataset
 data.A1$Ya.death.pred <- predict(Q.tot.death, newdata = data.A1, type = "response")
@@ -196,19 +231,19 @@ data.2scenarios <- rbind(data.A0, data.A1)
 
 ## 4. fit the MSM: E(Y_a|sex)
 # a GLM with gaussian family can be applied to estimate risk differences
-MSM.ATE.gcomp <- glm(Ya.death.pred ~ A0_ace + L0_male + A0_ace:L0_male,
+MSM.ATE.gcomp <- glm(Ya.death.pred ~ A0_PM2.5 + L0_male + A0_PM2.5:L0_male,
                      family = "gaussian",
                      data = data.2scenarios)
 coef(MSM.ATE.gcomp)
-#  (Intercept)         A0_ace        L0_male A0_ace:L0_male
-# 1.743994e-01   7.720726e-02   4.874750e-02   4.802530e-16
+#  (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male 
+# 1.743994e-01     7.720726e-02     4.874750e-02     5.087110e-16
 
 ## 5. Estimate the ATE stratified by sex
 # According to MSM.ATE.gcomp
-ATE.MSM.gcomp.male0 <- coef(MSM.ATE.gcomp)["A0_ace"]
+ATE.MSM.gcomp.male0 <- coef(MSM.ATE.gcomp)["A0_PM2.5"]
 # 0.07720726
-ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_ace"] +
-                          coef(MSM.ATE.gcomp)["A0_ace:L0_male"])
+ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_PM2.5"] +
+                          coef(MSM.ATE.gcomp)["A0_PM2.5:L0_male"])
 # 0.07720726
 # The results are the same in both strata, because in the first Qbar model,
 # we did not include any (A * sex) interaction term
@@ -255,50 +290,52 @@ where $sw_i$ is the product of two weights $sw_i = sw_{A,i} \times sw_{M,i}$,
 
 $sw_{A,i}=\frac{P(A=a_i)}{P(A=a_i \mid L(0)=l(0)_i)}$ and $sw_{M,i}=\frac{P(M=m_i \mid A=a_i)}{P(M = m_i \mid A=a_i,L(0)=l(0)_i), L(1)=l(1)_i}$. 
 
-The "no-unmeasured confounding" assumption is addressed by the application of weights  $sw_i$, which balance confounders $L(0)$ relative to the exposure-outcome $A-Y$ relationship, and balance the set of confounders $\{L(0),A,L(1)\}$ relative to the mediator-outcome $M-Y$ relationship. 
+The "no-unmeasured confounding" assumption is addressed by the application of weights  $sw_i$, which balances confounders $L(0)$ relative to the exposure-outcome $A-Y$ relationship, and balance the set of confounders $\{L(0),A,L(1)\}$ relative to the mediator-outcome $M-Y$ relationship. 
 
-Importantly, this approach for the estimation of the controlled direct effect $\text{CDE}_m$ by IPTW is also valid if the exposure $A$ affects the intermediate confounder $L(1)$ (as with the Causal model 2).
-
-```{r Psi_CDE_MSM_IPTW, echo=TRUE, eval = FALSE}
+#### Example 1, with no intermediate confounder affected by the exposure
+```{r Psi_CDE_MSM_IPTW1, echo=TRUE, eval = FALSE}
 ### MSM of CDE, estimated by IPTW ----------------------------------------------
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+
 ## 1. Stabilized weight for the exposure sw_{A,i}
 # 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)
-g.A.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+g.A.L <- glm(A0_PM2.5 ~ L0_male + L0_soc_env,
              family = "binomial", data = df1_int)
 # 1b. Predict each individual's probability of being exposed to her own exposure
 # the predicted probability of the observed treatment g(A = a_i | L(0)) is :
 gAi.L <- rep(NA, nrow(df1_int))
-gAi.L[df1_int$A0_ace==1] <- predict(g.A.L, type="response")[df1_int$A0_ace==1]
-gAi.L[df1_int$A0_ace==0] <- (1 - predict(g.A.L, type="response"))[df1_int$A0_ace==0]
+gAi.L[df1_int$A0_PM2.5==1] <- predict(g.A.L, type="response")[df1_int$A0_PM2.5==1]
+gAi.L[df1_int$A0_PM2.5==0] <- (1 - predict(g.A.L, type="response"))[df1_int$A0_PM2.5==0]
 
 # 1c. Estimate g(A=a_i) (numerator of the weight)
-g.A <- glm(A0_ace ~ 1, family = "binomial", data = df1_int)
+g.A <- glm(A0_PM2.5 ~ 1, family = "binomial", data = df1_int)
 # 1d. Predict each individual's probability of being exposed to her own exposure
 # the predicted probability of the observed treatment g(A = a_i) is :
 gAi <- rep(NA, nrow(df1_int))
-gAi[df1_int$A0_ace==1] <- predict(g.A, type="response")[df1_int$A0_ace==1]
-gAi[df1_int$A0_ace==0] <- (1 - predict(g.A, type="response"))[df1_int$A0_ace==0]
+gAi[df1_int$A0_PM2.5==1] <- predict(g.A, type="response")[df1_int$A0_PM2.5==1]
+gAi[df1_int$A0_PM2.5==0] <- (1 - predict(g.A, type="response"))[df1_int$A0_PM2.5==0]
 
 # 1e. Calculate the weight for the exposure A: sw_{A,i}
 sw_Ai <- gAi / gAi.L
 
 ## 2. Stabilized weight for the mediator sw_{M,i}
 # 2a. Estimate g(M=m_i|L(0),A,L(1)) (denominator of the weight)
-g.M.L <- glm(M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1,
+g.M.L <- glm(M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
              family = "binomial", data = df1_int)
 # 2b. Predict each individual's probability of being exposed to her own exposure
 # the predicted probability of the observed treatment g(A = a_i | L(0)) is :
 gMi.L <- rep(NA, nrow(df1_int))
-gMi.L[df1_int$M_smoking==1] <- predict(g.M.L, type="response")[df1_int$M_smoking==1]
-gMi.L[df1_int$M_smoking==0] <- (1 - predict(g.M.L, type="response"))[df1_int$M_smoking==0]
+gMi.L[df1_int$M_diabetes==1] <- predict(g.M.L, type="response")[df1_int$M_diabetes==1]
+gMi.L[df1_int$M_diabetes==0] <- (1 - predict(g.M.L, type="response"))[df1_int$M_diabetes==0]
 
 # 2c. Estimate g(M=m_i|A) (numerator of the weight)
-g.M.A <- glm(M_smoking ~ A0_ace, family = "binomial", data = df1_int)
+g.M.A <- glm(M_diabetes ~ A0_PM2.5, family = "binomial", data = df1_int)
 # 2d. Predict each individual's probability of being exposed to her own exposure
 # the predicted probability of the observed treatment g(M = m_i|A) is :
 gMi.A <- rep(NA, nrow(df1_int))
-gMi.A[df1_int$M_smoking==1] <- predict(g.M.A, type="response")[df1_int$M_smoking==1]
-gMi.A[df1_int$M_smoking==0] <- (1 - predict(g.M.A, type="response"))[df1_int$M_smoking==0]
+gMi.A[df1_int$M_diabetes==1] <- predict(g.M.A, type="response")[df1_int$M_diabetes==1]
+gMi.A[df1_int$M_diabetes==0] <- (1 - predict(g.M.A, type="response"))[df1_int$M_diabetes==0]
 # 2e. Calculate the weight for the mediator M: sw_{M,i}
 sw_Mi <- gMi.A / gMi.L
 
@@ -307,22 +344,272 @@ sw_cde <- sw_Ai * sw_Mi
 
 ## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
 # a GLM with gaussian family can be applied to estimate risk differences
-msm_cde <- glm(Y_death ~ A0_ace + M_smoking + A0_ace*M_smoking,
+msm_cde <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5*M_diabetes,
                weights = sw_cde,
                family = "gaussian",
                data = df1_int)
 coef(msm_cde)
-# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking 
-#  0.17891689       0.06798282       0.06729724      -0.00495314
+# (Intercept)            A0_PM2.5          M_diabetes A0_PM2.5:M_diabetes 
+#  0.17891689          0.06798282          0.06729724         -0.00495314
 
 ## 5. Estimate CDE for m=0 and for m=1 using the MSM's coefficients
-CDE_mis0 <- coef(msm_cde)["A0_ace"]
+CDE_mis0 <- coef(msm_cde)["A0_PM2.5"]
 # 0.06798282
-CDE_mis1 <- coef(msm_cde)["A0_ace"] + coef(msm_cde)["A0_ace:M_smoking"]
+CDE_mis1 <- coef(msm_cde)["A0_PM2.5"] + coef(msm_cde)["A0_PM2.5:M_diabetes"]
 # 0.06302968
 ```
 
 In this example, our estimates of the controlled direct effects are $CDE_{M=0} = 6.8\%$ and $CDE_{M=1} = 6.3\%$. Confidence intervals can be calculated by bootstrap.
+
+Importantly, this approach for the estimation of the controlled direct effect $\text{CDE}_m$ by IPTW is also valid if the exposure $A$ affects the intermediate confounder $L(1)$ (as with the Causal model 2).
+
+#### Example 2, with intermediate confounder affected by the exposure
+Below, we estimate the CDE by hand, and using the `ltmle` package and the `CMAverse` package
+```{r Psi_CDE_MSM_IPTW2, echo=TRUE, eval = FALSE}
+### MSM of CDE, estimated by IPTW
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
+## 1. Stabilized weight for the exposure sw_{A,i}
+# 1a. Estimate g(A=a_i|L(0)) (denominator of the weight)
+g.A.L <- glm(A0_PM2.5 ~ L0_male + L0_soc_env,
+             family = "binomial", data = df2_int)
+# 1b. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(A = a_i | L(0)) is :
+gAi.L <- rep(NA, nrow(df2_int))
+gAi.L[df2_int$A0_PM2.5==1] <- predict(g.A.L, type="response")[df2_int$A0_PM2.5==1]
+gAi.L[df2_int$A0_PM2.5==0] <- (1 - predict(g.A.L, type="response"))[df2_int$A0_PM2.5==0]
+
+# 1c. Estimate g(A=a_i) (numerator of the weight)
+g.A <- glm(A0_PM2.5 ~ 1, family = "binomial", data = df2_int)
+# 1d. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(A = a_i) is :
+gAi <- rep(NA, nrow(df2_int))
+gAi[df2_int$A0_PM2.5==1] <- predict(g.A, type="response")[df2_int$A0_PM2.5==1]
+gAi[df2_int$A0_PM2.5==0] <- (1 - predict(g.A, type="response"))[df2_int$A0_PM2.5==0]
+
+# 1e. Calculate the weight for the exposure A: sw_{A,i}
+sw_Ai <- gAi / gAi.L
+
+## 2. Stabilized weight for the mediator sw_{M,i}
+# 2a. Estimate g(M=m_i|L(0),A,L(1)) (denominator of the weight)
+g.M.L <- glm(M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+             family = "binomial", data = df2_int)
+# 2b. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(A = a_i | L(0)) is :
+gMi.L <- rep(NA, nrow(df2_int))
+gMi.L[df2_int$M_diabetes==1] <- predict(g.M.L, type="response")[df2_int$M_diabetes==1]
+gMi.L[df2_int$M_diabetes==0] <- (1 - predict(g.M.L, type="response"))[df2_int$M_diabetes==0]
+
+# 2c. Estimate g(M=m_i|A) (numerator of the weight)
+g.M.A <- glm(M_diabetes ~ A0_PM2.5, family = "binomial", data = df2_int)
+# 2d. Predict each individual's probability of being exposed to her own exposure
+# the predicted probability of the observed treatment g(M = m_i|A) is :
+gMi.A <- rep(NA, nrow(df2_int))
+gMi.A[df2_int$M_diabetes==1] <- predict(g.M.A, type="response")[df2_int$M_diabetes==1]
+gMi.A[df2_int$M_diabetes==0] <- (1 - predict(g.M.A, type="response"))[df2_int$M_diabetes==0]
+# 2e. Calculate the weight for the mediator M: sw_{M,i}
+sw_Mi <- gMi.A / gMi.L
+
+## 3. Define the individual stabilized weight for the CDE_m
+sw_cde <- sw_Ai * sw_Mi
+
+## 4. Estimate coefficients of the MSM using a weighted regression E(Y | A, sex)
+# a GLM with gaussian family can be applied to estimate risk differences
+msm_cde <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5*M_diabetes,
+               weights = sw_cde,
+               family = "gaussian",
+               data = df2_int)
+coef(msm_cde)
+# (Intercept)            A0_PM2.5          M_diabetes A0_PM2.5:M_diabetes
+#  0.17932146          0.06012920          0.07239661          0.03017266
+
+## 5. Estimate CDE for m=0 and for m=1 using the MSM's coefficients
+CDE_mis0 <- coef(msm_cde)["A0_PM2.5"]
+# 0.0601292
+CDE_mis1 <- coef(msm_cde)["A0_PM2.5"] + coef(msm_cde)["A0_PM2.5:M_diabetes"]
+# 0.09030186
+
+
+### Estimation by IPTW using ltmle package
+library(ltmle)
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5",
+           Y_death="Q.kplus1 ~ L0_male + L0_soc_env + L1 +
+                    A0_PM2.5 * M_diabetes")
+gform <- c("A0_PM2.5 ~ L0_male + L0_soc_env",
+           "M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1")
+data_binary <- subset(df2_int, select = c(L0_male, L0_soc_env,
+                                          A0_PM2.5, L1,
+                                          M_diabetes, Y_death))
+CDE_ltmle_M0_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_PM2.5", "M_diabetes"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
+                                        c(0,0)), # counterfactual intervention do(A=0,M=0)
+                            SL.library = NULL,
+                            estimate.time = FALSE, # estimate computation time?
+                            iptw.only = TRUE, # for only IPTW estimations (no TMLE)
+                            gcomp = FALSE,
+                            variance.method = "iptw") # IPTW influence curve
+# CDE with M=0
+summary(CDE_ltmle_M0_death, estimator = "iptw")$effect.measures$ATE
+# $estimate
+# [1] 0.0601292
+# $CI
+#            2.5%      97.5%
+# [1,] 0.02424819 0.09601021
+
+CDE_ltmle_M1_death <- ltmle(data = data_binary,
+                            Anodes = c("A0_PM2.5", "M_diabetes"),
+                            Lnodes = c("L1"), # intermediate confounders +/- baseline
+                            Ynodes = c("Y_death"),
+                            survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
+                            Qform = Qform,
+                            gform = gform,
+                            abar = list(c(1,1), # counterfactual intervention do(A=1,M=0)
+                                        c(0,1)), # counterfactual intervention do(A=0,M=0)
+                            SL.library = NULL,
+                            estimate.time = FALSE, # estimate computation time?
+                            iptw.only = TRUE, # for only IPTW estimations (no TMLE)
+                            gcomp = FALSE,
+                            variance.method = "iptw") # IPTW influence curve
+# CDE with M=1
+summary(CDE_ltmle_M1_death, estimator = "iptw")$effect.measures$ATE
+# $estimate
+# [1] 0.09030186
+# $CI
+#            2.5%     97.5%
+# [1,] 0.04084792 0.1397558
+
+## we obtain the same results as the IPTW estimation by hand
+
+
+### Estimation by IPTW using ltmle package
+library(CMAverse)
+library(CMAverse)
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+cmdag(outcome = "Y_death", exposure = "A0_PM2.5", mediator = "M_diabetes",
+      basec = c("L0_male", "L0_soc_env"), postc = "L1", node = TRUE, text_col = "white")
+# In this setting, we can use the marginal structural model and the $g$-formula approach. The results are shown below.
+
+## The Marginal Structural Model
+res_msm_RD <- cmest(data = df2_int,
+                    model = "msm",
+                    outcome = "Y_death",
+                    exposure = "A0_PM2.5",
+                    mediator = "M_diabetes",
+                    basec = c("L0_male", "L0_soc_env"),
+                    postc = "L1",
+                    EMint = TRUE, # E*M interaction
+                    ereg = "logistic",
+                    yreg = "linear", # MSM is a linear regression (to get RD)
+                    mreg = list("logistic"),
+                    wmnomreg = list("logistic"),
+                    wmdenomreg = list("logistic"),
+                    astar = 0, #E(Y_{A=0,M=1})
+                    a = 1,  #E(Y_{A=1,M=1})
+                    mval = list(1), # for the CDE, set mediator to M=1
+                    estimation = "imputation",
+                    inference = "bootstrap",
+                    nboot = 2)
+
+summary(res_msm_RD)
+# Causal Mediation Analysis
+# # Outcome regression:
+# Call:
+#   glm(formula = Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5 * M_diabetes, 
+#       family = gaussian(), data = getCall(x$reg.output$yreg)$data, 
+#       weights = getCall(x$reg.output$yreg)$weights)
+# Coefficients:
+#                       Estimate Std. Error t value Pr(>|t|)      # MSM coef
+#   (Intercept)         0.179321   0.005242  34.210  < 2e-16 ***  # are the
+#   A0_PM2.5            0.060129   0.017253   3.485 0.000494 ***  # same as
+#   M_diabetes          0.072397   0.009242   7.834 5.21e-15 ***  # calculation
+#   A0_PM2.5:M_diabetes 0.030173   0.025895   1.165 0.243960      # by hand
+#
+# # Mediator regressions: 
+# Call:
+#   glm(formula = M_diabetes ~ A0_PM2.5, family = binomial(), data = getCall(x$reg.output$mreg[[1L]])$data, 
+#       weights = getCall(x$reg.output$mreg[[1L]])$weights)
+# Coefficients:
+#               Estimate Std. Error z value Pr(>|z|)    
+#   (Intercept) -0.73432    0.02268 -32.384  < 2e-16 ***
+#   A0_PM2.5     0.51531    0.06422   8.024 1.02e-15 ***
+# 
+# # Mediator regressions for weighting (denominator): 
+# Call:
+#   glm(formula = M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + 
+#         L1, family = binomial(), data = getCall(x$reg.output$wmdenomreg[[1L]])$data, 
+#       weights = getCall(x$reg.output$wmdenomreg[[1L]])$weights)
+# Coefficients:
+#               Estimate Std. Error z value Pr(>|z|)    
+#   (Intercept) -1.36249    0.04783 -28.488  < 2e-16 ***
+#   A0_PM2.5     0.30994    0.06668   4.648 3.35e-06 ***
+#   L0_male      0.24661    0.04369   5.644 1.66e-08 ***
+#   L0_soc_env   0.30628    0.04650   6.587 4.50e-11 ***
+#   L1           0.86045    0.04493  19.152  < 2e-16 ***
+# 
+# # Mediator regressions for weighting (nominator): 
+# Call:
+#   glm(formula = M_diabetes ~ A0_PM2.5, family = binomial(), data = getCall(x$reg.output$wmnomreg[[1L]])$data, 
+#       weights = getCall(x$reg.output$wmnomreg[[1L]])$weights)
+# Coefficients:
+#               Estimate Std. Error z value Pr(>|z|)    
+#   (Intercept) -0.74205    0.02271 -32.680   <2e-16 ***
+#   A0_PM2.5     0.55288    0.06408   8.628   <2e-16 ***
+# 
+# # Exposure regression for weighting: 
+# Call:
+#   glm(formula = A0_PM2.5 ~ L0_male + L0_soc_env, family = binomial(), 
+#       data = getCall(x$reg.output$ereg)$data, weights = getCall(x$reg.output$ereg)$weights)
+# Coefficients:
+#               Estimate Std. Error z value Pr(>|z|)    
+#   (Intercept) -2.73244    0.07425 -36.799  < 2e-16 ***
+#   L0_male      0.40580    0.06447   6.294 3.09e-10 ***
+#   L0_soc_env   0.64060    0.07350   8.716  < 2e-16 ***
+# 
+# # Effect decomposition on the mean difference scale via the marginal structural model
+# Direct counterfactual imputation estimation with 
+# bootstrap standard errors, percentile confidence intervals and p-values 
+#                   Estimate  Std.error    95% CIL 95% CIU  P.val    
+#   cde            9.030e-02  1.601e-02  6.094e-02   0.082 <2e-16 *** # same result
+#   rpnde          7.003e-02  1.600e-02  5.838e-02   0.080 <2e-16 ***
+#   rtnde          7.374e-02  1.597e-02  5.888e-02   0.080 <2e-16 ***
+#   rpnie          8.903e-03  9.159e-04  8.284e-03   0.010 <2e-16 ***
+#   rtnie          1.261e-02  9.523e-04  8.738e-03   0.010 <2e-16 ***
+#   te             8.265e-02  1.505e-02  6.839e-02   0.089 <2e-16 ***
+#   rintref       -2.027e-02  7.341e-06 -2.571e-03  -0.003 <2e-16 ***
+#   rintmed        3.710e-03  3.634e-05  4.542e-04   0.001 <2e-16 ***
+#   cde(prop)      1.093e+00  2.940e-02  8.907e-01   0.930 <2e-16 ***
+#   rintref(prop) -2.452e-01  6.289e-03 -3.752e-02  -0.029 <2e-16 ***
+#   rintmed(prop)  4.489e-02  1.662e-03  5.140e-03   0.007 <2e-16 ***
+#   rpnie(prop)    1.077e-01  3.403e-02  9.376e-02   0.139 <2e-16 ***
+#   rpm            1.526e-01  3.569e-02  9.890e-02   0.147 <2e-16 ***
+#   rint          -2.004e-01  4.627e-03 -3.014e-02  -0.024 <2e-16 ***
+#   rpe           -9.263e-02  2.940e-02  6.983e-02   0.109 <2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+#  (cde: controlled direct effect; 
+#  rpnde: randomized analogue of pure natural direct effect; 
+#  rtnde: randomized analogue of total natural direct effect; 
+#  rpnie: randomized analogue of pure natural indirect effect; 
+#  rtnie: randomized analogue of total natural indirect effect; 
+#  te: total effect; rintref: randomized analogue of reference interaction; 
+#  rintmed: randomized analogue of mediated interaction; 
+#  cde(prop): proportion cde; 
+#  rintref(prop): proportion rintref; 
+#  rintmed(prop): proportion rintmed; 
+#  rpnie(prop): proportion rpnie; 
+#  rpm: randomized analogue of overall proportion mediated; 
+#  rint: randomized analogue of overall proportion attributable to interaction; 
+#  rpe: randomized analogue of overall proportion eliminated)
+```
 
 
 ### Estimation of the MSM coefficients by G-computation
@@ -344,10 +631,13 @@ Note that the algorithm described below is correct only if the exposure $A$ does
 4. Fit the MSM $\mathbb{E}(Y_{am}) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{A \ast M} a \times m$ using the long dataset.
 
 ```{r Psi_CDE_MSM_gcomp, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+
 ### MSM of CDE, estimated by G-computation -------------------------------------
 ## 1. Estimate Qbar(A,M,L0,L1)
-Q.cde.death <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking + L0_male + 
-                     L0_parent_low_educ_lv + L1,
+Q.cde.death <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes + 
+                     L0_male + L0_soc_env + L1,
                    family = "gaussian", data = df1_int)
 # The final result would be sligthly different if we applied a binomial family
 # The Gaussian family corresponds to the true generating model in this example.
@@ -356,17 +646,17 @@ Q.cde.death <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking + L0_male +
 # Prepare data sets that will be used to predict the outcome under the counterfactual
 # 4 counterfactual scenarios setting (A=0,M=0), (A=1,M=0), (A=0,M=1) and (A=1,M=1)
 data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df1_int
-data.A0M0$A0_ace <- 0
-data.A0M0$M_smoking <- 0
+data.A0M0$A0_PM2.5 <- 0
+data.A0M0$M_diabetes <- 0
 
-data.A1M0$A0_ace <- 1
-data.A1M0$M_smoking <- 0
+data.A1M0$A0_PM2.5 <- 1
+data.A1M0$M_diabetes <- 0
 
-data.A0M1$A0_ace <- 0
-data.A0M1$M_smoking <- 1
+data.A0M1$A0_PM2.5 <- 0
+data.A0M1$M_diabetes <- 1
 
-data.A1M1$A0_ace <- 1
-data.A1M1$M_smoking <- 1
+data.A1M1$A0_PM2.5 <- 1
+data.A1M1$M_diabetes <- 1
 
 # predict values under the same name in the corresponding counterfactual dataset
 data.A0M0$Yam.death.pred <- predict(Q.cde.death, newdata = data.A0M0, type = "response")
@@ -379,21 +669,21 @@ data.A1M1$Yam.death.pred <- predict(Q.cde.death, newdata = data.A1M1, type = "re
 data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
 
 ## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m
-MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_PM2.5 +  M_diabetes + A0_PM2.5:M_diabetes,
                      family = "gaussian", # gaussian family for risk differences
                      data = data.4scenarios)
 coef(MSM.CDE.gcomp)
-# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
-#  0.17968603       0.06000138       0.06757214       0.01918153
+# (Intercept)            A0_PM2.5          M_diabetes A0_PM2.5:M_diabetes 
+#  0.17968603          0.06000138          0.06757214          0.01918153
 
 ## 5. Estimate the CDE(M=m)
 # CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
-CDE_mis0_gcomp <- coef(MSM.CDE.gcomp)["A0_ace"]
+CDE_mis0_gcomp <- coef(MSM.CDE.gcomp)["A0_PM2.5"]
 # 0.06000138
 
 # CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
-CDE_mis1_gcomp <- (coef(MSM.CDE.gcomp)["A0_ace"] +
-                     coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+CDE_mis1_gcomp <- (coef(MSM.CDE.gcomp)["A0_PM2.5"] +
+                     coef(MSM.CDE.gcomp)["A0_PM2.5:M_diabetes"])
 # 0.07918291
 
 # Note: Applying a binomial family for the first Qbar model would result in two
@@ -406,26 +696,29 @@ If the exposure $A$ affects the intermediate confounder $L(1)$, as in the Causal
 
 Here is an example applying G-computation by iterative conditional expectation:
 ```{r Psi_CDE_MSM_gcomp_ice, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
 ### MSM of CDE, estimated by G-computation (by ICE) ----------------------------
 ## 1a) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
-Y.death.model <- glm(Y_death ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1 +
-                       M_smoking + A0_ace:M_smoking,
+Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                       M_diabetes + A0_PM2.5:M_diabetes,
                      family = "binomial", data = df2_int)
 
 ## 1b) Generate predicted values by evaluating the regression  
 ##     under the 4 counterfactual scenarios
 data.A0M0 <- data.A1M0 <- data.A0M1 <- data.A1M1 <- df2_int
-data.A0M0$A0_ace <- 0
-data.A0M0$M_smoking <- 0
+data.A0M0$A0_PM2.5 <- 0
+data.A0M0$M_diabetes <- 0
 
-data.A1M0$A0_ace <- 1
-data.A1M0$M_smoking <- 0
+data.A1M0$A0_PM2.5 <- 1
+data.A1M0$M_diabetes <- 0
 
-data.A0M1$A0_ace <- 0
-data.A0M1$M_smoking <- 1
+data.A0M1$A0_PM2.5 <- 0
+data.A0M1$M_diabetes <- 1
 
-data.A1M1$A0_ace <- 1
-data.A1M1$M_smoking <- 1
+data.A1M1$A0_PM2.5 <- 1
+data.A1M1$M_diabetes <- 1
 
 Q.Y.death.A0M0 <- predict(Y.death.model, newdata = data.A0M0, type = "response")
 Q.Y.death.A1M0 <- predict(Y.death.model, newdata = data.A1M0, type = "response")
@@ -434,13 +727,13 @@ Q.Y.death.A1M1 <- predict(Y.death.model, newdata = data.A1M1, type = "response")
 
 ## 2a) Regress the predicted values conditional on the observed exposure A
 ##    and baseline confounders L(0)
-L1.death.A0M0.model <- glm(Q.Y.death.A0M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0M0.model <- glm(Q.Y.death.A0M0 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
-L1.death.A1M0.model <- glm(Q.Y.death.A1M0 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A1M0.model <- glm(Q.Y.death.A1M0 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
-L1.death.A0M1.model <- glm(Q.Y.death.A0M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A0M1.model <- glm(Q.Y.death.A0M1 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
-L1.death.A1M1.model <- glm(Q.Y.death.A1M1 ~ L0_male + L0_parent_low_educ_lv + A0_ace,
+L1.death.A1M1.model <- glm(Q.Y.death.A1M1 ~ L0_male + L0_soc_env + A0_PM2.5,
                            family = "quasibinomial", data = df2_int)
 
 
@@ -461,21 +754,21 @@ data.A1M1$Yam.death.pred <- predict(L1.death.A1M1.model,
 data.4scenarios <- rbind(data.A0M0, data.A1M0,data.A0M1,data.A1M1)
 
 ## 4. fit the MSM: E(Y_am) = alpha_0 + alpha_A a + alpha_M m + alpha_AM a:m
-MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_ace +  M_smoking + A0_ace:M_smoking,
+MSM.CDE.gcomp <- glm(Yam.death.pred ~ A0_PM2.5 +  M_diabetes + A0_PM2.5:M_diabetes,
                      family = "gaussian", # gaussian family for risk differences
                      data = data.4scenarios)
 coef(MSM.CDE.gcomp)
-# (Intercept)           A0_ace        M_smoking A0_ace:M_smoking
-#  0.17974947       0.06342833       0.07366466       0.02469485
+# (Intercept)            A0_PM2.5          M_diabetes A0_PM2.5:M_diabetes 
+#  0.17974947          0.06342833          0.07366466          0.02469485
 
 ## 5. Estimate the CDE(M=m)
 # CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})
-CDE_mis0_gcomp_ice <- coef(MSM.CDE.gcomp)["A0_ace"]
+CDE_mis0_gcomp_ice <- coef(MSM.CDE.gcomp)["A0_PM2.5"]
 # 0.06342833
 
 # CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})
-CDE_mis1_gcomp_ice <- (coef(MSM.CDE.gcomp)["A0_ace"] +
-                         coef(MSM.CDE.gcomp)["A0_ace:M_smoking"])
+CDE_mis1_gcomp_ice <- (coef(MSM.CDE.gcomp)["A0_PM2.5"] +
+                         coef(MSM.CDE.gcomp)["A0_PM2.5:M_diabetes"])
 # 0.08812318
 ```
 
@@ -483,18 +776,18 @@ The example above (MSM estimation using G-computation by ICE) corresponds to the
 
 ```{r Psi_CDE_MSM_ltmle_gcomp, echo=TRUE, eval = FALSE}
 library(ltmle)
-Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
-           Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
-                    A0_ace * M_smoking")
-gform <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
-           "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5",
+           Y_death="Q.kplus1 ~ L0_male + L0_soc_env + L1 +
+                    A0_PM2.5 * M_diabetes")
+gform <- c("A0_PM2.5 ~ L0_male + L0_soc_env",
+           "M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1")
 # in this example of g-computation, the propensity scores 'gform' will not be used
 
-data_binary <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
-                                          A0_ace, L1,
-                                          M_smoking, Y_death))
+data_binary <- subset(df2_int, select = c(L0_male, L0_soc_env,
+                                          A0_PM2.5, L1,
+                                          M_diabetes, Y_death))
 CDE_ltmle_M0 <- ltmle(data = data_binary,
-                      Anodes = c("A0_ace", "M_smoking"),
+                      Anodes = c("A0_PM2.5", "M_diabetes"),
                       Lnodes = c("L1"), # intermediate confounders +/- baseline
                       Ynodes = c("Y_death"),
                       survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
@@ -502,7 +795,7 @@ CDE_ltmle_M0 <- ltmle(data = data_binary,
                       gform = gform,
                       abar = list(c(1,0), # counterfactual intervention do(A=1,M=0)
                                   c(0,0)), # counterfactual intervention do(A=0,M=0)
-                      SL.library = NULL, # call glm() instead of SuperLearner
+                      SL.library = NULL, # calls glm() instead of SuperLearner
                       estimate.time = FALSE, # estimate computation time?
                       gcomp = TRUE, # to apply g-computation
                       variance.method = "ic")
@@ -511,7 +804,7 @@ summary(CDE_ltmle_M0)$effect.measures$ATE$estimate
 #   Parameter Estimate:  0.06342833
 
 CDE_ltmle_M1 <- ltmle(data = data_binary,
-                      Anodes = c("A0_ace", "M_smoking"),
+                      Anodes = c("A0_PM2.5", "M_diabetes"),
                       Lnodes = c("L1"), # intermediate confounders +/- baseline
                       Ynodes = c("Y_death"),
                       survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
@@ -519,7 +812,7 @@ CDE_ltmle_M1 <- ltmle(data = data_binary,
                       gform = gform,
                       abar = list(c(1,1), # counterfactual intervention do(A=1,M=0)
                                   c(0,1)), # counterfactual intervention do(A=0,M=0)
-                      SL.library = NULL, # call glm() instead of SuperLearner
+                      SL.library = NULL, # calls glm() instead of SuperLearner
                       estimate.time = FALSE, # estimate computation time?
                       gcomp = TRUE, # to apply g-computation
                       variance.method = "ic")
@@ -605,86 +898,84 @@ In order to fit the 2nd MSM \@ref(eq:MSM-Indirect-model2), we can use a logistic
 sw_Ai <- rep(1, nrow(df1_int))
 
 # 1b. sw_Mi = g(M=m_i | A,L(0)) / g(M=m_i | A,L(0),L(1))
-g.M.AL0 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+g.M.AL0 <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env,
                family = "binomial", data = df1_int)
 g.Mis1.AL0 <- predict(g.M.AL0, type = "response")
 sw_M.num <- rep(NA, nrow(df1_int))
-sw_M.num[df1_int$M_smoking==1] <- g.Mis1.AL0[df1_int$M_smoking==1]
-sw_M.num[df1_int$M_smoking==0] <- (1 - g.Mis1.AL0[df1_int$M_smoking==0])
+sw_M.num[df1_int$M_diabetes==1] <- g.Mis1.AL0[df1_int$M_diabetes==1]
+sw_M.num[df1_int$M_diabetes==0] <- (1 - g.Mis1.AL0[df1_int$M_diabetes==0])
 
-g.M.AL0L1 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv + L1,
+g.M.AL0L1 <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
                  family = "binomial", data = df1_int)
 g.Mis1.AL0L1 <- predict(g.M.AL0L1, type = "response")
 sw_M.denom <- rep(NA, nrow(df1_int))
-sw_M.denom[df1_int$M_smoking==1] <- g.Mis1.AL0L1[df1_int$M_smoking==1]
-sw_M.denom[df1_int$M_smoking==0] <- (1 - g.Mis1.AL0L1[df1_int$M_smoking==0])
+sw_M.denom[df1_int$M_diabetes==1] <- g.Mis1.AL0L1[df1_int$M_diabetes==1]
+sw_M.denom[df1_int$M_diabetes==0] <- (1 - g.Mis1.AL0L1[df1_int$M_diabetes==0])
 
 sw_msm1 <- sw_Ai * sw_M.num / sw_M.denom
 
 ## 2. Estimate coefficients of the MSM1
-MSM1 <- glm(Y_death ~ A0_ace + M_smoking + A0_ace:M_smoking +
-              L0_male + L0_parent_low_educ_lv,
+MSM1 <- glm(Y_death ~ A0_PM2.5 + M_diabetes + A0_PM2.5:M_diabetes +
+              L0_male + L0_soc_env,
             weights = sw_msm1,
             family = "gaussian",
             data = df1_int)
 coef(MSM1)
-# (Intercept)                A0_ace             M_smoking
-#  0.12033221            0.06381257            0.06691712
-#     L0_male L0_parent_low_educ_lv      A0_ace:M_smoking
-#  0.04671886            0.05521263            0.01652446
+# (Intercept)     A0_PM2.5  M_diabetes    L0_male L0_soc_env  A0_PM2.5:M_diabetes
+#  0.12033221   0.06381257  0.06691712 0.04671886 0.05521263           0.01652446
 
 ## 3. Stabilized weight for the MSM2
 # 3a. sw_A = g(A=a_i) / g(A=a_i | L(0))
 # numerator
-g.A <- glm(A0_ace ~ 1, family = "binomial", data = df1_int)
+g.A <- glm(A0_PM2.5 ~ 1, family = "binomial", data = df1_int)
 g.Ais1 <- predict(g.A, type = "response")
 sw_msm2.num <- rep(NA, nrow(df1_int))
-sw_msm2.num[df1_int$A0_ace==1] <- g.Ais1[df1_int$A0_ace==1]
-sw_msm2.num[df1_int$A0_ace==0] <- (1 - g.Ais1[df1_int$A0_ace==0])
+sw_msm2.num[df1_int$A0_PM2.5==1] <- g.Ais1[df1_int$A0_PM2.5==1]
+sw_msm2.num[df1_int$A0_PM2.5==0] <- (1 - g.Ais1[df1_int$A0_PM2.5==0])
 
 # denominator
-g.A.L0 <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+g.A.L0 <- glm(A0_PM2.5 ~ L0_male + L0_soc_env,
               family = "binomial", data = df1_int)
 g.Ais1.L0 <- predict(g.A.L0, type = "response")
 sw_msm2.denom <- rep(NA, nrow(df1_int))
-sw_msm2.denom[df1_int$A0_ace==1] <- g.Ais1.L0[df1_int$A0_ace==1]
-sw_msm2.denom[df1_int$A0_ace==0] <- (1 - g.Ais1.L0[df1_int$A0_ace==0])
+sw_msm2.denom[df1_int$A0_PM2.5==1] <- g.Ais1.L0[df1_int$A0_PM2.5==1]
+sw_msm2.denom[df1_int$A0_PM2.5==0] <- (1 - g.Ais1.L0[df1_int$A0_PM2.5==0])
 
 # stabilized weight
 sw_msm2 <- sw_msm2.num / sw_msm2.denom
 
 ## 3. Estimate coefficients of the MSM2
-MSM2 <- glm(M_smoking ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+MSM2 <- glm(M_diabetes ~ A0_PM2.5 + L0_male + L0_soc_env,
             weights = sw_msm2,
             family = "binomial",
             data = df1_int)
 coef(MSM2)
-# (Intercept)                A0_ace               L0_male L0_parent_low_educ_lv
-#  -1.2723106             0.5883720             0.2566129             0.3270087
+# (Intercept)    A0_PM2.5     L0_male   L0_soc_env
+#  -1.2723106   0.5883720   0.2566129    0.3270087
 
 ## 4. Estimate PNDE conditional on L(0), and the marginal value of PNDE
 # a = 1 and a* = 0
 # PNDE|L(0) = (a - a*)[alpha_A + alpha_AM.g^-1(a^*,l(0))]
-g.minus1.A0 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_ace"] * 0 +
+g.minus1.A0 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_PM2.5"] * 0 +
                       coef(MSM2)["L0_male"] * df1_int$L0_male +
-                      coef(MSM2)["L0_parent_low_educ_lv"] * df1_int$L0_parent_low_educ_lv)
+                      coef(MSM2)["L0_soc_env"] * df1_int$L0_soc_env)
 
 # PNDE conditional on L(0)
-PNDE_L0 <- (1 - 0) * (coef(MSM1)["A0_ace"] +
-                        coef(MSM1)["A0_ace:M_smoking"] * g.minus1.A0)
+PNDE_L0 <- (1 - 0) * (coef(MSM1)["A0_PM2.5"] +
+                        coef(MSM1)["A0_PM2.5:M_diabetes"] * g.minus1.A0)
 # marginal PNDE
 PNDE <- mean(PNDE_L0)
 # [1] 0.06850657
 
 ## 4. Estimate TNIE conditional on L(0), and the marginal value of TNIE
 # TNIE|L(0) = [g^-1(a,l(0)) - g^-1(a^*,l(0))] * (alpha_M + alpha_AM * a)
-g.minus1.A1 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_ace"] * 1 +
+g.minus1.A1 <- plogis(coef(MSM2)["(Intercept)"] + coef(MSM2)["A0_PM2.5"] * 1 +
                         coef(MSM2)["L0_male"] * df1_int$L0_male +
-                        coef(MSM2)["L0_parent_low_educ_lv"] * df1_int$L0_parent_low_educ_lv)
+                        coef(MSM2)["L0_soc_env"] * df1_int$L0_soc_env)
 
 # TNIE conditional on L(0)
-TNIE_L0 <- (g.minus1.A1 - g.minus1.A0) * (coef(MSM1)["M_smoking"] +
-                                            coef(MSM1)["A0_ace:M_smoking"] * 1)
+TNIE_L0 <- (g.minus1.A1 - g.minus1.A0) * (coef(MSM1)["M_diabetes"] +
+                                            coef(MSM1)["A0_PM2.5:M_diabetes"] * 1)
 # marginal PNDE
 TNIE <- mean(TNIE_L0)
 # [1] 0.01096799

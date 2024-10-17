@@ -42,10 +42,12 @@ sequential-g-estimator
 estimation-of-natural-direct-nde-and-indirect-effects-nie
 simple-plug-in-estimator
 using-the-mediation-r-package
-estimation-of-marginal-randomizedinterventional-natural-direct-nde-and-indirect-effects-nie
+estimation-of-marginal-randomizedinterventional-natural-direct-mrde-and-indirect-effects-mrie
 parametric-g-computation
 g-computation-by-iterative-conditional-expectation
 using-the-cmaverse-package-for-2-way-3-way-and-4-way-decomposition
+estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie
+g-computation-by-iterative-conditional-expectation-simple-substitution-estimator
 ChapIptw
 estimation-of-the-average-total-effect
 iptw-for-the-ate
@@ -53,6 +55,8 @@ stabilized-iptw-for-the-ate
 estimation-of-the-controlled-direct-effect-cde
 iptw-for-the-cde
 stabilized-iptw-for-the-cde
+estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1
+iptw-for-the-crde-and-crie
 msm_chapter
 msm_ATE_paragraph
 expressing-the-ate-using-coefficients-of-an-msm
@@ -61,6 +65,8 @@ estimation-of-the-msm-coefficients-by-g-computation-imputation
 msm_CDE_paragraph
 expressing-the-cde-using-coefficients-of-an-msm
 estimation-of-the-msm-coefficients-by-iptw-1
+example-1-with-no-intermediate-confounder-affected-by-the-exposure
+example-2-with-intermediate-confounder-affected-by-the-exposure
 estimation-of-the-msm-coefficients-by-g-computation
 msm_NDE_NIE_paragraph
 expressing-the-nde-and-nie-using-coefficients-of-2-msms

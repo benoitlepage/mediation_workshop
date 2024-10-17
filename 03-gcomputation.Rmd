@@ -111,7 +111,7 @@ The controlled direct effect $\Psi^{\text{CDE}_m} = \mathbb{E}(Y_{A=1,M=m}) - \m
 
 The g-formula for a CDE ($\mathbb{E}(Y_{A=a^\prime,M=m})$) is more complex than for the average total effect, and the simple substitution approach described previously is less convenient to apply:
 
-$\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\right( L(1)=l(1) | a^\prime,l(0) \left) \right] \times P\left( L(0)=l(0) \right)$
+$\mathbb{E}(Y_{A=a^\prime,M=m}) = \sum_{l(0),l(1)} \left[ \mathbb{E}\left(Y \mid m, l(1), a^\prime, l(0) \right) \times P\left( L(1)=l(1) | a^\prime,l(0) \right) \right] \times P\left( L(0)=l(0) \right)$
 
 In our simple example with a binary exposure $A$, a binary mediator $M$ and a binary intermediate confounder $L(1)$, it is still possible to apply the substitution approach (corresponding to a non-parametric g-computation estimation) by estimating the following components of the g-formula:
 
@@ -816,8 +816,8 @@ For the TNDE and PNDE,
   
 We can conclude that the possibility of the PNIE and the TNIE cancelling out because of unmeasured M-Y confounding is unlikely in our example (it requires rather strong correlations).
 
-## Estimation of "Marginal" Randomized/Interventional Natural Direct (NDE) and Indirect Effects (NIE)
-When we assume that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2, Figure \@ref(fig:figDAGM2)), an "interventional analogue" of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.[@vanderweele2016,@lin2017] For these effects, counterfactual scenarios are defined by setting different values for the exposure ($A = 0$ or $A=1$) and random draw in the distribution $G_{A=a^\prime \mid L(0)}$ of the mediator (conditional on baseline counfounders $L(0)$) under the counterfactual scenario setting $A=a^\prime$.
+## Estimation of "Marginal" Randomized/Interventional Natural Direct (MRDE) and Indirect Effects (MRIE)
+When we assume that the intermediate confounder $L(1)$ of the $M-Y$ relationship is affected by the exposure $A$ (Causal model 2, Figure \@ref(fig:figDAGM2)), an "interventional analogue" of the Average Total Effect decomposition into a Natural Direct and Indirect Effect has been suggested.[@vanderweele2016] [@lin2017] For these effects, counterfactual scenarios are defined by setting different values for the exposure ($A = 0$ or $A=1$) and random draw in the distribution $G_{A=a^\prime \mid L(0)}$ of the mediator (conditional on baseline counfounders $L(0)$) under the counterfactual scenario setting $A=a^\prime$.
 
 An Overall (Total) Effect can be defined by the contrast $\text{OE} = \mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$.
 
@@ -826,7 +826,7 @@ This Overall Effect can be decomposed into the sum of:
   - a Marginal Randomised (or Interventional) Direct Effect: $\text{MRDE}=\mathbb{E}\left[Y_{A=1,G_{A=0\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$
   - a Marginal Randomised (or Interventional) Indirect Effect: $\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right] - \mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]$
   
-For this 2-way decomposition, we have to estimate 3 causal quantities: $\text{MRIE}=\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]$, $\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$ and $\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]$. 
+For this 2-way decomposition, we have to estimate 3 causal quantities: $\mathbb{E}\left[Y_{A=1,G_{A=1\mid L(0)}} \right]$, $\mathbb{E}\left[ Y_{A=0,G_{A=0\mid L(0)}} \right]$ and $\mathbb{E}\left[ Y_{A=1,G_{A=0\mid L(0)}} \right]$. 
 
 Under the identifiability conditions, in particular:
 
@@ -1436,3 +1436,183 @@ Using the `CMAverse` package,
   - the controlled direct effect ($CDE_{M=0}$), setting $M=0$ is $CDE_{M=0}=P\left(Y_{A=1,M=0} =1 \right) - P\left(Y_{A=0,M=0} = 1 \right)\approx 0.064$,
   - the randomized pure natural direct effect is $rPNDE = P\left(Y_{A=1,G_{A=0\mid L(0)}} = 1 \right) - P\left(Y_{A=0,G_{A=0\mid L(0)}}  = 1\right)\approx 0.073$
   - the randomized total natural indirect effect is $rTNIE = P\left(Y_{A=1,G_{A=1\mid L(0)}} =1\right) - P\left(Y_{A=1,G_{A=0\mid L(0)}} =1\right)\approx 0.013$
+
+
+## Estimation of "Conditional" Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)
+Zheng and van der Laan [@zheng2017longitudinal] described "Conditional" Randomized Direct and Indirect Effects, using random draws from the counterfactual distribution of the mediator, conditional on both $L(0)$ and $L(1)$. The Average Total Effect (ATE) can be decomposed into the sum of :
+
+  - a Conditional Randomized Natural Direct Effect (CRDE):
+    $\text{CRDE}=\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0),L(1)})-\mathbb{E}(Y_{0,\Gamma_{0} \mid L(0), L(1)})$
+  - and Conditional Randomized Natural Indirect Effect (CRIE)
+    $\text{CRIE}=\mathbb{E}(Y_{1,\Gamma_{1} \mid L(0), L(1)})-\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0), L(1)})$
+
+
+For this 2-way decomposition, we have to estimate 3 causal quantities: $\mathbb{E}(Y_{1,\Gamma_{1} \mid L(0), L(1)})$, $\mathbb{E}(Y_{1,\Gamma_{0} \mid L(0), L(1)})$ and $\mathbb{E}(Y_{0,\Gamma_{0} \mid L(0), L(1)})$. 
+
+Under the identifiability conditions, in particular:
+
+  - no unmeasured confounding between $A$ and $Y$, given $L(0)$
+  - no unmeasured confounding between $M$ and $Y$, given $A$, $L(0)$ and $L(1)$
+  - no unmeasured confounding between $A$ and $M$, given $L(0)$
+  - and no unmeasured confounding between $A$ and $L(1)$, given $L(0)$
+
+the quantity of $\mathbb{E}(Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)})$ can be estimated by the g-formula:
+\begin{multline*}
+\mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right]=\sum_{l(0),l(1),m} \mathbb{E}\left(Y \mid m,l(1),A=a,l(0),\right) \times P[L(1)=l(1) \mid a,l(0)] \\
+  \times P[M=m \mid l(1), a^\prime, l(0)] \times P(L(0)=l(0))
+\end{multline*}
+These causal effects can be estimated by g-computation, IPTW, or TMLE. The G-computation approach is described below.
+
+### G-computation by iterative conditional expectation (simple substitution estimator)
+
+We describe below the g-computation algorithm ("non targeted substitution estimator") which is described in [@zheng2017longitudinal].
+
+The following steps are applied to estimate the quantity $\Psi^{a,a^\prime} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right]$:
+
+1. Define $\bar{Q}^{a,a^\prime}_{R_2} = Y$
+
+2. Calculate $\bar{Q}^{a,a^\prime}_{L_1}$, $\bar{Q}^{a,a^\prime}_{M_1}$ and $\bar{Q}^{a,a^\prime}_{R_1}$
+
+  (a) Regress $\bar{Q}^{a,a^\prime}_{R_2}$ on the observed values of $\{M,L(1),A,L(0)\}$,
+  \begin{equation*}
+    \mathbb{E}\left(\bar{Q}^{a,a^\prime}_{R_2} \mid M,L(1),A,L(0) \right) = \mathbb{E}\left(Y \mid M,L(1),A,L(0) \right)
+  \end{equation*}
+    Evaluate the fitted function at the observed mediator and covariates histories $\{L(1),M,L(0)\}$ and the intervened exposure $A=a$. This gives the estimates
+  \begin{equation*} 
+    \hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0)) = \mathbb{E}\left( Y \mid A = a,L(1),M,L(0) \right)
+  \end{equation*}
+
+  (b) Regress the predicted value $\hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0))$ on the observed values of $\{L(1),A,L(0)\}$
+  \begin{equation*}
+    \mathbb{E}\left(\hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0)) \mid L(1),A,L(0) \right)
+  \end{equation*}
+    Then, evaluate the fitted function at the observed covariates histories $\{L(1),L(0)\}$ and the intervened exposure $A=a^\prime$. This gives the estimates
+  \begin{equation*} 
+    \hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0)) = \mathbb{E}\left( \hat{\bar{Q}}^{a,a^\prime}_{L_1}(L(1),M,L(0)) \mid A = a^\prime,L(1),L(0) \right)
+  \end{equation*}
+  
+  (c) Regress the predicted value $\hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0))$ on the observed values of $\{A,L(0)\}$
+  \begin{equation*}
+    \mathbb{E}\left(\hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0)) \mid A,L(0) \right)
+  \end{equation*}
+    Then, evaluate the fitted function at the observed covariates histories $\{L(0)\}$ and the intervened exposure $A=a$. This gives the estimates
+  \begin{equation*} 
+    \hat{\bar{Q}}^{a,a^\prime}_{R_1}(L(0)) = \mathbb{E}\left( \hat{\bar{Q}}^{a,a^\prime}_{M_1}(L(1),L(0)) \mid A = a,L(0) \right)
+  \end{equation*}
+  
+3. We have now estimated $\hat{\bar{Q}}^{a,a^\prime}_{R_1}(L(0))$ for each individual.
+  \begin{align*}
+    \hat{\Psi}^{a,a^\prime} &= \frac{1}{n} \sum_{i=1}^n \hat{\bar{Q}}^{a,a^\prime}_{R_1}(L(0)) \\
+    \text{CRDE} &= \hat{\Psi}^{1,0} - \hat{\Psi}^{0,0} \\
+    \text{CRIE} &= \hat{\Psi}^{1,1} - \hat{\Psi}^{1,0} \\
+  \end{align*}
+
+
+```{r ICE_gcomp_CRDE_CRIE, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
+## 1) Q^{a,a'}_R2 =  Y
+Q.death_R2 <- df2_int$Y_death
+Q.qol_R2 <- df2_int$Y_qol
+
+## 2) Obtain Q^{a,a'}_L1, Q^{a,a'}_M1, Q^{a,a'}_R1
+## 2.a) Obtain Q^{a,a'}_L1
+# Regress Q^{a,a'}_R2 on observed values (L(0),A,L(1),M)
+L1.model.death <- glm(Q.death_R2 ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                        M_diabetes + A0_PM2.5:M_diabetes,
+                      family = "binomial", data = df2_int)
+L1.model.qol <- glm(Q.qol_R2 ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                      M_diabetes + A0_PM2.5:M_diabetes,
+                    family = "gaussian", data = df2_int)
+
+# Evaluate the fitted function at the observed mediator M and covariate history L(1),L(0)
+# and the intervened exposure A = a
+data.Ais0 <- data.Ais1 <- df2_int
+data.Ais0$A0_PM2.5 <- 0
+data.Ais1$A0_PM2.5 <- 1
+
+# We will need 3 counterfactual quantities Q^{a,a'}: Q^{1,1}, Q^{1,0} and Q^{0,0}
+Q11.death.L1 <- predict(L1.model.death, newdata = data.Ais1, type = "response")
+Q10.death.L1 <- predict(L1.model.death, newdata = data.Ais1, type = "response")
+Q00.death.L1 <- predict(L1.model.death, newdata = data.Ais0, type = "response")
+
+Q11.qol.L1 <- predict(L1.model.qol, newdata = data.Ais1, type = "response")
+Q10.qol.L1 <- predict(L1.model.qol, newdata = data.Ais1, type = "response")
+Q00.qol.L1 <- predict(L1.model.qol, newdata = data.Ais0, type = "response")
+
+## 2.b) Obtain Q^{a,a'}_M1
+# Regress Q^{a,a'}_L1 on observed values (L(0),A,L(1))
+M1.model.death.11 <- glm(Q11.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "quasibinomial", data = df2_int)
+M1.model.death.10 <- glm(Q10.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "quasibinomial", data = df2_int)
+M1.model.death.00 <- glm(Q00.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "quasibinomial", data = df2_int)
+
+M1.model.qol.11 <- glm(Q11.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                       family = "gaussian", data = df2_int)
+M1.model.qol.10 <- glm(Q10.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                       family = "gaussian", data = df2_int)
+M1.model.qol.00 <- glm(Q00.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                       family = "gaussian", data = df2_int)
+
+# Evaluate the fitted function at the observed covariate history L(1),L(0)
+# and the intervened exposure A = a'
+Q11.death.M1 <- predict(M1.model.death.11, newdata = data.Ais1, type = "response")
+Q10.death.M1 <- predict(M1.model.death.10, newdata = data.Ais0, type = "response")
+Q00.death.M1 <- predict(M1.model.death.00, newdata = data.Ais0, type = "response")
+
+Q11.qol.M1 <- predict(M1.model.qol.11, newdata = data.Ais1, type = "response")
+Q10.qol.M1 <- predict(M1.model.qol.10, newdata = data.Ais0, type = "response")
+Q00.qol.M1 <- predict(M1.model.qol.00, newdata = data.Ais0, type = "response")
+
+## 2.c) Obtain Q^{a,a'}_R1
+# Regress Q^{a,a'}_M1 on observed values (L(0),A)
+R1.model.death.11 <- glm(Q11.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "quasibinomial", data = df2_int)
+R1.model.death.10 <- glm(Q10.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "quasibinomial", data = df2_int)
+R1.model.death.00 <- glm(Q00.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "quasibinomial", data = df2_int)
+
+R1.model.qol.11 <- glm(Q11.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                       family = "gaussian", data = df2_int)
+R1.model.qol.10 <- glm(Q10.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                       family = "gaussian", data = df2_int)
+R1.model.qol.00 <- glm(Q00.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                       family = "gaussian", data = df2_int)
+
+# Evaluate the fitted function at the observed covariate history L(0)
+# and the intervened exposure A = a
+Q11.death.R1 <- predict(R1.model.death.11, newdata = data.Ais1, type = "response")
+Q10.death.R1 <- predict(R1.model.death.10, newdata = data.Ais1, type = "response")
+Q00.death.R1 <- predict(R1.model.death.00, newdata = data.Ais0, type = "response")
+
+Q11.qol.R1 <- predict(R1.model.qol.11, newdata = data.Ais1, type = "response")
+Q10.qol.R1 <- predict(R1.model.qol.10, newdata = data.Ais1, type = "response")
+Q00.qol.R1 <- predict(R1.model.qol.00, newdata = data.Ais0, type = "response")
+
+## 4) Estimate the Conditional Randomized Direct and Indirect Effects
+## For death
+CRDE.death <- mean(Q10.death.R1) - mean(Q00.death.R1)
+CRDE.death
+# [1] 0.07585836
+CRIE.death <- mean(Q11.death.R1) - mean(Q10.death.R1)
+CRIE.death
+# [1] 0.006802907
+
+## For quality of life
+CRDE.qol <- mean(Q10.qol.R1) - mean(Q00.qol.R1)
+CRDE.qol
+# [1] -7.278295
+CRIE.qol <- mean(Q11.qol.R1) - mean(Q10.qol.R1)
+CRIE.qol
+# [1] -1.015901
+```
+Results are close to the estimations obtained previously with parametric g-computation. 
+
+  - the conditional "randomized" Natural Indirect effect is $\text{CRIE} \approx +0.7\%$ on death and $\text{CRIE} \approx -1.0$ on quality of life. This indirect effect corresponds to the specific path $A \rightarrow M \rightarrow Y$ (and can also contain the mediated interactive effect of due to the $A \ast M$ interaction on $Y$).
+  - the conditional "randomized" Natural Direct effect is $\text{CRDE} \approx +7.6\%$ on death and $\text{CRDE} \approx -7.3$ on quality of life. This direct effect corresponds to the combination of the paths $A \rightarrow Y$, $A \rightarrow L(1) \rightarrow Y$ and $A \rightarrow L(1) \rightarrow M \rightarrow Y$. 
+
+95% confidence intervals can be calculated by bootstrap.

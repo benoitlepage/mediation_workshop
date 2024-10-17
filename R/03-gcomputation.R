@@ -1622,3 +1622,260 @@ CRDE.qol
 CRIE.qol <- mean(Q11.qol.R1) - mean(Q10.qol.R1)
 CRIE.qol
 # [1] -1.015901
+
+
+## check on simulations
+# ---------------------------------------------------------------------------- #
+### test on simulations for df2 ----
+# ---------------------------------------------------------------------------- #
+rm(list=ls())
+
+# functions to generate data
+param.causal.model.2 <- function(A.M.interaction = NULL) {
+  # L0
+  p_L0_male <- 0.5
+  p_L0_soc_env <- 0.65
+
+  # A: A0_PM2.5 <- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env )
+  b_A <- 0.05   # reference prevalence is 5%
+  b_male_A <- 0.04  # + 0.04 for the effect of L0_male -> A0_PM2.5
+  b_soc_env_A <- 0.06  # +0.06 for the effect of L0_soc_env -> A0_PM2.5
+
+  # L1: L1 <- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_soc_env +
+  #                   0.2 * A0_PM2.5 )
+  b_L1 <- 0.30   # reference prevalence is 30%
+  b_male_L1 <- -0.05  # - 0.05 for the effect of L0_male -> L1
+  b_soc_env_L1 <- +0.08 # + 0.08 for the effect of L0_soc_env -> L1
+  b_A_L1 <- +0.2 # +0.2 for the effect of A0_PM2.5 -> L1
+
+  # M: M_diabetes <- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env +
+  #                         0.2 * L1 + 0.1 * A0_PM2.5 )
+  b_M <- 0.2 # reference prevalence is 20%
+  b_male_M <- 0.05 # +0.05 for the effect of L0_male -> M_diabetes
+  b_soc_env_M <- 0.06 # +0.06 for the effect of L0_soc_env -> M_diabetes
+  b_A_M <- 0.1 # +0.10 for the effect of A0_PM2.5 -> M_diabetes
+  b_L1_M <- 0.2 # +0.2 for the effect of L1 -> M_diabetes
+
+  # Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env +
+  #                   0.05 * A0_PM2.5 + 0.07 * L1 + 0.08 * M_diabetes +
+  #                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter )
+  b_Y <- 0.1 # reference prevalence is 10%
+  b_male_Y <- 0.06 # +0.06 for the effect of L0_male -> Y
+  b_soc_env_Y <- 0.04 # +0.04 for the effect of L0_soc_env -> Y
+  b_A_Y <- 0.05 # 0.05 for the effect of A0_PM2.5 -> Y
+  b_L1_Y <- 0.07 # +0.07 for the effect of L1 -> Y
+  b_M_Y <- 0.08 # 0.08 for the effect of M_diabetes -> Y
+  b_AM_Y <- 0.03 # 0.03 for the interaction effect A0_PM2.5 * M_diabetes -> Y
+
+  # Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 +
+  #                -3.5 * L1 - 9 * M_diabetes +
+  #                -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + rnorm(N, mean = 0, sd = 10)
+  mu_Y <- 75 # reference mean for QoL
+  c_male_Y <- -1 # -1 for the effect of L0_male -> Y
+  c_soc_env_Y <- -3 # -3 for the effect of L0_soc_env -> Y
+  c_A_Y <- -4 # -4 for the effect of A0_PM2.5 -> Y
+  c_L1_Y <- -5 # -5 for the effect of L1 -> Y
+  c_M_Y <- -9 # -9 for the effect of M_diabetes -> Y
+  c_AM_Y <- -5  # - 5 for the interaction effect A0_PM2.5 * M_diabetes  -> Y
+  sd_Y <- 10 # standard deviation of the residuals
+
+  # A*M interaction ?
+  A.M.inter <- A.M.interaction
+
+  coef <- c( p_L0_male = p_L0_male, p_L0_soc_env = p_L0_soc_env,
+             b_A = b_A, b_male_A = b_male_A, b_soc_env_A = b_soc_env_A,
+             b_L1 = b_L1, b_male_L1 = b_male_L1, b_soc_env_L1 = b_soc_env_L1,
+             b_A_L1 = b_A_L1,
+             b_M = b_M, b_male_M = b_male_M, b_soc_env_M = b_soc_env_M,
+             b_L1_M = b_L1_M, b_A_M = b_A_M,
+             b_Y = b_Y, b_male_Y = b_male_Y, b_soc_env_Y = b_soc_env_Y,
+             b_A_Y = b_A_Y, b_L1_Y = b_L1_Y, b_M_Y = b_M_Y, b_AM_Y = b_AM_Y,
+             mu_Y = mu_Y, c_male_Y = c_male_Y, c_soc_env_Y = c_soc_env_Y,
+             c_A_Y = c_A_Y, c_L1_Y = c_L1_Y, c_M_Y = c_M_Y, c_AM_Y = c_AM_Y,
+             sd_Y = sd_Y, A.M.inter = A.M.inter)
+
+  return(coef)
+}
+
+gen.data.causal.model.2 <- function(N, A.M.inter) { # input parameters are the
+  #   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1
+
+  b <- param.causal.model.2(A.M.interaction = A.M.inter)
+
+  # baseline confounders: parent's educational level=L0_soc_env & sex=L0_male
+  L0_male <- rbinom(N, size = 1, prob = b["p_L0_male"])
+  L0_soc_env <- rbinom(N, size = 1, prob = b["p_L0_soc_env"])
+
+  # exposure: A0_PM2.5
+  A0_PM2.5 <- rbinom(N, size = 1, prob =  b["b_A"] +
+                       b["b_male_A"] * L0_male +
+                       b["b_soc_env_A"] * L0_soc_env )
+
+  # intermediate confounder between M_diabetes and Y,
+  L1 <- rbinom(N, size = 1, prob = b["b_L1"] +
+                 b["b_male_L1"] * L0_male +
+                 b["b_soc_env_L1"] * L0_soc_env +
+                 b["b_A_L1"]* A0_PM2.5)
+
+  # mediator: M_diabetes
+  M_diabetes <- rbinom(N, size = 1, prob = b["b_M"] +
+                         b["b_male_M"] * L0_male +
+                         b["b_soc_env_M"] * L0_soc_env +
+                         b["b_A_M"] * A0_PM2.5 +
+                         b["b_L1_M"] * L1)
+
+  # Y_death
+  Y_death <- rbinom(N, size = 1, prob = b["b_Y"] +
+                      b["b_male_Y"] * L0_male +
+                      b["b_soc_env_Y"] * L0_soc_env +
+                      b["b_A_Y"] * A0_PM2.5 +
+                      b["b_L1_Y"] * L1 +
+                      b["b_M_Y"] * M_diabetes +
+                      b["b_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter )
+
+  # Y_qol
+  Y_qol <- ( b["mu_Y"] +
+               b["c_male_Y"] * L0_male +
+               b["c_soc_env_Y"] * L0_soc_env +
+               b["c_A_Y"] * A0_PM2.5 +
+               b["c_L1_Y"] * L1 +
+               b["c_M_Y"] * M_diabetes +
+               b["c_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter ) +
+    rnorm(N, mean = 0, sd = b["sd_Y"])
+
+  # data.frame
+  data.sim <- data.frame(L0_male, L0_soc_env, A0_PM2.5, L1, M_diabetes,
+                         Y_death, Y_qol)
+
+  return( data.sim )
+}
+
+# create matrix to save simulation results
+results.df2 <- matrix(NA, nrow = 1000, ncol = 6,
+                      dimnames = list(c(1:1000),
+                                      c("CRDE.death", "CRIE.death","total.death",
+                                        "CRDE.qol", "CRIE.qol","total.qol")))
+set.seed(54321)
+for(i in 1:1000) {
+  print(paste0("simulation ",i))
+  # generate data
+  df2_int <- gen.data.causal.model.2(N=10000, A.M.inter=1)
+
+  ### algorithm for CRDE and CRIE
+  ## 1) Q^{a,a'}_R2 =  Y
+  Q.death_R2 <- df2_int$Y_death
+  Q.qol_R2 <- df2_int$Y_qol
+
+  ## 2) Obtain Q^{a,a'}_L1, Q^{a,a'}_M1, Q^{a,a'}_R1
+  ## 2.a) Obtain Q^{a,a'}_L1
+  # Regress Q^{a,a'}_R2 on observed values (L(0),A,L(1),M)
+  L1.model.death <- glm(Q.death_R2 ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                          M_diabetes + A0_PM2.5:M_diabetes,
+                        family = "binomial", data = df2_int)
+  L1.model.qol <- glm(Q.qol_R2 ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
+                        M_diabetes + A0_PM2.5:M_diabetes,
+                      family = "gaussian", data = df2_int)
+
+  # Evaluate the fitted function at the observed mediator M and covariate history L(1),L(0)
+  # and the intervened exposure A = a
+  data.Ais0 <- data.Ais1 <- df2_int
+  data.Ais0$A0_PM2.5 <- 0
+  data.Ais1$A0_PM2.5 <- 1
+
+  # We will need 3 counterfactual quantities Q^{a,a'}: Q^{1,1}, Q^{1,0} and Q^{0,0}
+  Q11.death.L1 <- predict(L1.model.death, newdata = data.Ais1, type = "response")
+  Q10.death.L1 <- predict(L1.model.death, newdata = data.Ais1, type = "response")
+  Q00.death.L1 <- predict(L1.model.death, newdata = data.Ais0, type = "response")
+
+  Q11.qol.L1 <- predict(L1.model.qol, newdata = data.Ais1, type = "response")
+  Q10.qol.L1 <- predict(L1.model.qol, newdata = data.Ais1, type = "response")
+  Q00.qol.L1 <- predict(L1.model.qol, newdata = data.Ais0, type = "response")
+
+  ## 2.b) Obtain Q^{a,a'}_M1
+  # Regress Q^{a,a'}_L1 on observed values (L(0),A,L(1))
+  M1.model.death.11 <- glm(Q11.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                           family = "quasibinomial", data = df2_int)
+  M1.model.death.10 <- glm(Q10.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                           family = "quasibinomial", data = df2_int)
+  M1.model.death.00 <- glm(Q00.death.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                           family = "quasibinomial", data = df2_int)
+
+  M1.model.qol.11 <- glm(Q11.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "gaussian", data = df2_int)
+  M1.model.qol.10 <- glm(Q10.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "gaussian", data = df2_int)
+  M1.model.qol.00 <- glm(Q00.qol.L1 ~ L0_male + L0_soc_env + A0_PM2.5 + L1,
+                         family = "gaussian", data = df2_int)
+
+  # Evaluate the fitted function at the observed covariate history L(1),L(0)
+  # and the intervened exposure A = a'
+  Q11.death.M1 <- predict(M1.model.death.11, newdata = data.Ais1, type = "response")
+  Q10.death.M1 <- predict(M1.model.death.10, newdata = data.Ais0, type = "response")
+  Q00.death.M1 <- predict(M1.model.death.00, newdata = data.Ais0, type = "response")
+
+  Q11.qol.M1 <- predict(M1.model.qol.11, newdata = data.Ais1, type = "response")
+  Q10.qol.M1 <- predict(M1.model.qol.10, newdata = data.Ais0, type = "response")
+  Q00.qol.M1 <- predict(M1.model.qol.00, newdata = data.Ais0, type = "response")
+
+  ## 2.c) Obtain Q^{a,a'}_R1
+  # Regress Q^{a,a'}_M1 on observed values (L(0),A)
+  R1.model.death.11 <- glm(Q11.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                           family = "quasibinomial", data = df2_int)
+  R1.model.death.10 <- glm(Q10.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                           family = "quasibinomial", data = df2_int)
+  R1.model.death.00 <- glm(Q00.death.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                           family = "quasibinomial", data = df2_int)
+
+  R1.model.qol.11 <- glm(Q11.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "gaussian", data = df2_int)
+  R1.model.qol.10 <- glm(Q10.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "gaussian", data = df2_int)
+  R1.model.qol.00 <- glm(Q00.qol.M1 ~ L0_male + L0_soc_env + A0_PM2.5,
+                         family = "gaussian", data = df2_int)
+
+  # Evaluate the fitted function at the observed covariate history L(0)
+  # and the intervened exposure A = a
+  Q11.death.R1 <- predict(R1.model.death.11, newdata = data.Ais1, type = "response")
+  Q10.death.R1 <- predict(R1.model.death.10, newdata = data.Ais1, type = "response")
+  Q00.death.R1 <- predict(R1.model.death.00, newdata = data.Ais0, type = "response")
+
+  Q11.qol.R1 <- predict(R1.model.qol.11, newdata = data.Ais1, type = "response")
+  Q10.qol.R1 <- predict(R1.model.qol.10, newdata = data.Ais1, type = "response")
+  Q00.qol.R1 <- predict(R1.model.qol.00, newdata = data.Ais0, type = "response")
+
+  ## 4) Estimate the Conditional Randomized Direct and Indirect Effects
+  ## For death
+  CRDE.death <- mean(Q10.death.R1) - mean(Q00.death.R1)
+  CRIE.death <- mean(Q11.death.R1) - mean(Q10.death.R1)
+  ## For quality of life
+  CRDE.qol <- mean(Q10.qol.R1) - mean(Q00.qol.R1)
+  CRIE.qol <- mean(Q11.qol.R1) - mean(Q10.qol.R1)
+
+  ### save results
+  results.df2[i,"CRDE.death"] <- CRDE.death - (0.078282) # direct 0.078282
+  results.df2[i,"CRIE.death"] <- CRIE.death - (0.011) # indirect 0.011
+  results.df2[i,"total.death"] <- CRDE.death + CRIE.death - (0.089282) # direct 0.089282
+  results.df2[i,"CRDE.qol"] <- CRDE.qol - (-7.207) # indirect -7.207
+  results.df2[i,"CRIE.qol"] <- CRIE.qol - (-1.4) # ATE -1.4
+  results.df2[i,"total.qol"] <- CRDE.qol + CRIE.qol - (-8.607) # direct -8.607
+}
+
+sapply(data.frame(results.df2) , mean)
+#    CRDE.death    CRIE.death   total.death      CRDE.qol      CRIE.qol     total.qol
+# -0.0023518323 -0.0006237371 -0.0029755694 -0.0019491218 -0.0011479898 -0.0030971117 => OK
+
+boxplot(data.frame(results.df2))
+# globalement les performances ont l'air très proches !!
+boxplot(subset(data.frame(results.df2), select = c("CRDE.death", "CRIE.death","total.death")))
+boxplot(subset(data.frame(results.df2), select = c("CRDE.qol", "CRIE.qol","total.qol")))
+
+results.df2.rel <- results.df2
+results.df2.rel[,c("CRDE.death")] <- results.df2.rel[,c("CRDE.death")] / (0.078282)
+results.df2.rel[,"CRIE.death"] <- results.df2.rel[,"CRIE.death"] / (0.011)
+results.df2.rel[,"total.death"] <- results.df2.rel[,"total.death"] / (0.089282)
+results.df2.rel[,c("CRDE.qol")] <- results.df2.rel[,c("CRDE.qol")] / (-7.207)
+results.df2.rel[,"CRIE.qol"] <- results.df2.rel[,"CRIE.qol"] / (-1.4)
+results.df2.rel[,"total.qol"] <- results.df2.rel[,"total.qol"] / (-8.607)
+sapply(data.frame(results.df2.rel) , mean)
+#    CRDE.death    CRIE.death   total.death      CRDE.qol      CRIE.qol     total.qol
+# -0.0300430786 -0.0567033737 -0.0333277636  0.0002704484  0.0008199927  0.0003598364
