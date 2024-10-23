@@ -494,3 +494,242 @@ summary(CDE_ltmle_M1_qol)
 The controlled direct effect of ACE on the quality of life score, had the mediator been set to 0 for every participant is -4.8, 95%CI=[-5.6, -4.0].
 
 The controlled direct effect of ACE on the quality of life score, had the mediator been set to 1 for every participant is -10.2, 95%CI=[-11.3, -9.2].
+
+
+## One-step and TMLE estimator of the Marginal Randomized/Interventional Direct and Indirect Effects
+The `medoutcon` [package](https://github.com/nhejazi/medoutcon) [@Hejazi2022],[@Diaz2020] enables the estimation of Marginal Randomized/Interventional Direct and Indirect Effects (analogues of the Natural direct and indirect effects) by one-step estimation or TMLE. The one-step estimator relies on "cross-fitting" and the TMLE relies on cross-validation. 
+
+More practical details can be found in the [Materials for the workshop "Modern Causal Mediation Analysis" at the 2024 Society for Epidemiologic Research (SER) annual meeting in Austin, TX](https://codex.nimahejazi.org/ser2024_mediation_workshop/).
+
+This package is associated with the `tlverse` [ecosystem](https://tlverse.org/tlverse-handbook/) which has been developed for applying Targeted Learning methodology in practice. To use the `medoutcon` package, we will need:
+
+  - the `sl3` [package](https://github.com/tlverse/sl3) (to implement SuperLearning) 
+  - and the Highly-adaptive lasso `hal9001` [package](https://cran.r-project.org/web/packages/hal9001/index.html) to estimate some functions of interest.
+
+Note that the `medoutcon` package can deal with multiple mediators, but only a single binary intermediate confounder $L(1)$. For causal structures with multiple mediators and multiple intermediate confounders, the `HDmediation` [package](https://github.com/nt-williams/HDmediation) could be used instead.
+
+Below, we apply the one-step estimator to the data set with an intermediate confounder $L(1)$ affected by the exposure, and the presence of an $A \ast M$ interaction effect on the outcome.
+
+```{r medoutcon1, echo=TRUE, eval = FALSE}
+# remotes::install_github("nhejazi/medoutcon")
+# remotes::install_github("nhejazi/medoutcon", INSTALL_opts=c("--no-multiarch"))
+# https://arxiv.org/pdf/1912.09936
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
+library(tidyverse)
+library(sl3)
+library(medoutcon)
+library(hal9001)
+
+?medoutcon::medoutcon
+
+## 1) binary outcome 
+# ---------------------------------------------------------------------------- #
+### compute one-step estimate of the interventional direct effect
+set.seed(1234)
+os_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "direct",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                   estimator = "onestep")
+os_de
+# Interventional Direct Effect
+# Estimator: onestep
+# Estimate: 0.068
+# Std. Error: 0.015
+# 95% CI: [0.039, 0.096]
+
+os_de$theta
+# [1] 0.06763031
+
+sqrt(os_de$var)
+# [1] 0.01455125
+
+set.seed(1234)
+os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "indirect",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                   estimator = "onestep")
+os_ie
+# Interventional Indirect Effect
+# Estimator: onestep
+# Estimate: 0.015
+# Std. Error: 0.004
+# 95% CI: [0.008, 0.022]
+
+os_ie$theta
+# [1] 0.01502601
+
+### Estimate counterfactuals E(Y_{a,G_{a*}})
+set.seed(1234)
+EY_1M0 <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")],
+                    A = df2_int$A0_PM2.5,
+                    Z = df2_int$L1,
+                    M = df2_int$M_diabetes,
+                    Y = df2_int$Y_death,
+                    contrast = c(1,0),
+                    b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                    estimator = "onestep")
+EY_1M0
+# Counterfactual TSM
+# Contrast: A = 1, M(A = 0)
+# Estimator: onestep
+# Estimate: 0.273
+# Std. Error: 0.014
+# 95% CI: [0.246, 0.301]
+
+EY_0M0 <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")],
+                    A = df2_int$A0_PM2.5,
+                    Z = df2_int$L1,
+                    M = df2_int$M_diabetes,
+                    Y = df2_int$Y_death,
+                    contrast = c(0,0),
+                    b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                    estimator = "onestep")
+EY_0M0
+# Counterfactual TSM
+# Contrast: A = 0, M(A = 0)
+# Estimator: onestep
+# Estimate: 0.203
+# Std. Error: 0.004
+# 95% CI: [0.195, 0.212]
+
+## randomized Natural Direct Effect =
+rNDE <- EY_1M0$theta - EY_0M0$theta
+# [1] 0.06964436
+
+## se
+se_rNDE <- sqrt(var(EY_1M0$eif - EY_0M0$eif) / nrow(df2_int))
+# [1] 0.01459493
+
+## 95%CI
+c(rNDE - qnorm(0.975) * se_rNDE,
+  rNDE + qnorm(0.975) * se_rNDE)
+# [1] 0.04103882 0.09824989
+
+## 2) continuous outcome 
+# ---------------------------------------------------------------------------- #
+### compute one-step estimate of the interventional direct effect
+set.seed(1234)
+os_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_qol, # numeric vector
+                   effect = "direct",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                   estimator = "onestep")
+os_de
+# Interventional Direct Effect
+# Estimator: onestep
+# Estimate: -6.597
+# Std. Error: 0.346
+# 95% CI: [-7.276, -5.918]
+
+set.seed(1234)
+os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_qol, # numeric vector
+                   effect = "indirect",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                   estimator = "onestep")
+os_ie
+# Interventional Indirect Effect
+# Estimator: onestep
+# Estimate: -1.703
+# Std. Error: 0.239
+# 95% CI: [-2.172, -1.234]
+```
+
+Below, we apply the TMLE estimator to the same data set. Note that the estimation of the direct effect seems to be biased (confirmed on simulations): maybe the arguments given in the `medoutcon` function are not correct?
+```{r medoutcon2, echo=TRUE, eval = FALSE}
+## 1) binary outcome 
+# ---------------------------------------------------------------------------- #
+### compute tmle estimate of the interventional direct effect & indirect effects
+set.seed(1234)
+tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_death, # numeric vector
+                     effect = "direct",
+                     estimator = "tmle",
+                     b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                     # estimator_args = list(cv_folds = 10L, # instead of 5L
+                     #                       max_iter = 1L, # instead of 5L
+                     #                       tiltmod_tol = 1) # instead of 5
+                    )
+tmle_de
+# Interventional Direct Effect
+# Estimator: tmle
+# Estimate: 0.042             <- ?! biased (confirmed on simulations)
+# Std. Error: 0.015
+# 95% CI: [0.014, 0.071]
+
+tmle_de$theta
+# [1] 0.04222315
+
+sqrt(tmle_de$var)
+# [1] 0.01455125
+
+set.seed(1234)
+tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                   M = df2_int$M_diabetes, # numeric vector or matrix
+                   Y = df2_int$Y_death, # numeric vector
+                   effect = "indirect",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                   estimator = "tmle")
+tmle_ie
+# Interventional Indirect Effect
+# Estimator: tmle
+# Estimate: 0.013
+# Std. Error: 0.004
+# 95% CI: [0.006, 0.021]
+
+## 2) continuous outcome
+# ---------------------------------------------------------------------------- #
+### compute tmle estimate of the interventional direct effect & indirect effects
+set.seed(1234)
+tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_qol, # numeric vector
+                     effect = "direct",
+                     b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                     estimator = "tmle")
+tmle_de
+# Interventional Direct Effect
+# Estimator: tmle
+# Estimate: -4.808          <- also biased ?
+# Std. Error: 0.346
+# 95% CI: [-5.487, -4.129]
+
+set.seed(1234)
+tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_qol, # numeric vector
+                     effect = "indirect",
+                     b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                     estimator = "tmle")
+tmle_ie
+# Interventional Indirect Effect
+# Estimator: tmle
+# Estimate: -1.738
+# Std. Error: 0.239
+# 95% CI: [-2.207, -1.269]
+```

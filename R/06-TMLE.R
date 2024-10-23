@@ -380,11 +380,17 @@ summary(CDE_ltmle_M1_qol)
 # Randomized Marginal Direct and Indirect effects ----
 # ---------------------------------------------------------------------------- #
 # remotes::install_github("nhejazi/medoutcon")
+# remotes::install_github("nhejazi/medoutcon", INSTALL_opts=c("--no-multiarch"))
 # https://arxiv.org/pdf/1912.09936
 rm(list=ls())
 df2_int <- read.csv(file = "data/df2_int.csv")
 
+library(tidyverse)
+library(sl3)
 library(medoutcon)
+library(hal9001)
+
+?medoutcon::medoutcon
 ## binary outcome ----
 ### one-step ----
 ### compute one-step estimate of the interventional direct effect
@@ -395,19 +401,20 @@ os_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline 
                    M = df2_int$M_diabetes, # numeric vector or matrix
                    Y = df2_int$Y_death, # numeric vector
                    effect = "direct",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                    estimator = "onestep")
 os_de
 # Interventional Direct Effect
 # Estimator: onestep
-# Estimate: 0.069
+# Estimate: 0.068
 # Std. Error: 0.015
-# 95% CI: [0.041, 0.098]
+# 95% CI: [0.039, 0.096]
 
 os_de$theta
-# [1] 0.06929891
+# [1] 0.06763031
 
 sqrt(os_de$var)
-# [1] 0.01459662
+# [1] 0.01455125
 
 set.seed(1234)
 os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
@@ -416,31 +423,33 @@ os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline 
                    M = df2_int$M_diabetes, # numeric vector or matrix
                    Y = df2_int$Y_death, # numeric vector
                    effect = "indirect",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                    estimator = "onestep")
 os_ie
 # Interventional Indirect Effect
 # Estimator: onestep
-# Estimate: 0.013
+# Estimate: 0.015
 # Std. Error: 0.004
-# 95% CI: [0.006, 0.021]
+# 95% CI: [0.008, 0.022]
 
 os_ie$theta
-# [1] 0.01313771
+# [1] 0.01502601
 
 ### Estimate counterfactuals E(Y_{a,G_{a*}})
 set.seed(1234)
 EY_1M0 <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")],
-                      A = df2_int$A0_PM2.5,
-                      Z = df2_int$L1,
-                      M = df2_int$M_diabetes,
-                      Y = df2_int$Y_death,
-                      contrast = c(1,0),
-                      estimator = "onestep")
+                    A = df2_int$A0_PM2.5,
+                    Z = df2_int$L1,
+                    M = df2_int$M_diabetes,
+                    Y = df2_int$Y_death,
+                    contrast = c(1,0),
+                    b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                    estimator = "onestep")
 EY_1M0
 # Counterfactual TSM
 # Contrast: A = 1, M(A = 0)
 # Estimator: onestep
-# Estimate: 0.272
+# Estimate: 0.273
 # Std. Error: 0.014
 # 95% CI: [0.246, 0.301]
 
@@ -450,6 +459,7 @@ EY_0M0 <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")],
                     M = df2_int$M_diabetes,
                     Y = df2_int$Y_death,
                     contrast = c(0,0),
+                    b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                     estimator = "onestep")
 EY_0M0
 # Counterfactual TSM
@@ -461,39 +471,44 @@ EY_0M0
 
 ## randomized Natural Direct Effect =
 rNDE <- EY_1M0$theta - EY_0M0$theta
-# [1] 0.06924538
+# [1] 0.06964436
 
 ## se
 se_rNDE <- sqrt(var(EY_1M0$eif - EY_0M0$eif) / nrow(df2_int))
-# [1] 0.01459598
+# [1] 0.01459493
 
 ## 95%CI
 c(rNDE - qnorm(0.975) * se_rNDE,
   rNDE + qnorm(0.975) * se_rNDE)
-# [1] 0.04063779 0.09785298
+# [1] 0.04103882 0.09824989
 
 ### tmle ----
 ### compute tmle estimate of the interventional direct effect & indirect effects
 set.seed(1234)
 tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
-                   A = df2_int$A0_PM2.5, # numeric vector of the exposure
-                   Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
-                   M = df2_int$M_diabetes, # numeric vector or matrix
-                   Y = df2_int$Y_death, # numeric vector
-                   effect = "direct",
-                   estimator = "tmle")
+                     A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                     Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                     M = df2_int$M_diabetes, # numeric vector or matrix
+                     Y = df2_int$Y_death, # numeric vector
+                     effect = "direct",
+                     estimator = "tmle",
+                     b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
+                     # estimator_args = list(cv_folds = 10L, # instead of 5L
+                     #                       max_iter = 1L, # instead of 5L
+                     #                       tiltmod_tol = 1) # instead of 5
+                    )
 tmle_de
 # Interventional Direct Effect
 # Estimator: tmle
-# Estimate: 0.043  <- ?? biased !
+# Estimate: 0.042             <- ?! biased (confirmed on simulations)
 # Std. Error: 0.015
-# 95% CI: [0.014, 0.072]
+# 95% CI: [0.014, 0.071]
 
 tmle_de$theta
-# [1] 0.04293817
+# [1] 0.04222315
 
 sqrt(tmle_de$var)
-# [1] 0.01459662
+# [1] 0.01455125
 
 set.seed(1234)
 tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
@@ -502,13 +517,14 @@ tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baselin
                    M = df2_int$M_diabetes, # numeric vector or matrix
                    Y = df2_int$Y_death, # numeric vector
                    effect = "indirect",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                    estimator = "tmle")
 tmle_ie
 # Interventional Indirect Effect
 # Estimator: tmle
 # Estimate: 0.013
 # Std. Error: 0.004
-# 95% CI: [0.006, 0.02]
+# 95% CI: [0.006, 0.021]
 
 
 ## continuous outcome ----
@@ -521,13 +537,14 @@ os_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline 
                    M = df2_int$M_diabetes, # numeric vector or matrix
                    Y = df2_int$Y_qol, # numeric vector
                    effect = "direct",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                    estimator = "onestep")
 os_de
 # Interventional Direct Effect
 # Estimator: onestep
-# Estimate: -6.66
-# Std. Error: 0.353
-# 95% CI: [-7.352, -5.969]
+# Estimate: -6.597
+# Std. Error: 0.346
+# 95% CI: [-7.276, -5.918]
 
 set.seed(1234)
 os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
@@ -536,13 +553,14 @@ os_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline 
                    M = df2_int$M_diabetes, # numeric vector or matrix
                    Y = df2_int$Y_qol, # numeric vector
                    effect = "indirect",
+                   b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                    estimator = "onestep")
 os_ie
 # Interventional Indirect Effect
 # Estimator: onestep
-# Estimate: -1.649
-# Std. Error: 0.178
-# 95% CI: [-1.998, -1.3]
+# Estimate: -1.703
+# Std. Error: 0.239
+# 95% CI: [-2.172, -1.234]
 
 ### tmle ----
 ### compute tmle estimate of the interventional direct effect & indirect effects
@@ -553,13 +571,14 @@ tmle_de <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baselin
                      M = df2_int$M_diabetes, # numeric vector or matrix
                      Y = df2_int$Y_qol, # numeric vector
                      effect = "direct",
+                     b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                      estimator = "tmle")
 tmle_de
 # Interventional Direct Effect
 # Estimator: tmle
-# Estimate: -4.81   <- still weird - should we use more
-# Std. Error: 0.353
-# 95% CI: [-5.501, -4.118]
+# Estimate: -4.808          <- also biased ?
+# Std. Error: 0.346
+# 95% CI: [-5.487, -4.129]
 
 set.seed(1234)
 tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
@@ -568,13 +587,14 @@ tmle_ie <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baselin
                      M = df2_int$M_diabetes, # numeric vector or matrix
                      Y = df2_int$Y_qol, # numeric vector
                      effect = "indirect",
+                     b_learners = sl3::Lrnr_hal9001$new(), # outcome regression
                      estimator = "tmle")
 tmle_ie
 # Interventional Indirect Effect
 # Estimator: tmle
-# Estimate: -1.713
-# Std. Error: 0.178
-# 95% CI: [-2.062, -1.364]
+# Estimate: -1.738
+# Std. Error: 0.239
+# 95% CI: [-2.207, -1.269]
 
 
 ### checking the biased estimate by tmle ----
@@ -678,3 +698,273 @@ tmle_de
 #> Estimate: -0.06
 #> Std. Error: 0.058
 #> 95% CI: [-0.173, 0.053]
+
+
+
+### test on simulations for df2 ----
+# ---------------------------------------------------------------------------- #
+rm(list=ls())
+library(medoutcon)
+# functions to generate data
+param.causal.model.2 <- function(A.M.interaction = NULL) {
+  # L0
+  p_L0_male <- 0.5
+  p_L0_soc_env <- 0.65
+
+  # A: A0_PM2.5 <- rbinom( 0.05 + 0.04 * L0_male + 0.06 * L0_soc_env )
+  b_A <- 0.05   # reference prevalence is 5%
+  b_male_A <- 0.04  # + 0.04 for the effect of L0_male -> A0_PM2.5
+  b_soc_env_A <- 0.06  # +0.06 for the effect of L0_soc_env -> A0_PM2.5
+
+  # L1: L1 <- rbinom( 0.30 - 0.05 * L0_male + 0.08 * L0_soc_env +
+  #                   0.2 * A0_PM2.5 )
+  b_L1 <- 0.30   # reference prevalence is 30%
+  b_male_L1 <- -0.05  # - 0.05 for the effect of L0_male -> L1
+  b_soc_env_L1 <- +0.08 # + 0.08 for the effect of L0_soc_env -> L1
+  b_A_L1 <- +0.2 # +0.2 for the effect of A0_PM2.5 -> L1
+
+  # M: M_diabetes <- rbinom( 0.2 + 0.05 * L0_male + 0.06 * L0_soc_env +
+  #                         0.2 * L1 + 0.1 * A0_PM2.5 )
+  b_M <- 0.2 # reference prevalence is 20%
+  b_male_M <- 0.05 # +0.05 for the effect of L0_male -> M_diabetes
+  b_soc_env_M <- 0.06 # +0.06 for the effect of L0_soc_env -> M_diabetes
+  b_A_M <- 0.1 # +0.10 for the effect of A0_PM2.5 -> M_diabetes
+  b_L1_M <- 0.2 # +0.2 for the effect of L1 -> M_diabetes
+
+  # Y binary: rbinom( 0.10 + 0.06 * L0_male + 0.04 * L0_soc_env +
+  #                   0.05 * A0_PM2.5 + 0.07 * L1 + 0.08 * M_diabetes +
+  #                   0.03 * A0_PM2.5 * M_diabetes * A.M.inter )
+  b_Y <- 0.1 # reference prevalence is 10%
+  b_male_Y <- 0.06 # +0.06 for the effect of L0_male -> Y
+  b_soc_env_Y <- 0.04 # +0.04 for the effect of L0_soc_env -> Y
+  b_A_Y <- 0.05 # 0.05 for the effect of A0_PM2.5 -> Y
+  b_L1_Y <- 0.07 # +0.07 for the effect of L1 -> Y
+  b_M_Y <- 0.08 # 0.08 for the effect of M_diabetes -> Y
+  b_AM_Y <- 0.03 # 0.03 for the interaction effect A0_PM2.5 * M_diabetes -> Y
+
+  # Y continuous: (75 - 1 * L0_male - 3 * L0_soc_env - 4 * A0_PM2.5 +
+  #                -3.5 * L1 - 9 * M_diabetes +
+  #                -5 * A0_PM2.5 * M_diabetes * A.M.inter ) + rnorm(N, mean = 0, sd = 10)
+  mu_Y <- 75 # reference mean for QoL
+  c_male_Y <- -1 # -1 for the effect of L0_male -> Y
+  c_soc_env_Y <- -3 # -3 for the effect of L0_soc_env -> Y
+  c_A_Y <- -4 # -4 for the effect of A0_PM2.5 -> Y
+  c_L1_Y <- -5 # -5 for the effect of L1 -> Y
+  c_M_Y <- -9 # -9 for the effect of M_diabetes -> Y
+  c_AM_Y <- -5  # - 5 for the interaction effect A0_PM2.5 * M_diabetes  -> Y
+  sd_Y <- 10 # standard deviation of the residuals
+
+  # A*M interaction ?
+  A.M.inter <- A.M.interaction
+
+  coef <- c( p_L0_male = p_L0_male, p_L0_soc_env = p_L0_soc_env,
+             b_A = b_A, b_male_A = b_male_A, b_soc_env_A = b_soc_env_A,
+             b_L1 = b_L1, b_male_L1 = b_male_L1, b_soc_env_L1 = b_soc_env_L1,
+             b_A_L1 = b_A_L1,
+             b_M = b_M, b_male_M = b_male_M, b_soc_env_M = b_soc_env_M,
+             b_L1_M = b_L1_M, b_A_M = b_A_M,
+             b_Y = b_Y, b_male_Y = b_male_Y, b_soc_env_Y = b_soc_env_Y,
+             b_A_Y = b_A_Y, b_L1_Y = b_L1_Y, b_M_Y = b_M_Y, b_AM_Y = b_AM_Y,
+             mu_Y = mu_Y, c_male_Y = c_male_Y, c_soc_env_Y = c_soc_env_Y,
+             c_A_Y = c_A_Y, c_L1_Y = c_L1_Y, c_M_Y = c_M_Y, c_AM_Y = c_AM_Y,
+             sd_Y = sd_Y, A.M.inter = A.M.inter)
+
+  return(coef)
+}
+
+gen.data.causal.model.2 <- function(N, A.M.inter) { # input parameters are the
+  #   sample size N and the presence of A*M interaction with A.M.inter = 0 or 1
+
+  b <- param.causal.model.2(A.M.interaction = A.M.inter)
+
+  # baseline confounders: parent's educational level=L0_soc_env & sex=L0_male
+  L0_male <- rbinom(N, size = 1, prob = b["p_L0_male"])
+  L0_soc_env <- rbinom(N, size = 1, prob = b["p_L0_soc_env"])
+
+  # exposure: A0_PM2.5
+  A0_PM2.5 <- rbinom(N, size = 1, prob =  b["b_A"] +
+                       b["b_male_A"] * L0_male +
+                       b["b_soc_env_A"] * L0_soc_env )
+
+  # intermediate confounder between M_diabetes and Y,
+  L1 <- rbinom(N, size = 1, prob = b["b_L1"] +
+                 b["b_male_L1"] * L0_male +
+                 b["b_soc_env_L1"] * L0_soc_env +
+                 b["b_A_L1"]* A0_PM2.5)
+
+  # mediator: M_diabetes
+  M_diabetes <- rbinom(N, size = 1, prob = b["b_M"] +
+                         b["b_male_M"] * L0_male +
+                         b["b_soc_env_M"] * L0_soc_env +
+                         b["b_A_M"] * A0_PM2.5 +
+                         b["b_L1_M"] * L1)
+
+  # Y_death
+  Y_death <- rbinom(N, size = 1, prob = b["b_Y"] +
+                      b["b_male_Y"] * L0_male +
+                      b["b_soc_env_Y"] * L0_soc_env +
+                      b["b_A_Y"] * A0_PM2.5 +
+                      b["b_L1_Y"] * L1 +
+                      b["b_M_Y"] * M_diabetes +
+                      b["b_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter )
+
+  # Y_qol
+  Y_qol <- ( b["mu_Y"] +
+               b["c_male_Y"] * L0_male +
+               b["c_soc_env_Y"] * L0_soc_env +
+               b["c_A_Y"] * A0_PM2.5 +
+               b["c_L1_Y"] * L1 +
+               b["c_M_Y"] * M_diabetes +
+               b["c_AM_Y"] * A0_PM2.5 * M_diabetes * A.M.inter ) +
+    rnorm(N, mean = 0, sd = b["sd_Y"])
+
+  # data.frame
+  data.sim <- data.frame(L0_male, L0_soc_env, A0_PM2.5, L1, M_diabetes,
+                         Y_death, Y_qol)
+
+  return( data.sim )
+}
+
+# create matrix to save simulation results
+results.df2 <- matrix(NA, nrow = 1000, ncol = 16,
+                      dimnames = list(c(1:1000),
+                                      c("MRDE.death.os","MRDE.death.os.cov","MRIE.death.os","MRIE.death.os.cov",
+                                        "MRDE.death.tmle","MRDE.death.tmle.cov","MRIE.death.tmle","MRIE.death.tmle.cov",
+                                        "MRDE.qol.os","MRDE.qol.os.cov","MRIE.qol.os","MRIE.qol.os.cov",
+                                        "MRDE.qol.tmle","MRDE.qol.tmle.cov","MRIE.qol.tmle","MRIE.qol.tmle.cov")))
+set.seed(54321)
+for(i in 1:1000) {
+  print(paste0("simulation ",i))
+  # generate data
+  df2_int <- gen.data.causal.model.2(N = 10000, A.M.inter = 1)
+
+  ### algorithm for CRDE and CRIE
+  # death
+  os_de_death <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                           A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                           Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                           M = df2_int$M_diabetes, # numeric vector or matrix
+                           Y = df2_int$Y_death, # numeric vector
+                           effect = "direct",
+                           estimator = "onestep")
+  os_ie_death <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                           A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                           Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                           M = df2_int$M_diabetes, # numeric vector or matrix
+                           Y = df2_int$Y_death, # numeric vector
+                           effect = "indirect",
+                           estimator = "onestep")
+
+  tmle_de_death <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                             A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                             Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                             M = df2_int$M_diabetes, # numeric vector or matrix
+                             Y = df2_int$Y_death, # numeric vector
+                             effect = "direct",
+                             estimator = "tmle")
+  tmle_ie_death <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                             A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                             Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                             M = df2_int$M_diabetes, # numeric vector or matrix
+                             Y = df2_int$Y_death, # numeric vector
+                             effect = "indirect",
+                             estimator = "tmle")
+
+  # qol
+  os_de_qol <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                         A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                         Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                         M = df2_int$M_diabetes, # numeric vector or matrix
+                         Y = df2_int$Y_qol, # numeric vector
+                         effect = "direct",
+                         estimator = "onestep")
+  os_ie_qol <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                         A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                         Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                         M = df2_int$M_diabetes, # numeric vector or matrix
+                         Y = df2_int$Y_qol, # numeric vector
+                         effect = "indirect",
+                         estimator = "onestep")
+
+  tmle_de_qol <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                           A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                           Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                           M = df2_int$M_diabetes, # numeric vector or matrix
+                           Y = df2_int$Y_qol, # numeric vector
+                           effect = "direct",
+                           estimator = "tmle")
+  tmle_ie_qol <- medoutcon(W = df2_int[,c("L0_male","L0_soc_env")], #matrix of baseline L(0)
+                           A = df2_int$A0_PM2.5, # numeric vector of the exposure
+                           Z = df2_int$L1, # numeric vector L(1) (only 1 variable)
+                           M = df2_int$M_diabetes, # numeric vector or matrix
+                           Y = df2_int$Y_qol, # numeric vector
+                           effect = "indirect",
+                           estimator = "tmle")
+
+  ### save results
+  results.df2[i,"MRDE.death.os"] <- os_de_death$theta - (0.073882)
+  results.df2[i,"MRDE.death.os.cov"] <- (((os_de_death$theta - qnorm(0.975) * sqrt(os_de_death$var)) < 0.073882) &
+                                           ((os_de_death$theta + qnorm(0.975) * sqrt(os_de_death$var)) > 0.073882))
+  results.df2[i,"MRIE.death.os"] <- os_ie_death$theta - (0.0154)
+  results.df2[i,"MRIE.death.os.cov"] <- (((os_ie_death$theta - qnorm(0.975) * sqrt(os_ie_death$var)) < 0.0154) &
+                                           ((os_ie_death$theta + qnorm(0.975) * sqrt(os_ie_death$var)) > 0.0154))
+
+  results.df2[i,"MRDE.death.tmle"] <- tmle_de_death$theta - (0.073882)
+  results.df2[i,"MRDE.death.tmle.cov"] <- (((tmle_de_death$theta - qnorm(0.975) * sqrt(tmle_de_death$var)) < 0.073882) &
+                                             ((tmle_de_death$theta + qnorm(0.975) * sqrt(tmle_de_death$var)) > 0.073882))
+  results.df2[i,"MRIE.death.tmle"] <- tmle_ie_death$theta - (0.0154)
+  results.df2[i,"MRIE.death.tmle.cov"] <- (((tmle_ie_death$theta - qnorm(0.975) * sqrt(tmle_ie_death$var)) < 0.0154) &
+                                             ((tmle_ie_death$theta + qnorm(0.975) * sqrt(tmle_ie_death$var)) > 0.0154))
+
+  results.df2[i,"MRDE.qol.os"] <- os_de_qol$theta - (-6.647)
+  results.df2[i,"MRDE.qol.os.cov"] <- (((os_de_qol$theta - qnorm(0.975) * sqrt(os_de_qol$var)) < -6.647) &
+                                         ((os_de_qol$theta + qnorm(0.975) * sqrt(os_de_qol$var)) > -6.647))
+  results.df2[i,"MRIE.qol.os"] <- os_ie_qol$theta - (-1.96)
+  results.df2[i,"MRIE.qol.os.cov"] <- (((os_ie_qol$theta - qnorm(0.975) * sqrt(os_ie_qol$var)) < -1.96) &
+                                         ((os_ie_qol$theta + qnorm(0.975) * sqrt(os_ie_qol$var)) > -1.96))
+
+  results.df2[i,"MRDE.qol.tmle"] <- tmle_de_qol$theta - (-6.647)
+  results.df2[i,"MRDE.qol.tmle.cov"] <- (((tmle_de_qol$theta - qnorm(0.975) * sqrt(tmle_de_qol$var)) < -6.647) &
+                                           ((tmle_de_qol$theta + qnorm(0.975) * sqrt(tmle_de_qol$var)) > -6.647))
+  results.df2[i,"MRIE.qol.tmle"] <- tmle_ie_qol$theta - (-1.96)
+  results.df2[i,"MRIE.qol.tmle.cov"] <- (((tmle_ie_qol$theta - qnorm(0.975) * sqrt(tmle_ie_qol$var)) < -1.96) &
+                                           ((tmle_ie_qol$theta + qnorm(0.975) * sqrt(tmle_ie_qol$var)) > -1.96))
+}
+
+sapply(data.frame(results.df2) , mean)
+#  MRDE.death.os   MRDE.death.os.cov       MRIE.death.os   MRIE.death.os.cov
+#   0.0003613417        0.9520000000        0.0001405630        0.9390000000 => OK pour one step
+# MRDE.death.tmle MRDE.death.tmle.cov     MRIE.death.tmle MRIE.death.tmle.cov
+#   -0.0091549283        0.8480000000        0.0001887599        0.9440000000 => biased for the direct effect, OK of Indirect effect
+#    MRDE.qol.os     MRDE.qol.os.cov         MRIE.qol.os     MRIE.qol.os.cov
+#   0.0147858126        0.9550000000        0.0053678236        0.8610000000  => indirect effect not biased, but coverage of the one step not-optimal !
+#  MRDE.qol.tmle   MRDE.qol.tmle.cov       MRIE.qol.tmle   MRIE.qol.tmle.cov
+#   0.7043470959        0.5960000000        0.0053361064        0.8610000000 => biased for the direct effect and coverage not optimal for both
+
+
+boxplot(subset(data.frame(results.df2), select = c("MRDE.death.os", "MRDE.death.tmle"))) # tmle biased
+boxplot(subset(data.frame(results.df2), select = c("MRIE.death.os","MRIE.death.tmle"))) # both are very close
+boxplot(subset(data.frame(results.df2), select = c("MRDE.qol.os", "MRDE.qol.tmle"))) # tmle biased
+boxplot(subset(data.frame(results.df2), select = c("MRIE.qol.os","MRIE.qol.tmle"))) # both are very close
+
+results.df2.rel <- results.df2
+results.df2.rel[,c("MRDE.death.os","MRDE.death.tmle")] <- results.df2.rel[,c("MRDE.death.os","MRDE.death.tmle")] / (0.073882)
+results.df2.rel[,c("MRIE.death.os","MRIE.death.tmle")] <- results.df2.rel[,c("MRIE.death.os","MRIE.death.tmle")] / (0.0154)
+results.df2.rel[,c("MRDE.qol.os","MRDE.qol.tmle")] <- results.df2.rel[,c("MRDE.qol.os","MRDE.qol.tmle")] / (-6.647)
+results.df2.rel[,c("MRIE.qol.os","MRIE.qol.tmle")] <- results.df2.rel[,c("MRIE.qol.os","MRIE.qol.tmle")] / (-1.96)
+sapply(data.frame(results.df2.rel) , mean)
+#    MRDE.death.os   MRDE.death.os.cov       MRIE.death.os   MRIE.death.os.cov
+#      0.004890795         0.952000000         0.009127468         0.939000000 < 1% biased for one step
+#  MRDE.death.tmle MRDE.death.tmle.cov     MRIE.death.tmle MRIE.death.tmle.cov
+#     -0.123912839         0.848000000         0.012257135         0.944000000 > 10% biaised for the direct effect and 1.2% for indirect with tmle
+#      MRDE.qol.os     MRDE.qol.os.cov         MRIE.qol.os     MRIE.qol.os.cov
+#     -0.002224434         0.955000000        -0.002738686         0.861000000 < 1% biased for one step
+#    MRDE.qol.tmle   MRDE.qol.tmle.cov       MRIE.qol.tmle   MRIE.qol.tmle.cov
+#     -0.105964660         0.596000000        -0.002722503         0.861000000
+
+
+
+# ---------------------------------------------------------------------------- #
+# Randomized Conditional Direct and Indirect effects ----
+# ---------------------------------------------------------------------------- #
+# To do ...

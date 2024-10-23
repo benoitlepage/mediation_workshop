@@ -33,9 +33,19 @@ Depending on the estimator, some R packages might be necessary:
 - `regmedint` [package](https://kaz-yos.github.io/regmedint/)
 - `mediation` [package](https://imai.fas.harvard.edu/research/files/mediationR2.pdf)
 - `ltmle` [package](http://joshuaschwab.github.io/ltmle/)
-- `SuperLearner` [package](http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html)
-
 - `intmed` [package](https://cran.r-project.org/web/packages/intmed/index.html)
+- `medflex` [package](https://cran.r-project.org/web/packages/medflex/index.html)
+- `questionr` [package](https://cran.r-project.org/web/packages/questionr/index.html)
+- `geepack` [package](https://cran.r-project.org/web/packages/geepack/index.html)
+- `SuperLearner` [package](http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html)
+- `xgboost` [package](https://cran.r-project.org/web/packages/xgboost/index.html)
+- `tidyverse` [package](https://www.tidyverse.org/)    
+- `sl3` [package](https://github.com/tlverse/sl3)
+- `hal9001` [package](https://cran.r-project.org/web/packages/hal9001/index.html)
+- `medoutcon` [package](https://github.com/nhejazi/medoutcon)
+- `glmnet` [package](https://cloud.r-project.org/web/packages/glmnet/index.html)
+
+
 
 
 # Data sets

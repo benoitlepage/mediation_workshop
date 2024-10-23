@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-17" />
+<meta name="date" content="2024-10-23" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -252,6 +252,16 @@ div.csl-indent {
 <li class="chapter" data-level="8.3.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-nde-and-nie-using-coefficients-of-2-msms"><i class="fa fa-check"></i><b>8.3.1</b> Expressing the NDE and NIE using coefficients of 2 MSMs</a></li>
 <li class="chapter" data-level="8.3.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie"><i class="fa fa-check"></i><b>8.3.2</b> Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE</a></li>
 </ul></li>
+<li class="chapter" data-level="8.4" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_CMAverse"><i class="fa fa-check"></i><b>8.4</b> MSM estimated by the <code>CMAverse</code> package</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="msm_chapter.html"><a href="msm_chapter.html#calculation-by-hand-using-the-mediation-formula"><i class="fa fa-check"></i><b>8.4.1</b> Calculation by hand, using the “mediation formula”</a></li>
+<li class="chapter" data-level="8.4.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-nde-and-nie-using-cmaverse-by-iptw-or-gcomputation"><i class="fa fa-check"></i><b>8.4.2</b> Estimation of NDE and NIE using CMAverse (by IPTW or gcomputation)</a></li>
+</ul></li>
+<li class="chapter" data-level="8.5" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_unified"><i class="fa fa-check"></i><b>8.5</b> “Unified” approach for estimating Natural Direct and Indirect effects</a>
+<ul>
+<li class="chapter" data-level="8.5.1" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-by-iptw"><i class="fa fa-check"></i><b>8.5.1</b> Estimation of the MSM by IPTW</a></li>
+<li class="chapter" data-level="8.5.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-by-g-computation"><i class="fa fa-check"></i><b>8.5.2</b> Estimation of the MSM by g-computation</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>9</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
@@ -261,6 +271,7 @@ div.csl-indent {
 <li class="chapter" data-level="9.2.1" data-path="chap_tmle.html"><a href="chap_tmle.html#for-binary-outcomes"><i class="fa fa-check"></i><b>9.2.1</b> For binary outcomes</a></li>
 <li class="chapter" data-level="9.2.2" data-path="chap_tmle.html"><a href="chap_tmle.html#for-continuous-outcomes"><i class="fa fa-check"></i><b>9.2.2</b> For continuous outcomes</a></li>
 </ul></li>
+<li class="chapter" data-level="9.3" data-path="chap_tmle.html"><a href="chap_tmle.html#one-step-and-tmle-estimator-of-the-marginal-randomizedinterventional-direct-and-indirect-effects"><i class="fa fa-check"></i><b>9.3</b> One-step and TMLE estimator of the Marginal Randomized/Interventional Direct and Indirect Effects</a></li>
 </ul></li>
 <li class="chapter" data-level="10" data-path="appendix_a.html"><a href="appendix_a.html"><i class="fa fa-check"></i><b>10</b> Appendix A: Data generating mechanisms</a>
 <ul>
@@ -319,16 +330,26 @@ div.csl-indent {
 <p>The examples given in this workshop have been elaborated for R (version 4.3.3).</p>
 <p>Depending on the estimator, some R packages might be necessary:</p>
 <ul>
-<li><p><code>lavaan</code> <a href="https://lavaan.ugent.be/">package</a></p></li>
-<li><p><code>semPlot</code> <a href="https://cran.r-project.org/web/packages/semPlot/index.html">package</a></p></li>
-<li><p><code>CMAverse</code> <a href="https://bs1125.github.io/CMAverse/">package</a></p></li>
-<li><p><code>sandwich</code> <a href="https://sandwich.r-forge.r-project.org/articles/sandwich.html">package</a></p></li>
-<li><p><code>boot</code> <a href="https://cran.r-project.org/web/packages/boot/index.html">package</a></p></li>
-<li><p><code>regmedint</code> <a href="https://kaz-yos.github.io/regmedint/">package</a></p></li>
-<li><p><code>mediation</code> <a href="https://imai.fas.harvard.edu/research/files/mediationR2.pdf">package</a></p></li>
-<li><p><code>ltmle</code> <a href="http://joshuaschwab.github.io/ltmle/">package</a></p></li>
-<li><p><code>SuperLearner</code> <a href="http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html">package</a></p></li>
-<li><p><code>intmed</code> <a href="https://cran.r-project.org/web/packages/intmed/index.html">package</a></p></li>
+<li><code>lavaan</code> <a href="https://lavaan.ugent.be/">package</a></li>
+<li><code>semPlot</code> <a href="https://cran.r-project.org/web/packages/semPlot/index.html">package</a></li>
+<li><code>CMAverse</code> <a href="https://bs1125.github.io/CMAverse/">package</a></li>
+<li><code>sandwich</code> <a href="https://sandwich.r-forge.r-project.org/articles/sandwich.html">package</a></li>
+<li><code>boot</code> <a href="https://cran.r-project.org/web/packages/boot/index.html">package</a></li>
+<li><code>regmedint</code> <a href="https://kaz-yos.github.io/regmedint/">package</a></li>
+<li><code>mediation</code> <a href="https://imai.fas.harvard.edu/research/files/mediationR2.pdf">package</a></li>
+<li><code>ltmle</code> <a href="http://joshuaschwab.github.io/ltmle/">package</a></li>
+<li><code>intmed</code> <a href="https://cran.r-project.org/web/packages/intmed/index.html">package</a></li>
+<li><code>medflex</code> <a href="https://cran.r-project.org/web/packages/medflex/index.html">package</a></li>
+<li><code>questionr</code> <a href="https://cran.r-project.org/web/packages/questionr/index.html">package</a></li>
+<li><code>geepack</code> <a href="https://cran.r-project.org/web/packages/geepack/index.html">package</a></li>
+<li><code>SuperLearner</code> <a href="http://cran.nexr.com/web/packages/SuperLearner/vignettes/Guide-to-SuperLearner.html">package</a></li>
+<li><code>xgboost</code> <a href="https://cran.r-project.org/web/packages/xgboost/index.html">package</a></li>
+<li><code>tidyverse</code> <a href="https://www.tidyverse.org/">package</a><br />
+</li>
+<li><code>sl3</code> <a href="https://github.com/tlverse/sl3">package</a></li>
+<li><code>hal9001</code> <a href="https://cran.r-project.org/web/packages/hal9001/index.html">package</a></li>
+<li><code>medoutcon</code> <a href="https://github.com/nhejazi/medoutcon">package</a></li>
+<li><code>glmnet</code> <a href="https://cloud.r-project.org/web/packages/glmnet/index.html">package</a></li>
 </ul>
 </div>
             </section>

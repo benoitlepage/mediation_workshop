@@ -246,9 +246,12 @@ Zheng and van der Laan [@zheng2017longitudinal] described "Conditional" Randomiz
 
 Under the identifiability conditions, the quantity of $\mathbb{E}(Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)})$ can be estimated by IPTW:
 \begin{equation*}
-  \Psi^{a,a^\prime}_\text{IPTW} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right] = \frac{1}{n} \sum_{i=1}^n D_\text{IPTW}^{a,a^\prime} \text{ where } D_\text{IPTW}^{a,a^\prime} = Y \frac{I(A=a)}{p_A{a\mid L(0)}} \frac{p_M(M \mid A=a^\prime,L(1),L(0))}{p_M(M \mid A=a,L(1),L(0))}
+  \Psi^{a,a^\prime}_\text{IPTW} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right] = \frac{1}{n} \sum_{i=1}^n D_\text{IPTW}^{a,a^\prime}
 \end{equation*}
-
+where 
+\begin{equation*}
+  D_\text{IPTW}^{a,a^\prime} = Y \frac{I(A=a)}{p_A(A=a\mid L(0))} \frac{p_M(M \mid A=a^\prime,L(1),L(0))}{p_M(M \mid A=a,L(1),L(0))}
+\end{equation*}
 and the variance of the estimator $\Psi^{a,a^\prime}_\text{IPTW}$ is $\text{var}\left(\Psi^{a,a^\prime}_\text{IPTW}\right) = \frac{\text{var}\left(D_\text{IPTW}^{a,a^\prime}\right)}{n}$, which can be used to estimate 90\% confidence intervals.
 
 ```{r IPTW_CRDE_CRIE, echo=TRUE, eval = FALSE}

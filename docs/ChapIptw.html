@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-17" />
+<meta name="date" content="2024-10-23" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -252,6 +252,16 @@ div.csl-indent {
 <li class="chapter" data-level="8.3.1" data-path="msm_chapter.html"><a href="msm_chapter.html#expressing-the-nde-and-nie-using-coefficients-of-2-msms"><i class="fa fa-check"></i><b>8.3.1</b> Expressing the NDE and NIE using coefficients of 2 MSMs</a></li>
 <li class="chapter" data-level="8.3.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie"><i class="fa fa-check"></i><b>8.3.2</b> Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE</a></li>
 </ul></li>
+<li class="chapter" data-level="8.4" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_CMAverse"><i class="fa fa-check"></i><b>8.4</b> MSM estimated by the <code>CMAverse</code> package</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="msm_chapter.html"><a href="msm_chapter.html#calculation-by-hand-using-the-mediation-formula"><i class="fa fa-check"></i><b>8.4.1</b> Calculation by hand, using the “mediation formula”</a></li>
+<li class="chapter" data-level="8.4.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-nde-and-nie-using-cmaverse-by-iptw-or-gcomputation"><i class="fa fa-check"></i><b>8.4.2</b> Estimation of NDE and NIE using CMAverse (by IPTW or gcomputation)</a></li>
+</ul></li>
+<li class="chapter" data-level="8.5" data-path="msm_chapter.html"><a href="msm_chapter.html#msm_unified"><i class="fa fa-check"></i><b>8.5</b> “Unified” approach for estimating Natural Direct and Indirect effects</a>
+<ul>
+<li class="chapter" data-level="8.5.1" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-by-iptw"><i class="fa fa-check"></i><b>8.5.1</b> Estimation of the MSM by IPTW</a></li>
+<li class="chapter" data-level="8.5.2" data-path="msm_chapter.html"><a href="msm_chapter.html#estimation-of-the-msm-by-g-computation"><i class="fa fa-check"></i><b>8.5.2</b> Estimation of the MSM by g-computation</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="chap_tmle.html"><a href="chap_tmle.html"><i class="fa fa-check"></i><b>9</b> Targeted Maximum Likelihood Estimation (TMLE)</a>
 <ul>
@@ -261,6 +271,7 @@ div.csl-indent {
 <li class="chapter" data-level="9.2.1" data-path="chap_tmle.html"><a href="chap_tmle.html#for-binary-outcomes"><i class="fa fa-check"></i><b>9.2.1</b> For binary outcomes</a></li>
 <li class="chapter" data-level="9.2.2" data-path="chap_tmle.html"><a href="chap_tmle.html#for-continuous-outcomes"><i class="fa fa-check"></i><b>9.2.2</b> For continuous outcomes</a></li>
 </ul></li>
+<li class="chapter" data-level="9.3" data-path="chap_tmle.html"><a href="chap_tmle.html#one-step-and-tmle-estimator-of-the-marginal-randomizedinterventional-direct-and-indirect-effects"><i class="fa fa-check"></i><b>9.3</b> One-step and TMLE estimator of the Marginal Randomized/Interventional Direct and Indirect Effects</a></li>
 </ul></li>
 <li class="chapter" data-level="10" data-path="appendix_a.html"><a href="appendix_a.html"><i class="fa fa-check"></i><b>10</b> Appendix A: Data generating mechanisms</a>
 <ul>
@@ -546,9 +557,13 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 </ul>
 <p>Under the identifiability conditions, the quantity of <span class="math inline">\(\mathbb{E}(Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)})\)</span> can be estimated by IPTW:
 <span class="math display">\[\begin{equation*}
-  \Psi^{a,a^\prime}_\text{IPTW} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right] = \frac{1}{n} \sum_{i=1}^n D_\text{IPTW}^{a,a^\prime} \text{ where } D_\text{IPTW}^{a,a^\prime} = Y \frac{I(A=a)}{p_A{a\mid L(0)}} \frac{p_M(M \mid A=a^\prime,L(1),L(0))}{p_M(M \mid A=a,L(1),L(0))}
-\end{equation*}\]</span></p>
-<p>and the variance of the estimator <span class="math inline">\(\Psi^{a,a^\prime}_\text{IPTW}\)</span> is <span class="math inline">\(\text{var}\left(\Psi^{a,a^\prime}_\text{IPTW}\right) = \frac{\text{var}\left(D_\text{IPTW}^{a,a^\prime}\right)}{n}\)</span>, which can be used to estimate 90% confidence intervals.</p>
+  \Psi^{a,a^\prime}_\text{IPTW} = \mathbb{E}\left[Y_{a,\Gamma_{a^\prime} \mid L(0), L(1)} \right] = \frac{1}{n} \sum_{i=1}^n D_\text{IPTW}^{a,a^\prime}
+\end{equation*}\]</span>
+where
+<span class="math display">\[\begin{equation*}
+  D_\text{IPTW}^{a,a^\prime} = Y \frac{I(A=a)}{p_A(A=a\mid L(0))} \frac{p_M(M \mid A=a^\prime,L(1),L(0))}{p_M(M \mid A=a,L(1),L(0))}
+\end{equation*}\]</span>
+and the variance of the estimator <span class="math inline">\(\Psi^{a,a^\prime}_\text{IPTW}\)</span> is <span class="math inline">\(\text{var}\left(\Psi^{a,a^\prime}_\text{IPTW}\right) = \frac{\text{var}\left(D_\text{IPTW}^{a,a^\prime}\right)}{n}\)</span>, which can be used to estimate 90% confidence intervals.</p>
 <div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="ChapIptw.html#cb47-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
 <span id="cb47-2"><a href="ChapIptw.html#cb47-2" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;./data/df2_int.csv&quot;</span>)</span>
 <span id="cb47-3"><a href="ChapIptw.html#cb47-3" tabindex="-1"></a></span>
