@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-23" />
+<meta name="date" content="2024-10-24" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -228,9 +228,10 @@ div.csl-indent {
 <li class="chapter" data-level="7.2.1" data-path="ChapIptw.html"><a href="ChapIptw.html#iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.1</b> IPTW for the CDE</a></li>
 <li class="chapter" data-level="7.2.2" data-path="ChapIptw.html"><a href="ChapIptw.html#stabilized-iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.2</b> Stabilized IPTW for the CDE</a></li>
 </ul></li>
-<li class="chapter" data-level="7.3" data-path="ChapIptw.html"><a href="ChapIptw.html#estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1"><i class="fa fa-check"></i><b>7.3</b> Estimation of “Conditional” Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)</a>
+<li class="chapter" data-level="7.3" data-path="ChapIptw.html"><a href="ChapIptw.html#estimation-of-the-pnde-and-tnie-by-inverse-odds-ratio-weigthing"><i class="fa fa-check"></i><b>7.3</b> Estimation of the PNDE and TNIE by Inverse Odds Ratio Weigthing</a></li>
+<li class="chapter" data-level="7.4" data-path="ChapIptw.html"><a href="ChapIptw.html#estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1"><i class="fa fa-check"></i><b>7.4</b> Estimation of “Conditional” Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)</a>
 <ul>
-<li class="chapter" data-level="7.3.1" data-path="ChapIptw.html"><a href="ChapIptw.html#iptw-for-the-crde-and-crie"><i class="fa fa-check"></i><b>7.3.1</b> IPTW for the CRDE and CRIE</a></li>
+<li class="chapter" data-level="7.4.1" data-path="ChapIptw.html"><a href="ChapIptw.html#iptw-for-the-crde-and-crie"><i class="fa fa-check"></i><b>7.4.1</b> IPTW for the CRDE and CRIE</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="8" data-path="msm_chapter.html"><a href="msm_chapter.html"><i class="fa fa-check"></i><b>8</b> Marginal structural models</a>
@@ -462,79 +463,82 @@ div.csl-indent {
 \end{equation}\]</span></p></li>
 </ol>
 <p>For continuous outcomes, <span class="math inline">\(\overline{Q}_Y(A,L(1),M)\)</span> functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="ChapGcomp.html#cb27-1" tabindex="-1"></a><span class="do">## 1. Fit parametric models to estimate the density of intermediate confounders, </span></span>
-<span id="cb27-2"><a href="ChapGcomp.html#cb27-2" tabindex="-1"></a><span class="do">##    conditional on the parents of the intermediate confounders</span></span>
-<span id="cb27-3"><a href="ChapGcomp.html#cb27-3" tabindex="-1"></a>L1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(L1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>, </span>
-<span id="cb27-4"><a href="ChapGcomp.html#cb27-4" tabindex="-1"></a>                <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb27-5"><a href="ChapGcomp.html#cb27-5" tabindex="-1"></a></span>
-<span id="cb27-6"><a href="ChapGcomp.html#cb27-6" tabindex="-1"></a><span class="do">## 2. Fit parametric models for the outcome conditional on past</span></span>
-<span id="cb27-7"><a href="ChapGcomp.html#cb27-7" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span> </span>
-<span id="cb27-8"><a href="ChapGcomp.html#cb27-8" tabindex="-1"></a>                       M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes, </span>
-<span id="cb27-9"><a href="ChapGcomp.html#cb27-9" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb27-10"><a href="ChapGcomp.html#cb27-10" tabindex="-1"></a>                      family <span class="ot">=</span> <span class="st">&quot;binomial&quot;</span>, data <span class="ot">=</span> df2_int<span class="er">)</span></span>
-<span id="cb27-11"><a href="ChapGcomp.html#cb27-11" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span> </span>
-<span id="cb27-12"><a href="ChapGcomp.html#cb27-12" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes, </span>
-<span id="cb27-13"><a href="ChapGcomp.html#cb27-13" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb27-14"><a href="ChapGcomp.html#cb27-14" tabindex="-1"></a></span>
-<span id="cb27-15"><a href="ChapGcomp.html#cb27-15" tabindex="-1"></a><span class="do">## 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1</span></span>
-<span id="cb27-16"><a href="ChapGcomp.html#cb27-16" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
-<span id="cb27-17"><a href="ChapGcomp.html#cb27-17" tabindex="-1"></a>data.A0  <span class="ot">&lt;-</span> data.A1 <span class="ot">&lt;-</span> df2_int</span>
-<span id="cb27-18"><a href="ChapGcomp.html#cb27-18" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb27-19"><a href="ChapGcomp.html#cb27-19" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb27-20"><a href="ChapGcomp.html#cb27-20" tabindex="-1"></a>p.L1.A0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.model, <span class="at">newdata =</span> data.A0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-21"><a href="ChapGcomp.html#cb27-21" tabindex="-1"></a>p.L1.A1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.model, <span class="at">newdata =</span> data.A1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-22"><a href="ChapGcomp.html#cb27-22" tabindex="-1"></a>sim.L1.A0 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A0)</span>
-<span id="cb27-23"><a href="ChapGcomp.html#cb27-23" tabindex="-1"></a>sim.L1.A1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A1)</span>
-<span id="cb27-24"><a href="ChapGcomp.html#cb27-24" tabindex="-1"></a></span>
-<span id="cb27-25"><a href="ChapGcomp.html#cb27-25" tabindex="-1"></a><span class="do">## 4. Estimate mean outcomes under the counterfactual scenarios setting different </span></span>
-<span id="cb27-26"><a href="ChapGcomp.html#cb27-26" tabindex="-1"></a><span class="do">##    levels of exposures for A and M:</span></span>
-<span id="cb27-27"><a href="ChapGcomp.html#cb27-27" tabindex="-1"></a><span class="do">##    {A=0, M=0} or {A=1, M=0} or {A=0, M=1} or {A=1, M=1}</span></span>
-<span id="cb27-28"><a href="ChapGcomp.html#cb27-28" tabindex="-1"></a></span>
-<span id="cb27-29"><a href="ChapGcomp.html#cb27-29" tabindex="-1"></a>data.A0.M0 <span class="ot">&lt;-</span> data.A0.M1 <span class="ot">&lt;-</span> data.A0</span>
-<span id="cb27-30"><a href="ChapGcomp.html#cb27-30" tabindex="-1"></a>data.A1.M0 <span class="ot">&lt;-</span> data.A1.M1 <span class="ot">&lt;-</span> data.A1</span>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="ChapGcomp.html#cb27-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb27-2"><a href="ChapGcomp.html#cb27-2" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;data/df2_int.csv&quot;</span>)</span>
+<span id="cb27-3"><a href="ChapGcomp.html#cb27-3" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="ChapGcomp.html#cb27-4" tabindex="-1"></a><span class="do">## 1. Fit parametric models to estimate the density of intermediate confounders, </span></span>
+<span id="cb27-5"><a href="ChapGcomp.html#cb27-5" tabindex="-1"></a><span class="do">##    conditional on the parents of the intermediate confounders</span></span>
+<span id="cb27-6"><a href="ChapGcomp.html#cb27-6" tabindex="-1"></a>L1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(L1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>, </span>
+<span id="cb27-7"><a href="ChapGcomp.html#cb27-7" tabindex="-1"></a>                <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb27-8"><a href="ChapGcomp.html#cb27-8" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="ChapGcomp.html#cb27-9" tabindex="-1"></a><span class="do">## 2. Fit parametric models for the outcome conditional on past</span></span>
+<span id="cb27-10"><a href="ChapGcomp.html#cb27-10" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span> </span>
+<span id="cb27-11"><a href="ChapGcomp.html#cb27-11" tabindex="-1"></a>                       M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes, </span>
+<span id="cb27-12"><a href="ChapGcomp.html#cb27-12" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb27-13"><a href="ChapGcomp.html#cb27-13" tabindex="-1"></a>                      family <span class="ot">=</span> <span class="st">&quot;binomial&quot;</span>, data <span class="ot">=</span> df2_int<span class="er">)</span></span>
+<span id="cb27-14"><a href="ChapGcomp.html#cb27-14" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span> </span>
+<span id="cb27-15"><a href="ChapGcomp.html#cb27-15" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes, </span>
+<span id="cb27-16"><a href="ChapGcomp.html#cb27-16" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb27-17"><a href="ChapGcomp.html#cb27-17" tabindex="-1"></a></span>
+<span id="cb27-18"><a href="ChapGcomp.html#cb27-18" tabindex="-1"></a><span class="do">## 3. Simulate individual L1 values under the counterfactual scenarios setting A0=0 or A0=1</span></span>
+<span id="cb27-19"><a href="ChapGcomp.html#cb27-19" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">54321</span>)</span>
+<span id="cb27-20"><a href="ChapGcomp.html#cb27-20" tabindex="-1"></a>data.A0  <span class="ot">&lt;-</span> data.A1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb27-21"><a href="ChapGcomp.html#cb27-21" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb27-22"><a href="ChapGcomp.html#cb27-22" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb27-23"><a href="ChapGcomp.html#cb27-23" tabindex="-1"></a>p.L1.A0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.model, <span class="at">newdata =</span> data.A0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-24"><a href="ChapGcomp.html#cb27-24" tabindex="-1"></a>p.L1.A1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.model, <span class="at">newdata =</span> data.A1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-25"><a href="ChapGcomp.html#cb27-25" tabindex="-1"></a>sim.L1.A0 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A0)</span>
+<span id="cb27-26"><a href="ChapGcomp.html#cb27-26" tabindex="-1"></a>sim.L1.A1 <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df2_int), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p.L1.A1)</span>
+<span id="cb27-27"><a href="ChapGcomp.html#cb27-27" tabindex="-1"></a></span>
+<span id="cb27-28"><a href="ChapGcomp.html#cb27-28" tabindex="-1"></a><span class="do">## 4. Estimate mean outcomes under the counterfactual scenarios setting different </span></span>
+<span id="cb27-29"><a href="ChapGcomp.html#cb27-29" tabindex="-1"></a><span class="do">##    levels of exposures for A and M:</span></span>
+<span id="cb27-30"><a href="ChapGcomp.html#cb27-30" tabindex="-1"></a><span class="do">##    {A=0, M=0} or {A=1, M=0} or {A=0, M=1} or {A=1, M=1}</span></span>
 <span id="cb27-31"><a href="ChapGcomp.html#cb27-31" tabindex="-1"></a></span>
-<span id="cb27-32"><a href="ChapGcomp.html#cb27-32" tabindex="-1"></a><span class="co"># L1 variable is replaced by the simulated values in step 3)</span></span>
-<span id="cb27-33"><a href="ChapGcomp.html#cb27-33" tabindex="-1"></a>data.A0.M0<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A0</span>
-<span id="cb27-34"><a href="ChapGcomp.html#cb27-34" tabindex="-1"></a>data.A0.M1<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A0</span>
-<span id="cb27-35"><a href="ChapGcomp.html#cb27-35" tabindex="-1"></a>data.A1.M0<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A1</span>
-<span id="cb27-36"><a href="ChapGcomp.html#cb27-36" tabindex="-1"></a>data.A1.M1<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A1</span>
-<span id="cb27-37"><a href="ChapGcomp.html#cb27-37" tabindex="-1"></a></span>
-<span id="cb27-38"><a href="ChapGcomp.html#cb27-38" tabindex="-1"></a><span class="co"># set M to 0 or 1</span></span>
-<span id="cb27-39"><a href="ChapGcomp.html#cb27-39" tabindex="-1"></a>data.A0.M0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb27-40"><a href="ChapGcomp.html#cb27-40" tabindex="-1"></a>data.A0.M1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb27-41"><a href="ChapGcomp.html#cb27-41" tabindex="-1"></a>data.A1.M0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb27-42"><a href="ChapGcomp.html#cb27-42" tabindex="-1"></a>data.A1.M1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb27-43"><a href="ChapGcomp.html#cb27-43" tabindex="-1"></a></span>
-<span id="cb27-44"><a href="ChapGcomp.html#cb27-44" tabindex="-1"></a><span class="co"># predict the probability of death</span></span>
-<span id="cb27-45"><a href="ChapGcomp.html#cb27-45" tabindex="-1"></a>p.death.A0.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-46"><a href="ChapGcomp.html#cb27-46" tabindex="-1"></a>p.death.A1.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-47"><a href="ChapGcomp.html#cb27-47" tabindex="-1"></a>p.death.A0.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-48"><a href="ChapGcomp.html#cb27-48" tabindex="-1"></a>p.death.A1.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-49"><a href="ChapGcomp.html#cb27-49" tabindex="-1"></a></span>
-<span id="cb27-50"><a href="ChapGcomp.html#cb27-50" tabindex="-1"></a><span class="co"># predict the mean value of QoL</span></span>
-<span id="cb27-51"><a href="ChapGcomp.html#cb27-51" tabindex="-1"></a>m.qol.A0.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A0.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-52"><a href="ChapGcomp.html#cb27-52" tabindex="-1"></a>m.qol.A1.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-53"><a href="ChapGcomp.html#cb27-53" tabindex="-1"></a>m.qol.A0.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A0.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-54"><a href="ChapGcomp.html#cb27-54" tabindex="-1"></a>m.qol.A1.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb27-55"><a href="ChapGcomp.html#cb27-55" tabindex="-1"></a></span>
-<span id="cb27-56"><a href="ChapGcomp.html#cb27-56" tabindex="-1"></a><span class="do">## 5. Estimate the CDE</span></span>
-<span id="cb27-57"><a href="ChapGcomp.html#cb27-57" tabindex="-1"></a><span class="co"># CDE setting M=0</span></span>
-<span id="cb27-58"><a href="ChapGcomp.html#cb27-58" tabindex="-1"></a>CDE.death.m0.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.M0) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A0.M0)</span>
-<span id="cb27-59"><a href="ChapGcomp.html#cb27-59" tabindex="-1"></a>CDE.death.m0.gcomp.param</span>
-<span id="cb27-60"><a href="ChapGcomp.html#cb27-60" tabindex="-1"></a><span class="co"># [1] 0.06289087</span></span>
-<span id="cb27-61"><a href="ChapGcomp.html#cb27-61" tabindex="-1"></a></span>
-<span id="cb27-62"><a href="ChapGcomp.html#cb27-62" tabindex="-1"></a>CDE.qol.m0.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(m.qol.A1.M0) <span class="sc">-</span> <span class="fu">mean</span>(m.qol.A0.M0)</span>
-<span id="cb27-63"><a href="ChapGcomp.html#cb27-63" tabindex="-1"></a>CDE.qol.m0.gcomp.param</span>
-<span id="cb27-64"><a href="ChapGcomp.html#cb27-64" tabindex="-1"></a><span class="co"># [1] -4.838654</span></span>
-<span id="cb27-65"><a href="ChapGcomp.html#cb27-65" tabindex="-1"></a></span>
-<span id="cb27-66"><a href="ChapGcomp.html#cb27-66" tabindex="-1"></a><span class="co"># CDE setting M=1</span></span>
-<span id="cb27-67"><a href="ChapGcomp.html#cb27-67" tabindex="-1"></a>CDE.death.m1.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.M1) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A0.M1)</span>
-<span id="cb27-68"><a href="ChapGcomp.html#cb27-68" tabindex="-1"></a>CDE.death.m1.gcomp.param</span>
-<span id="cb27-69"><a href="ChapGcomp.html#cb27-69" tabindex="-1"></a><span class="co"># [1] 0.08751016</span></span>
-<span id="cb27-70"><a href="ChapGcomp.html#cb27-70" tabindex="-1"></a></span>
-<span id="cb27-71"><a href="ChapGcomp.html#cb27-71" tabindex="-1"></a>CDE.qol.m1.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(m.qol.A1.M1) <span class="sc">-</span> <span class="fu">mean</span>(m.qol.A0.M1)</span>
-<span id="cb27-72"><a href="ChapGcomp.html#cb27-72" tabindex="-1"></a>CDE.qol.m1.gcomp.param</span>
-<span id="cb27-73"><a href="ChapGcomp.html#cb27-73" tabindex="-1"></a><span class="co"># [1] -10.35059</span></span></code></pre></div>
+<span id="cb27-32"><a href="ChapGcomp.html#cb27-32" tabindex="-1"></a>data.A0.M0 <span class="ot">&lt;-</span> data.A0.M1 <span class="ot">&lt;-</span> data.A0</span>
+<span id="cb27-33"><a href="ChapGcomp.html#cb27-33" tabindex="-1"></a>data.A1.M0 <span class="ot">&lt;-</span> data.A1.M1 <span class="ot">&lt;-</span> data.A1</span>
+<span id="cb27-34"><a href="ChapGcomp.html#cb27-34" tabindex="-1"></a></span>
+<span id="cb27-35"><a href="ChapGcomp.html#cb27-35" tabindex="-1"></a><span class="co"># L1 variable is replaced by the simulated values in step 3)</span></span>
+<span id="cb27-36"><a href="ChapGcomp.html#cb27-36" tabindex="-1"></a>data.A0.M0<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A0</span>
+<span id="cb27-37"><a href="ChapGcomp.html#cb27-37" tabindex="-1"></a>data.A0.M1<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A0</span>
+<span id="cb27-38"><a href="ChapGcomp.html#cb27-38" tabindex="-1"></a>data.A1.M0<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A1</span>
+<span id="cb27-39"><a href="ChapGcomp.html#cb27-39" tabindex="-1"></a>data.A1.M1<span class="sc">$</span>L1 <span class="ot">&lt;-</span> sim.L1.A1</span>
+<span id="cb27-40"><a href="ChapGcomp.html#cb27-40" tabindex="-1"></a></span>
+<span id="cb27-41"><a href="ChapGcomp.html#cb27-41" tabindex="-1"></a><span class="co"># set M to 0 or 1</span></span>
+<span id="cb27-42"><a href="ChapGcomp.html#cb27-42" tabindex="-1"></a>data.A0.M0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb27-43"><a href="ChapGcomp.html#cb27-43" tabindex="-1"></a>data.A0.M1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb27-44"><a href="ChapGcomp.html#cb27-44" tabindex="-1"></a>data.A1.M0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb27-45"><a href="ChapGcomp.html#cb27-45" tabindex="-1"></a>data.A1.M1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb27-46"><a href="ChapGcomp.html#cb27-46" tabindex="-1"></a></span>
+<span id="cb27-47"><a href="ChapGcomp.html#cb27-47" tabindex="-1"></a><span class="co"># predict the probability of death</span></span>
+<span id="cb27-48"><a href="ChapGcomp.html#cb27-48" tabindex="-1"></a>p.death.A0.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-49"><a href="ChapGcomp.html#cb27-49" tabindex="-1"></a>p.death.A1.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-50"><a href="ChapGcomp.html#cb27-50" tabindex="-1"></a>p.death.A0.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A0.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-51"><a href="ChapGcomp.html#cb27-51" tabindex="-1"></a>p.death.A1.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.A1.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-52"><a href="ChapGcomp.html#cb27-52" tabindex="-1"></a></span>
+<span id="cb27-53"><a href="ChapGcomp.html#cb27-53" tabindex="-1"></a><span class="co"># predict the mean value of QoL</span></span>
+<span id="cb27-54"><a href="ChapGcomp.html#cb27-54" tabindex="-1"></a>m.qol.A0.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A0.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-55"><a href="ChapGcomp.html#cb27-55" tabindex="-1"></a>m.qol.A1.M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.M0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-56"><a href="ChapGcomp.html#cb27-56" tabindex="-1"></a>m.qol.A0.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A0.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-57"><a href="ChapGcomp.html#cb27-57" tabindex="-1"></a>m.qol.A1.M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.A1.M1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb27-58"><a href="ChapGcomp.html#cb27-58" tabindex="-1"></a></span>
+<span id="cb27-59"><a href="ChapGcomp.html#cb27-59" tabindex="-1"></a><span class="do">## 5. Estimate the CDE</span></span>
+<span id="cb27-60"><a href="ChapGcomp.html#cb27-60" tabindex="-1"></a><span class="co"># CDE setting M=0</span></span>
+<span id="cb27-61"><a href="ChapGcomp.html#cb27-61" tabindex="-1"></a>CDE.death.m0.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.M0) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A0.M0)</span>
+<span id="cb27-62"><a href="ChapGcomp.html#cb27-62" tabindex="-1"></a>CDE.death.m0.gcomp.param</span>
+<span id="cb27-63"><a href="ChapGcomp.html#cb27-63" tabindex="-1"></a><span class="co"># [1] 0.06289087</span></span>
+<span id="cb27-64"><a href="ChapGcomp.html#cb27-64" tabindex="-1"></a></span>
+<span id="cb27-65"><a href="ChapGcomp.html#cb27-65" tabindex="-1"></a>CDE.qol.m0.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(m.qol.A1.M0) <span class="sc">-</span> <span class="fu">mean</span>(m.qol.A0.M0)</span>
+<span id="cb27-66"><a href="ChapGcomp.html#cb27-66" tabindex="-1"></a>CDE.qol.m0.gcomp.param</span>
+<span id="cb27-67"><a href="ChapGcomp.html#cb27-67" tabindex="-1"></a><span class="co"># [1] -4.838654</span></span>
+<span id="cb27-68"><a href="ChapGcomp.html#cb27-68" tabindex="-1"></a></span>
+<span id="cb27-69"><a href="ChapGcomp.html#cb27-69" tabindex="-1"></a><span class="co"># CDE setting M=1</span></span>
+<span id="cb27-70"><a href="ChapGcomp.html#cb27-70" tabindex="-1"></a>CDE.death.m1.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(p.death.A1.M1) <span class="sc">-</span> <span class="fu">mean</span>(p.death.A0.M1)</span>
+<span id="cb27-71"><a href="ChapGcomp.html#cb27-71" tabindex="-1"></a>CDE.death.m1.gcomp.param</span>
+<span id="cb27-72"><a href="ChapGcomp.html#cb27-72" tabindex="-1"></a><span class="co"># [1] 0.08751016</span></span>
+<span id="cb27-73"><a href="ChapGcomp.html#cb27-73" tabindex="-1"></a></span>
+<span id="cb27-74"><a href="ChapGcomp.html#cb27-74" tabindex="-1"></a>CDE.qol.m1.gcomp.param <span class="ot">&lt;-</span> <span class="fu">mean</span>(m.qol.A1.M1) <span class="sc">-</span> <span class="fu">mean</span>(m.qol.A0.M1)</span>
+<span id="cb27-75"><a href="ChapGcomp.html#cb27-75" tabindex="-1"></a>CDE.qol.m1.gcomp.param</span>
+<span id="cb27-76"><a href="ChapGcomp.html#cb27-76" tabindex="-1"></a><span class="co"># [1] -10.35059</span></span></code></pre></div>
 </div>
 <div id="ChapGcomp-CDE-ICE" class="section level3 hasAnchor" number="6.2.2">
 <h3><span class="header-section-number">6.2.2</span> G-computation by iterative conditional expectation<a href="ChapGcomp.html#ChapGcomp-CDE-ICE" class="anchor-section" aria-label="Anchor link to header"></a></h3>
@@ -550,92 +554,95 @@ div.csl-indent {
 \end{equation}\]</span></p></li>
 </ol>
 <p>Note that G-computation by iterative expectation is preferable if the set of intermediate confounders <span class="math inline">\(L(1)\)</span> is high-dimensional as we only need to fit 1 model by counterfactual scenario (for a whole set of <span class="math inline">\(L(1)\)</span> variables) in the procedure described below, whereas at least 1 model by <span class="math inline">\(L(1)\)</span> variable and by counterfactual scenario are needed with parametric g-computation.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="ChapGcomp.html#cb28-1" tabindex="-1"></a><span class="do">## 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
-<span id="cb28-2"><a href="ChapGcomp.html#cb28-2" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span></span>
-<span id="cb28-3"><a href="ChapGcomp.html#cb28-3" tabindex="-1"></a>                       M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes,</span>
-<span id="cb28-4"><a href="ChapGcomp.html#cb28-4" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-5"><a href="ChapGcomp.html#cb28-5" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span></span>
-<span id="cb28-6"><a href="ChapGcomp.html#cb28-6" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes,</span>
-<span id="cb28-7"><a href="ChapGcomp.html#cb28-7" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-8"><a href="ChapGcomp.html#cb28-8" tabindex="-1"></a></span>
-<span id="cb28-9"><a href="ChapGcomp.html#cb28-9" tabindex="-1"></a><span class="co"># 2) Generate predicted values by evaluating the regression setting the exposure</span></span>
-<span id="cb28-10"><a href="ChapGcomp.html#cb28-10" tabindex="-1"></a><span class="co">#    and the mediator at exposure history of interest:</span></span>
-<span id="cb28-11"><a href="ChapGcomp.html#cb28-11" tabindex="-1"></a><span class="co">#    {A=1,M=0},{A=0,M=0},{A=1,M=1},{A=0,M=1}</span></span>
-<span id="cb28-12"><a href="ChapGcomp.html#cb28-12" tabindex="-1"></a>data.Ais0.Mis0 <span class="ot">&lt;-</span> data.Ais0.Mis1 <span class="ot">&lt;-</span> df2_int</span>
-<span id="cb28-13"><a href="ChapGcomp.html#cb28-13" tabindex="-1"></a>data.Ais1.Mis0 <span class="ot">&lt;-</span> data.Ais1.Mis1 <span class="ot">&lt;-</span> df2_int</span>
-<span id="cb28-14"><a href="ChapGcomp.html#cb28-14" tabindex="-1"></a></span>
-<span id="cb28-15"><a href="ChapGcomp.html#cb28-15" tabindex="-1"></a>data.Ais0.Mis0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb28-16"><a href="ChapGcomp.html#cb28-16" tabindex="-1"></a>data.Ais0.Mis0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="ChapGcomp.html#cb28-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb28-2"><a href="ChapGcomp.html#cb28-2" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;data/df2_int.csv&quot;</span>)</span>
+<span id="cb28-3"><a href="ChapGcomp.html#cb28-3" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="ChapGcomp.html#cb28-4" tabindex="-1"></a><span class="do">## 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)</span></span>
+<span id="cb28-5"><a href="ChapGcomp.html#cb28-5" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb28-6"><a href="ChapGcomp.html#cb28-6" tabindex="-1"></a>                       M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes,</span>
+<span id="cb28-7"><a href="ChapGcomp.html#cb28-7" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-8"><a href="ChapGcomp.html#cb28-8" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb28-9"><a href="ChapGcomp.html#cb28-9" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes,</span>
+<span id="cb28-10"><a href="ChapGcomp.html#cb28-10" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-11"><a href="ChapGcomp.html#cb28-11" tabindex="-1"></a></span>
+<span id="cb28-12"><a href="ChapGcomp.html#cb28-12" tabindex="-1"></a><span class="co"># 2) Generate predicted values by evaluating the regression setting the exposure</span></span>
+<span id="cb28-13"><a href="ChapGcomp.html#cb28-13" tabindex="-1"></a><span class="co">#    and the mediator at exposure history of interest:</span></span>
+<span id="cb28-14"><a href="ChapGcomp.html#cb28-14" tabindex="-1"></a><span class="co">#    {A=1,M=0},{A=0,M=0},{A=1,M=1},{A=0,M=1}</span></span>
+<span id="cb28-15"><a href="ChapGcomp.html#cb28-15" tabindex="-1"></a>data.Ais0.Mis0 <span class="ot">&lt;-</span> data.Ais0.Mis1 <span class="ot">&lt;-</span> df2_int</span>
+<span id="cb28-16"><a href="ChapGcomp.html#cb28-16" tabindex="-1"></a>data.Ais1.Mis0 <span class="ot">&lt;-</span> data.Ais1.Mis1 <span class="ot">&lt;-</span> df2_int</span>
 <span id="cb28-17"><a href="ChapGcomp.html#cb28-17" tabindex="-1"></a></span>
-<span id="cb28-18"><a href="ChapGcomp.html#cb28-18" tabindex="-1"></a>data.Ais0.Mis1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb28-19"><a href="ChapGcomp.html#cb28-19" tabindex="-1"></a>data.Ais0.Mis1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb28-18"><a href="ChapGcomp.html#cb28-18" tabindex="-1"></a>data.Ais0.Mis0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb28-19"><a href="ChapGcomp.html#cb28-19" tabindex="-1"></a>data.Ais0.Mis0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb28-20"><a href="ChapGcomp.html#cb28-20" tabindex="-1"></a></span>
-<span id="cb28-21"><a href="ChapGcomp.html#cb28-21" tabindex="-1"></a>data.Ais1.Mis0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb28-22"><a href="ChapGcomp.html#cb28-22" tabindex="-1"></a>data.Ais1.Mis0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb28-21"><a href="ChapGcomp.html#cb28-21" tabindex="-1"></a>data.Ais0.Mis1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb28-22"><a href="ChapGcomp.html#cb28-22" tabindex="-1"></a>data.Ais0.Mis1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb28-23"><a href="ChapGcomp.html#cb28-23" tabindex="-1"></a></span>
-<span id="cb28-24"><a href="ChapGcomp.html#cb28-24" tabindex="-1"></a>data.Ais1.Mis1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb28-25"><a href="ChapGcomp.html#cb28-25" tabindex="-1"></a>data.Ais1.Mis1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb28-24"><a href="ChapGcomp.html#cb28-24" tabindex="-1"></a>data.Ais1.Mis0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb28-25"><a href="ChapGcomp.html#cb28-25" tabindex="-1"></a>data.Ais1.Mis0<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb28-26"><a href="ChapGcomp.html#cb28-26" tabindex="-1"></a></span>
-<span id="cb28-27"><a href="ChapGcomp.html#cb28-27" tabindex="-1"></a>Q.L2.death.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-28"><a href="ChapGcomp.html#cb28-28" tabindex="-1"></a>Q.L2.death.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-29"><a href="ChapGcomp.html#cb28-29" tabindex="-1"></a>Q.L2.death.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-30"><a href="ChapGcomp.html#cb28-30" tabindex="-1"></a>Q.L2.death.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-31"><a href="ChapGcomp.html#cb28-31" tabindex="-1"></a></span>
-<span id="cb28-32"><a href="ChapGcomp.html#cb28-32" tabindex="-1"></a>Q.L2.qol.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-33"><a href="ChapGcomp.html#cb28-33" tabindex="-1"></a>Q.L2.qol.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-34"><a href="ChapGcomp.html#cb28-34" tabindex="-1"></a>Q.L2.qol.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-35"><a href="ChapGcomp.html#cb28-35" tabindex="-1"></a>Q.L2.qol.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-36"><a href="ChapGcomp.html#cb28-36" tabindex="-1"></a></span>
-<span id="cb28-37"><a href="ChapGcomp.html#cb28-37" tabindex="-1"></a><span class="do">## 3) Regress the predicted values conditional on the exposure A</span></span>
-<span id="cb28-38"><a href="ChapGcomp.html#cb28-38" tabindex="-1"></a><span class="do">##    and baseline confounders L(0)</span></span>
-<span id="cb28-39"><a href="ChapGcomp.html#cb28-39" tabindex="-1"></a>L1.death.A0M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A0M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-40"><a href="ChapGcomp.html#cb28-40" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-41"><a href="ChapGcomp.html#cb28-41" tabindex="-1"></a>L1.death.A0M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A0M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-42"><a href="ChapGcomp.html#cb28-42" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-43"><a href="ChapGcomp.html#cb28-43" tabindex="-1"></a>L1.death.A1M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A1M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-44"><a href="ChapGcomp.html#cb28-44" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-45"><a href="ChapGcomp.html#cb28-45" tabindex="-1"></a>L1.death.A1M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A1M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-46"><a href="ChapGcomp.html#cb28-46" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-47"><a href="ChapGcomp.html#cb28-47" tabindex="-1"></a></span>
-<span id="cb28-48"><a href="ChapGcomp.html#cb28-48" tabindex="-1"></a>L1.qol.A0M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A0M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-49"><a href="ChapGcomp.html#cb28-49" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-50"><a href="ChapGcomp.html#cb28-50" tabindex="-1"></a>L1.qol.A0M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A0M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-51"><a href="ChapGcomp.html#cb28-51" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-52"><a href="ChapGcomp.html#cb28-52" tabindex="-1"></a>L1.qol.A1M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A1M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-53"><a href="ChapGcomp.html#cb28-53" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-54"><a href="ChapGcomp.html#cb28-54" tabindex="-1"></a>L1.qol.A1M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A1M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb28-55"><a href="ChapGcomp.html#cb28-55" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb28-56"><a href="ChapGcomp.html#cb28-56" tabindex="-1"></a></span>
-<span id="cb28-57"><a href="ChapGcomp.html#cb28-57" tabindex="-1"></a><span class="do">## 4) generate predicted values by evaluating the regression at exposure </span></span>
-<span id="cb28-58"><a href="ChapGcomp.html#cb28-58" tabindex="-1"></a><span class="do">##    of interest: {A=1} &amp; {A=0}</span></span>
-<span id="cb28-59"><a href="ChapGcomp.html#cb28-59" tabindex="-1"></a>Q.L1.death.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M0.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-60"><a href="ChapGcomp.html#cb28-60" tabindex="-1"></a>Q.L1.death.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M1.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-61"><a href="ChapGcomp.html#cb28-61" tabindex="-1"></a>Q.L1.death.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M0.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-62"><a href="ChapGcomp.html#cb28-62" tabindex="-1"></a>Q.L1.death.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M1.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-63"><a href="ChapGcomp.html#cb28-63" tabindex="-1"></a></span>
-<span id="cb28-64"><a href="ChapGcomp.html#cb28-64" tabindex="-1"></a>Q.L1.qol.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A0M0.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-65"><a href="ChapGcomp.html#cb28-65" tabindex="-1"></a>Q.L1.qol.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A0M1.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-66"><a href="ChapGcomp.html#cb28-66" tabindex="-1"></a>Q.L1.qol.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A1M0.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-67"><a href="ChapGcomp.html#cb28-67" tabindex="-1"></a>Q.L1.qol.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A1M1.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
-<span id="cb28-68"><a href="ChapGcomp.html#cb28-68" tabindex="-1"></a></span>
-<span id="cb28-69"><a href="ChapGcomp.html#cb28-69" tabindex="-1"></a><span class="do">## 5) Take empirical mean of final predicted outcomes to estimate CDE</span></span>
-<span id="cb28-70"><a href="ChapGcomp.html#cb28-70" tabindex="-1"></a><span class="co"># CDE setting M=0</span></span>
-<span id="cb28-71"><a href="ChapGcomp.html#cb28-71" tabindex="-1"></a>CDE.death.m0.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.A1M0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.A0M0)</span>
-<span id="cb28-72"><a href="ChapGcomp.html#cb28-72" tabindex="-1"></a>CDE.death.m0.gcomp.ice</span>
-<span id="cb28-73"><a href="ChapGcomp.html#cb28-73" tabindex="-1"></a><span class="co"># [1] 0.06342833</span></span>
-<span id="cb28-74"><a href="ChapGcomp.html#cb28-74" tabindex="-1"></a></span>
-<span id="cb28-75"><a href="ChapGcomp.html#cb28-75" tabindex="-1"></a>CDE.qol.m0.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.qol.A1M0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.qol.A0M0)</span>
-<span id="cb28-76"><a href="ChapGcomp.html#cb28-76" tabindex="-1"></a>CDE.qol.m0.gcomp.ice</span>
-<span id="cb28-77"><a href="ChapGcomp.html#cb28-77" tabindex="-1"></a><span class="co"># [1] -4.869509</span></span>
-<span id="cb28-78"><a href="ChapGcomp.html#cb28-78" tabindex="-1"></a></span>
-<span id="cb28-79"><a href="ChapGcomp.html#cb28-79" tabindex="-1"></a><span class="co"># CDE setting M=1</span></span>
-<span id="cb28-80"><a href="ChapGcomp.html#cb28-80" tabindex="-1"></a>CDE.death.m1.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.A1M1) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.A0M1)</span>
-<span id="cb28-81"><a href="ChapGcomp.html#cb28-81" tabindex="-1"></a>CDE.death.m1.gcomp.ice</span>
-<span id="cb28-82"><a href="ChapGcomp.html#cb28-82" tabindex="-1"></a><span class="co"># [1] 0.08812318</span></span>
-<span id="cb28-83"><a href="ChapGcomp.html#cb28-83" tabindex="-1"></a></span>
-<span id="cb28-84"><a href="ChapGcomp.html#cb28-84" tabindex="-1"></a>CDE.qol.m1.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.qol.A1M1) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.qol.A0M1)</span>
-<span id="cb28-85"><a href="ChapGcomp.html#cb28-85" tabindex="-1"></a>CDE.qol.m1.gcomp.ice</span>
-<span id="cb28-86"><a href="ChapGcomp.html#cb28-86" tabindex="-1"></a><span class="co"># [1] -10.38144</span></span></code></pre></div>
+<span id="cb28-27"><a href="ChapGcomp.html#cb28-27" tabindex="-1"></a>data.Ais1.Mis1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb28-28"><a href="ChapGcomp.html#cb28-28" tabindex="-1"></a>data.Ais1.Mis1<span class="sc">$</span>M_diabetes <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb28-29"><a href="ChapGcomp.html#cb28-29" tabindex="-1"></a></span>
+<span id="cb28-30"><a href="ChapGcomp.html#cb28-30" tabindex="-1"></a>Q.L2.death.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-31"><a href="ChapGcomp.html#cb28-31" tabindex="-1"></a>Q.L2.death.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-32"><a href="ChapGcomp.html#cb28-32" tabindex="-1"></a>Q.L2.death.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-33"><a href="ChapGcomp.html#cb28-33" tabindex="-1"></a>Q.L2.death.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.death.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-34"><a href="ChapGcomp.html#cb28-34" tabindex="-1"></a></span>
+<span id="cb28-35"><a href="ChapGcomp.html#cb28-35" tabindex="-1"></a>Q.L2.qol.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-36"><a href="ChapGcomp.html#cb28-36" tabindex="-1"></a>Q.L2.qol.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-37"><a href="ChapGcomp.html#cb28-37" tabindex="-1"></a>Q.L2.qol.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-38"><a href="ChapGcomp.html#cb28-38" tabindex="-1"></a>Q.L2.qol.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Y.qol.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-39"><a href="ChapGcomp.html#cb28-39" tabindex="-1"></a></span>
+<span id="cb28-40"><a href="ChapGcomp.html#cb28-40" tabindex="-1"></a><span class="do">## 3) Regress the predicted values conditional on the exposure A</span></span>
+<span id="cb28-41"><a href="ChapGcomp.html#cb28-41" tabindex="-1"></a><span class="do">##    and baseline confounders L(0)</span></span>
+<span id="cb28-42"><a href="ChapGcomp.html#cb28-42" tabindex="-1"></a>L1.death.A0M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A0M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-43"><a href="ChapGcomp.html#cb28-43" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-44"><a href="ChapGcomp.html#cb28-44" tabindex="-1"></a>L1.death.A0M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A0M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-45"><a href="ChapGcomp.html#cb28-45" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-46"><a href="ChapGcomp.html#cb28-46" tabindex="-1"></a>L1.death.A1M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A1M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-47"><a href="ChapGcomp.html#cb28-47" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-48"><a href="ChapGcomp.html#cb28-48" tabindex="-1"></a>L1.death.A1M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.death.A1M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-49"><a href="ChapGcomp.html#cb28-49" tabindex="-1"></a>                           <span class="at">family =</span> <span class="st">&quot;quasibinomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-50"><a href="ChapGcomp.html#cb28-50" tabindex="-1"></a></span>
+<span id="cb28-51"><a href="ChapGcomp.html#cb28-51" tabindex="-1"></a>L1.qol.A0M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A0M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-52"><a href="ChapGcomp.html#cb28-52" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-53"><a href="ChapGcomp.html#cb28-53" tabindex="-1"></a>L1.qol.A0M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A0M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-54"><a href="ChapGcomp.html#cb28-54" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-55"><a href="ChapGcomp.html#cb28-55" tabindex="-1"></a>L1.qol.A1M0.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A1M0 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-56"><a href="ChapGcomp.html#cb28-56" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-57"><a href="ChapGcomp.html#cb28-57" tabindex="-1"></a>L1.qol.A1M1.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Q.L2.qol.A1M1 <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb28-58"><a href="ChapGcomp.html#cb28-58" tabindex="-1"></a>                         <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb28-59"><a href="ChapGcomp.html#cb28-59" tabindex="-1"></a></span>
+<span id="cb28-60"><a href="ChapGcomp.html#cb28-60" tabindex="-1"></a><span class="do">## 4) generate predicted values by evaluating the regression at exposure </span></span>
+<span id="cb28-61"><a href="ChapGcomp.html#cb28-61" tabindex="-1"></a><span class="do">##    of interest: {A=1} &amp; {A=0}</span></span>
+<span id="cb28-62"><a href="ChapGcomp.html#cb28-62" tabindex="-1"></a>Q.L1.death.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M0.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-63"><a href="ChapGcomp.html#cb28-63" tabindex="-1"></a>Q.L1.death.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A0M1.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-64"><a href="ChapGcomp.html#cb28-64" tabindex="-1"></a>Q.L1.death.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M0.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-65"><a href="ChapGcomp.html#cb28-65" tabindex="-1"></a>Q.L1.death.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.death.A1M1.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-66"><a href="ChapGcomp.html#cb28-66" tabindex="-1"></a></span>
+<span id="cb28-67"><a href="ChapGcomp.html#cb28-67" tabindex="-1"></a>Q.L1.qol.A0M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A0M0.model, <span class="at">newdata =</span> data.Ais0.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-68"><a href="ChapGcomp.html#cb28-68" tabindex="-1"></a>Q.L1.qol.A0M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A0M1.model, <span class="at">newdata =</span> data.Ais0.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-69"><a href="ChapGcomp.html#cb28-69" tabindex="-1"></a>Q.L1.qol.A1M0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A1M0.model, <span class="at">newdata =</span> data.Ais1.Mis0, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-70"><a href="ChapGcomp.html#cb28-70" tabindex="-1"></a>Q.L1.qol.A1M1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(L1.qol.A1M1.model, <span class="at">newdata =</span> data.Ais1.Mis1, <span class="at">type=</span><span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-71"><a href="ChapGcomp.html#cb28-71" tabindex="-1"></a></span>
+<span id="cb28-72"><a href="ChapGcomp.html#cb28-72" tabindex="-1"></a><span class="do">## 5) Take empirical mean of final predicted outcomes to estimate CDE</span></span>
+<span id="cb28-73"><a href="ChapGcomp.html#cb28-73" tabindex="-1"></a><span class="co"># CDE setting M=0</span></span>
+<span id="cb28-74"><a href="ChapGcomp.html#cb28-74" tabindex="-1"></a>CDE.death.m0.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.A1M0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.A0M0)</span>
+<span id="cb28-75"><a href="ChapGcomp.html#cb28-75" tabindex="-1"></a>CDE.death.m0.gcomp.ice</span>
+<span id="cb28-76"><a href="ChapGcomp.html#cb28-76" tabindex="-1"></a><span class="co"># [1] 0.06342833</span></span>
+<span id="cb28-77"><a href="ChapGcomp.html#cb28-77" tabindex="-1"></a></span>
+<span id="cb28-78"><a href="ChapGcomp.html#cb28-78" tabindex="-1"></a>CDE.qol.m0.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.qol.A1M0) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.qol.A0M0)</span>
+<span id="cb28-79"><a href="ChapGcomp.html#cb28-79" tabindex="-1"></a>CDE.qol.m0.gcomp.ice</span>
+<span id="cb28-80"><a href="ChapGcomp.html#cb28-80" tabindex="-1"></a><span class="co"># [1] -4.869509</span></span>
+<span id="cb28-81"><a href="ChapGcomp.html#cb28-81" tabindex="-1"></a></span>
+<span id="cb28-82"><a href="ChapGcomp.html#cb28-82" tabindex="-1"></a><span class="co"># CDE setting M=1</span></span>
+<span id="cb28-83"><a href="ChapGcomp.html#cb28-83" tabindex="-1"></a>CDE.death.m1.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.death.A1M1) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.death.A0M1)</span>
+<span id="cb28-84"><a href="ChapGcomp.html#cb28-84" tabindex="-1"></a>CDE.death.m1.gcomp.ice</span>
+<span id="cb28-85"><a href="ChapGcomp.html#cb28-85" tabindex="-1"></a><span class="co"># [1] 0.08812318</span></span>
+<span id="cb28-86"><a href="ChapGcomp.html#cb28-86" tabindex="-1"></a></span>
+<span id="cb28-87"><a href="ChapGcomp.html#cb28-87" tabindex="-1"></a>CDE.qol.m1.gcomp.ice <span class="ot">&lt;-</span> <span class="fu">mean</span>(Q.L1.qol.A1M1) <span class="sc">-</span> <span class="fu">mean</span>(Q.L1.qol.A0M1)</span>
+<span id="cb28-88"><a href="ChapGcomp.html#cb28-88" tabindex="-1"></a>CDE.qol.m1.gcomp.ice</span>
+<span id="cb28-89"><a href="ChapGcomp.html#cb28-89" tabindex="-1"></a><span class="co"># [1] -10.38144</span></span></code></pre></div>
 <div id="g-computation-by-ice-using-the-ltmle-package" class="section level4 hasAnchor" number="6.2.2.1">
 <h4><span class="header-section-number">6.2.2.1</span> G-computation by ICE using the <code>ltmle</code> package<a href="ChapGcomp.html#g-computation-by-ice-using-the-ltmle-package" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>The <code>ltmle</code> package can be used to estimate Controlled Direct Effects by g-computation.</p>
@@ -782,31 +789,34 @@ Y_{res} = Y - \hat{\gamma}_M M - \hat{\psi}_{A \ast M} \times A \times M
 <span class="math display">\[\begin{equation}
 \hat{\Psi}^{\text{CDE}_m}_{\text{seq.g.est}} = \hat{\psi}_A + \hat{\psi}_{A \ast M} \times m
 \end{equation}\]</span></p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="ChapGcomp.html#cb30-1" tabindex="-1"></a><span class="do">## 1) Regress the outcome on past</span></span>
-<span id="cb30-2"><a href="ChapGcomp.html#cb30-2" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span></span>
-<span id="cb30-3"><a href="ChapGcomp.html#cb30-3" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes,</span>
-<span id="cb30-4"><a href="ChapGcomp.html#cb30-4" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb30-5"><a href="ChapGcomp.html#cb30-5" tabindex="-1"></a></span>
-<span id="cb30-6"><a href="ChapGcomp.html#cb30-6" tabindex="-1"></a><span class="do">## 2) Calculate a residual outcome Y - (coef.M * M_diabetes) - (coef.A0:M * A0:M)</span></span>
-<span id="cb30-7"><a href="ChapGcomp.html#cb30-7" tabindex="-1"></a>Y.res <span class="ot">&lt;-</span> (df2_int<span class="sc">$</span>Y_qol <span class="sc">-</span></span>
-<span id="cb30-8"><a href="ChapGcomp.html#cb30-8" tabindex="-1"></a>            (Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;M_diabetes&quot;</span>] <span class="sc">*</span> df2_int<span class="sc">$</span>M_diabetes) <span class="sc">-</span></span>
-<span id="cb30-9"><a href="ChapGcomp.html#cb30-9" tabindex="-1"></a>            (Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5:M_diabetes&quot;</span>] <span class="sc">*</span> df2_int<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="sc">*</span></span>
-<span id="cb30-10"><a href="ChapGcomp.html#cb30-10" tabindex="-1"></a>               df2_int<span class="sc">$</span>M_diabetes) )</span>
-<span id="cb30-11"><a href="ChapGcomp.html#cb30-11" tabindex="-1"></a></span>
-<span id="cb30-12"><a href="ChapGcomp.html#cb30-12" tabindex="-1"></a><span class="do">## 3) Regress the residual outcome on the exposure A and baseline confounders L(0)</span></span>
-<span id="cb30-13"><a href="ChapGcomp.html#cb30-13" tabindex="-1"></a>Y.res.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y.res <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
-<span id="cb30-14"><a href="ChapGcomp.html#cb30-14" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb30-15"><a href="ChapGcomp.html#cb30-15" tabindex="-1"></a></span>
-<span id="cb30-16"><a href="ChapGcomp.html#cb30-16" tabindex="-1"></a><span class="do">## 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:</span></span>
-<span id="cb30-17"><a href="ChapGcomp.html#cb30-17" tabindex="-1"></a>CDE.qol.m0.seq <span class="ot">&lt;-</span> (Y.res.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb30-18"><a href="ChapGcomp.html#cb30-18" tabindex="-1"></a>                     <span class="dv">0</span> <span class="sc">*</span> Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5:M_diabetes&quot;</span>])</span>
-<span id="cb30-19"><a href="ChapGcomp.html#cb30-19" tabindex="-1"></a>CDE.qol.m0.seq</span>
-<span id="cb30-20"><a href="ChapGcomp.html#cb30-20" tabindex="-1"></a><span class="co"># -4.869509</span></span>
-<span id="cb30-21"><a href="ChapGcomp.html#cb30-21" tabindex="-1"></a></span>
-<span id="cb30-22"><a href="ChapGcomp.html#cb30-22" tabindex="-1"></a>CDE.qol.m1.seq <span class="ot">&lt;-</span> (Y.res.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">+</span> </span>
-<span id="cb30-23"><a href="ChapGcomp.html#cb30-23" tabindex="-1"></a>                     <span class="dv">1</span> <span class="sc">*</span> Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5:M_diabetes&quot;</span>])</span>
-<span id="cb30-24"><a href="ChapGcomp.html#cb30-24" tabindex="-1"></a>CDE.qol.m1.seq</span>
-<span id="cb30-25"><a href="ChapGcomp.html#cb30-25" tabindex="-1"></a><span class="co"># -10.38144</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="ChapGcomp.html#cb30-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb30-2"><a href="ChapGcomp.html#cb30-2" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;data/df2_int.csv&quot;</span>)</span>
+<span id="cb30-3"><a href="ChapGcomp.html#cb30-3" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="ChapGcomp.html#cb30-4" tabindex="-1"></a><span class="do">## 1) Regress the outcome on past</span></span>
+<span id="cb30-5"><a href="ChapGcomp.html#cb30-5" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span></span>
+<span id="cb30-6"><a href="ChapGcomp.html#cb30-6" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes,</span>
+<span id="cb30-7"><a href="ChapGcomp.html#cb30-7" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb30-8"><a href="ChapGcomp.html#cb30-8" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="ChapGcomp.html#cb30-9" tabindex="-1"></a><span class="do">## 2) Calculate a residual outcome Y - (coef.M * M_diabetes) - (coef.A0:M * A0:M)</span></span>
+<span id="cb30-10"><a href="ChapGcomp.html#cb30-10" tabindex="-1"></a>Y.res <span class="ot">&lt;-</span> (df2_int<span class="sc">$</span>Y_qol <span class="sc">-</span></span>
+<span id="cb30-11"><a href="ChapGcomp.html#cb30-11" tabindex="-1"></a>            (Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;M_diabetes&quot;</span>] <span class="sc">*</span> df2_int<span class="sc">$</span>M_diabetes) <span class="sc">-</span></span>
+<span id="cb30-12"><a href="ChapGcomp.html#cb30-12" tabindex="-1"></a>            (Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5:M_diabetes&quot;</span>] <span class="sc">*</span> df2_int<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="sc">*</span></span>
+<span id="cb30-13"><a href="ChapGcomp.html#cb30-13" tabindex="-1"></a>               df2_int<span class="sc">$</span>M_diabetes) )</span>
+<span id="cb30-14"><a href="ChapGcomp.html#cb30-14" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="ChapGcomp.html#cb30-15" tabindex="-1"></a><span class="do">## 3) Regress the residual outcome on the exposure A and baseline confounders L(0)</span></span>
+<span id="cb30-16"><a href="ChapGcomp.html#cb30-16" tabindex="-1"></a>Y.res.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y.res <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span>,</span>
+<span id="cb30-17"><a href="ChapGcomp.html#cb30-17" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
+<span id="cb30-18"><a href="ChapGcomp.html#cb30-18" tabindex="-1"></a></span>
+<span id="cb30-19"><a href="ChapGcomp.html#cb30-19" tabindex="-1"></a><span class="do">## 4) Use coefficients estimated from the 1st and 2nd regression to estimate CDE:</span></span>
+<span id="cb30-20"><a href="ChapGcomp.html#cb30-20" tabindex="-1"></a>CDE.qol.m0.seq <span class="ot">&lt;-</span> (Y.res.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb30-21"><a href="ChapGcomp.html#cb30-21" tabindex="-1"></a>                     <span class="dv">0</span> <span class="sc">*</span> Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5:M_diabetes&quot;</span>])</span>
+<span id="cb30-22"><a href="ChapGcomp.html#cb30-22" tabindex="-1"></a>CDE.qol.m0.seq</span>
+<span id="cb30-23"><a href="ChapGcomp.html#cb30-23" tabindex="-1"></a><span class="co"># -4.869509</span></span>
+<span id="cb30-24"><a href="ChapGcomp.html#cb30-24" tabindex="-1"></a></span>
+<span id="cb30-25"><a href="ChapGcomp.html#cb30-25" tabindex="-1"></a>CDE.qol.m1.seq <span class="ot">&lt;-</span> (Y.res.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">+</span> </span>
+<span id="cb30-26"><a href="ChapGcomp.html#cb30-26" tabindex="-1"></a>                     <span class="dv">1</span> <span class="sc">*</span> Y.qol.model<span class="sc">$</span>coefficients[<span class="st">&quot;A0_PM2.5:M_diabetes&quot;</span>])</span>
+<span id="cb30-27"><a href="ChapGcomp.html#cb30-27" tabindex="-1"></a>CDE.qol.m1.seq</span>
+<span id="cb30-28"><a href="ChapGcomp.html#cb30-28" tabindex="-1"></a><span class="co"># -10.38144</span></span></code></pre></div>
 </div>
 </div>
 <div id="estimation-of-natural-direct-nde-and-indirect-effects-nie" class="section level2 hasAnchor" number="6.3">

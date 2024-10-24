@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-10-23}
+\date{2024-10-24}
 
 \begin{document}
 \maketitle
@@ -573,6 +573,9 @@ We have to define:
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1 }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df1.csv"}\NormalTok{)}
+
 \FunctionTok{library}\NormalTok{(lavaan)}
 
 \NormalTok{sem.QoL }\OtherTok{\textless{}{-}} \StringTok{"                                 \# models are written between quotes}
@@ -2122,6 +2125,9 @@ For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1. Fit parametric models to estimate the density of intermediate confounders, }
 \DocumentationTok{\#\#    conditional on the parents of the intermediate confounders}
 \NormalTok{L1.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(L1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\NormalTok{, }
@@ -2223,6 +2229,9 @@ Note that G-computation by iterative expectation is preferable if the set of int
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)}
 \NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
 \NormalTok{                       M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
@@ -2473,6 +2482,9 @@ The controlled direct effect \(\text{CDE}_m\) can then be estimated by:
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1) Regress the outcome on past}
 \NormalTok{Y.qol.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+}
 \NormalTok{                     M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes,}
@@ -3773,6 +3785,9 @@ The following steps describe the implementation of the IPTW estimator
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1. Estimate g}
 \NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env, }
            \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
@@ -3862,6 +3877,9 @@ The following steps describe the implementation of the IPTW estimator
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1. Estimate gA and gM}
 \NormalTok{gA.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env, }
             \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
@@ -3996,6 +4014,210 @@ The estimation algorithm is the same as for IPTW, but applying the stabilized es
 \NormalTok{                                                df2\_int}\SpecialCharTok{$}\NormalTok{M\_diabetes }\SpecialCharTok{==} \DecValTok{1}\NormalTok{)))}
 \NormalTok{CDE\_sIPTW\_m1\_qol}
 \CommentTok{\# [1] {-}10.03045}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Estimation of the PNDE and TNIE by Inverse Odds Ratio Weigthing}\label{estimation-of-the-pnde-and-tnie-by-inverse-odds-ratio-weigthing}
+
+(\citeproc{ref-Tchetgen2012}{Tchetgen Tchetgen 2013}) described the estimation of the Pure Natural Direct Effect (PNDE) and Total Natural Indirect Effect (TNIE) using Inverse Oddes Ratio Weighting (IORW), when the the two effects are identifiable (Causal model 1, Figure \ref{fig:figDAGM1}).
+
+A practical guidance is also given in (\citeproc{ref-Nguyen2015}{Nguyen et al. 2015}).
+
+The approach is particularly useful with multiple mediators, as we don't need to estimate a model for each mediator of interest. We also don't need to make any assumptions regarding the exposure-mediator interaction effects on the outcome.
+
+The IORW approach relies on :
+
+\begin{itemize}
+\tightlist
+\item
+  a single model of the exposure conditional on the set of mediators and baseline confounders,
+\item
+  and 2 models of the outcome, circonventing the need to specify the possible interactions between the exposure and mediators
+\end{itemize}
+
+The analysis relies on the following steps:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Fit a standard multiple logistic regression model for the exposure \(A\), conditional on mediators \(M\) and baseline confounders \(L(0)\) and \(L(1)\)
+\item
+  Compute an IORW weight by taking the inverse of the predicted odds ratio from step 1 for each observation in the exposed group (the unexposed group weight equals 1)
+\item
+  Estimate the direct effect of the exposure via a glm of the regression of the outcome \(Y\) on the exposure \(A\) and baseline confounders \(L(0)\) and \(L(1)\), with the appropriate link function and the weights from step 2
+\item
+  Estimate the total effect of the exposure \(A\) on the outcome \(Y\) using a standard glm with the appropriate link function (adjusted for baseline confounders)
+\item
+  Calculate indirect effects by substracting the direct effect from the total effect
+\item
+  Bootstrap effect estimates to get 95\% confidence intervals
+\end{enumerate}
+
+Note: Examples of sensitivity analysis to test the unmeasured confounding assumptions are also described in (\citeproc{ref-Nguyen2015}{Nguyen et al. 2015}) (not shown below).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
+
+\DocumentationTok{\#\# 1) Fit a standard multiple logistic regression model for the exposure A,}
+\DocumentationTok{\#\#    conditional on mediators M and baseline confounders L(0) and L(1)}
+\NormalTok{g.A.L0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ M\_diabetes }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
+              \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{,}
+              \AttributeTok{data =}\NormalTok{ df1\_int)}
+\FunctionTok{summary}\NormalTok{(g.A.L0)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                Estimate Std. Error z value Pr(\textgreater{}|z|)}
+\CommentTok{\#   (Intercept) {-}2.883345   0.080069 {-}36.011  \textless{} 2e{-}16 ***}
+\CommentTok{\#   M\_diabetes   0.562935   0.065539   8.589  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male      0.374904   0.064828   5.783 7.34e{-}09 ***}
+\CommentTok{\#   L0\_soc\_env   0.600956   0.073872   8.135 4.12e{-}16 ***}
+\CommentTok{\#   L1          {-}0.007768   0.070141  {-}0.111    0.912}
+
+\DocumentationTok{\#\# 2) Compute an IORW weight by taking the inverse of the predicted odds ratio}
+\DocumentationTok{\#\#    from step 1 for each observation in the exposed group (the unexposed}
+\DocumentationTok{\#\#    group weight equals 1)}
+\NormalTok{p }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.A.L0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\NormalTok{iorw }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(df1\_int))}
+\NormalTok{iorw[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{iorw[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ ((}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ p[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{]) }\SpecialCharTok{/}
+\NormalTok{                                  p[df1\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{])}
+
+\DocumentationTok{\#\# 3) Estimate the direct effect of the exposure via a glm of the regression of}
+\DocumentationTok{\#\#    the outcome Y on the exposure A and baseline confounders L(0) and L(1),}
+\DocumentationTok{\#\#    with the appropriate link function and the weights from step 2}
+\NormalTok{Dir.Y.model.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
+                         \AttributeTok{weights =}\NormalTok{ iorw,}
+                         \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\CommentTok{\# to get risk differences}
+                         \AttributeTok{data =}\NormalTok{ df1\_int)}
+\FunctionTok{summary}\NormalTok{(Dir.Y.model.death)}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept) 0.102447   0.009481  10.805  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5    0.063862   0.008313   7.682 1.71e{-}14 ***}
+\CommentTok{\#   L0\_male     0.066841   0.008318   8.035 1.04e{-}15 ***}
+\CommentTok{\#   L0\_soc\_env  0.056381   0.008625   6.537 6.57e{-}11 ***}
+\CommentTok{\#   L1          0.091272   0.009103  10.026  \textless{} 2e{-}16 ***}
+
+\NormalTok{PNDE }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(Dir.Y.model.death)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
+\CommentTok{\# 0.06386221}
+
+\DocumentationTok{\#\# 4) Estimate the total effect of the exposure A on the outcome Y using a standard}
+\DocumentationTok{\#\#    glm with the appropriate link function (adjusted for baseline confounders)}
+\NormalTok{Tot.Y.model.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1,}
+                         \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\CommentTok{\# to get risk differences}
+                         \AttributeTok{data =}\NormalTok{ df1\_int)}
+\FunctionTok{summary}\NormalTok{(Tot.Y.model.death)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept) 0.111516   0.008328  13.390  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5    0.076673   0.012777   6.001 2.03e{-}09 ***}
+\CommentTok{\#   L0\_male     0.050049   0.008042   6.224 5.05e{-}10 ***}
+\CommentTok{\#   L0\_soc\_env  0.060178   0.008413   7.153 9.07e{-}13 ***}
+\CommentTok{\#   L1          0.080243   0.008813   9.106  \textless{} 2e{-}16 ***}
+
+\CommentTok{\# the total effect is 0.076673}
+
+\DocumentationTok{\#\# 5) Calculate indirect effects by substracting the direct effect from the total}
+\DocumentationTok{\#\#    effect}
+\NormalTok{TNIE }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(Tot.Y.model.death)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ PNDE}
+\CommentTok{\# 0.01281078}
+
+\DocumentationTok{\#\# 6) bootstrap effect estimates to get 95\% confidence intervals}
+\end{Highlighting}
+\end{Shaded}
+
+We can use the \texttt{CMAverse} package to obtain those estimations by IORW.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
+\FunctionTok{library}\NormalTok{(CMAverse)}
+
+\DocumentationTok{\#\# Using the CMAverse to estimate PNDE and TNIE by IORW}
+\NormalTok{res\_msm\_df1.death }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
+                           \AttributeTok{model =} \StringTok{"iorw"}\NormalTok{,}
+                           \AttributeTok{outcome =} \StringTok{"Y\_death"}\NormalTok{,}
+                           \AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{,}
+                           \AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,}
+                           \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{, }\StringTok{"L0\_soc\_env"}\NormalTok{,}\StringTok{"L1"}\NormalTok{),}
+                           \AttributeTok{postc =} \ConstantTok{NULL}\NormalTok{,}
+                           \CommentTok{\# EMint = TRUE, \# not needed for IORW}
+                           \AttributeTok{ereg =} \StringTok{"logistic"}\NormalTok{, }\CommentTok{\# exposure regression model g(A=1|L(0))}
+                           \AttributeTok{yreg =} \StringTok{"linear"}\NormalTok{, }\CommentTok{\# to get risk difference}
+                           \CommentTok{\# mreg = list("logistic"), \# not needed for IORW}
+                           \CommentTok{\# wmnomreg = list("logistic"), \# not needed for IORW}
+                           \CommentTok{\# wmdenomreg = list("logistic"), \# not needed for IORW}
+                           \AttributeTok{astar =} \DecValTok{0}\NormalTok{, }\CommentTok{\#E(Y\_\{A=0,M=1\})}
+                           \AttributeTok{a =} \DecValTok{1}\NormalTok{,  }\CommentTok{\#E(Y\_\{A=1,M=1\})}
+                           \CommentTok{\# mval = list(0), \# not needed for IORW}
+                           \AttributeTok{estimation =} \StringTok{"imputation"}\NormalTok{,}
+                           \AttributeTok{inference =} \StringTok{"bootstrap"}\NormalTok{,}
+                           \AttributeTok{nboot =} \DecValTok{2}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(res\_msm\_df1.death)}
+\CommentTok{\# Causal Mediation Analysis}
+\CommentTok{\#}
+\CommentTok{\# \# Outcome regression for the total effect:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = Y\_death \textasciitilde{} A0\_PM2.5 + L0\_male + L0\_soc\_env + L1,}
+\CommentTok{\#       family = gaussian(), data = getCall(x$reg.output$yregTot)$data,}
+\CommentTok{\#       weights = getCall(x$reg.output$yregTot)$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept) 0.111516   0.008328  13.390  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5    0.076673   0.012777   6.001 2.03e{-}09 ***}
+\CommentTok{\#   L0\_male     0.050049   0.008042   6.224 5.05e{-}10 ***}
+\CommentTok{\#   L0\_soc\_env  0.060178   0.008413   7.153 9.07e{-}13 ***}
+\CommentTok{\#   L1          0.080243   0.008813   9.106  \textless{} 2e{-}16 ***}
+\CommentTok{\#   {-}{-}{-}}
+\CommentTok{\#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1}
+\CommentTok{\#}
+\CommentTok{\# \# Outcome regression for the direct effect:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = Y\_death \textasciitilde{} A0\_PM2.5 + L0\_male + L0\_soc\_env + L1,}
+\CommentTok{\#       family = gaussian(), data = getCall(x$reg.output$yregDir)$data,}
+\CommentTok{\#       weights = getCall(x$reg.output$yregDir)$weights)}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#               Estimate Std. Error t value Pr(\textgreater{}|t|)}
+\CommentTok{\#   (Intercept) 0.102447   0.009481  10.805  \textless{} 2e{-}16 ***}
+\CommentTok{\#   A0\_PM2.5    0.063862   0.008313   7.682 1.71e{-}14 ***}
+\CommentTok{\#   L0\_male     0.066841   0.008318   8.035 1.04e{-}15 ***}
+\CommentTok{\#   L0\_soc\_env  0.056381   0.008625   6.537 6.57e{-}11 ***}
+\CommentTok{\#   L1          0.091272   0.009103  10.026  \textless{} 2e{-}16 ***}
+\CommentTok{\#}
+\CommentTok{\# \# Exposure regression for weighting:}
+\CommentTok{\# Call:}
+\CommentTok{\#   glm(formula = A0\_PM2.5 \textasciitilde{} M\_diabetes + L0\_male + L0\_soc\_env +}
+\CommentTok{\#         L1, family = binomial(), data = getCall(x$reg.output$ereg)$data,}
+\CommentTok{\#       weights = getCall(x$reg.output$ereg)$weights)}
+\CommentTok{\#}
+\CommentTok{\# Coefficients:}
+\CommentTok{\#                Estimate Std. Error z value Pr(\textgreater{}|z|)}
+\CommentTok{\#   (Intercept) {-}2.883345   0.080069 {-}36.011  \textless{} 2e{-}16 ***}
+\CommentTok{\#   M\_diabetes   0.562935   0.065539   8.589  \textless{} 2e{-}16 ***}
+\CommentTok{\#   L0\_male      0.374904   0.064828   5.783 7.34e{-}09 ***}
+\CommentTok{\#   L0\_soc\_env   0.600956   0.073872   8.135 4.12e{-}16 ***}
+\CommentTok{\#   L1          {-}0.007768   0.070141  {-}0.111    0.912}
+\CommentTok{\#}
+\CommentTok{\# \# Effect decomposition on the mean difference scale via the inverse odds ratio weighting approach}
+\CommentTok{\#}
+\CommentTok{\# Direct counterfactual imputation estimation with}
+\CommentTok{\# bootstrap standard errors, percentile confidence intervals and p{-}values}
+\CommentTok{\#}
+\CommentTok{\#        Estimate Std.error  95\% CIL 95\% CIU  P.val}
+\CommentTok{\#   te   0.076673  0.009812 0.072033   0.085 \textless{}2e{-}16 ***}
+\CommentTok{\#   pnde 0.063862  0.003280 0.056996   0.061 \textless{}2e{-}16 ***}
+\CommentTok{\#   tnie 0.012811  0.006532 0.015038   0.024 \textless{}2e{-}16 ***}
+\CommentTok{\#   pm   0.167083  0.052652 0.208409   0.279 \textless{}2e{-}16 ***}
+\CommentTok{\#   {-}{-}{-}}
+\CommentTok{\#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1}
+\CommentTok{\#}
+\CommentTok{\# (te: total effect;}
+\CommentTok{\# pnde: pure natural direct effect;}
+\CommentTok{\# tnie: total natural indirect effect;}
+\CommentTok{\# pm: proportion mediated)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -6441,6 +6663,9 @@ The variance of the target parameter can then be calculated using the variance o
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df2\_int.csv"}\NormalTok{)}
+
 \DocumentationTok{\#\# 1) Estimate Qbar and predict Qbar when A0\_ace is set to 1}
 \NormalTok{Q.fit }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
              \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
@@ -6527,6 +6752,9 @@ We can see that we can get the same output using the \texttt{ltmle} package:
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df2\_int.csv"}\NormalTok{)}
+
 \FunctionTok{library}\NormalTok{(ltmle)}
 \NormalTok{?ltmle}
 
@@ -6783,6 +7011,9 @@ Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df2\_int.csv"}\NormalTok{)}
+
 \FunctionTok{library}\NormalTok{(ltmle)}
 \CommentTok{\# Define the formulas for the estimation of the 2 barQ functions}
 \CommentTok{\# Note that it is possible to specify the A*M interaction, if we really want to}
@@ -10342,11 +10573,17 @@ Lin, Sheng-Hsuan, Jessica Young, Roger Logan, Eric J. Tchetgen Tchetgen, and Tyl
 \bibitem[\citeproctext]{ref-naimi2020}
 Naimi, Ashley I, and Brian W Whitcomb. 2020. {``Estimating Risk Ratios and Risk Differences Using Regression.''} \emph{American Journal of Epidemiology} 189 (6): 508--10.
 
+\bibitem[\citeproctext]{ref-Nguyen2015}
+Nguyen, Quynh C., Theresa L. Osypuk, Nicole M. Schmidt, M. Maria Glymour, and Eric J. Tchetgen Tchetgen. 2015. {``{Practical Guidance for Conducting Mediation Analysis With Multiple Mediators Using Inverse Odds Ratio Weighting}.''} \emph{American Journal of Epidemiology} 181 (5): 349--56. \url{https://doi.org/10.1093/aje/kwu278}.
+
 \bibitem[\citeproctext]{ref-robins1986}
 Robins, James. 1986. {``A New Approach to Causal Inference in Mortality Studies with a Sustained Exposure Period---Application to Control of the Healthy Worker Survivor Effect.''} \emph{Mathematical Modelling} 7 (9): 1393--1512.
 
 \bibitem[\citeproctext]{ref-taubman2009}
 Taubman, Sarah L, James M Robins, Murray A Mittleman, and Miguel A Hernán. 2009. {``Intervening on Risk Factors for Coronary Heart Disease: An Application of the Parametric g-Formula.''} \emph{International Journal of Epidemiology} 38 (6): 1599--1611.
+
+\bibitem[\citeproctext]{ref-Tchetgen2012}
+Tchetgen Tchetgen, Eric J. 2013. {``Inverse Odds Ratio-Weighted Estimation for Causal Mediation Analysis.''} \emph{Statistics in Medicine} 32 (26): 4567--80. https://doi.org/\url{https://doi.org/10.1002/sim.5864}.
 
 \bibitem[\citeproctext]{ref-valeri2013}
 Valeri, Linda, and Tyler J VanderWeele. 2013. {``Mediation Analysis Allowing for Exposure-Mediator Interactions and Causal Interpretation: Theoretical Assumptions and Implementation with SAS and SPSS Macros.''} \emph{Psycol Methods} 18 (2): 137--50.

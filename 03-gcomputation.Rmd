@@ -161,6 +161,9 @@ Parametric g-computation by Monte Carlo simulation have been described by Robins
 For continuous outcomes, $\overline{Q}_Y(A,L(1),M)$ functions can be estimated using linear regressions. For binary outcomes, they can be estimated using logistic regressions.
 
 ```{r param_gcomp_CDE, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
 ## 1. Fit parametric models to estimate the density of intermediate confounders, 
 ##    conditional on the parents of the intermediate confounders
 L1.model <- glm(L1 ~ L0_male + L0_soc_env + A0_PM2.5, 
@@ -257,6 +260,9 @@ The following steps describe the implementation of the g-computation estimator b
 Note that G-computation by iterative expectation is preferable if the set of intermediate confounders $L(1)$ is high-dimensional as we only need to fit 1 model by counterfactual scenario (for a whole set of $L(1)$ variables) in the procedure described below, whereas at least 1 model by $L(1)$ variable and by counterfactual scenario are needed with parametric g-computation.
 
 ```{r gcomp_ice_CDE, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
 ## 1) Regress the outcome on L0, A, L1 and M (and the A*M interaction if appropriate)
 Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
                        M_diabetes + A0_PM2.5:M_diabetes,
@@ -501,6 +507,9 @@ The controlled direct effect $\text{CDE}_m$ can then be estimated by:
 
 
 ```{r seq_g_estimator_CDE, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
 ## 1) Regress the outcome on past
 Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 +
                      M_diabetes + A0_PM2.5:M_diabetes,

@@ -20,6 +20,9 @@ The following steps describe the implementation of the IPTW estimator
 4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_a) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a)}{\hat{g}(A=a_i \mid L(0)_i)} Y_i$
 
 ```{r Psi_ATE_iptw, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
 ## 1. Estimate g
 g.L <- glm(A0_PM2.5 ~ L0_male + L0_soc_env, 
            family = "binomial", data = df2_int)
@@ -100,6 +103,9 @@ The following steps describe the implementation of the IPTW estimator
 4. Use the empirical mean of the weighted outcome $Y$: $\hat{\mathbb{E}}(Y_{a,m}) = \frac{1}{n} \sum_{i=1}^n \frac{\mathbb{I}(A_i=a \cap M_i=m)}{\hat{g}(A=a_i \mid L(0)_i) \times \hat{g}(M=m_i \mid L(0)_i,A_i,L(1)_i)} Y_i$
 
 ```{r Psi_CDE_iptw, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "data/df2_int.csv")
+
 ## 1. Estimate gA and gM
 gA.L <- glm(A0_PM2.5 ~ L0_male + L0_soc_env, 
             family = "binomial", data = df2_int)
@@ -233,6 +239,189 @@ CDE_sIPTW_m1_qol
 # [1] -10.03045
 ```
 
+
+## Estimation of the PNDE and TNIE by Inverse Odds Ratio Weigthing
+[@Tchetgen2012] described the estimation of the Pure Natural Direct Effect (PNDE) and Total Natural Indirect Effect (TNIE) using Inverse Oddes Ratio Weighting (IORW), when the the two effects are identifiable (Causal model 1, Figure \@ref(fig:figDAGM1)).
+
+A practical guidance is also given in [@Nguyen2015].
+
+The approach is particularly useful with multiple mediators, as we don't need to estimate a model for each mediator of interest. We also don't need to make any assumptions regarding the exposure-mediator interaction effects on the outcome.
+
+The IORW approach relies on :
+
+  - a single model of the exposure conditional on the set of mediators and baseline confounders,
+  - and 2 models of the outcome, circonventing the need to specify the possible interactions between the exposure and mediators
+  
+The analysis relies on the following steps:
+
+  1. Fit a standard multiple logistic regression model for the exposure $A$, conditional on mediators $M$ and baseline confounders $L(0)$ and $L(1)$
+  2. Compute an IORW weight by taking the inverse of the predicted odds ratio from step 1 for each observation in the exposed group (the unexposed group weight equals 1)
+  3. Estimate the direct effect of the exposure via a glm of the regression of the outcome $Y$ on the exposure $A$ and baseline confounders $L(0)$ and $L(1)$, with the appropriate link function and the weights from step 2
+  4. Estimate the total effect of the exposure $A$ on the outcome $Y$ using a standard glm with the appropriate link function (adjusted for baseline confounders)
+  5. Calculate indirect effects by substracting the direct effect from the total effect
+  6. Bootstrap effect estimates to get 95% confidence intervals
+
+Note: Examples of sensitivity analysis to test the unmeasured confounding assumptions are also described in [@Nguyen2015] (not shown below).
+
+```{r IORW_byhand, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+
+## 1) Fit a standard multiple logistic regression model for the exposure A,
+##    conditional on mediators M and baseline confounders L(0) and L(1)
+g.A.L0 <- glm(A0_PM2.5 ~ M_diabetes + L0_male + L0_soc_env + L1,
+              family = "binomial",
+              data = df1_int)
+summary(g.A.L0)
+# Coefficients:
+#                Estimate Std. Error z value Pr(>|z|)
+#   (Intercept) -2.883345   0.080069 -36.011  < 2e-16 ***
+#   M_diabetes   0.562935   0.065539   8.589  < 2e-16 ***
+#   L0_male      0.374904   0.064828   5.783 7.34e-09 ***
+#   L0_soc_env   0.600956   0.073872   8.135 4.12e-16 ***
+#   L1          -0.007768   0.070141  -0.111    0.912
+
+## 2) Compute an IORW weight by taking the inverse of the predicted odds ratio
+##    from step 1 for each observation in the exposed group (the unexposed
+##    group weight equals 1)
+p <- predict(g.A.L0, type = "response")
+
+iorw <- rep(NA, nrow(df1_int))
+iorw[df1_int$A0_PM2.5 == 0] <- 1
+iorw[df1_int$A0_PM2.5 == 1] <- ((1 - p[df1_int$A0_PM2.5 == 1]) /
+                                  p[df1_int$A0_PM2.5 == 1])
+
+## 3) Estimate the direct effect of the exposure via a glm of the regression of
+##    the outcome Y on the exposure A and baseline confounders L(0) and L(1),
+##    with the appropriate link function and the weights from step 2
+Dir.Y.model.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
+                         weights = iorw,
+                         family = "gaussian", # to get risk differences
+                         data = df1_int)
+summary(Dir.Y.model.death)
+#               Estimate Std. Error t value Pr(>|t|)
+#   (Intercept) 0.102447   0.009481  10.805  < 2e-16 ***
+#   A0_PM2.5    0.063862   0.008313   7.682 1.71e-14 ***
+#   L0_male     0.066841   0.008318   8.035 1.04e-15 ***
+#   L0_soc_env  0.056381   0.008625   6.537 6.57e-11 ***
+#   L1          0.091272   0.009103  10.026  < 2e-16 ***
+
+PNDE <- coef(Dir.Y.model.death)["A0_PM2.5"]
+# 0.06386221
+
+## 4) Estimate the total effect of the exposure A on the outcome Y using a standard
+##    glm with the appropriate link function (adjusted for baseline confounders)
+Tot.Y.model.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
+                         family = "gaussian", # to get risk differences
+                         data = df1_int)
+summary(Tot.Y.model.death)
+# Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)
+#   (Intercept) 0.111516   0.008328  13.390  < 2e-16 ***
+#   A0_PM2.5    0.076673   0.012777   6.001 2.03e-09 ***
+#   L0_male     0.050049   0.008042   6.224 5.05e-10 ***
+#   L0_soc_env  0.060178   0.008413   7.153 9.07e-13 ***
+#   L1          0.080243   0.008813   9.106  < 2e-16 ***
+
+# the total effect is 0.076673
+
+## 5) Calculate indirect effects by substracting the direct effect from the total
+##    effect
+TNIE <- coef(Tot.Y.model.death)["A0_PM2.5"] - PNDE
+# 0.01281078
+
+## 6) bootstrap effect estimates to get 95% confidence intervals
+```
+
+We can use the `CMAverse` package to obtain those estimations by IORW.
+```{r IORW_CMAverse, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df1_int <- read.csv(file = "data/df1_int.csv")
+library(CMAverse)
+
+## Using the CMAverse to estimate PNDE and TNIE by IORW
+res_msm_df1.death <- cmest(data = df1_int,
+                           model = "iorw",
+                           outcome = "Y_death",
+                           exposure = "A0_PM2.5",
+                           mediator = "M_diabetes",
+                           basec = c("L0_male", "L0_soc_env","L1"),
+                           postc = NULL,
+                           # EMint = TRUE, # not needed for IORW
+                           ereg = "logistic", # exposure regression model g(A=1|L(0))
+                           yreg = "linear", # to get risk difference
+                           # mreg = list("logistic"), # not needed for IORW
+                           # wmnomreg = list("logistic"), # not needed for IORW
+                           # wmdenomreg = list("logistic"), # not needed for IORW
+                           astar = 0, #E(Y_{A=0,M=1})
+                           a = 1,  #E(Y_{A=1,M=1})
+                           # mval = list(0), # not needed for IORW
+                           estimation = "imputation",
+                           inference = "bootstrap",
+                           nboot = 2)
+summary(res_msm_df1.death)
+# Causal Mediation Analysis
+#
+# # Outcome regression for the total effect:
+# Call:
+#   glm(formula = Y_death ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
+#       family = gaussian(), data = getCall(x$reg.output$yregTot)$data,
+#       weights = getCall(x$reg.output$yregTot)$weights)
+# Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)
+#   (Intercept) 0.111516   0.008328  13.390  < 2e-16 ***
+#   A0_PM2.5    0.076673   0.012777   6.001 2.03e-09 ***
+#   L0_male     0.050049   0.008042   6.224 5.05e-10 ***
+#   L0_soc_env  0.060178   0.008413   7.153 9.07e-13 ***
+#   L1          0.080243   0.008813   9.106  < 2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#
+# # Outcome regression for the direct effect:
+# Call:
+#   glm(formula = Y_death ~ A0_PM2.5 + L0_male + L0_soc_env + L1,
+#       family = gaussian(), data = getCall(x$reg.output$yregDir)$data,
+#       weights = getCall(x$reg.output$yregDir)$weights)
+# Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)
+#   (Intercept) 0.102447   0.009481  10.805  < 2e-16 ***
+#   A0_PM2.5    0.063862   0.008313   7.682 1.71e-14 ***
+#   L0_male     0.066841   0.008318   8.035 1.04e-15 ***
+#   L0_soc_env  0.056381   0.008625   6.537 6.57e-11 ***
+#   L1          0.091272   0.009103  10.026  < 2e-16 ***
+#
+# # Exposure regression for weighting:
+# Call:
+#   glm(formula = A0_PM2.5 ~ M_diabetes + L0_male + L0_soc_env +
+#         L1, family = binomial(), data = getCall(x$reg.output$ereg)$data,
+#       weights = getCall(x$reg.output$ereg)$weights)
+#
+# Coefficients:
+#                Estimate Std. Error z value Pr(>|z|)
+#   (Intercept) -2.883345   0.080069 -36.011  < 2e-16 ***
+#   M_diabetes   0.562935   0.065539   8.589  < 2e-16 ***
+#   L0_male      0.374904   0.064828   5.783 7.34e-09 ***
+#   L0_soc_env   0.600956   0.073872   8.135 4.12e-16 ***
+#   L1          -0.007768   0.070141  -0.111    0.912
+#
+# # Effect decomposition on the mean difference scale via the inverse odds ratio weighting approach
+#
+# Direct counterfactual imputation estimation with
+# bootstrap standard errors, percentile confidence intervals and p-values
+#
+#        Estimate Std.error  95% CIL 95% CIU  P.val
+#   te   0.076673  0.009812 0.072033   0.085 <2e-16 ***
+#   pnde 0.063862  0.003280 0.056996   0.061 <2e-16 ***
+#   tnie 0.012811  0.006532 0.015038   0.024 <2e-16 ***
+#   pm   0.167083  0.052652 0.208409   0.279 <2e-16 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#
+# (te: total effect;
+# pnde: pure natural direct effect;
+# tnie: total natural indirect effect;
+# pm: proportion mediated)
+```
 
 ## Estimation of "Conditional" Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)
 

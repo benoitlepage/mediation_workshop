@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-23" />
+<meta name="date" content="2024-10-24" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -228,9 +228,10 @@ div.csl-indent {
 <li class="chapter" data-level="7.2.1" data-path="ChapIptw.html"><a href="ChapIptw.html#iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.1</b> IPTW for the CDE</a></li>
 <li class="chapter" data-level="7.2.2" data-path="ChapIptw.html"><a href="ChapIptw.html#stabilized-iptw-for-the-cde"><i class="fa fa-check"></i><b>7.2.2</b> Stabilized IPTW for the CDE</a></li>
 </ul></li>
-<li class="chapter" data-level="7.3" data-path="ChapIptw.html"><a href="ChapIptw.html#estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1"><i class="fa fa-check"></i><b>7.3</b> Estimation of “Conditional” Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)</a>
+<li class="chapter" data-level="7.3" data-path="ChapIptw.html"><a href="ChapIptw.html#estimation-of-the-pnde-and-tnie-by-inverse-odds-ratio-weigthing"><i class="fa fa-check"></i><b>7.3</b> Estimation of the PNDE and TNIE by Inverse Odds Ratio Weigthing</a></li>
+<li class="chapter" data-level="7.4" data-path="ChapIptw.html"><a href="ChapIptw.html#estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1"><i class="fa fa-check"></i><b>7.4</b> Estimation of “Conditional” Randomized/Interventional Natural Direct (CRDE) and Indirect Effects (CRIE)</a>
 <ul>
-<li class="chapter" data-level="7.3.1" data-path="ChapIptw.html"><a href="ChapIptw.html#iptw-for-the-crde-and-crie"><i class="fa fa-check"></i><b>7.3.1</b> IPTW for the CRDE and CRIE</a></li>
+<li class="chapter" data-level="7.4.1" data-path="ChapIptw.html"><a href="ChapIptw.html#iptw-for-the-crde-and-crie"><i class="fa fa-check"></i><b>7.4.1</b> IPTW for the CRDE and CRIE</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="8" data-path="msm_chapter.html"><a href="msm_chapter.html"><i class="fa fa-check"></i><b>8</b> Marginal structural models</a>
@@ -522,29 +523,32 @@ div.csl-indent {
 <li>covariance assumptions for the exogenous variables</li>
 <li>we can also define additional parameters of interest (in our case, direct, indirect and total effects)</li>
 </ul>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="ChapBaronKennySem.html#cb3-1" tabindex="-1"></a><span class="fu">library</span>(lavaan)</span>
-<span id="cb3-2"><a href="ChapBaronKennySem.html#cb3-2" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="ChapBaronKennySem.html#cb3-3" tabindex="-1"></a>sem.QoL <span class="ot">&lt;-</span> <span class="st">&quot;                                 # models are written between quotes</span></span>
-<span id="cb3-4"><a href="ChapBaronKennySem.html#cb3-4" tabindex="-1"></a><span class="st">## Regression models</span></span>
-<span id="cb3-5"><a href="ChapBaronKennySem.html#cb3-5" tabindex="-1"></a><span class="st">## we can also add the names of some path coefficients </span></span>
-<span id="cb3-6"><a href="ChapBaronKennySem.html#cb3-6" tabindex="-1"></a><span class="st">  A0_PM2.5 ~ L0_male + L0_soc_env</span></span>
-<span id="cb3-7"><a href="ChapBaronKennySem.html#cb3-7" tabindex="-1"></a><span class="st">  M_diabetes ~ L0_male + L0_soc_env + b.A * A0_PM2.5 + L1   # label b.A path coef</span></span>
-<span id="cb3-8"><a href="ChapBaronKennySem.html#cb3-8" tabindex="-1"></a><span class="st">  Y_qol ~ L0_male + L0_soc_env + c.A*A0_PM2.5 + L1 + c.M*M_diabetes # label c.A and c.M</span></span>
-<span id="cb3-9"><a href="ChapBaronKennySem.html#cb3-9" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="ChapBaronKennySem.html#cb3-10" tabindex="-1"></a><span class="st">## Covariances</span></span>
-<span id="cb3-11"><a href="ChapBaronKennySem.html#cb3-11" tabindex="-1"></a><span class="st"># Assuming a non-null covariance between confounders </span></span>
-<span id="cb3-12"><a href="ChapBaronKennySem.html#cb3-12" tabindex="-1"></a><span class="st"># covariances are represented with a double tilde ~~ (double arrow)</span></span>
-<span id="cb3-13"><a href="ChapBaronKennySem.html#cb3-13" tabindex="-1"></a><span class="st"># (note: in the data-generating system, the null assumptions were true)</span></span>
-<span id="cb3-14"><a href="ChapBaronKennySem.html#cb3-14" tabindex="-1"></a><span class="st">  L0_male ~~ L0_soc_env</span></span>
-<span id="cb3-15"><a href="ChapBaronKennySem.html#cb3-15" tabindex="-1"></a><span class="st">  L0_male ~~ L1</span></span>
-<span id="cb3-16"><a href="ChapBaronKennySem.html#cb3-16" tabindex="-1"></a><span class="st">  L0_soc_env ~~ L1</span></span>
-<span id="cb3-17"><a href="ChapBaronKennySem.html#cb3-17" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="ChapBaronKennySem.html#cb3-18" tabindex="-1"></a><span class="st">## We can define other parameters to estimate, using the := syntax</span></span>
-<span id="cb3-19"><a href="ChapBaronKennySem.html#cb3-19" tabindex="-1"></a><span class="st">## we want the direct, indirect and total effects:</span></span>
-<span id="cb3-20"><a href="ChapBaronKennySem.html#cb3-20" tabindex="-1"></a><span class="st">  direct := c.A</span></span>
-<span id="cb3-21"><a href="ChapBaronKennySem.html#cb3-21" tabindex="-1"></a><span class="st">  indirect := b.A * c.M</span></span>
-<span id="cb3-22"><a href="ChapBaronKennySem.html#cb3-22" tabindex="-1"></a><span class="st">  total := (b.A * c.M) + c.A</span></span>
-<span id="cb3-23"><a href="ChapBaronKennySem.html#cb3-23" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="ChapBaronKennySem.html#cb3-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb3-2"><a href="ChapBaronKennySem.html#cb3-2" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;./data/df1.csv&quot;</span>)</span>
+<span id="cb3-3"><a href="ChapBaronKennySem.html#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="ChapBaronKennySem.html#cb3-4" tabindex="-1"></a><span class="fu">library</span>(lavaan)</span>
+<span id="cb3-5"><a href="ChapBaronKennySem.html#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="ChapBaronKennySem.html#cb3-6" tabindex="-1"></a>sem.QoL <span class="ot">&lt;-</span> <span class="st">&quot;                                 # models are written between quotes</span></span>
+<span id="cb3-7"><a href="ChapBaronKennySem.html#cb3-7" tabindex="-1"></a><span class="st">## Regression models</span></span>
+<span id="cb3-8"><a href="ChapBaronKennySem.html#cb3-8" tabindex="-1"></a><span class="st">## we can also add the names of some path coefficients </span></span>
+<span id="cb3-9"><a href="ChapBaronKennySem.html#cb3-9" tabindex="-1"></a><span class="st">  A0_PM2.5 ~ L0_male + L0_soc_env</span></span>
+<span id="cb3-10"><a href="ChapBaronKennySem.html#cb3-10" tabindex="-1"></a><span class="st">  M_diabetes ~ L0_male + L0_soc_env + b.A * A0_PM2.5 + L1   # label b.A path coef</span></span>
+<span id="cb3-11"><a href="ChapBaronKennySem.html#cb3-11" tabindex="-1"></a><span class="st">  Y_qol ~ L0_male + L0_soc_env + c.A*A0_PM2.5 + L1 + c.M*M_diabetes # label c.A and c.M</span></span>
+<span id="cb3-12"><a href="ChapBaronKennySem.html#cb3-12" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="ChapBaronKennySem.html#cb3-13" tabindex="-1"></a><span class="st">## Covariances</span></span>
+<span id="cb3-14"><a href="ChapBaronKennySem.html#cb3-14" tabindex="-1"></a><span class="st"># Assuming a non-null covariance between confounders </span></span>
+<span id="cb3-15"><a href="ChapBaronKennySem.html#cb3-15" tabindex="-1"></a><span class="st"># covariances are represented with a double tilde ~~ (double arrow)</span></span>
+<span id="cb3-16"><a href="ChapBaronKennySem.html#cb3-16" tabindex="-1"></a><span class="st"># (note: in the data-generating system, the null assumptions were true)</span></span>
+<span id="cb3-17"><a href="ChapBaronKennySem.html#cb3-17" tabindex="-1"></a><span class="st">  L0_male ~~ L0_soc_env</span></span>
+<span id="cb3-18"><a href="ChapBaronKennySem.html#cb3-18" tabindex="-1"></a><span class="st">  L0_male ~~ L1</span></span>
+<span id="cb3-19"><a href="ChapBaronKennySem.html#cb3-19" tabindex="-1"></a><span class="st">  L0_soc_env ~~ L1</span></span>
+<span id="cb3-20"><a href="ChapBaronKennySem.html#cb3-20" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="ChapBaronKennySem.html#cb3-21" tabindex="-1"></a><span class="st">## We can define other parameters to estimate, using the := syntax</span></span>
+<span id="cb3-22"><a href="ChapBaronKennySem.html#cb3-22" tabindex="-1"></a><span class="st">## we want the direct, indirect and total effects:</span></span>
+<span id="cb3-23"><a href="ChapBaronKennySem.html#cb3-23" tabindex="-1"></a><span class="st">  direct := c.A</span></span>
+<span id="cb3-24"><a href="ChapBaronKennySem.html#cb3-24" tabindex="-1"></a><span class="st">  indirect := b.A * c.M</span></span>
+<span id="cb3-25"><a href="ChapBaronKennySem.html#cb3-25" tabindex="-1"></a><span class="st">  total := (b.A * c.M) + c.A</span></span>
+<span id="cb3-26"><a href="ChapBaronKennySem.html#cb3-26" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
 <p><strong>Second step</strong>. Let us analyze the model with the <code>df1.csv</code> dataset using the <code>sem</code> function from the <code>lavaan</code> package.</p>
 <p>Binary exogenous variables (<code>L0_male</code>,<code>L0_soc_env</code> and <code>L1</code>) can be coded as simple dummy (0/1) variables, there is no need to declare them as factors (<code>ordered</code>).</p>
 <p>Note that in the following example, we will not declare the other binary variables (<code>A0_PM2.5</code>,<code>M_diabetes</code>) as factors and let them as simple dummy variables.</p>

@@ -47,6 +47,9 @@ The variance of the target parameter can then be calculated using the variance o
 \end{equation*}
 
 ```{r Psi_ATE_tmle, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "./data/df2_int.csv")
+
 ## 1) Estimate Qbar and predict Qbar when A0_ace is set to 1
 Q.fit <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
              family = "binomial", data = df2_int)
@@ -130,6 +133,9 @@ sqrt(var(IC)/nrow(df2_int))
 
 We can see that we can get the same output using the `ltmle` package:
 ```{r Psi_ATE_tmle_package, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "./data/df2_int.csv")
+
 library(ltmle)
 ?ltmle
 
@@ -359,6 +365,9 @@ Note: for continuous outcomes, the `ltmle` package transforms the outcome on a 0
 
 ### For binary outcomes
 ```{r Psi_CDE_ltmle_bin, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df2_int <- read.csv(file = "./data/df2_int.csv")
+
 library(ltmle)
 # Define the formulas for the estimation of the 2 barQ functions
 # Note that it is possible to specify the A*M interaction, if we really want to

@@ -212,6 +212,9 @@ We have to define:
   
   
 ```{r sem_model_qol, echo=TRUE, eval = FALSE}
+rm(list=ls())
+df1 <- read.csv(file = "./data/df1.csv")
+
 library(lavaan)
 
 sem.QoL <- "                                 # models are written between quotes

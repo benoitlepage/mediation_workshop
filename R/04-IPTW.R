@@ -299,7 +299,7 @@ res_msm_df1.death <- cmest(data = df1_int,
                            mediator = "M_diabetes",
                            basec = c("L0_male", "L0_soc_env","L1"),
                            postc = NULL,
-                           EMint = TRUE, # E*M interaction
+                           # EMint = TRUE, # not needed for IORW
                            ereg = "logistic", # exposure regression model g(A=1|L(0))
                            yreg = "linear", # to get risk difference
                            # mreg = list("logistic"), # not needed for IORW

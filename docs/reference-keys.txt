@@ -55,6 +55,7 @@ stabilized-iptw-for-the-ate
 estimation-of-the-controlled-direct-effect-cde
 iptw-for-the-cde
 stabilized-iptw-for-the-cde
+estimation-of-the-pnde-and-tnie-by-inverse-odds-ratio-weigthing
 estimation-of-conditional-randomizedinterventional-natural-direct-crde-and-indirect-effects-crie-1
 iptw-for-the-crde-and-crie
 msm_chapter

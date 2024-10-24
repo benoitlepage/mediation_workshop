@@ -90,6 +90,22 @@
   year={2020},
 }
 
+@article{Nguyen2015,
+    author = {Nguyen, Quynh C. and Osypuk, Theresa L. and Schmidt, Nicole M. and Glymour, M. Maria and Tchetgen Tchetgen, Eric J.},
+    title = "{Practical Guidance for Conducting Mediation Analysis With Multiple Mediators Using Inverse Odds Ratio Weighting}",
+    journal = {American Journal of Epidemiology},
+    volume = {181},
+    number = {5},
+    pages = {349-356},
+    year = {2015},
+    month = {02},
+    abstract = "{Despite the recent flourishing of mediation analysis techniques, many modern approaches are difficult to implement or applicable to only a restricted range of regression models. This report provides practical guidance for implementing a new technique utilizing inverse odds ratio weighting (IORW) to estimate natural direct and indirect effects for mediation analyses. IORW takes advantage of the odds ratio's invariance property and condenses information on the odds ratio for the relationship between the exposure (treatment) and multiple mediators, conditional on covariates, by regressing exposure on mediators and covariates. The inverse of the covariate-adjusted exposure-mediator odds ratio association is used to weight the primary analytical regression of the outcome on treatment. The treatment coefficient in such a weighted regression estimates the natural direct effect of treatment on the outcome, and indirect effects are identified by subtracting direct effects from total effects. Weighting renders treatment and mediators independent, thereby deactivating indirect pathways of the mediators. This new mediation technique accommodates multiple discrete or continuous mediators. IORW is easily implemented and is appropriate for any standard regression model, including quantile regression and survival analysis. An empirical example is given using data from the Moving to Opportunity (1994–2002) experiment, testing whether neighborhood context mediated the effects of a housing voucher program on obesity. Relevant Stata code (StataCorp LP, College Station, Texas) is provided.}",
+    issn = {0002-9262},
+    doi = {10.1093/aje/kwu278},
+    url = {https://doi.org/10.1093/aje/kwu278},
+    eprint = {https://academic.oup.com/aje/article-pdf/181/5/349/28533437/kwu278.pdf},
+}
+
 @article{robins1986,
   title={A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect},
   author={James Robins},
@@ -109,6 +125,22 @@
   pages = {1599-611},
   year = {2009},
 }
+
+@article{Tchetgen2012,
+author = {Tchetgen Tchetgen, Eric J.},
+title = {Inverse odds ratio-weighted estimation for causal mediation analysis},
+journal = {Statistics in Medicine},
+volume = {32},
+number = {26},
+pages = {4567-4580},
+keywords = {causal mediation analysis, inverse odds ratio-weighted estimation, natural direct and indirect effects, double robustness},
+doi = {https://doi.org/10.1002/sim.5864},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.5864},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.5864},
+abstract = {An important scientific goal of studies in the health and social sciences is increasingly to determine to what extent the total effect of a point exposure is mediated by an intermediate variable on the causal pathway between the exposure and the outcome. A causal framework has recently been proposed for mediation analysis, which gives rise to new definitions, formal identification results and novel estimators of direct and indirect effects. In the present paper, the author describes a new inverse odds ratio-weighted approach to estimate so-called natural direct and indirect effects. The approach, which uses as a weight the inverse of an estimate of the odds ratio function relating the exposure and the mediator, is universal in that it can be used to decompose total effects in a number of regression models commonly used in practice. Specifically, the approach may be used for effect decomposition in generalized linear models with a nonlinear link function, and in a number of other commonly used models such as the Cox proportional hazards regression for a survival outcome. The approach is simple and can be implemented in standard software provided a weight can be specified for each observation. An additional advantage of the method is that it easily incorporates multiple mediators of a categorical, discrete or continuous nature. Copyright © 2013 John Wiley \& Sons, Ltd.},
+year = {2013}
+}
+
 
 @article{valeri2013,
   title={Mediation analysis allowing for exposure-mediator interactions and causal interpretation: theoretical assumptions and implementation with SAS and SPSS macros},
