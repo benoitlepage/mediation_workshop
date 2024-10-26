@@ -580,7 +580,7 @@ data.Ais0$A0_PM2.5 <- 0
 data.Ais1$A0_PM2.5 <- 1
 
 # Predict the counterfactual probabilities
-# P(M_{A=0}|l(0),l(1)) and  P(M_{A=0}|l(0),l(1))
+# P(M_{A=0}|l(0),l(1)) and  P(M_{A=1}|l(0),l(1))
 P.M.Ais0 <- predict(trad_m, newdata = data.Ais0, type = "response")
 P.M.Ais1 <- predict(trad_m, newdata = data.Ais1, type = "response")
 
