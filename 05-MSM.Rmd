@@ -191,7 +191,7 @@ We can also use a G-computation (sometimes described as an imputation) approach 
 
 The following steps can be applied:
 
-1. Fit a (logistic or a linear) regression to estimate $\overline{Q} = \mathbb{E}(Y \mid A, L(0))$
+1. Fit a (logistic or a linear) regression to estimate $\overline{Q} = \mathbb{E}(Y \mid A, L(0))$. Don't forget to add an $A*L_{\text{male}}(0)$ interaction term, because we aim to estimate the effect of the exposure $A$, modified by sex.
 
 2. Use this estimate to predict an outcome for each subject under the counterfactual scenarios $\hat{\overline{Q}}(A=0)_i$ and $\hat{\overline{Q}}(A=1)_i$, by evaluating the regression fit $\overline{Q}$ at $A=0$ and $A=1$ respectively
 
@@ -208,11 +208,12 @@ rm(list=ls())
 df1_int <- read.csv(file = "data/df1_int.csv")
 
 ## 1. Estimate Qbar
-Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
-                   family = "gaussian", data = df1_int)
+Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env +
+                     A0_PM2.5:L0_male, # don't forget the interaction term
+                   family = "binomial", data = df1_int)
 # The final result would be sligthly different if we apply a binomial family.
 
-## 2. Predict an outcome for each subject, in 2 counterfactual scenarios 
+## 2. Predict an outcome for each subject, in 2 counterfactual scenarios
 ##    setting A=0 and A=1
 # prepare data sets used to predict the outcome under the counterfactual
 # scenarios setting A=0 and A=1
@@ -225,7 +226,7 @@ data.A1$Ya.death.pred <- predict(Q.tot.death, newdata = data.A1, type = "respons
 data.A0$Ya.death.pred <- predict(Q.tot.death, newdata = data.A0, type = "response")
 
 ## 3. Append both counterfactual datasets in a single long dataset
-# (the number of row is twice the initial number of row because there are 2 
+# (the number of row is twice the initial number of row because there are 2
 # counterfactual scenarios)
 data.2scenarios <- rbind(data.A0, data.A1)
 
@@ -235,30 +236,16 @@ MSM.ATE.gcomp <- glm(Ya.death.pred ~ A0_PM2.5 + L0_male + A0_PM2.5:L0_male,
                      family = "gaussian",
                      data = data.2scenarios)
 coef(MSM.ATE.gcomp)
-#  (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male 
-# 1.743994e-01     7.720726e-02     4.874750e-02     5.087110e-16
+# (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male
+#  0.17571658       0.06108129       0.04602303       0.02516386
 
 ## 5. Estimate the ATE stratified by sex
 # According to MSM.ATE.gcomp
 ATE.MSM.gcomp.male0 <- coef(MSM.ATE.gcomp)["A0_PM2.5"]
-# 0.07720726
+# 0.06108129
 ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_PM2.5"] +
                           coef(MSM.ATE.gcomp)["A0_PM2.5:L0_male"])
-# 0.07720726
-# The results are the same in both strata, because in the first Qbar model,
-# we did not include any (A * sex) interaction term
-
-# Applying a binomial family for the first Qbar model would result in two
-# different values of the ATE stratified by sex.
-# => 0.06880798 in the L0_male = 0 strata
-# => 0.08053575 in the L0_male = 1 strata
-
-# Comments: For the estimation of the first Qbar model, applying a gaussian family 
-# (additive model) with no interaction terms implies the presence of some interaction 
-# terms in a multiplicative model (such as a glm with a binomial family).
-# On the contrary, applying a binomial family (multiplicative model) with no
-# interaction terms implies some interaction terms in an additive model (such as
-# a glm with a gaussian family)
+# 0.08624515
 ```
 
 ## MSM for Controlled Direct Effects {#msm_CDE_paragraph}
@@ -827,43 +814,43 @@ The (Pure) Natural Direct Effect is defined by $\text{PNDE} = \mathbb{E}(Y_{a,M_
 
 VanderWeele suggested using 2 MSMs conditional on baseline confounders $L(0)$ in order to estimate natural direct and indirect effects [@vanderweele2009]: 
 
-  1) a model of the counterfactual values of the outcome $\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0))$, where $h$ is a link function. For example:
+  1) a model of the counterfactual values of the outcome $\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0),l(1))$, where $h$ is a link function. For example:
   \begin{equation}
-    \mathbb{E}(Y_{a,m} \mid l(0)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) (\#eq:MSM-Indirect-model1)
+    \mathbb{E}(Y_{a,m} \mid l(0),l(1)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) (\#eq:MSM-Indirect-model1)
   \end{equation}
   (where $h$ is the identity function, so that the model can be used to express risk differences)
   
-  2) a model of the counterfactual values of the mediator $\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0))$, where $g$ is a link function. For example with a binary mediator:
+  2) a model of the counterfactual values of the mediator $\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0),l(1))$, where $g$ is a link function. For example with a binary mediator:
     \begin{equation}
-    \mathbb{E}(M_a \mid l(0)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) \right]
+    \mathbb{E}(M_a \mid l(0),l(1)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) + \beta_{L(1)} l(1) \right]
     (\#eq:MSM-Indirect-model2)
   \end{equation}
   (where $g$ is the logit function because the mediator is binary).
   
 VanderWeele shows that if the function $h$ is linear in $m$ (no quadratic terms in $m$, nor transformations such as $\log(m)$ or $\sqrt{m}$, etc) and the exposure $A$ does not affect the intermediate confounder $L(1)$, then
 \begin{equation*}
-  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0)\right),l(0)\right]
+  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0),l(1)\right),l(0),l(1)\right]
 \end{equation*}
 
 Using the 2 MSMs, we can express the Natural Direct and Indirect Effects conditional on baseline confounders $L(0)$. In our example:
 \begin{align*}
-  \text{PNDE} \mid L(0) &= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0)) \\
-  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  & \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0))]
+  \text{PNDE} \mid L(0),L(1) &= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0),L(1)) \\
+  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  & \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1)\} \\
+  &= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0),l(1))]
 \end{align*}
 
 \begin{align*}
-  \text{TNIE} \mid L(0) &= \mathbb{E}(Y_{a,M_{a}} \mid L(0)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) \\
-  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0)) + \alpha_{L(0)} l(0) \} \\
-  & \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &= \left[ g^{-1}(a,l(0)) - g^{-1}(a^*,l(0)) \right](\alpha_M + \alpha_{AM} a)
+  \text{TNIE} \mid L(0),L(1) &= \mathbb{E}(Y_{a,M_{a}} \mid L(0),L(1)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1)) \\
+  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  & \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  &= \left[ g^{-1}(a,l(0),l(1)) - g^{-1}(a^*,l(0),l(1)) \right](\alpha_M + \alpha_{AM} a)
 \end{align*}
 
 Marginal Natural Direct and Indirect effect can then be obtained:
 \begin{align*}
-  \text{PNDE} &= \sum_{l(0)} \left[ \text{PNDE} \mid L(0) = l(0) \right] \times P(L(0)=l(0)) \\
-  \quad \text{TNIE} &= \sum_{l(0)} \left[ \text{TNIE} \mid L(0) = l(0) \right] \times P(L(0)=l(0))
+  \text{PNDE} &= \sum_{l(0),l(1)} \left[ \text{PNDE} \mid L(0) = l(0), L(1)=l(1) \right] \times P(L(0)=l(0),L(1)=l(1)) \\
+  \quad \text{TNIE} &= \sum_{l(0),l(1)} \left[ \text{TNIE} \mid L(0) = l(0), L(1)=l(1) \right] \times P(L(0)=l(0),L(1)=l(1))
 \end{align*}
 
 ### Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE

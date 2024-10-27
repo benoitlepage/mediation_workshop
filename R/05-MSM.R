@@ -396,12 +396,13 @@ rm(list=ls())
 df1_int <- read.csv(file = "data/df1_int.csv")
 ### MSM of ATE|L_male, estimated by G-computation ------------------------------
 ## 1. Estimate Qbar
-Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
-                   family = "gaussian", data = df1_int)
-# The final result would be sligthly different if we applied a binomial family
-# The Gaussian family corresponds to the true generating model in this example.
+Q.tot.death <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env +
+                     A0_PM2.5:L0_male, # don't forget the interaction term
+                   family = "binomial", data = df1_int)
+# The final result would be sligthly different if we apply a binomial family.
 
-## 2. Predict an outcome for each subject, setting A=0 and A=1
+## 2. Predict an outcome for each subject, in 2 counterfactual scenarios
+##    setting A=0 and A=1
 # prepare data sets used to predict the outcome under the counterfactual
 # scenarios setting A=0 and A=1
 data.A1 <- data.A0 <- df1_int
@@ -412,39 +413,27 @@ data.A0$A0_PM2.5 <- 0
 data.A1$Ya.death.pred <- predict(Q.tot.death, newdata = data.A1, type = "response")
 data.A0$Ya.death.pred <- predict(Q.tot.death, newdata = data.A0, type = "response")
 
-## 3. Append both counterfactual datasets in a single dataset
-# number of row is twice the initial value (we have 2 counterfactual scenarios)
+## 3. Append both counterfactual datasets in a single long dataset
+# (the number of row is twice the initial number of row because there are 2
+# counterfactual scenarios)
 data.2scenarios <- rbind(data.A0, data.A1)
 
 ## 4. fit the MSM: E(Y_a|sex)
+# a GLM with gaussian family can be applied to estimate risk differences
 MSM.ATE.gcomp <- glm(Ya.death.pred ~ A0_PM2.5 + L0_male + A0_PM2.5:L0_male,
                      family = "gaussian",
                      data = data.2scenarios)
 coef(MSM.ATE.gcomp)
-#  (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male
-# 1.743994e-01     7.720726e-02     4.874750e-02     5.087110e-16
+# (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male
+#  0.17571658       0.06108129       0.04602303       0.02516386
 
 ## 5. Estimate the ATE stratified by sex
 # According to MSM.ATE.gcomp
 ATE.MSM.gcomp.male0 <- coef(MSM.ATE.gcomp)["A0_PM2.5"]
-# 0.07720726
+# 0.06108129
 ATE.MSM.gcomp.male1 <- (coef(MSM.ATE.gcomp)["A0_PM2.5"] +
                           coef(MSM.ATE.gcomp)["A0_PM2.5:L0_male"])
-# 0.07720726
-# The results are the same in both strata, because in the first Qbar model,
-# we did not include any (A * sex) interaction term
-
-# Applying a binomial family for the first Qbar model would result in two
-# different values of the ATE stratified by sex.
-# => 0.06880798 in the L0_male = 0 strata
-# => 0.08053575 in the L0_male = 1 strata
-
-# Indeed, applying a gaussian family (additive model) with no interaction terms
-# implies the assumption of some interaction terms in a multiplicative model (such
-# as a glm with a binomial family).
-# On the contrary, applying a binomial family (multiplicative model) with no
-# interaction terms implies some interaction terms in an additive model (such as
-# a glm with a gaussian family)
+# 0.08624515
 
 # Using the true data generating model used to simulate the illustrative datasets,
 # the "true" value of the ATE stratified by sex can be calculated:

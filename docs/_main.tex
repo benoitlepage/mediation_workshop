@@ -4633,7 +4633,7 @@ The following steps can be applied:
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  Fit a (logistic or a linear) regression to estimate \(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\)
+  Fit a (logistic or a linear) regression to estimate \(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\). Don't forget to add an \(A*L_{\text{male}}(0)\) interaction term, because we aim to estimate the effect of the exposure \(A\), modified by sex.
 \item
   Use this estimate to predict an outcome for each subject under the counterfactual scenarios \(\hat{\overline{Q}}(A=0)_i\) and \(\hat{\overline{Q}}(A=1)_i\), by evaluating the regression fit \(\overline{Q}\) at \(A=0\) and \(A=1\) respectively
 \item
@@ -4662,11 +4662,12 @@ The following steps can be applied:
 \NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"data/df1\_int.csv"}\NormalTok{)}
 
 \DocumentationTok{\#\# 1. Estimate Qbar}
-\NormalTok{Q.tot.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
-                   \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
+\NormalTok{Q.tot.death }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}
+\NormalTok{                     A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{L0\_male, }\CommentTok{\# don\textquotesingle{}t forget the interaction term}
+                   \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df1\_int)}
 \CommentTok{\# The final result would be sligthly different if we apply a binomial family.}
 
-\DocumentationTok{\#\# 2. Predict an outcome for each subject, in 2 counterfactual scenarios }
+\DocumentationTok{\#\# 2. Predict an outcome for each subject, in 2 counterfactual scenarios}
 \DocumentationTok{\#\#    setting A=0 and A=1}
 \CommentTok{\# prepare data sets used to predict the outcome under the counterfactual}
 \CommentTok{\# scenarios setting A=0 and A=1}
@@ -4679,7 +4680,7 @@ The following steps can be applied:
 \NormalTok{data.A0}\SpecialCharTok{$}\NormalTok{Ya.death.pred }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.tot.death, }\AttributeTok{newdata =}\NormalTok{ data.A0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 
 \DocumentationTok{\#\# 3. Append both counterfactual datasets in a single long dataset}
-\CommentTok{\# (the number of row is twice the initial number of row because there are 2 }
+\CommentTok{\# (the number of row is twice the initial number of row because there are 2}
 \CommentTok{\# counterfactual scenarios)}
 \NormalTok{data}\FloatTok{.2}\NormalTok{scenarios }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(data.A0, data.A1)}
 
@@ -4689,30 +4690,16 @@ The following steps can be applied:
                      \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{,}
                      \AttributeTok{data =}\NormalTok{ data}\FloatTok{.2}\NormalTok{scenarios)}
 \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)}
-\CommentTok{\#  (Intercept)         A0\_PM2.5          L0\_male A0\_PM2.5:L0\_male }
-\CommentTok{\# 1.743994e{-}01     7.720726e{-}02     4.874750e{-}02     5.087110e{-}16}
+\CommentTok{\# (Intercept)         A0\_PM2.5          L0\_male A0\_PM2.5:L0\_male}
+\CommentTok{\#  0.17571658       0.06108129       0.04602303       0.02516386}
 
 \DocumentationTok{\#\# 5. Estimate the ATE stratified by sex}
 \CommentTok{\# According to MSM.ATE.gcomp}
 \NormalTok{ATE.MSM.gcomp.male0 }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{]}
-\CommentTok{\# 0.07720726}
+\CommentTok{\# 0.06108129}
 \NormalTok{ATE.MSM.gcomp.male1 }\OtherTok{\textless{}{-}}\NormalTok{ (}\FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_PM2.5"}\NormalTok{] }\SpecialCharTok{+}
                           \FunctionTok{coef}\NormalTok{(MSM.ATE.gcomp)[}\StringTok{"A0\_PM2.5:L0\_male"}\NormalTok{])}
-\CommentTok{\# 0.07720726}
-\CommentTok{\# The results are the same in both strata, because in the first Qbar model,}
-\CommentTok{\# we did not include any (A * sex) interaction term}
-
-\CommentTok{\# Applying a binomial family for the first Qbar model would result in two}
-\CommentTok{\# different values of the ATE stratified by sex.}
-\CommentTok{\# =\textgreater{} 0.06880798 in the L0\_male = 0 strata}
-\CommentTok{\# =\textgreater{} 0.08053575 in the L0\_male = 1 strata}
-
-\CommentTok{\# Comments: For the estimation of the first Qbar model, applying a gaussian family }
-\CommentTok{\# (additive model) with no interaction terms implies the presence of some interaction }
-\CommentTok{\# terms in a multiplicative model (such as a glm with a binomial family).}
-\CommentTok{\# On the contrary, applying a binomial family (multiplicative model) with no}
-\CommentTok{\# interaction terms implies some interaction terms in an additive model (such as}
-\CommentTok{\# a glm with a gaussian family)}
+\CommentTok{\# 0.08624515}
 \end{Highlighting}
 \end{Shaded}
 
@@ -5319,15 +5306,15 @@ VanderWeele suggested using 2 MSMs conditional on baseline confounders \(L(0)\) 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi})}
 \item
-  a model of the counterfactual values of the outcome \(\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0))\), where \(h\) is a link function. For example:
+  a model of the counterfactual values of the outcome \(\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0),l(1))\), where \(h\) is a link function. For example:
   \begin{equation}
-      \mathbb{E}(Y_{a,m} \mid l(0)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) \label{eq:MSM-Indirect-model1}
+      \mathbb{E}(Y_{a,m} \mid l(0),l(1)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \label{eq:MSM-Indirect-model1}
     \end{equation}
   (where \(h\) is the identity function, so that the model can be used to express risk differences)
 \item
-  a model of the counterfactual values of the mediator \(\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0))\), where \(g\) is a link function. For example with a binary mediator:
+  a model of the counterfactual values of the mediator \(\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0),l(1))\), where \(g\) is a link function. For example with a binary mediator:
   \begin{equation}
-      \mathbb{E}(M_a \mid l(0)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) \right]
+      \mathbb{E}(M_a \mid l(0),l(1)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) + \beta_{L(1)} l(1) \right]
       \label{eq:MSM-Indirect-model2}
     \end{equation}
   (where \(g\) is the logit function because the mediator is binary).
@@ -5335,28 +5322,28 @@ VanderWeele suggested using 2 MSMs conditional on baseline confounders \(L(0)\) 
 
 VanderWeele shows that if the function \(h\) is linear in \(m\) (no quadratic terms in \(m\), nor transformations such as \(\log(m)\) or \(\sqrt{m}\), etc) and the exposure \(A\) does not affect the intermediate confounder \(L(1)\), then
 \begin{equation*}
-  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0)\right),l(0)\right]
+  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0),l(1)\right),l(0),l(1)\right]
 \end{equation*}
 
 Using the 2 MSMs, we can express the Natural Direct and Indirect Effects conditional on baseline confounders \(L(0)\). In our example:
 \begin{align*}
-  \text{PNDE} \mid L(0) &= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0)) \\
-  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  & \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0))]
+  \text{PNDE} \mid L(0),L(1) &= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0),L(1)) \\
+  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  & \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1)\} \\
+  &= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0),l(1))]
 \end{align*}
 
 \begin{align*}
-  \text{TNIE} \mid L(0) &= \mathbb{E}(Y_{a,M_{a}} \mid L(0)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) \\
-  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0)) + \alpha_{L(0)} l(0) \} \\
-  & \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &= \left[ g^{-1}(a,l(0)) - g^{-1}(a^*,l(0)) \right](\alpha_M + \alpha_{AM} a)
+  \text{TNIE} \mid L(0),L(1) &= \mathbb{E}(Y_{a,M_{a}} \mid L(0),L(1)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1)) \\
+  &= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  & \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  &= \left[ g^{-1}(a,l(0),l(1)) - g^{-1}(a^*,l(0),l(1)) \right](\alpha_M + \alpha_{AM} a)
 \end{align*}
 
 Marginal Natural Direct and Indirect effect can then be obtained:
 \begin{align*}
-  \text{PNDE} &= \sum_{l(0)} \left[ \text{PNDE} \mid L(0) = l(0) \right] \times P(L(0)=l(0)) \\
-  \quad \text{TNIE} &= \sum_{l(0)} \left[ \text{TNIE} \mid L(0) = l(0) \right] \times P(L(0)=l(0))
+  \text{PNDE} &= \sum_{l(0),l(1)} \left[ \text{PNDE} \mid L(0) = l(0), L(1)=l(1) \right] \times P(L(0)=l(0),L(1)=l(1)) \\
+  \quad \text{TNIE} &= \sum_{l(0),l(1)} \left[ \text{TNIE} \mid L(0) = l(0), L(1)=l(1) \right] \times P(L(0)=l(0),L(1)=l(1))
 \end{align*}
 
 \subsection{Estimation of the 2 MSMs coefficients by IPTW for NDE and NIE}\label{estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie}

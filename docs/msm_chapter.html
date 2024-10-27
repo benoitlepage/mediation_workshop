@@ -497,7 +497,7 @@ div.csl-indent {
 <p>We can also use a G-computation (sometimes described as an imputation) approach to estimate the coefficients of an MSM.</p>
 <p>The following steps can be applied:</p>
 <ol style="list-style-type: decimal">
-<li><p>Fit a (logistic or a linear) regression to estimate <span class="math inline">\(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\)</span></p></li>
+<li><p>Fit a (logistic or a linear) regression to estimate <span class="math inline">\(\overline{Q} = \mathbb{E}(Y \mid A, L(0))\)</span>. Don’t forget to add an <span class="math inline">\(A*L_{\text{male}}(0)\)</span> interaction term, because we aim to estimate the effect of the exposure <span class="math inline">\(A\)</span>, modified by sex.</p></li>
 <li><p>Use this estimate to predict an outcome for each subject under the counterfactual scenarios <span class="math inline">\(\hat{\overline{Q}}(A=0)_i\)</span> and <span class="math inline">\(\hat{\overline{Q}}(A=1)_i\)</span>, by evaluating the regression fit <span class="math inline">\(\overline{Q}\)</span> at <span class="math inline">\(A=0\)</span> and <span class="math inline">\(A=1\)</span> respectively</p></li>
 <li><p>Duplicate the initial dataset in a single long dataset in which:</p></li>
 </ol>
@@ -512,57 +512,44 @@ div.csl-indent {
 <span id="cb52-2"><a href="msm_chapter.html#cb52-2" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;data/df1_int.csv&quot;</span>)</span>
 <span id="cb52-3"><a href="msm_chapter.html#cb52-3" tabindex="-1"></a></span>
 <span id="cb52-4"><a href="msm_chapter.html#cb52-4" tabindex="-1"></a><span class="do">## 1. Estimate Qbar</span></span>
-<span id="cb52-5"><a href="msm_chapter.html#cb52-5" tabindex="-1"></a>Q.tot.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env,</span>
-<span id="cb52-6"><a href="msm_chapter.html#cb52-6" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df1_int)</span>
-<span id="cb52-7"><a href="msm_chapter.html#cb52-7" tabindex="-1"></a><span class="co"># The final result would be sligthly different if we apply a binomial family.</span></span>
-<span id="cb52-8"><a href="msm_chapter.html#cb52-8" tabindex="-1"></a></span>
-<span id="cb52-9"><a href="msm_chapter.html#cb52-9" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, in 2 counterfactual scenarios </span></span>
-<span id="cb52-10"><a href="msm_chapter.html#cb52-10" tabindex="-1"></a><span class="do">##    setting A=0 and A=1</span></span>
-<span id="cb52-11"><a href="msm_chapter.html#cb52-11" tabindex="-1"></a><span class="co"># prepare data sets used to predict the outcome under the counterfactual</span></span>
-<span id="cb52-12"><a href="msm_chapter.html#cb52-12" tabindex="-1"></a><span class="co"># scenarios setting A=0 and A=1</span></span>
-<span id="cb52-13"><a href="msm_chapter.html#cb52-13" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> data.A0 <span class="ot">&lt;-</span> df1_int</span>
-<span id="cb52-14"><a href="msm_chapter.html#cb52-14" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb52-15"><a href="msm_chapter.html#cb52-15" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb52-16"><a href="msm_chapter.html#cb52-16" tabindex="-1"></a></span>
-<span id="cb52-17"><a href="msm_chapter.html#cb52-17" tabindex="-1"></a><span class="co"># predict values under the same name in the corresponding counterfactual dataset</span></span>
-<span id="cb52-18"><a href="msm_chapter.html#cb52-18" tabindex="-1"></a>data.A1<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb52-19"><a href="msm_chapter.html#cb52-19" tabindex="-1"></a>data.A0<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb52-20"><a href="msm_chapter.html#cb52-20" tabindex="-1"></a></span>
-<span id="cb52-21"><a href="msm_chapter.html#cb52-21" tabindex="-1"></a><span class="do">## 3. Append both counterfactual datasets in a single long dataset</span></span>
-<span id="cb52-22"><a href="msm_chapter.html#cb52-22" tabindex="-1"></a><span class="co"># (the number of row is twice the initial number of row because there are 2 </span></span>
-<span id="cb52-23"><a href="msm_chapter.html#cb52-23" tabindex="-1"></a><span class="co"># counterfactual scenarios)</span></span>
-<span id="cb52-24"><a href="msm_chapter.html#cb52-24" tabindex="-1"></a>data<span class="fl">.2</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0, data.A1)</span>
-<span id="cb52-25"><a href="msm_chapter.html#cb52-25" tabindex="-1"></a></span>
-<span id="cb52-26"><a href="msm_chapter.html#cb52-26" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_a|sex)</span></span>
-<span id="cb52-27"><a href="msm_chapter.html#cb52-27" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
-<span id="cb52-28"><a href="msm_chapter.html#cb52-28" tabindex="-1"></a>MSM.ATE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Ya.death.pred <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>L0_male,</span>
-<span id="cb52-29"><a href="msm_chapter.html#cb52-29" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
-<span id="cb52-30"><a href="msm_chapter.html#cb52-30" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.2</span>scenarios)</span>
-<span id="cb52-31"><a href="msm_chapter.html#cb52-31" tabindex="-1"></a><span class="fu">coef</span>(MSM.ATE.gcomp)</span>
-<span id="cb52-32"><a href="msm_chapter.html#cb52-32" tabindex="-1"></a><span class="co">#  (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male </span></span>
-<span id="cb52-33"><a href="msm_chapter.html#cb52-33" tabindex="-1"></a><span class="co"># 1.743994e-01     7.720726e-02     4.874750e-02     5.087110e-16</span></span>
-<span id="cb52-34"><a href="msm_chapter.html#cb52-34" tabindex="-1"></a></span>
-<span id="cb52-35"><a href="msm_chapter.html#cb52-35" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
-<span id="cb52-36"><a href="msm_chapter.html#cb52-36" tabindex="-1"></a><span class="co"># According to MSM.ATE.gcomp</span></span>
-<span id="cb52-37"><a href="msm_chapter.html#cb52-37" tabindex="-1"></a>ATE.MSM.gcomp.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
-<span id="cb52-38"><a href="msm_chapter.html#cb52-38" tabindex="-1"></a><span class="co"># 0.07720726</span></span>
-<span id="cb52-39"><a href="msm_chapter.html#cb52-39" tabindex="-1"></a>ATE.MSM.gcomp.male1 <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">+</span></span>
-<span id="cb52-40"><a href="msm_chapter.html#cb52-40" tabindex="-1"></a>                          <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_PM2.5:L0_male&quot;</span>])</span>
-<span id="cb52-41"><a href="msm_chapter.html#cb52-41" tabindex="-1"></a><span class="co"># 0.07720726</span></span>
-<span id="cb52-42"><a href="msm_chapter.html#cb52-42" tabindex="-1"></a><span class="co"># The results are the same in both strata, because in the first Qbar model,</span></span>
-<span id="cb52-43"><a href="msm_chapter.html#cb52-43" tabindex="-1"></a><span class="co"># we did not include any (A * sex) interaction term</span></span>
-<span id="cb52-44"><a href="msm_chapter.html#cb52-44" tabindex="-1"></a></span>
-<span id="cb52-45"><a href="msm_chapter.html#cb52-45" tabindex="-1"></a><span class="co"># Applying a binomial family for the first Qbar model would result in two</span></span>
-<span id="cb52-46"><a href="msm_chapter.html#cb52-46" tabindex="-1"></a><span class="co"># different values of the ATE stratified by sex.</span></span>
-<span id="cb52-47"><a href="msm_chapter.html#cb52-47" tabindex="-1"></a><span class="co"># =&gt; 0.06880798 in the L0_male = 0 strata</span></span>
-<span id="cb52-48"><a href="msm_chapter.html#cb52-48" tabindex="-1"></a><span class="co"># =&gt; 0.08053575 in the L0_male = 1 strata</span></span>
-<span id="cb52-49"><a href="msm_chapter.html#cb52-49" tabindex="-1"></a></span>
-<span id="cb52-50"><a href="msm_chapter.html#cb52-50" tabindex="-1"></a><span class="co"># Comments: For the estimation of the first Qbar model, applying a gaussian family </span></span>
-<span id="cb52-51"><a href="msm_chapter.html#cb52-51" tabindex="-1"></a><span class="co"># (additive model) with no interaction terms implies the presence of some interaction </span></span>
-<span id="cb52-52"><a href="msm_chapter.html#cb52-52" tabindex="-1"></a><span class="co"># terms in a multiplicative model (such as a glm with a binomial family).</span></span>
-<span id="cb52-53"><a href="msm_chapter.html#cb52-53" tabindex="-1"></a><span class="co"># On the contrary, applying a binomial family (multiplicative model) with no</span></span>
-<span id="cb52-54"><a href="msm_chapter.html#cb52-54" tabindex="-1"></a><span class="co"># interaction terms implies some interaction terms in an additive model (such as</span></span>
-<span id="cb52-55"><a href="msm_chapter.html#cb52-55" tabindex="-1"></a><span class="co"># a glm with a gaussian family)</span></span></code></pre></div>
+<span id="cb52-5"><a href="msm_chapter.html#cb52-5" tabindex="-1"></a>Q.tot.death <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span></span>
+<span id="cb52-6"><a href="msm_chapter.html#cb52-6" tabindex="-1"></a>                     A0_PM2<span class="fl">.5</span><span class="sc">:</span>L0_male, <span class="co"># don&#39;t forget the interaction term</span></span>
+<span id="cb52-7"><a href="msm_chapter.html#cb52-7" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df1_int)</span>
+<span id="cb52-8"><a href="msm_chapter.html#cb52-8" tabindex="-1"></a><span class="co"># The final result would be sligthly different if we apply a binomial family.</span></span>
+<span id="cb52-9"><a href="msm_chapter.html#cb52-9" tabindex="-1"></a></span>
+<span id="cb52-10"><a href="msm_chapter.html#cb52-10" tabindex="-1"></a><span class="do">## 2. Predict an outcome for each subject, in 2 counterfactual scenarios</span></span>
+<span id="cb52-11"><a href="msm_chapter.html#cb52-11" tabindex="-1"></a><span class="do">##    setting A=0 and A=1</span></span>
+<span id="cb52-12"><a href="msm_chapter.html#cb52-12" tabindex="-1"></a><span class="co"># prepare data sets used to predict the outcome under the counterfactual</span></span>
+<span id="cb52-13"><a href="msm_chapter.html#cb52-13" tabindex="-1"></a><span class="co"># scenarios setting A=0 and A=1</span></span>
+<span id="cb52-14"><a href="msm_chapter.html#cb52-14" tabindex="-1"></a>data.A1 <span class="ot">&lt;-</span> data.A0 <span class="ot">&lt;-</span> df1_int</span>
+<span id="cb52-15"><a href="msm_chapter.html#cb52-15" tabindex="-1"></a>data.A1<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb52-16"><a href="msm_chapter.html#cb52-16" tabindex="-1"></a>data.A0<span class="sc">$</span>A0_PM2<span class="fl">.5</span> <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb52-17"><a href="msm_chapter.html#cb52-17" tabindex="-1"></a></span>
+<span id="cb52-18"><a href="msm_chapter.html#cb52-18" tabindex="-1"></a><span class="co"># predict values under the same name in the corresponding counterfactual dataset</span></span>
+<span id="cb52-19"><a href="msm_chapter.html#cb52-19" tabindex="-1"></a>data.A1<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A1, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb52-20"><a href="msm_chapter.html#cb52-20" tabindex="-1"></a>data.A0<span class="sc">$</span>Ya.death.pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q.tot.death, <span class="at">newdata =</span> data.A0, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb52-21"><a href="msm_chapter.html#cb52-21" tabindex="-1"></a></span>
+<span id="cb52-22"><a href="msm_chapter.html#cb52-22" tabindex="-1"></a><span class="do">## 3. Append both counterfactual datasets in a single long dataset</span></span>
+<span id="cb52-23"><a href="msm_chapter.html#cb52-23" tabindex="-1"></a><span class="co"># (the number of row is twice the initial number of row because there are 2</span></span>
+<span id="cb52-24"><a href="msm_chapter.html#cb52-24" tabindex="-1"></a><span class="co"># counterfactual scenarios)</span></span>
+<span id="cb52-25"><a href="msm_chapter.html#cb52-25" tabindex="-1"></a>data<span class="fl">.2</span>scenarios <span class="ot">&lt;-</span> <span class="fu">rbind</span>(data.A0, data.A1)</span>
+<span id="cb52-26"><a href="msm_chapter.html#cb52-26" tabindex="-1"></a></span>
+<span id="cb52-27"><a href="msm_chapter.html#cb52-27" tabindex="-1"></a><span class="do">## 4. fit the MSM: E(Y_a|sex)</span></span>
+<span id="cb52-28"><a href="msm_chapter.html#cb52-28" tabindex="-1"></a><span class="co"># a GLM with gaussian family can be applied to estimate risk differences</span></span>
+<span id="cb52-29"><a href="msm_chapter.html#cb52-29" tabindex="-1"></a>MSM.ATE.gcomp <span class="ot">&lt;-</span> <span class="fu">glm</span>(Ya.death.pred <span class="sc">~</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L0_male <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>L0_male,</span>
+<span id="cb52-30"><a href="msm_chapter.html#cb52-30" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb52-31"><a href="msm_chapter.html#cb52-31" tabindex="-1"></a>                     <span class="at">data =</span> data<span class="fl">.2</span>scenarios)</span>
+<span id="cb52-32"><a href="msm_chapter.html#cb52-32" tabindex="-1"></a><span class="fu">coef</span>(MSM.ATE.gcomp)</span>
+<span id="cb52-33"><a href="msm_chapter.html#cb52-33" tabindex="-1"></a><span class="co"># (Intercept)         A0_PM2.5          L0_male A0_PM2.5:L0_male</span></span>
+<span id="cb52-34"><a href="msm_chapter.html#cb52-34" tabindex="-1"></a><span class="co">#  0.17571658       0.06108129       0.04602303       0.02516386</span></span>
+<span id="cb52-35"><a href="msm_chapter.html#cb52-35" tabindex="-1"></a></span>
+<span id="cb52-36"><a href="msm_chapter.html#cb52-36" tabindex="-1"></a><span class="do">## 5. Estimate the ATE stratified by sex</span></span>
+<span id="cb52-37"><a href="msm_chapter.html#cb52-37" tabindex="-1"></a><span class="co"># According to MSM.ATE.gcomp</span></span>
+<span id="cb52-38"><a href="msm_chapter.html#cb52-38" tabindex="-1"></a>ATE.MSM.gcomp.male0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_PM2.5&quot;</span>]</span>
+<span id="cb52-39"><a href="msm_chapter.html#cb52-39" tabindex="-1"></a><span class="co"># 0.06108129</span></span>
+<span id="cb52-40"><a href="msm_chapter.html#cb52-40" tabindex="-1"></a>ATE.MSM.gcomp.male1 <span class="ot">&lt;-</span> (<span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_PM2.5&quot;</span>] <span class="sc">+</span></span>
+<span id="cb52-41"><a href="msm_chapter.html#cb52-41" tabindex="-1"></a>                          <span class="fu">coef</span>(MSM.ATE.gcomp)[<span class="st">&quot;A0_PM2.5:L0_male&quot;</span>])</span>
+<span id="cb52-42"><a href="msm_chapter.html#cb52-42" tabindex="-1"></a><span class="co"># 0.08624515</span></span></code></pre></div>
 </div>
 </div>
 <div id="msm_CDE_paragraph" class="section level2 hasAnchor" number="8.2">
@@ -1114,39 +1101,39 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <p>The (Pure) Natural Direct Effect is defined by <span class="math inline">\(\text{PNDE} = \mathbb{E}(Y_{a,M_{a^*}}) - \mathbb{E}(Y_{a^*,M_{a^*}})\)</span> and the (Total) Natural Indirect Effect is defined by <span class="math inline">\(\text{TNIE} = \mathbb{E}(Y_{a,M_a}) - \mathbb{E}(Y_{a,M_{a^*}})\)</span>.</p>
 <p>VanderWeele suggested using 2 MSMs conditional on baseline confounders <span class="math inline">\(L(0)\)</span> in order to estimate natural direct and indirect effects <span class="citation">(<a href="#ref-vanderweele2009">VanderWeele 2009</a>)</span>:</p>
 <ol style="list-style-type: decimal">
-<li><p>a model of the counterfactual values of the outcome <span class="math inline">\(\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0))\)</span>, where <span class="math inline">\(h\)</span> is a link function. For example:
+<li><p>a model of the counterfactual values of the outcome <span class="math inline">\(\mathbb{E}(Y_{a,m} \mid l(0))=h^{-1}(a,m,l(0),l(1))\)</span>, where <span class="math inline">\(h\)</span> is a link function. For example:
 <span class="math display" id="eq:MSM-Indirect-model1">\[\begin{equation}
-    \mathbb{E}(Y_{a,m} \mid l(0)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) \tag{8.5}
+    \mathbb{E}(Y_{a,m} \mid l(0),l(1)) = \alpha_0 + \alpha_A a + \alpha_M m + \alpha_{AM} a \times m + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \tag{8.5}
   \end{equation}\]</span>
 (where <span class="math inline">\(h\)</span> is the identity function, so that the model can be used to express risk differences)</p></li>
-<li><p>a model of the counterfactual values of the mediator <span class="math inline">\(\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0))\)</span>, where <span class="math inline">\(g\)</span> is a link function. For example with a binary mediator:
+<li><p>a model of the counterfactual values of the mediator <span class="math inline">\(\mathbb{E}(M_{a} \mid L(0))=g^{-1}(a,l(0),l(1))\)</span>, where <span class="math inline">\(g\)</span> is a link function. For example with a binary mediator:
 <span class="math display" id="eq:MSM-Indirect-model2">\[\begin{equation}
-    \mathbb{E}(M_a \mid l(0)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) \right]
+    \mathbb{E}(M_a \mid l(0),l(1)) = g^{-1}\left[\beta_0 + \beta_A a + \beta_{L(0)} l(0) + \beta_{L(1)} l(1) \right]
     \tag{8.6}
   \end{equation}\]</span>
 (where <span class="math inline">\(g\)</span> is the logit function because the mediator is binary).</p></li>
 </ol>
 <p>VanderWeele shows that if the function <span class="math inline">\(h\)</span> is linear in <span class="math inline">\(m\)</span> (no quadratic terms in <span class="math inline">\(m\)</span>, nor transformations such as <span class="math inline">\(\log(m)\)</span> or <span class="math inline">\(\sqrt{m}\)</span>, etc) and the exposure <span class="math inline">\(A\)</span> does not affect the intermediate confounder <span class="math inline">\(L(1)\)</span>, then
 <span class="math display">\[\begin{equation*}
-  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0)\right),l(0)\right]
+  \mathbb{E}(Y_{a,M_{a^*}}) = h^{-1}\left[a,g^{-1}\left(a^*,l(0),l(1)\right),l(0),l(1)\right]
 \end{equation*}\]</span></p>
 <p>Using the 2 MSMs, we can express the Natural Direct and Indirect Effects conditional on baseline confounders <span class="math inline">\(L(0)\)</span>. In our example:
 <span class="math display">\[\begin{align*}
-  \text{PNDE} \mid L(0) &amp;= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0)) \\
-  &amp;= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &amp; \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &amp;= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0))]
+  \text{PNDE} \mid L(0),L(1) &amp;= \mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1)) - \mathbb{E}(Y_{a^*,M_{a^*}} \mid L(0),L(1)) \\
+  &amp;= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  &amp; \quad \quad - \{ \alpha_0 + \alpha_A a^*+ [\alpha_M + \alpha_{AM}a^*] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1)\} \\
+  &amp;= (a - a^*) \times [\alpha_A + \alpha_{AM} \times g^{-1}(a^*,l(0),l(1))]
 \end{align*}\]</span></p>
 <p><span class="math display">\[\begin{align*}
-  \text{TNIE} \mid L(0) &amp;= \mathbb{E}(Y_{a,M_{a}} \mid L(0)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0)) \\
-  &amp;= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &amp; \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0)) + \alpha_{L(0)} l(0) \} \\
-  &amp;= \left[ g^{-1}(a,l(0)) - g^{-1}(a^*,l(0)) \right](\alpha_M + \alpha_{AM} a)
+  \text{TNIE} \mid L(0),L(1) &amp;= \mathbb{E}(Y_{a,M_{a}} \mid L(0),L(1)) - \mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1)) \\
+  &amp;= \{\alpha_0 + \alpha_A a + [\alpha_M + \alpha_{AM}a] \times g^{-1}(a,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  &amp; \quad \quad - \{ \alpha_0 + \alpha_A a+ [\alpha_M + \alpha_{AM}a] \times g^{-1}(a^*,l(0),l(1)) + \alpha_{L(0)} l(0) + \alpha_{L(1)} l(1) \} \\
+  &amp;= \left[ g^{-1}(a,l(0),l(1)) - g^{-1}(a^*,l(0),l(1)) \right](\alpha_M + \alpha_{AM} a)
 \end{align*}\]</span></p>
 <p>Marginal Natural Direct and Indirect effect can then be obtained:
 <span class="math display">\[\begin{align*}
-  \text{PNDE} &amp;= \sum_{l(0)} \left[ \text{PNDE} \mid L(0) = l(0) \right] \times P(L(0)=l(0)) \\
-  \quad \text{TNIE} &amp;= \sum_{l(0)} \left[ \text{TNIE} \mid L(0) = l(0) \right] \times P(L(0)=l(0))
+  \text{PNDE} &amp;= \sum_{l(0),l(1)} \left[ \text{PNDE} \mid L(0) = l(0), L(1)=l(1) \right] \times P(L(0)=l(0),L(1)=l(1)) \\
+  \quad \text{TNIE} &amp;= \sum_{l(0),l(1)} \left[ \text{TNIE} \mid L(0) = l(0), L(1)=l(1) \right] \times P(L(0)=l(0),L(1)=l(1))
 \end{align*}\]</span></p>
 </div>
 <div id="estimation-of-the-2-msms-coefficients-by-iptw-for-nde-and-nie" class="section level3 hasAnchor" number="8.3.2">
