@@ -1845,13 +1845,13 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <h4><span class="header-section-number">8.5.1.2</span> Using the <code>medflex</code> package<a href="msm_chapter.html#using-the-medflex-package" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>We can used the <code>medflex</code> package to apply this approach, as described below.</p>
 <p>The “unified” MSM can be defined as a model of the expected counterfactual outcome <span class="math inline">\(\mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1))\)</span> conditional on the baseline confounders <span class="math inline">\(L(0)\)</span> and <span class="math inline">\(L(1)\)</span>, or as a model the marginal expected counterfactual outcome <span class="math inline">\(\mathbb{E}(Y_{a,M_{a^*}}\)</span>.</p>
-<p>For estimation by IPTW, the data is expanded using the <code>neWeight</code> function, and the MSM is estimated using the <code>neModel</code> function.Population average estimations are obtained using a weighted regression, where the weights are calcuated using a model of the exposure, stated at the <code>xFit</code> argument inside the <code>neModel</code> function.</p>
+<p>For estimation by IPTW, the data is expanded using the <code>neWeight</code> function, and the MSM is estimated using the <code>neModel</code> function.Population average estimations are obtained using a weighted regression, where the weights are calculated using a model of the exposure, stated at the <code>xFit</code> argument inside the <code>neModel</code> function.</p>
 <p>Standard errors can be computed by bootstrap or as robust “Sandwich” standard errors.</p>
 <div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="msm_chapter.html#cb64-1" tabindex="-1"></a><span class="fu">library</span>(medflex)</span>
 <span id="cb64-2"><a href="msm_chapter.html#cb64-2" tabindex="-1"></a><span class="co"># this package can used to estimate Natural direct and indirect effects when they are</span></span>
 <span id="cb64-3"><a href="msm_chapter.html#cb64-3" tabindex="-1"></a><span class="co"># identifiable</span></span>
 <span id="cb64-4"><a href="msm_chapter.html#cb64-4" tabindex="-1"></a></span>
-<span id="cb64-5"><a href="msm_chapter.html#cb64-5" tabindex="-1"></a><span class="do">### 5.2.1) estimate PNDE and TNDE, conditional on L0 and L1 </span></span>
+<span id="cb64-5"><a href="msm_chapter.html#cb64-5" tabindex="-1"></a><span class="do">### estimate PNDE and TNDE, conditional on L0 and L1 </span></span>
 <span id="cb64-6"><a href="msm_chapter.html#cb64-6" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------- #</span></span>
 <span id="cb64-7"><a href="msm_chapter.html#cb64-7" tabindex="-1"></a><span class="co"># get back to the original data set</span></span>
 <span id="cb64-8"><a href="msm_chapter.html#cb64-8" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">subset</span>(df1_int, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(A0_PM2<span class="fl">.5</span>_temp, id))</span>
@@ -1980,7 +1980,7 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <span id="cb64-131"><a href="msm_chapter.html#cb64-131" tabindex="-1"></a><span class="co"># plot results</span></span>
 <span id="cb64-132"><a href="msm_chapter.html#cb64-132" tabindex="-1"></a><span class="fu">plot</span>(neMod.qol)</span>
 <span id="cb64-133"><a href="msm_chapter.html#cb64-133" tabindex="-1"></a></span>
-<span id="cb64-134"><a href="msm_chapter.html#cb64-134" tabindex="-1"></a><span class="do">### 5.2.2) estimate marginal PNDE and TNDE (population average) </span></span>
+<span id="cb64-134"><a href="msm_chapter.html#cb64-134" tabindex="-1"></a><span class="do">### estimate marginal PNDE and TNDE (population average) </span></span>
 <span id="cb64-135"><a href="msm_chapter.html#cb64-135" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------- #</span></span>
 <span id="cb64-136"><a href="msm_chapter.html#cb64-136" tabindex="-1"></a></span>
 <span id="cb64-137"><a href="msm_chapter.html#cb64-137" tabindex="-1"></a><span class="do">## 1) Expand the dataset and calculate weights using the neWeight() function</span></span>
@@ -2052,7 +2052,7 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <p>We can apply the following steps:</p>
 <ol style="list-style-type: decimal">
 <li>Estimate a suitable model for the outcome conditional on the exposure, mediator and confounders, using the original data set</li>
-<li>Construct a new data set by repeating the original data set twice, and including an additional variable <span class="math inline">\(A^*\)</span>, equal to the original exposure in the 1st data set, and equal to <span class="math inline">\(1-A\)</span> in the 2nd data set. Then impute counterfactuals <span class="math inline">\(\mathbb{E}(Y_{a,M_a*}|L(0),L(1))\)</span></li>
+<li>Construct a new data set by repeating the original data set twice, and including an additional variable <span class="math inline">\(A^*\)</span>, equal to the original exposure in both data sets, and change the value of <span class="math inline">\(A\)</span> from <span class="math inline">\(A\)</span> to <span class="math inline">\(1-A\)</span> in the 2nd data set. Then impute counterfactuals <span class="math inline">\(\mathbb{E}(Y_{a,M_a*}|L(0),L(1))\)</span></li>
 <li>Estimate the unified MSM as a model of the outcome including <span class="math inline">\(A\)</span> and <span class="math inline">\(A^*\)</span> (and their interaction), adjusted for baseline confounders <span class="math inline">\(L(0)\)</span> and <span class="math inline">\(L(1)\)</span>. In order to obtain population average model (unconditional on baseline confounders), coefficients can be estimated using a weighted regression (with simple weights or stabilized weights of the exposure). Use the estimated coefficients of the MSM to calculate the PNDE and TNIE.</li>
 </ol>
 <div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="msm_chapter.html#cb65-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
@@ -2222,7 +2222,7 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <p>Standard errors can be computed by bootstrap or as robust “Sandwich” standard errors.</p>
 <div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="msm_chapter.html#cb66-1" tabindex="-1"></a><span class="fu">library</span>(medflex)</span>
 <span id="cb66-2"><a href="msm_chapter.html#cb66-2" tabindex="-1"></a></span>
-<span id="cb66-3"><a href="msm_chapter.html#cb66-3" tabindex="-1"></a><span class="do">### 6.2.1) estimate PNDE and TNDE, conditional on L0 and L1</span></span>
+<span id="cb66-3"><a href="msm_chapter.html#cb66-3" tabindex="-1"></a><span class="do">### estimate PNDE and TNDE, conditional on L0 and L1</span></span>
 <span id="cb66-4"><a href="msm_chapter.html#cb66-4" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------- #</span></span>
 <span id="cb66-5"><a href="msm_chapter.html#cb66-5" tabindex="-1"></a><span class="co"># get back to the original data set</span></span>
 <span id="cb66-6"><a href="msm_chapter.html#cb66-6" tabindex="-1"></a>df1_int <span class="ot">&lt;-</span> <span class="fu">subset</span>(df1_int, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(id))</span>
@@ -2319,7 +2319,7 @@ For a binary exposure <span class="math inline">\(A\)</span>, we have <span clas
 <span id="cb66-97"><a href="msm_chapter.html#cb66-97" tabindex="-1"></a><span class="co"># -1.85</span></span>
 <span id="cb66-98"><a href="msm_chapter.html#cb66-98" tabindex="-1"></a></span>
 <span id="cb66-99"><a href="msm_chapter.html#cb66-99" tabindex="-1"></a></span>
-<span id="cb66-100"><a href="msm_chapter.html#cb66-100" tabindex="-1"></a><span class="do">### 6.2.2) estimate marginal PNDE and TNDE (population average) </span></span>
+<span id="cb66-100"><a href="msm_chapter.html#cb66-100" tabindex="-1"></a><span class="do">### estimate marginal PNDE and TNDE (population average) </span></span>
 <span id="cb66-101"><a href="msm_chapter.html#cb66-101" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------- #</span></span>
 <span id="cb66-102"><a href="msm_chapter.html#cb66-102" tabindex="-1"></a><span class="do">## Estimate a model of the exposure</span></span>
 <span id="cb66-103"><a href="msm_chapter.html#cb66-103" tabindex="-1"></a>g.A.L0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(A0_PM2<span class="fl">.5</span> <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> L1, <span class="co"># will no work without L(1) !</span></span>

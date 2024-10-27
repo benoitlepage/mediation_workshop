@@ -6116,7 +6116,7 @@ We can used the \texttt{medflex} package to apply this approach, as described be
 
 The ``unified'' MSM can be defined as a model of the expected counterfactual outcome \(\mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1))\) conditional on the baseline confounders \(L(0)\) and \(L(1)\), or as a model the marginal expected counterfactual outcome \(\mathbb{E}(Y_{a,M_{a^*}}\).
 
-For estimation by IPTW, the data is expanded using the \texttt{neWeight} function, and the MSM is estimated using the \texttt{neModel} function.Population average estimations are obtained using a weighted regression, where the weights are calcuated using a model of the exposure, stated at the \texttt{xFit} argument inside the \texttt{neModel} function.
+For estimation by IPTW, the data is expanded using the \texttt{neWeight} function, and the MSM is estimated using the \texttt{neModel} function.Population average estimations are obtained using a weighted regression, where the weights are calculated using a model of the exposure, stated at the \texttt{xFit} argument inside the \texttt{neModel} function.
 
 Standard errors can be computed by bootstrap or as robust ``Sandwich'' standard errors.
 
@@ -6126,7 +6126,7 @@ Standard errors can be computed by bootstrap or as robust ``Sandwich'' standard 
 \CommentTok{\# this package can used to estimate Natural direct and indirect effects when they are}
 \CommentTok{\# identifiable}
 
-\DocumentationTok{\#\#\# 5.2.1) estimate PNDE and TNDE, conditional on L0 and L1 }
+\DocumentationTok{\#\#\# estimate PNDE and TNDE, conditional on L0 and L1 }
 \CommentTok{\# {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-} \#}
 \CommentTok{\# get back to the original data set}
 \NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df1\_int, }\AttributeTok{select =} \SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(A0\_PM2}\FloatTok{.5}\NormalTok{\_temp, id))}
@@ -6255,7 +6255,7 @@ Standard errors can be computed by bootstrap or as robust ``Sandwich'' standard 
 \CommentTok{\# plot results}
 \FunctionTok{plot}\NormalTok{(neMod.qol)}
 
-\DocumentationTok{\#\#\# 5.2.2) estimate marginal PNDE and TNDE (population average) }
+\DocumentationTok{\#\#\# estimate marginal PNDE and TNDE (population average) }
 \CommentTok{\# {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-} \#}
 
 \DocumentationTok{\#\# 1) Expand the dataset and calculate weights using the neWeight() function}
@@ -6334,7 +6334,7 @@ We can apply the following steps:
 \item
   Estimate a suitable model for the outcome conditional on the exposure, mediator and confounders, using the original data set
 \item
-  Construct a new data set by repeating the original data set twice, and including an additional variable \(A^*\), equal to the original exposure in the 1st data set, and equal to \(1-A\) in the 2nd data set. Then impute counterfactuals \(\mathbb{E}(Y_{a,M_a*}|L(0),L(1))\)
+  Construct a new data set by repeating the original data set twice, and including an additional variable \(A^*\), equal to the original exposure in both data sets, and change the value of \(A\) from \(A\) to \(1-A\) in the 2nd data set. Then impute counterfactuals \(\mathbb{E}(Y_{a,M_a*}|L(0),L(1))\)
 \item
   Estimate the unified MSM as a model of the outcome including \(A\) and \(A^*\) (and their interaction), adjusted for baseline confounders \(L(0)\) and \(L(1)\). In order to obtain population average model (unconditional on baseline confounders), coefficients can be estimated using a weighted regression (with simple weights or stabilized weights of the exposure). Use the estimated coefficients of the MSM to calculate the PNDE and TNIE.
 \end{enumerate}
@@ -6516,7 +6516,7 @@ Standard errors can be computed by bootstrap or as robust ``Sandwich'' standard 
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(medflex)}
 
-\DocumentationTok{\#\#\# 6.2.1) estimate PNDE and TNDE, conditional on L0 and L1}
+\DocumentationTok{\#\#\# estimate PNDE and TNDE, conditional on L0 and L1}
 \CommentTok{\# {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-} \#}
 \CommentTok{\# get back to the original data set}
 \NormalTok{df1\_int }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df1\_int, }\AttributeTok{select =} \SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(id))}
@@ -6613,7 +6613,7 @@ Standard errors can be computed by bootstrap or as robust ``Sandwich'' standard 
 \CommentTok{\# {-}1.85}
 
 
-\DocumentationTok{\#\#\# 6.2.2) estimate marginal PNDE and TNDE (population average) }
+\DocumentationTok{\#\#\# estimate marginal PNDE and TNDE (population average) }
 \CommentTok{\# {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-} \#}
 \DocumentationTok{\#\# Estimate a model of the exposure}
 \NormalTok{g.A.L0 }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ L1, }\CommentTok{\# will no work without L(1) !}

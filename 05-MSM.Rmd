@@ -1590,7 +1590,7 @@ We can used the `medflex` package to apply this approach, as described below.
 
 The "unified" MSM can be defined as a model of the expected counterfactual outcome $\mathbb{E}(Y_{a,M_{a^*}} \mid L(0),L(1))$ conditional on the baseline confounders $L(0)$ and $L(1)$, or as a model the marginal expected counterfactual outcome $\mathbb{E}(Y_{a,M_{a^*}}$.
 
-For estimation by IPTW, the data is expanded using the `neWeight` function, and the MSM is estimated using the `neModel` function.Population average estimations are obtained using a weighted regression, where the weights are calcuated using a model of the exposure, stated at the `xFit` argument inside the `neModel` function. 
+For estimation by IPTW, the data is expanded using the `neWeight` function, and the MSM is estimated using the `neModel` function.Population average estimations are obtained using a weighted regression, where the weights are calculated using a model of the exposure, stated at the `xFit` argument inside the `neModel` function. 
 
 Standard errors can be computed by bootstrap or as robust "Sandwich" standard errors.
 
@@ -1599,7 +1599,7 @@ library(medflex)
 # this package can used to estimate Natural direct and indirect effects when they are
 # identifiable
 
-### 5.2.1) estimate PNDE and TNDE, conditional on L0 and L1 
+### estimate PNDE and TNDE, conditional on L0 and L1 
 # ---------------------------------------------------------------------------- #
 # get back to the original data set
 df1_int <- subset(df1_int, select = -c(A0_PM2.5_temp, id))
@@ -1728,7 +1728,7 @@ c(medflex.TNIE.qol.L0 -
 # plot results
 plot(neMod.qol)
 
-### 5.2.2) estimate marginal PNDE and TNDE (population average) 
+### estimate marginal PNDE and TNDE (population average) 
 # ---------------------------------------------------------------------------- #
 
 ## 1) Expand the dataset and calculate weights using the neWeight() function
@@ -1799,7 +1799,7 @@ The "unified" MSM can also be estimated by g-computation. Note that for the esti
 We can apply the following steps:
 
   1. Estimate a suitable model for the outcome conditional on the exposure, mediator and confounders, using the original data set
-  2. Construct a new data set by repeating the original data set twice, and including an additional variable $A^*$, equal to the original exposure in the 1st data set, and equal to $1-A$ in the 2nd data set. Then impute counterfactuals $\mathbb{E}(Y_{a,M_a*}|L(0),L(1))$
+  2. Construct a new data set by repeating the original data set twice, and including an additional variable $A^*$, equal to the original exposure in both data sets, and change the value of $A$ from $A$ to $1-A$ in the 2nd data set. Then impute counterfactuals $\mathbb{E}(Y_{a,M_a*}|L(0),L(1))$
   3. Estimate the unified MSM as a model of the outcome including $A$ and $A^*$ (and their interaction), adjusted for baseline confounders $L(0)$ and $L(1)$. In order to obtain population average model (unconditional on baseline confounders), coefficients can be estimated using a weighted regression (with simple weights or stabilized weights of the exposure). Use the estimated coefficients of the MSM to calculate the PNDE and TNIE.
 
 ```{r unified_gcomp1, echo=TRUE, eval = FALSE}
@@ -1975,7 +1975,7 @@ Standard errors can be computed by bootstrap or as robust "Sandwich" standard er
 ```{r unified_gcomp2, echo=TRUE, eval = FALSE}
 library(medflex)
 
-### 6.2.1) estimate PNDE and TNDE, conditional on L0 and L1
+### estimate PNDE and TNDE, conditional on L0 and L1
 # ---------------------------------------------------------------------------- #
 # get back to the original data set
 df1_int <- subset(df1_int, select = -c(id))
@@ -2072,7 +2072,7 @@ medflex.TNIE.qol.L0 <- (coef(neMod.qol)["A0_PM2.511"] +
 # -1.85
 
 
-### 6.2.2) estimate marginal PNDE and TNDE (population average) 
+### estimate marginal PNDE and TNDE (population average) 
 # ---------------------------------------------------------------------------- #
 ## Estimate a model of the exposure
 g.A.L0 <- glm(A0_PM2.5 ~ L0_male + L0_soc_env + L1, # will no work without L(1) !
