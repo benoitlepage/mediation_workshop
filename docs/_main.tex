@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-10-24}
+\date{2024-10-27}
 
 \begin{document}
 \maketitle
@@ -2558,7 +2558,7 @@ The g-formulas for the PNDE and TNIE are:
 \NormalTok{data.Ais1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
 
 \CommentTok{\# Predict the counterfactual probabilities}
-\CommentTok{\# P(M\_\{A=0\}|l(0),l(1)) and  P(M\_\{A=0\}|l(0),l(1))}
+\CommentTok{\# P(M\_\{A=0\}|l(0),l(1)) and  P(M\_\{A=1\}|l(0),l(1))}
 \NormalTok{P.M.Ais0 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(trad\_m, }\AttributeTok{newdata =}\NormalTok{ data.Ais0, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 \NormalTok{P.M.Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(trad\_m, }\AttributeTok{newdata =}\NormalTok{ data.Ais1, }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 
@@ -2605,6 +2605,86 @@ The g-formulas for the PNDE and TNIE are:
 \NormalTok{TNIE.qol.gcomp }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Q.qol.A1M0 }\SpecialCharTok{*}\NormalTok{ ((}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ P.M.Ais1) }\SpecialCharTok{{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ P.M.Ais0)) }\SpecialCharTok{+}
 \NormalTok{                         Q.qol.A1M1 }\SpecialCharTok{*}\NormalTok{ (P.M.Ais1 }\SpecialCharTok{{-}}\NormalTok{ P.M.Ais0) )}
 \CommentTok{\# [1] {-}1.774295}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{\texorpdfstring{Using the \texttt{CMAverse} R package}{Using the CMAverse R package}}\label{using-the-cmaverse-r-package}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(CMAverse)}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
+\NormalTok{res\_rb\_param\_delta }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
+                            \AttributeTok{model =} \StringTok{"rb"}\NormalTok{, }\CommentTok{\# for "regression based" (rb) approach}
+                            \AttributeTok{outcome =} \StringTok{"Y\_qol"}\NormalTok{,        }\CommentTok{\# outcome variable}
+                            \AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{,    }\CommentTok{\# exposure variable}
+                            \AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,  }\CommentTok{\# mediator}
+                            \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,      }\CommentTok{\# confounders}
+                                      \StringTok{"L0\_soc\_env"}\NormalTok{,}
+                                      \StringTok{"L1"}\NormalTok{),}
+                            \AttributeTok{EMint =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# exposures*mediator interaction}
+                            \AttributeTok{mreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{), }\CommentTok{\# model of the mediator}
+                            \AttributeTok{yreg =} \StringTok{"linear"}\NormalTok{,       }\CommentTok{\# model of the outcome}
+                            \AttributeTok{astar =} \DecValTok{0}\NormalTok{,}
+                            \AttributeTok{a =} \DecValTok{1}\NormalTok{,}
+                            \AttributeTok{mval =} \FunctionTok{list}\NormalTok{(}\DecValTok{0}\NormalTok{),}
+                            \AttributeTok{estimation =} \StringTok{"imputation"}\NormalTok{, }\CommentTok{\#  closed{-}form parameter}
+                            \CommentTok{\# function estimation}
+                            \AttributeTok{inference =} \StringTok{"bootstrap"}\NormalTok{) }\CommentTok{\# IC95\% : "delta" or "bootstrap"}
+\FunctionTok{summary}\NormalTok{(res\_rb\_param\_delta)}
+\CommentTok{\#                Estimate Std.error  95\% CIL 95\% CIU  P.val}
+\CommentTok{\#   cde          {-}3.71527   0.42805 {-}4.54643  {-}2.944 \textless{}2e{-}16 ***}
+\CommentTok{\#   pnde         {-}5.10339   0.34582 {-}6.02478  {-}4.719 \textless{}2e{-}16 *** vs {-}5.310172}
+\CommentTok{\#   tnde         {-}5.65988   0.35217 {-}6.76655  {-}5.342 \textless{}2e{-}16 ***}
+\CommentTok{\#   pnie         {-}0.85540   0.14386 {-}1.35738  {-}0.827 \textless{}2e{-}16 ***}
+\CommentTok{\#   tnie         {-}1.41189   0.23667 {-}2.19506  {-}1.370 \textless{}2e{-}16 *** vs {-}1.774295}
+\CommentTok{\#   te           {-}6.51528   0.41465 {-}8.05718  {-}6.394 \textless{}2e{-}16 ***}
+\CommentTok{\#   intref       {-}1.38812   0.18813 {-}1.92391  {-}1.226 \textless{}2e{-}16 ***}
+\CommentTok{\#   intmed       {-}0.55649   0.11655 {-}0.91444  {-}0.473 \textless{}2e{-}16 ***}
+\CommentTok{\#   cde(prop)     0.57024   0.04454  0.43771   0.608 \textless{}2e{-}16 ***}
+\CommentTok{\#   intref(prop)  0.21306   0.03102  0.16866   0.284 \textless{}2e{-}16 ***}
+\CommentTok{\#   intmed(prop)  0.08541   0.01511  0.06924   0.131 \textless{}2e{-}16 ***}
+\CommentTok{\#   pnie(prop)    0.13129   0.01686  0.12098   0.186 \textless{}2e{-}16 ***}
+\CommentTok{\#   pm            0.21670   0.02821  0.19441   0.305 \textless{}2e{-}16 ***}
+\CommentTok{\#   int           0.29847   0.04113  0.24601   0.400 \textless{}2e{-}16 ***}
+\CommentTok{\#   pe            0.42976   0.04454  0.39163   0.562 \textless{}2e{-}16 ***}
+
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
+\NormalTok{res\_rb\_param\_delta }\OtherTok{\textless{}{-}} \FunctionTok{cmest}\NormalTok{(}\AttributeTok{data =}\NormalTok{ df1\_int,}
+                            \AttributeTok{model =} \StringTok{"rb"}\NormalTok{, }\CommentTok{\# for "regression based" (rb) approach}
+                            \AttributeTok{outcome =} \StringTok{"Y\_death"}\NormalTok{,        }\CommentTok{\# outcome variable}
+                            \AttributeTok{exposure =} \StringTok{"A0\_PM2.5"}\NormalTok{,    }\CommentTok{\# exposure variable}
+                            \AttributeTok{mediator =} \StringTok{"M\_diabetes"}\NormalTok{,  }\CommentTok{\# mediator}
+                            \AttributeTok{basec =} \FunctionTok{c}\NormalTok{(}\StringTok{"L0\_male"}\NormalTok{,      }\CommentTok{\# confounders}
+                                      \StringTok{"L0\_soc\_env"}\NormalTok{,}
+                                      \StringTok{"L1"}\NormalTok{),}
+                            \AttributeTok{EMint =} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# exposures*mediator interaction}
+                            \AttributeTok{mreg =} \FunctionTok{list}\NormalTok{(}\StringTok{"logistic"}\NormalTok{), }\CommentTok{\# model of the mediator}
+                            \AttributeTok{yreg =} \StringTok{"linear"}\NormalTok{,       }\CommentTok{\# model of the outcome}
+                            \AttributeTok{astar =} \DecValTok{0}\NormalTok{,}
+                            \AttributeTok{a =} \DecValTok{1}\NormalTok{,}
+                            \AttributeTok{mval =} \FunctionTok{list}\NormalTok{(}\DecValTok{0}\NormalTok{),}
+                            \AttributeTok{estimation =} \StringTok{"imputation"}\NormalTok{, }\CommentTok{\#  closed{-}form parameter}
+                            \CommentTok{\# function estimation}
+                            \AttributeTok{inference =} \StringTok{"bootstrap"}\NormalTok{) }\CommentTok{\# IC95\% : "delta" or "bootstrap"}
+\FunctionTok{summary}\NormalTok{(res\_rb\_param\_delta)}
+\CommentTok{\# Estimate Std.error   95\% CIL 95\% CIU  P.val}
+\CommentTok{\#   cde           0.060001  0.016971  0.029741   0.096 \textless{}2e{-}16 ***}
+\CommentTok{\#   pnde          0.064743  0.013036  0.040779   0.094 \textless{}2e{-}16 *** vs 0.0638596}
+\CommentTok{\#   tnde          0.066644  0.012808  0.041684   0.095 \textless{}2e{-}16 ***}
+\CommentTok{\#   pnie          0.006696  0.001666  0.005635   0.012 \textless{}2e{-}16 ***}
+\CommentTok{\#   tnie          0.008597  0.003576  0.003856   0.018   0.02 *   vs 0.01044539}
+\CommentTok{\#   te            0.073340  0.012905  0.049302   0.102 \textless{}2e{-}16 ***}
+\CommentTok{\#   intref        0.004742  0.008584 {-}0.011243   0.021   0.51}
+\CommentTok{\#   intmed        0.001901  0.003764 {-}0.005370   0.009   0.51}
+\CommentTok{\#   cde(prop)     0.818122  0.160328  0.501113   1.108 \textless{}2e{-}16 ***}
+\CommentTok{\#   intref(prop)  0.064653  0.115196 {-}0.151420   0.270   0.51}
+\CommentTok{\#   intmed(prop)  0.025919  0.050149 {-}0.069991   0.121   0.51}
+\CommentTok{\#   pnie(prop)    0.091306  0.029324  0.067935   0.178 \textless{}2e{-}16 ***}
+\CommentTok{\#   pm            0.117225  0.052331  0.053291   0.245   0.02 *}
+\CommentTok{\#   int           0.090572  0.164830 {-}0.223164   0.400   0.51}
+\CommentTok{\#   pe            0.181878  0.160328 {-}0.108220   0.499   0.15}
 \end{Highlighting}
 \end{Shaded}
 
@@ -2774,7 +2854,7 @@ Note 2: Sensitivity analysis from the \texttt{mediation} package cannot be appli
                        \CommentTok{\# the residuals of the mediator \& outcome regressions}
                        \CommentTok{\# here, rho varies from {-}0.9 to +0.9 by 0.1 increments}
                        \AttributeTok{effect.type =} \StringTok{"both"}\NormalTok{, }\CommentTok{\# "direct", "indirect" or "both"}
-                       \AttributeTok{sims =} \DecValTok{100}\NormalTok{)}
+                       \AttributeTok{sims =} \DecValTok{100}\NormalTok{) }\CommentTok{\# better to use \textgreater{}= 1000}
 \FunctionTok{summary}\NormalTok{(sensisitivy)}
 \CommentTok{\# Mediation Sensitivity Analysis: Average Mediation Effect}
 \CommentTok{\#   Sensitivity Region: ACME for Control Group}
@@ -2800,11 +2880,7 @@ Note 2: Sensitivity analysis from the \texttt{mediation} package cannot be appli
 
 \FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{))}
 \FunctionTok{plot}\NormalTok{(sensisitivy)}
-\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{))}
-
-\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{))}
-\FunctionTok{plot}\NormalTok{(sensisitivy)}
-\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{))}
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 

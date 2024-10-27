@@ -41,6 +41,7 @@ g-computation-by-ice-using-the-ltmle-package
 sequential-g-estimator
 estimation-of-natural-direct-nde-and-indirect-effects-nie
 simple-plug-in-estimator
+using-the-cmaverse-r-package
 using-the-mediation-r-package
 estimation-of-marginal-randomizedinterventional-natural-direct-mrde-and-indirect-effects-mrie
 parametric-g-computation
