@@ -9,18 +9,22 @@ df2_int <- read.csv(file = "data/df2_int.csv")
 # ---------------------------------------------------------------------------- #
 library(ltmle)
 
-Qform <- c(Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace")
-gform <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv")
+Qform <- c(Y_death="Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5")
+gform <- c("A0_PM2.5 ~ L0_male + L0_soc_env")
 
-Psi_Ais1 <- ltmle(data = subset(df2_int, select = c(L0_male,
-                                                    L0_parent_low_educ_lv,
-                                                    A0_ace,
-                                                    Y_death)),
-                  Anodes = "A0_ace",
+data_ltmle <- subset(df2_int, select = c(L0_male,L0_soc_env,
+                                         A0_PM2.5,
+                                         Y_death))
+
+abar <- 1
+
+Psi_Ais1 <- ltmle(data_ltmle,
+                  Anodes = "A0_PM2.5",
                   Ynodes = "Y_death",
                   Qform = Qform,
                   gform = gform,
-                  abar = 1,
+                  gbounds = c(0.01, 1), # by default, g function are truncated at 0.01
+                  abar = abar,
                   SL.library = "glm",
                   variance.method = "ic")
 summary(Psi_Ais1, "tmle")
@@ -59,19 +63,19 @@ head(Psi_Ais1$IC$tmle)
 # ---------------------------------------------------------------------------- #
 ## manual calculation: ----
 # ---------------------------------------------------------------------------- #
-## 1) Estimate Qbar and predict Qbar when A0_ace is set to 1
-Q.fit <- glm(Y_death ~ A0_ace + L0_male + L0_parent_low_educ_lv,
+## 1) Estimate Qbar and predict Qbar when A0_PM2.5 is set to 1
+Q.fit <- glm(Y_death ~ A0_PM2.5 + L0_male + L0_soc_env,
              family = "binomial", data = df2_int)
 data.A1 <- df2_int
-data.A1$A0_ace <- 1
+data.A1$A0_PM2.5 <- 1
 # Qbar_Ais1 <- predict(Q.fit, newdata = data.A1, type = "response")
 logitQ <- predict(Q.fit, newdata = data.A1, type = "link")
 
 ## 2) Estimate the treatment mechanism
-g.L <- glm(A0_ace ~ L0_male + L0_parent_low_educ_lv,
+g.L <- glm(A0_PM2.5 ~ L0_male + L0_soc_env,
            family = "binomial", data = df2_int)
 
-# predict the probabilities P(A0_ace=1|L(0))
+# predict the probabilities P(A0_PM2.5=1|L(0))
 g1.L <- predict(g.L, type="response")
 head(g1.L)
 #          1          2          3          4          5          6
@@ -82,8 +86,8 @@ head(g1.L)
 
 # the predicted probability of the observed treatment A_i=a is :
 # gA.L <- rep(NA, nrow(df2_int))
-# gA.L[df2_int$A0_ace==1] <- pred.g1.L[df2_int$A0_ace==1]
-# gA.L[df2_int$A0_ace==0] <- pred.g0.L[df2_int$A0_ace==0]
+# gA.L[df2_int$A0_PM2.5==1] <- pred.g1.L[df2_int$A0_PM2.5==1]
+# gA.L[df2_int$A0_PM2.5==0] <- pred.g0.L[df2_int$A0_PM2.5==0]
 
 # its useful to check the distribution of gA.L, as values close to 0 or 1
 # (< 0.01 or > 0.999)
@@ -107,7 +111,7 @@ summary(g1.L)
 #     in front of the clever covariate.
 
 # The clever covariate H(A,L(0)) depends on g:
-H <- (df2_int$A0_ace == 1) / g1.L
+H <- (df2_int$A0_PM2.5 == 1) / g1.L
 
 
 ## 3) Update the initial fit Qbar from step 1.
@@ -139,11 +143,11 @@ Qstar.tmle <- predict(update.fit.ltmle, data = data.frame(logitQ, H), type = "re
 Psi <- mean(Qstar)
 # [1] 0.2874431
 
-Psi.tmle <- mean(Qstar.tmle)
+Psi_Ais1 <- mean(Qstar.tmle)
 # [1] 0.2871408 # as with the ltmle package
 
 ## 5) Calculate standard errors based on the influence curve of the TMLE
-IC <- H * (df2_int$Y_death - Qstar.tmle) + Qstar.tmle - Psi.tmle
+IC <- H * (df2_int$Y_death - Qstar.tmle) + Qstar.tmle - Psi_Ais1
 head(IC)
 # 0.0001003559  4.2532581791  0.0569935644 -0.0280052148  0.0569935644  0.056993564
 # standard error can be estimated by :
@@ -201,7 +205,7 @@ SL.library <- list(Q=c("SL.mean","SL.glm","SL.interaction.back", "SL.xgboost.cus
 
 set.seed(42)
 Psi_ATE_tmle <- ltmle(data = data_ltmle,
-                      Anodes = "A0_ace",
+                      Anodes = "A0_PM2.5",
                       Ynodes = "Y_death",
                       Qform = Qform,
                       gform = gform,
@@ -209,7 +213,7 @@ Psi_ATE_tmle <- ltmle(data = data_ltmle,
                       abar = list(1,0), # vector of the counterfactual treatment
                       SL.library = SL.library,
                       variance.method = "ic")
-summary(Psi_ATE_tmle)
+summary(Psi_ATE_tmle, estimator = "tmle")
 # The function give the ATE on the difference scale (as well, as RR and OR)
 # Additive Treatment Effect:
 # Parameter Estimate:  0.081832
@@ -219,7 +223,7 @@ summary(Psi_ATE_tmle)
 
 ## We can see how the SuperLearner used the algorithms for the g function
 Psi_ATE_tmle$fit$g
-# [[1]]$A0_ace
+# [[1]]$A0_PM2.5
 #                               Risk        Coef
 # SL.mean_All             0.09976892 0.003545569 # risk is higher for the bad model
 # SL.glm_All              0.09865424 0.416238369
@@ -256,18 +260,17 @@ library(ltmle)
 # take it into account.
 # Another option is to indicate prediction algorithms well adapted to the estimation
 # of interaction phenomena into the SuperLearner arguments.
-Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
-           Y_death="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
-                    A0_ace * M_smoking")
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5",
+           Y_death="Q.kplus1 ~ L0_male + L0_soc_env + L1 + A0_PM2.5 * M_diabetes")
 
 # we define the formulas for the estimation of the 2 g function
-gform <- c("A0_ace ~ L0_male + L0_parent_low_educ_lv",
-           "M_smoking ~ L0_male + L0_parent_low_educ_lv + A0_ace + L1")
+gform <- c("A0_PM2.5 ~ L0_male + L0_soc_env",
+           "M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1")
 
 # the data frame should follow the time-ordering of the nodes
-data_binary <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
-                                          A0_ace, L1,
-                                          M_smoking, Y_death))
+data_binary <- subset(df2_int, select = c(L0_male, L0_soc_env,
+                                          A0_PM2.5, L1,
+                                          M_diabetes, Y_death))
 
 
 
@@ -278,7 +281,7 @@ SL.library <- list(Q=c("SL.mean","SL.glm","SL.step.interaction","SL.xgboost"),
 set.seed(42)
 ## CDE, setting M=0
 CDE_ltmle_M0_death <- ltmle(data = data_binary,
-                            Anodes = c("A0_ace", "M_smoking"),
+                            Anodes = c("A0_PM2.5", "M_diabetes"),
                             Lnodes = c("L1"), # intermediate confounders +/- baseline
                             Ynodes = c("Y_death"),
                             survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
@@ -301,7 +304,7 @@ summary(CDE_ltmle_M0_death)
 ## CDE, setting M=1
 set.seed(42)
 CDE_ltmle_M1_death <- ltmle(data = data_binary,
-                            Anodes = c("A0_ace", "M_smoking"),
+                            Anodes = c("A0_PM2.5", "M_diabetes"),
                             Lnodes = c("L1"), # intermediate confounders +/- baseline
                             Ynodes = c("Y_death"),
                             survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
@@ -323,18 +326,18 @@ summary(CDE_ltmle_M1_death)
 # ---------------------------------------------------------------------------- #
 ## CDE for continuous outcomes ----
 # ---------------------------------------------------------------------------- #
-data_continuous <- subset(df2_int, select = c(L0_male, L0_parent_low_educ_lv,
-                                              A0_ace, L1,
-                                              M_smoking, Y_qol))
+data_continuous <- subset(df2_int, select = c(L0_male, L0_soc_env,
+                                              A0_PM2.5, L1,
+                                              M_diabetes, Y_qol))
 
-Qform <- c(L1="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + A0_ace",
-           Y_qol="Q.kplus1 ~ L0_male + L0_parent_low_educ_lv + L1 +
-                    A0_ace * M_smoking")
+Qform <- c(L1="Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5",
+           Y_qol="Q.kplus1 ~ L0_male + L0_soc_env + L1 +
+                    A0_PM2.5 * M_diabetes")
 
 set.seed(42)
 ## CDE, setting M=0
 CDE_ltmle_M0_qol <- ltmle(data = data_continuous,
-                      Anodes = c("A0_ace", "M_smoking"),
+                      Anodes = c("A0_PM2.5", "M_diabetes"),
                       Lnodes = c("L1"), # intermediate confounders +/- baseline confounders
                       Ynodes = c("Y_qol"),
                       survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y
@@ -356,7 +359,7 @@ summary(CDE_ltmle_M0_qol)
 ## CDE, setting M=1
 set.seed(42)
 CDE_ltmle_M1_qol <- ltmle(data = data_continuous,
-                          Anodes = c("A0_ace", "M_smoking"),
+                          Anodes = c("A0_PM2.5", "M_diabetes"),
                           Lnodes = c("L1"), # intermediate confounders +/- baseline
                           Ynodes = c("Y_qol"),
                           survivalOutcome = FALSE, # TRUE for time-to-event outcomes Y

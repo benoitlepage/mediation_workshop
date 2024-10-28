@@ -6730,19 +6730,19 @@ The variance of the target parameter can then be calculated using the variance o
 \FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
 \NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df2\_int.csv"}\NormalTok{)}
 
-\DocumentationTok{\#\# 1) Estimate Qbar and predict Qbar when A0\_ace is set to 1}
-\NormalTok{Q.fit }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_ace }\SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\DocumentationTok{\#\# 1) Estimate Qbar and predict Qbar when A0\_PM2.5 is set to 1}
+\NormalTok{Q.fit }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
              \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
 \NormalTok{data.A1 }\OtherTok{\textless{}{-}}\NormalTok{ df2\_int}
-\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{A0\_ace }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{data.A1}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \OtherTok{\textless{}{-}} \DecValTok{1}
 
 \CommentTok{\# predict the Qvar function when setting the exposure to A=1, on the logit scale}
-\NormalTok{logit\_Qbar\_Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.fit, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type =} \StringTok{"link"}\NormalTok{)}
+\NormalTok{logitQ }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(Q.fit, }\AttributeTok{newdata =}\NormalTok{ data.A1, }\AttributeTok{type =} \StringTok{"link"}\NormalTok{)}
 
 \DocumentationTok{\#\# 2) Estimate the treatment mechanism}
-\NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_ace }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_parent\_low\_educ\_lv,}
+\NormalTok{g.L }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(A0\_PM2}\FloatTok{.5} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env,}
            \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\CommentTok{\# predict the probabilities g(A=1 | L(0)) = P(A0\_ace=1|L(0))}
+\CommentTok{\# predict the probabilities g(A=1 | L(0)) = P(A0\_PM2.5=1|L(0))}
 \NormalTok{g1.L }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(g.L, }\AttributeTok{type=}\StringTok{"response"}\NormalTok{)}
 
 \FunctionTok{head}\NormalTok{(g1.L)}
@@ -6763,7 +6763,7 @@ The variance of the target parameter can then be calculated using the variance o
 \CommentTok{\# The fluctuation model is a model of logitQbar and g(A=1|L(0)) }
 
 \CommentTok{\# The clever covariate H(A,L(0)) depends on g(A=1|L(0)):}
-\NormalTok{H }\OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{A0\_ace }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ g1.L}
+\NormalTok{H }\OtherTok{\textless{}{-}}\NormalTok{ (df2\_int}\SpecialCharTok{$}\NormalTok{A0\_PM2}\FloatTok{.5} \SpecialCharTok{==} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ g1.L}
 
 \CommentTok{\# Update the initial fit Qbar from step 1.}
 \CommentTok{\# This is achieved by holding Qbar fixed (as intercept) while estimating the}
@@ -6776,6 +6776,7 @@ The variance of the target parameter can then be calculated using the variance o
 \CommentTok{\# Coefficients:}
 \CommentTok{\#   H}
 \CommentTok{\# {-}0.0001756}
+\NormalTok{Qstar }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(update.fit, }\AttributeTok{data =} \FunctionTok{data.frame}\NormalTok{(logitQ, H), }\AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 
 \CommentTok{\# In the ltmle package, the fluctuation parametric model is slightly different}
 \CommentTok{\# (but with the same purpose). The "clever covariate" H is scaled and used as a }
@@ -6793,6 +6794,7 @@ The variance of the target parameter can then be calculated using the variance o
                       \AttributeTok{data =} \FunctionTok{data.frame}\NormalTok{(logitQ, H), }
                       \AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
 
+
 \FunctionTok{head}\NormalTok{(Qstar.tmle)}
 \CommentTok{\#         1         2         3         4         5         6 }
 \CommentTok{\# 0.2872412 0.3441344 0.3441344 0.2591356 0.3441344 0.3441344}
@@ -6806,7 +6808,7 @@ The variance of the target parameter can then be calculated using the variance o
 \FunctionTok{head}\NormalTok{(IC)}
 \CommentTok{\# 0.0001003559  4.2532581791  0.0569935644 {-}0.0280052148  0.0569935644  0.056993564}
 
-\CommentTok{\# Teh standard error of the target parameter Psi(A=1) can be estimated by :}
+\CommentTok{\# The standard error of the target parameter Psi(A=1) can be estimated by :}
 \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{var}\NormalTok{(IC)}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(df2\_int))}
 \CommentTok{\# [1] 0.01383821}
 \end{Highlighting}
@@ -6823,20 +6825,19 @@ We can see that we can get the same output using the \texttt{ltmle} package:
 \NormalTok{?ltmle}
 
 \CommentTok{\# The Qform and gform arguments are defined from the DAG}
-\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{)}
-\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env"}\NormalTok{)}
 
 \CommentTok{\# in the ltmle package, the data set should be formated so that the order of the }
 \CommentTok{\# columns corresponds to the time{-}ordering of the model}
-\NormalTok{data\_ltmle }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male,L0\_parent\_low\_educ\_lv,}
-\NormalTok{                                         A0\_ace,}
-\NormalTok{                                         Y\_death))}
+\NormalTok{data\_ltmle }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }
+                     \AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_soc\_env, A0\_PM2}\FloatTok{.5}\NormalTok{, Y\_death))}
 
 \CommentTok{\# the counterfactual intervention is defined in the abar argument}
 \NormalTok{abar }\OtherTok{\textless{}{-}} \DecValTok{1}
 
-\NormalTok{Psi\_Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_ltmle,}
-                  \AttributeTok{Anodes =} \StringTok{"A0\_ace"}\NormalTok{,}
+\NormalTok{Psi\_Ais1 }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(data\_ltmle,}
+                  \AttributeTok{Anodes =} \StringTok{"A0\_PM2.5"}\NormalTok{,}
                   \AttributeTok{Ynodes =} \StringTok{"Y\_death"}\NormalTok{,}
                   \AttributeTok{Qform =}\NormalTok{ Qform,}
                   \AttributeTok{gform =}\NormalTok{ gform,}
@@ -6947,12 +6948,12 @@ The \texttt{SuperLearner} package includes a set of algorithms with default para
 
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
 \NormalTok{Psi\_ATE\_tmle }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_ltmle,}
-                      \AttributeTok{Anodes =} \StringTok{"A0\_ace"}\NormalTok{,}
+                      \AttributeTok{Anodes =} \StringTok{"A0\_PM2.5"}\NormalTok{,}
                       \AttributeTok{Ynodes =} \StringTok{"Y\_death"}\NormalTok{,}
                       \AttributeTok{Qform =}\NormalTok{ Qform,}
                       \AttributeTok{gform =}\NormalTok{ gform,}
                       \AttributeTok{gbounds =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.01}\NormalTok{, }\DecValTok{1}\NormalTok{),}
-                      \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# vector of the counterfactual treatment }
+                      \AttributeTok{abar =} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{), }\CommentTok{\# vector of the counterfactual treatment}
                       \AttributeTok{SL.library =}\NormalTok{ SL.library,}
                       \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
 \FunctionTok{summary}\NormalTok{(Psi\_ATE\_tmle, }\AttributeTok{estimator =} \StringTok{"tmle"}\NormalTok{)}
@@ -6965,7 +6966,7 @@ The \texttt{SuperLearner} package includes a set of algorithms with default para
 
 \DocumentationTok{\#\# We can see how the SuperLearner used the algorithms for the g function}
 \NormalTok{Psi\_ATE\_tmle}\SpecialCharTok{$}\NormalTok{fit}\SpecialCharTok{$}\NormalTok{g}
-\CommentTok{\# [[1]]$A0\_ace}
+\CommentTok{\# [[1]]$A0\_PM2.5}
 \CommentTok{\#                               Risk        Coef}
 \CommentTok{\# SL.mean\_All             0.09976892 0.003545569 \# risk is higher for the bad model}
 \CommentTok{\# SL.glm\_All              0.09865424 0.416238369}
@@ -6994,14 +6995,15 @@ The \texttt{SuperLearner} package includes a set of algorithms with default para
 
 \DocumentationTok{\#\# The \textasciigrave{}ltmle\textasciigrave{} package can also be used to estimate the effect of binary exposures}
 \DocumentationTok{\#\# on continous outcomes}
-\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{Y\_qol=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{)}
-\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{Y\_qol=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env"}\NormalTok{)}
 
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
-\NormalTok{Psi\_ATE\_tmle\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male,L0\_parent\_low\_educ\_lv,}
-\NormalTok{                                         A0\_ace,}
+\NormalTok{Psi\_ATE\_tmle\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =} \FunctionTok{subset}\NormalTok{(df2\_int, }
+                                        \AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male,L0\_soc\_env,}
+\NormalTok{                                         A0\_PM2}\FloatTok{.5}\NormalTok{,}
 \NormalTok{                                         Y\_qol)),}
-                      \AttributeTok{Anodes =} \StringTok{"A0\_ace"}\NormalTok{,}
+                      \AttributeTok{Anodes =} \StringTok{"A0\_PM2.5"}\NormalTok{,}
                       \AttributeTok{Ynodes =} \StringTok{"Y\_qol"}\NormalTok{,}
                       \AttributeTok{Qform =}\NormalTok{ Qform,}
                       \AttributeTok{gform =}\NormalTok{ gform,}
@@ -7084,18 +7086,18 @@ Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome
 \CommentTok{\# take it into account.}
 \CommentTok{\# Another option is to indicate prediction algorithms well adapted to the estimation}
 \CommentTok{\# of interaction phenomena into the SuperLearner arguments.}
-\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{,}
-           \AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + L1 +}
-\StringTok{                    A0\_ace * M\_smoking"}\NormalTok{)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5"}\NormalTok{,}
+           \AttributeTok{Y\_death=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + L1 +}
+\StringTok{                    A0\_PM2.5 * M\_diabetes"}\NormalTok{)}
 
 \CommentTok{\# Define the formulas for the estimation of the 2 g function}
-\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv"}\NormalTok{,}
-           \StringTok{"M\_smoking \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace + L1"}\NormalTok{)}
+\NormalTok{gform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5 \textasciitilde{} L0\_male + L0\_soc\_env"}\NormalTok{,}
+           \StringTok{"M\_diabetes \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5 + L1"}\NormalTok{)}
 
 \CommentTok{\# The data frame should follow the time{-}ordering of the nodes}
-\NormalTok{data\_binary }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_parent\_low\_educ\_lv,}
-\NormalTok{                                          A0\_ace, L1,}
-\NormalTok{                                          M\_smoking, Y\_death))}
+\NormalTok{data\_binary }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_soc\_env,}
+\NormalTok{                                          A0\_PM2}\FloatTok{.5}\NormalTok{, L1,}
+\NormalTok{                                          M\_diabetes, Y\_death))}
 
 
 
@@ -7107,7 +7109,7 @@ Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome
 \DocumentationTok{\#\# CDE, setting M=0}
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{) }\CommentTok{\# for reproducibility (xgboost algorithm relies on random procedures)}
 \NormalTok{CDE\_ltmle\_M0\_death }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
-                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
                             \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
                             \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
                             \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
@@ -7122,6 +7124,7 @@ Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome
                                                     \CommentTok{\# be estimated with}
                                                     \CommentTok{\# variance.method = "tmle"}
 \FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M0\_death)}
+\CommentTok{\# Additive Treatment Effect:}
 \CommentTok{\# Parameter Estimate:  0.056766}
 \CommentTok{\#  Estimated Std Err:  0.018037}
 \CommentTok{\#            p{-}value:  0.0016488}
@@ -7130,7 +7133,7 @@ Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome
 \DocumentationTok{\#\# CDE, setting M=1}
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{) }\CommentTok{\# for reproducibility}
 \NormalTok{CDE\_ltmle\_M1\_death }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_binary,}
-                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                            \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
                             \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
                             \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_death"}\NormalTok{),}
                             \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
@@ -7143,6 +7146,7 @@ Note: for continuous outcomes, the \texttt{ltmle} package transforms the outcome
                             \AttributeTok{gcomp =} \ConstantTok{FALSE}\NormalTok{,}
                             \AttributeTok{variance.method =} \StringTok{"ic"}\NormalTok{)}
 \FunctionTok{summary}\NormalTok{(CDE\_ltmle\_M1\_death)}
+\CommentTok{\# Additive Treatment Effect:}
 \CommentTok{\# Parameter Estimate:  0.094776}
 \CommentTok{\#  Estimated Std Err:  0.024}
 \CommentTok{\#            p{-}value:  7.8496e{-}05}
@@ -7159,19 +7163,19 @@ The controlled direct effect of ACE on the probability of death, had the mediato
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Define the data set with the continuous outcome Y\_qol}
-\NormalTok{data\_continuous }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_parent\_low\_educ\_lv,}
-\NormalTok{                                              A0\_ace, L1,}
-\NormalTok{                                              M\_smoking, Y\_qol))}
+\NormalTok{data\_continuous }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df2\_int, }\AttributeTok{select =} \FunctionTok{c}\NormalTok{(L0\_male, L0\_soc\_env,}
+\NormalTok{                                              A0\_PM2}\FloatTok{.5}\NormalTok{, L1,}
+\NormalTok{                                              M\_diabetes, Y\_qol))}
 
 \CommentTok{\# Replace the Qbar function (the 2d formula should be named Y\_qol instead of Y\_death)}
-\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + A0\_ace"}\NormalTok{,}
-           \AttributeTok{Y\_qol=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_parent\_low\_educ\_lv + L1 +}
-\StringTok{                    A0\_ace * M\_smoking"}\NormalTok{)}
+\NormalTok{Qform }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\AttributeTok{L1=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + A0\_PM2.5"}\NormalTok{,}
+           \AttributeTok{Y\_qol=}\StringTok{"Q.kplus1 \textasciitilde{} L0\_male + L0\_soc\_env + L1 +}
+\StringTok{                    A0\_PM2.5 * M\_diabetes"}\NormalTok{)}
 
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
 \DocumentationTok{\#\# CDE, setting M=0}
 \NormalTok{CDE\_ltmle\_M0\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_continuous,}
-                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                      \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
                       \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline confounders}
                       \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_qol"}\NormalTok{),}
                       \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
@@ -7193,7 +7197,7 @@ The controlled direct effect of ACE on the probability of death, had the mediato
 \DocumentationTok{\#\# CDE, setting M=1}
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{42}\NormalTok{)}
 \NormalTok{CDE\_ltmle\_M1\_qol }\OtherTok{\textless{}{-}} \FunctionTok{ltmle}\NormalTok{(}\AttributeTok{data =}\NormalTok{ data\_continuous,}
-                          \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_ace"}\NormalTok{, }\StringTok{"M\_smoking"}\NormalTok{),}
+                          \AttributeTok{Anodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"A0\_PM2.5"}\NormalTok{, }\StringTok{"M\_diabetes"}\NormalTok{),}
                           \AttributeTok{Lnodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"L1"}\NormalTok{), }\CommentTok{\# intermediate confounders +/{-} baseline}
                           \AttributeTok{Ynodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"Y\_qol"}\NormalTok{),}
                           \AttributeTok{survivalOutcome =} \ConstantTok{FALSE}\NormalTok{, }\CommentTok{\# TRUE for time{-}to{-}event outcomes Y}
