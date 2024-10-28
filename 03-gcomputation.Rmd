@@ -173,7 +173,7 @@ L1.model <- glm(L1 ~ L0_male + L0_soc_env + A0_PM2.5,
 Y.death.model <- glm(Y_death ~ L0_male + L0_soc_env + A0_PM2.5 + L1 + 
                        M_diabetes + A0_PM2.5:M_diabetes, 
                      family = "binomial", data = df2_int)
-                      family = "binomial", data = df2_int)
+
 Y.qol.model <- glm(Y_qol ~ L0_male + L0_soc_env + A0_PM2.5 + L1 + 
                      M_diabetes + A0_PM2.5:M_diabetes, 
                    family = "gaussian", data = df2_int)
@@ -359,7 +359,8 @@ An application is shown below.
 
 ```{r gcomp_ltmle, echo=TRUE, eval = FALSE}
 library(ltmle)
-df2_int <- read.csv(file = "df2_int.csv")
+rm(list=ls())
+df2_int <- read.csv(file = "./data/df2_int.csv")
 
 # the data set should be composed of continuous or binary variables,
 # ordered following the cause-effect sequence of each variables.
@@ -1366,9 +1367,9 @@ res_gformula_Qol_M0$effect.pe["rpnie"]
 # rPNIE = -1.40641
 
 ## Check that MI = rTNIE - rPNIE = rTNDE - rPNDE
-(res_gformula_Qol$effect.pe["rtnie"] - res_gformula_Qol$effect.pe["rpnie"])
+(res_gformula_Qol_M0$effect.pe["rtnie"] - res_gformula_Qol_M0$effect.pe["rpnie"])
 # -0.897894
-(res_gformula_Qol$effect.pe["rtnde"] - res_gformula_Qol$effect.pe["rpnde"])
+(res_gformula_Qol_M0$effect.pe["rtnde"] - res_gformula_Qol_M0$effect.pe["rpnde"])
 # -0.897894
 res_gformula_Qol_M0$effect.pe["rintmed"]
 # -0.897894 # we have MI = rTNIE - rPNIE = rTNDE - rPNDE

@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-27" />
+<meta name="date" content="2024-10-28" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -476,7 +476,7 @@ div.csl-indent {
 <span id="cb27-10"><a href="ChapGcomp.html#cb27-10" tabindex="-1"></a>Y.death.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_death <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span> </span>
 <span id="cb27-11"><a href="ChapGcomp.html#cb27-11" tabindex="-1"></a>                       M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes, </span>
 <span id="cb27-12"><a href="ChapGcomp.html#cb27-12" tabindex="-1"></a>                     <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">data =</span> df2_int)</span>
-<span id="cb27-13"><a href="ChapGcomp.html#cb27-13" tabindex="-1"></a>                      family <span class="ot">=</span> <span class="st">&quot;binomial&quot;</span>, data <span class="ot">=</span> df2_int<span class="er">)</span></span>
+<span id="cb27-13"><a href="ChapGcomp.html#cb27-13" tabindex="-1"></a></span>
 <span id="cb27-14"><a href="ChapGcomp.html#cb27-14" tabindex="-1"></a>Y.qol.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_qol <span class="sc">~</span> L0_male <span class="sc">+</span> L0_soc_env <span class="sc">+</span> A0_PM2<span class="fl">.5</span> <span class="sc">+</span> L1 <span class="sc">+</span> </span>
 <span id="cb27-15"><a href="ChapGcomp.html#cb27-15" tabindex="-1"></a>                     M_diabetes <span class="sc">+</span> A0_PM2<span class="fl">.5</span><span class="sc">:</span>M_diabetes, </span>
 <span id="cb27-16"><a href="ChapGcomp.html#cb27-16" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="at">data =</span> df2_int)</span>
@@ -649,123 +649,124 @@ div.csl-indent {
 <p>The <code>ltmle</code> package can be used to estimate Controlled Direct Effects by g-computation.</p>
 <p>An application is shown below.</p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="ChapGcomp.html#cb29-1" tabindex="-1"></a><span class="fu">library</span>(ltmle)</span>
-<span id="cb29-2"><a href="ChapGcomp.html#cb29-2" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;df2_int.csv&quot;</span>)</span>
-<span id="cb29-3"><a href="ChapGcomp.html#cb29-3" tabindex="-1"></a></span>
-<span id="cb29-4"><a href="ChapGcomp.html#cb29-4" tabindex="-1"></a><span class="co"># the data set should be composed of continuous or binary variables,</span></span>
-<span id="cb29-5"><a href="ChapGcomp.html#cb29-5" tabindex="-1"></a><span class="co"># ordered following the cause-effect sequence of each variables.</span></span>
-<span id="cb29-6"><a href="ChapGcomp.html#cb29-6" tabindex="-1"></a><span class="co"># Note that within a set of exposures or intermediate confounders measured at a</span></span>
-<span id="cb29-7"><a href="ChapGcomp.html#cb29-7" tabindex="-1"></a><span class="co"># single discrete time t, any causal sequence can be applied (for example,</span></span>
-<span id="cb29-8"><a href="ChapGcomp.html#cb29-8" tabindex="-1"></a><span class="co"># with several L1 variable, it can be {L1.1, L1.2, L1.3} or {L1.2,L1.3,L1.1},</span></span>
-<span id="cb29-9"><a href="ChapGcomp.html#cb29-9" tabindex="-1"></a><span class="co"># without any consequences on the estimation.</span></span>
-<span id="cb29-10"><a href="ChapGcomp.html#cb29-10" tabindex="-1"></a>df.death <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="sc">-</span>Y_qol)</span>
-<span id="cb29-11"><a href="ChapGcomp.html#cb29-11" tabindex="-1"></a>df.qol <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="sc">-</span>Y_death)</span>
-<span id="cb29-12"><a href="ChapGcomp.html#cb29-12" tabindex="-1"></a></span>
-<span id="cb29-13"><a href="ChapGcomp.html#cb29-13" tabindex="-1"></a><span class="do">## 1) Define Q formulas (Qbar_L1 and Qbar_Y functions)</span></span>
-<span id="cb29-14"><a href="ChapGcomp.html#cb29-14" tabindex="-1"></a>Q_formulas.death <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1 =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5&quot;</span>,</span>
-<span id="cb29-15"><a href="ChapGcomp.html#cb29-15" tabindex="-1"></a>                      <span class="at">Y_death =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + L1 +</span></span>
-<span id="cb29-16"><a href="ChapGcomp.html#cb29-16" tabindex="-1"></a><span class="st">                                 A0_PM2.5 * M_diabetes&quot;</span>) <span class="co"># add interaction</span></span>
-<span id="cb29-17"><a href="ChapGcomp.html#cb29-17" tabindex="-1"></a>Q_formulas.qol <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1 =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5&quot;</span>,</span>
-<span id="cb29-18"><a href="ChapGcomp.html#cb29-18" tabindex="-1"></a>                    <span class="at">Y_qol =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + L1 +</span></span>
-<span id="cb29-19"><a href="ChapGcomp.html#cb29-19" tabindex="-1"></a><span class="st">                             A0_PM2.5 * M_diabetes&quot;</span>) <span class="co"># add interaction</span></span>
-<span id="cb29-20"><a href="ChapGcomp.html#cb29-20" tabindex="-1"></a><span class="do">## 2) Define g formulas (needed for the ltmle package) but they are not used</span></span>
-<span id="cb29-21"><a href="ChapGcomp.html#cb29-21" tabindex="-1"></a><span class="co">#    with the g-computation estimator</span></span>
-<span id="cb29-22"><a href="ChapGcomp.html#cb29-22" tabindex="-1"></a>g_formulas <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_PM2.5 ~ L0_male + L0_soc_env&quot;</span>, </span>
-<span id="cb29-23"><a href="ChapGcomp.html#cb29-23" tabindex="-1"></a>                <span class="st">&quot;M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1&quot;</span>)</span>
-<span id="cb29-24"><a href="ChapGcomp.html#cb29-24" tabindex="-1"></a></span>
-<span id="cb29-25"><a href="ChapGcomp.html#cb29-25" tabindex="-1"></a><span class="do">## 3) Use the ltmle() function</span></span>
-<span id="cb29-26"><a href="ChapGcomp.html#cb29-26" tabindex="-1"></a><span class="co"># arguments:</span></span>
-<span id="cb29-27"><a href="ChapGcomp.html#cb29-27" tabindex="-1"></a><span class="co">#  - Anodes: indicate the exposure and the mediator variables</span></span>
-<span id="cb29-28"><a href="ChapGcomp.html#cb29-28" tabindex="-1"></a><span class="co">#  - Lnodes: indicate the intermediate confounders (+/- baseline confounders)</span></span>
-<span id="cb29-29"><a href="ChapGcomp.html#cb29-29" tabindex="-1"></a><span class="co">#  - Cnodes: censoring nodes, useless in our example</span></span>
-<span id="cb29-30"><a href="ChapGcomp.html#cb29-30" tabindex="-1"></a><span class="co">#  - Ynodes: outcome variable</span></span>
-<span id="cb29-31"><a href="ChapGcomp.html#cb29-31" tabindex="-1"></a><span class="co">#  - survivalOutcome = FALSE in our example</span></span>
-<span id="cb29-32"><a href="ChapGcomp.html#cb29-32" tabindex="-1"></a><span class="co">#  - abar: list of the two values used to define counterfactual outcomes</span></span>
-<span id="cb29-33"><a href="ChapGcomp.html#cb29-33" tabindex="-1"></a><span class="co">#          for the contrast of interest. For example, setting M=0,</span></span>
-<span id="cb29-34"><a href="ChapGcomp.html#cb29-34" tabindex="-1"></a><span class="co">#          CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})</span></span>
-<span id="cb29-35"><a href="ChapGcomp.html#cb29-35" tabindex="-1"></a><span class="co">#  - rule: to define dynamic rules (useless in our example)</span></span>
-<span id="cb29-36"><a href="ChapGcomp.html#cb29-36" tabindex="-1"></a><span class="co">#  - gbounds = c(0.01, 1) by default. This parameter is not used with g-computation</span></span>
-<span id="cb29-37"><a href="ChapGcomp.html#cb29-37" tabindex="-1"></a><span class="co">#  - Yrange = NULL, can be used to define range (min,max) for continuous outcomes</span></span>
-<span id="cb29-38"><a href="ChapGcomp.html#cb29-38" tabindex="-1"></a><span class="co">#  - SL.library = &quot;glm&quot;,  will apply main terms glm models.</span></span>
-<span id="cb29-39"><a href="ChapGcomp.html#cb29-39" tabindex="-1"></a><span class="co">#                 The argument can be used to specify SuperLearner libraries.</span></span>
-<span id="cb29-40"><a href="ChapGcomp.html#cb29-40" tabindex="-1"></a><span class="co">#                 However, simple glm models might be preferable as data.adaptive</span></span>
-<span id="cb29-41"><a href="ChapGcomp.html#cb29-41" tabindex="-1"></a><span class="co">#                 algorithms rely on cross-validation, which is difficult and long to</span></span>
-<span id="cb29-42"><a href="ChapGcomp.html#cb29-42" tabindex="-1"></a><span class="co">#                 implement with the bootstrap procedure needed for 95% confidence</span></span>
-<span id="cb29-43"><a href="ChapGcomp.html#cb29-43" tabindex="-1"></a><span class="co">#                 intervals</span></span>
-<span id="cb29-44"><a href="ChapGcomp.html#cb29-44" tabindex="-1"></a><span class="co">#  - stratify = FALSE by default. If TRUE, glm estimations are stratified for</span></span>
-<span id="cb29-45"><a href="ChapGcomp.html#cb29-45" tabindex="-1"></a><span class="co">#               each counterfactual scenario defined in abar.</span></span>
-<span id="cb29-46"><a href="ChapGcomp.html#cb29-46" tabindex="-1"></a><span class="co">#  - estimate.time = FALSE. If TRUE, print a rough estimate of computation time</span></span>
-<span id="cb29-47"><a href="ChapGcomp.html#cb29-47" tabindex="-1"></a><span class="co">#  - iptw.only = FALSE, useless with g-computation</span></span>
-<span id="cb29-48"><a href="ChapGcomp.html#cb29-48" tabindex="-1"></a><span class="co">#  - variance.method = &quot;ic&quot;, computation is faster than with &quot;tmle&quot; which</span></span>
-<span id="cb29-49"><a href="ChapGcomp.html#cb29-49" tabindex="-1"></a><span class="co">#  -                     is useless with g-comp: variance estimates rely on</span></span>
-<span id="cb29-50"><a href="ChapGcomp.html#cb29-50" tabindex="-1"></a><span class="co">#                        influence curves which cannot be used with g-comp because</span></span>
-<span id="cb29-51"><a href="ChapGcomp.html#cb29-51" tabindex="-1"></a><span class="co">#                       g-computation is not a asymptotically efficient estimator.</span></span>
-<span id="cb29-52"><a href="ChapGcomp.html#cb29-52" tabindex="-1"></a><span class="co">#  - observation.weights = NULL, can be used to specify individual weights</span></span>
-<span id="cb29-53"><a href="ChapGcomp.html#cb29-53" tabindex="-1"></a></span>
-<span id="cb29-54"><a href="ChapGcomp.html#cb29-54" tabindex="-1"></a><span class="do">## With a binary outcome, CDE(M=1) = P(Y_{A=1,M=0} = 1) - P(Y_{A=0,M=0} = 1)</span></span>
-<span id="cb29-55"><a href="ChapGcomp.html#cb29-55" tabindex="-1"></a>ltmle.gcomp.CDE.M0 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> df.death,</span>
-<span id="cb29-56"><a href="ChapGcomp.html#cb29-56" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_PM2.5&quot;</span>, <span class="st">&quot;M_diabetes&quot;</span>),</span>
-<span id="cb29-57"><a href="ChapGcomp.html#cb29-57" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>),</span>
-<span id="cb29-58"><a href="ChapGcomp.html#cb29-58" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>), <span class="co"># binary outcome</span></span>
-<span id="cb29-59"><a href="ChapGcomp.html#cb29-59" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-60"><a href="ChapGcomp.html#cb29-60" tabindex="-1"></a>                            <span class="at">Qform =</span> Q_formulas.death, <span class="co"># Q formulas</span></span>
-<span id="cb29-61"><a href="ChapGcomp.html#cb29-61" tabindex="-1"></a>                            <span class="at">gform =</span> g_formulas, <span class="co"># g formulas</span></span>
-<span id="cb29-62"><a href="ChapGcomp.html#cb29-62" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># Y_{A=1,M=0} vs Y_{A=0,M=0}</span></span>
-<span id="cb29-63"><a href="ChapGcomp.html#cb29-63" tabindex="-1"></a>                            <span class="at">rule =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-64"><a href="ChapGcomp.html#cb29-64" tabindex="-1"></a>                            <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>), <span class="co"># by default</span></span>
-<span id="cb29-65"><a href="ChapGcomp.html#cb29-65" tabindex="-1"></a>                            <span class="at">Yrange =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-66"><a href="ChapGcomp.html#cb29-66" tabindex="-1"></a>                            <span class="at">deterministic.g.function =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-67"><a href="ChapGcomp.html#cb29-67" tabindex="-1"></a>                            <span class="at">stratify =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-68"><a href="ChapGcomp.html#cb29-68" tabindex="-1"></a>                            <span class="at">SL.library =</span> <span class="st">&quot;glm&quot;</span>,</span>
-<span id="cb29-69"><a href="ChapGcomp.html#cb29-69" tabindex="-1"></a>                            <span class="at">SL.cvControl =</span> <span class="fu">list</span>(),</span>
-<span id="cb29-70"><a href="ChapGcomp.html#cb29-70" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-71"><a href="ChapGcomp.html#cb29-71" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># should be TRUE for g-computation</span></span>
-<span id="cb29-72"><a href="ChapGcomp.html#cb29-72" tabindex="-1"></a>                            <span class="at">iptw.only =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-73"><a href="ChapGcomp.html#cb29-73" tabindex="-1"></a>                            <span class="at">deterministic.Q.function =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-74"><a href="ChapGcomp.html#cb29-74" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>,</span>
-<span id="cb29-75"><a href="ChapGcomp.html#cb29-75" tabindex="-1"></a>                            <span class="at">observation.weights =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-76"><a href="ChapGcomp.html#cb29-76" tabindex="-1"></a>                            <span class="at">id =</span> <span class="cn">NULL</span>)</span>
-<span id="cb29-77"><a href="ChapGcomp.html#cb29-77" tabindex="-1"></a><span class="fu">summary</span>(ltmle.gcomp.CDE.M0)</span>
-<span id="cb29-78"><a href="ChapGcomp.html#cb29-78" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb29-79"><a href="ChapGcomp.html#cb29-79" tabindex="-1"></a><span class="co">#   Parameter Estimate:  0.063428 # same as manual computation</span></span>
-<span id="cb29-80"><a href="ChapGcomp.html#cb29-80" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.018159</span></span>
-<span id="cb29-81"><a href="ChapGcomp.html#cb29-81" tabindex="-1"></a><span class="co">#              p-value:  0.00047789</span></span>
-<span id="cb29-82"><a href="ChapGcomp.html#cb29-82" tabindex="-1"></a><span class="co">#    95% Conf Interval: (0.027836, 0.09902) # those 95%CI should not be used</span></span>
-<span id="cb29-83"><a href="ChapGcomp.html#cb29-83" tabindex="-1"></a><span class="co">#                      =&gt; apply a bootstrap computation instead</span></span>
-<span id="cb29-84"><a href="ChapGcomp.html#cb29-84" tabindex="-1"></a></span>
-<span id="cb29-85"><a href="ChapGcomp.html#cb29-85" tabindex="-1"></a><span class="do">## With a continuous outcome, CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})</span></span>
-<span id="cb29-86"><a href="ChapGcomp.html#cb29-86" tabindex="-1"></a>ltmle.gcomp.CDE.M1 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> df.qol,</span>
-<span id="cb29-87"><a href="ChapGcomp.html#cb29-87" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_PM2.5&quot;</span>, <span class="st">&quot;M_diabetes&quot;</span>),</span>
-<span id="cb29-88"><a href="ChapGcomp.html#cb29-88" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>),</span>
-<span id="cb29-89"><a href="ChapGcomp.html#cb29-89" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_qol&quot;</span>), <span class="co"># continous outcome</span></span>
-<span id="cb29-90"><a href="ChapGcomp.html#cb29-90" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-91"><a href="ChapGcomp.html#cb29-91" tabindex="-1"></a>                            <span class="at">Qform =</span> Q_formulas.qol, <span class="co"># Q formulas</span></span>
-<span id="cb29-92"><a href="ChapGcomp.html#cb29-92" tabindex="-1"></a>                            <span class="at">gform =</span> g_formulas, <span class="co"># g formulas</span></span>
-<span id="cb29-93"><a href="ChapGcomp.html#cb29-93" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>),<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># Y_{A=1,M=1} vs Y_{A=0,M=1}</span></span>
-<span id="cb29-94"><a href="ChapGcomp.html#cb29-94" tabindex="-1"></a>                            <span class="at">rule =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-95"><a href="ChapGcomp.html#cb29-95" tabindex="-1"></a>                            <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>), <span class="co"># by default</span></span>
-<span id="cb29-96"><a href="ChapGcomp.html#cb29-96" tabindex="-1"></a>                            <span class="at">Yrange =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-97"><a href="ChapGcomp.html#cb29-97" tabindex="-1"></a>                            <span class="at">deterministic.g.function =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-98"><a href="ChapGcomp.html#cb29-98" tabindex="-1"></a>                            <span class="at">stratify =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-99"><a href="ChapGcomp.html#cb29-99" tabindex="-1"></a>                            <span class="at">SL.library =</span> <span class="st">&quot;glm&quot;</span>,</span>
-<span id="cb29-100"><a href="ChapGcomp.html#cb29-100" tabindex="-1"></a>                            <span class="at">SL.cvControl =</span> <span class="fu">list</span>(),</span>
-<span id="cb29-101"><a href="ChapGcomp.html#cb29-101" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-102"><a href="ChapGcomp.html#cb29-102" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># should be TRUE for g-computation</span></span>
-<span id="cb29-103"><a href="ChapGcomp.html#cb29-103" tabindex="-1"></a>                            <span class="at">iptw.only =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb29-104"><a href="ChapGcomp.html#cb29-104" tabindex="-1"></a>                            <span class="at">deterministic.Q.function =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-105"><a href="ChapGcomp.html#cb29-105" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>,</span>
-<span id="cb29-106"><a href="ChapGcomp.html#cb29-106" tabindex="-1"></a>                            <span class="at">observation.weights =</span> <span class="cn">NULL</span>,</span>
-<span id="cb29-107"><a href="ChapGcomp.html#cb29-107" tabindex="-1"></a>                            <span class="at">id =</span> <span class="cn">NULL</span>)</span>
-<span id="cb29-108"><a href="ChapGcomp.html#cb29-108" tabindex="-1"></a><span class="fu">summary</span>(ltmle.gcomp.CDE.M1)</span>
-<span id="cb29-109"><a href="ChapGcomp.html#cb29-109" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
-<span id="cb29-110"><a href="ChapGcomp.html#cb29-110" tabindex="-1"></a><span class="co">#   Parameter Estimate:  -10.432</span></span>
-<span id="cb29-111"><a href="ChapGcomp.html#cb29-111" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.55975</span></span>
-<span id="cb29-112"><a href="ChapGcomp.html#cb29-112" tabindex="-1"></a><span class="co">#              p-value:  &lt;2e-16</span></span>
-<span id="cb29-113"><a href="ChapGcomp.html#cb29-113" tabindex="-1"></a><span class="co">#    95% Conf Interval: (-11.529, -9.335) those 95%CI should not be used</span></span>
-<span id="cb29-114"><a href="ChapGcomp.html#cb29-114" tabindex="-1"></a><span class="co">#                      =&gt; apply a bootstrap computation instead</span></span>
-<span id="cb29-115"><a href="ChapGcomp.html#cb29-115" tabindex="-1"></a></span>
-<span id="cb29-116"><a href="ChapGcomp.html#cb29-116" tabindex="-1"></a><span class="co"># For quantitative outcomes, the outcome is first transformed into a continuous variable</span></span>
-<span id="cb29-117"><a href="ChapGcomp.html#cb29-117" tabindex="-1"></a><span class="co"># with [0;1] range: Y&#39; = (Y - min(Y)) / (max(Y) - min(Y)) to run a quasi-binomial</span></span>
-<span id="cb29-118"><a href="ChapGcomp.html#cb29-118" tabindex="-1"></a><span class="co"># regression, and then estimations are back-transformed on the original scale.</span></span></code></pre></div>
+<span id="cb29-2"><a href="ChapGcomp.html#cb29-2" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb29-3"><a href="ChapGcomp.html#cb29-3" tabindex="-1"></a>df2_int <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;./data/df2_int.csv&quot;</span>)</span>
+<span id="cb29-4"><a href="ChapGcomp.html#cb29-4" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="ChapGcomp.html#cb29-5" tabindex="-1"></a><span class="co"># the data set should be composed of continuous or binary variables,</span></span>
+<span id="cb29-6"><a href="ChapGcomp.html#cb29-6" tabindex="-1"></a><span class="co"># ordered following the cause-effect sequence of each variables.</span></span>
+<span id="cb29-7"><a href="ChapGcomp.html#cb29-7" tabindex="-1"></a><span class="co"># Note that within a set of exposures or intermediate confounders measured at a</span></span>
+<span id="cb29-8"><a href="ChapGcomp.html#cb29-8" tabindex="-1"></a><span class="co"># single discrete time t, any causal sequence can be applied (for example,</span></span>
+<span id="cb29-9"><a href="ChapGcomp.html#cb29-9" tabindex="-1"></a><span class="co"># with several L1 variable, it can be {L1.1, L1.2, L1.3} or {L1.2,L1.3,L1.1},</span></span>
+<span id="cb29-10"><a href="ChapGcomp.html#cb29-10" tabindex="-1"></a><span class="co"># without any consequences on the estimation.</span></span>
+<span id="cb29-11"><a href="ChapGcomp.html#cb29-11" tabindex="-1"></a>df.death <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="sc">-</span>Y_qol)</span>
+<span id="cb29-12"><a href="ChapGcomp.html#cb29-12" tabindex="-1"></a>df.qol <span class="ot">&lt;-</span> <span class="fu">subset</span>(df2_int, <span class="at">select =</span> <span class="sc">-</span>Y_death)</span>
+<span id="cb29-13"><a href="ChapGcomp.html#cb29-13" tabindex="-1"></a></span>
+<span id="cb29-14"><a href="ChapGcomp.html#cb29-14" tabindex="-1"></a><span class="do">## 1) Define Q formulas (Qbar_L1 and Qbar_Y functions)</span></span>
+<span id="cb29-15"><a href="ChapGcomp.html#cb29-15" tabindex="-1"></a>Q_formulas.death <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1 =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5&quot;</span>,</span>
+<span id="cb29-16"><a href="ChapGcomp.html#cb29-16" tabindex="-1"></a>                      <span class="at">Y_death =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + L1 +</span></span>
+<span id="cb29-17"><a href="ChapGcomp.html#cb29-17" tabindex="-1"></a><span class="st">                                 A0_PM2.5 * M_diabetes&quot;</span>) <span class="co"># add interaction</span></span>
+<span id="cb29-18"><a href="ChapGcomp.html#cb29-18" tabindex="-1"></a>Q_formulas.qol <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">L1 =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + A0_PM2.5&quot;</span>,</span>
+<span id="cb29-19"><a href="ChapGcomp.html#cb29-19" tabindex="-1"></a>                    <span class="at">Y_qol =</span> <span class="st">&quot;Q.kplus1 ~ L0_male + L0_soc_env + L1 +</span></span>
+<span id="cb29-20"><a href="ChapGcomp.html#cb29-20" tabindex="-1"></a><span class="st">                             A0_PM2.5 * M_diabetes&quot;</span>) <span class="co"># add interaction</span></span>
+<span id="cb29-21"><a href="ChapGcomp.html#cb29-21" tabindex="-1"></a><span class="do">## 2) Define g formulas (needed for the ltmle package) but they are not used</span></span>
+<span id="cb29-22"><a href="ChapGcomp.html#cb29-22" tabindex="-1"></a><span class="co">#    with the g-computation estimator</span></span>
+<span id="cb29-23"><a href="ChapGcomp.html#cb29-23" tabindex="-1"></a>g_formulas <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A0_PM2.5 ~ L0_male + L0_soc_env&quot;</span>, </span>
+<span id="cb29-24"><a href="ChapGcomp.html#cb29-24" tabindex="-1"></a>                <span class="st">&quot;M_diabetes ~ L0_male + L0_soc_env + A0_PM2.5 + L1&quot;</span>)</span>
+<span id="cb29-25"><a href="ChapGcomp.html#cb29-25" tabindex="-1"></a></span>
+<span id="cb29-26"><a href="ChapGcomp.html#cb29-26" tabindex="-1"></a><span class="do">## 3) Use the ltmle() function</span></span>
+<span id="cb29-27"><a href="ChapGcomp.html#cb29-27" tabindex="-1"></a><span class="co"># arguments:</span></span>
+<span id="cb29-28"><a href="ChapGcomp.html#cb29-28" tabindex="-1"></a><span class="co">#  - Anodes: indicate the exposure and the mediator variables</span></span>
+<span id="cb29-29"><a href="ChapGcomp.html#cb29-29" tabindex="-1"></a><span class="co">#  - Lnodes: indicate the intermediate confounders (+/- baseline confounders)</span></span>
+<span id="cb29-30"><a href="ChapGcomp.html#cb29-30" tabindex="-1"></a><span class="co">#  - Cnodes: censoring nodes, useless in our example</span></span>
+<span id="cb29-31"><a href="ChapGcomp.html#cb29-31" tabindex="-1"></a><span class="co">#  - Ynodes: outcome variable</span></span>
+<span id="cb29-32"><a href="ChapGcomp.html#cb29-32" tabindex="-1"></a><span class="co">#  - survivalOutcome = FALSE in our example</span></span>
+<span id="cb29-33"><a href="ChapGcomp.html#cb29-33" tabindex="-1"></a><span class="co">#  - abar: list of the two values used to define counterfactual outcomes</span></span>
+<span id="cb29-34"><a href="ChapGcomp.html#cb29-34" tabindex="-1"></a><span class="co">#          for the contrast of interest. For example, setting M=0,</span></span>
+<span id="cb29-35"><a href="ChapGcomp.html#cb29-35" tabindex="-1"></a><span class="co">#          CDE(M=0) = E(Y_{A=1,M=0}) - E(Y_{A=0,M=0})</span></span>
+<span id="cb29-36"><a href="ChapGcomp.html#cb29-36" tabindex="-1"></a><span class="co">#  - rule: to define dynamic rules (useless in our example)</span></span>
+<span id="cb29-37"><a href="ChapGcomp.html#cb29-37" tabindex="-1"></a><span class="co">#  - gbounds = c(0.01, 1) by default. This parameter is not used with g-computation</span></span>
+<span id="cb29-38"><a href="ChapGcomp.html#cb29-38" tabindex="-1"></a><span class="co">#  - Yrange = NULL, can be used to define range (min,max) for continuous outcomes</span></span>
+<span id="cb29-39"><a href="ChapGcomp.html#cb29-39" tabindex="-1"></a><span class="co">#  - SL.library = &quot;glm&quot;,  will apply main terms glm models.</span></span>
+<span id="cb29-40"><a href="ChapGcomp.html#cb29-40" tabindex="-1"></a><span class="co">#                 The argument can be used to specify SuperLearner libraries.</span></span>
+<span id="cb29-41"><a href="ChapGcomp.html#cb29-41" tabindex="-1"></a><span class="co">#                 However, simple glm models might be preferable as data.adaptive</span></span>
+<span id="cb29-42"><a href="ChapGcomp.html#cb29-42" tabindex="-1"></a><span class="co">#                 algorithms rely on cross-validation, which is difficult and long to</span></span>
+<span id="cb29-43"><a href="ChapGcomp.html#cb29-43" tabindex="-1"></a><span class="co">#                 implement with the bootstrap procedure needed for 95% confidence</span></span>
+<span id="cb29-44"><a href="ChapGcomp.html#cb29-44" tabindex="-1"></a><span class="co">#                 intervals</span></span>
+<span id="cb29-45"><a href="ChapGcomp.html#cb29-45" tabindex="-1"></a><span class="co">#  - stratify = FALSE by default. If TRUE, glm estimations are stratified for</span></span>
+<span id="cb29-46"><a href="ChapGcomp.html#cb29-46" tabindex="-1"></a><span class="co">#               each counterfactual scenario defined in abar.</span></span>
+<span id="cb29-47"><a href="ChapGcomp.html#cb29-47" tabindex="-1"></a><span class="co">#  - estimate.time = FALSE. If TRUE, print a rough estimate of computation time</span></span>
+<span id="cb29-48"><a href="ChapGcomp.html#cb29-48" tabindex="-1"></a><span class="co">#  - iptw.only = FALSE, useless with g-computation</span></span>
+<span id="cb29-49"><a href="ChapGcomp.html#cb29-49" tabindex="-1"></a><span class="co">#  - variance.method = &quot;ic&quot;, computation is faster than with &quot;tmle&quot; which</span></span>
+<span id="cb29-50"><a href="ChapGcomp.html#cb29-50" tabindex="-1"></a><span class="co">#  -                     is useless with g-comp: variance estimates rely on</span></span>
+<span id="cb29-51"><a href="ChapGcomp.html#cb29-51" tabindex="-1"></a><span class="co">#                        influence curves which cannot be used with g-comp because</span></span>
+<span id="cb29-52"><a href="ChapGcomp.html#cb29-52" tabindex="-1"></a><span class="co">#                       g-computation is not a asymptotically efficient estimator.</span></span>
+<span id="cb29-53"><a href="ChapGcomp.html#cb29-53" tabindex="-1"></a><span class="co">#  - observation.weights = NULL, can be used to specify individual weights</span></span>
+<span id="cb29-54"><a href="ChapGcomp.html#cb29-54" tabindex="-1"></a></span>
+<span id="cb29-55"><a href="ChapGcomp.html#cb29-55" tabindex="-1"></a><span class="do">## With a binary outcome, CDE(M=1) = P(Y_{A=1,M=0} = 1) - P(Y_{A=0,M=0} = 1)</span></span>
+<span id="cb29-56"><a href="ChapGcomp.html#cb29-56" tabindex="-1"></a>ltmle.gcomp.CDE.M0 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> df.death,</span>
+<span id="cb29-57"><a href="ChapGcomp.html#cb29-57" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_PM2.5&quot;</span>, <span class="st">&quot;M_diabetes&quot;</span>),</span>
+<span id="cb29-58"><a href="ChapGcomp.html#cb29-58" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>),</span>
+<span id="cb29-59"><a href="ChapGcomp.html#cb29-59" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_death&quot;</span>), <span class="co"># binary outcome</span></span>
+<span id="cb29-60"><a href="ChapGcomp.html#cb29-60" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-61"><a href="ChapGcomp.html#cb29-61" tabindex="-1"></a>                            <span class="at">Qform =</span> Q_formulas.death, <span class="co"># Q formulas</span></span>
+<span id="cb29-62"><a href="ChapGcomp.html#cb29-62" tabindex="-1"></a>                            <span class="at">gform =</span> g_formulas, <span class="co"># g formulas</span></span>
+<span id="cb29-63"><a href="ChapGcomp.html#cb29-63" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)), <span class="co"># Y_{A=1,M=0} vs Y_{A=0,M=0}</span></span>
+<span id="cb29-64"><a href="ChapGcomp.html#cb29-64" tabindex="-1"></a>                            <span class="at">rule =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-65"><a href="ChapGcomp.html#cb29-65" tabindex="-1"></a>                            <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>), <span class="co"># by default</span></span>
+<span id="cb29-66"><a href="ChapGcomp.html#cb29-66" tabindex="-1"></a>                            <span class="at">Yrange =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-67"><a href="ChapGcomp.html#cb29-67" tabindex="-1"></a>                            <span class="at">deterministic.g.function =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-68"><a href="ChapGcomp.html#cb29-68" tabindex="-1"></a>                            <span class="at">stratify =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-69"><a href="ChapGcomp.html#cb29-69" tabindex="-1"></a>                            <span class="at">SL.library =</span> <span class="st">&quot;glm&quot;</span>,</span>
+<span id="cb29-70"><a href="ChapGcomp.html#cb29-70" tabindex="-1"></a>                            <span class="at">SL.cvControl =</span> <span class="fu">list</span>(),</span>
+<span id="cb29-71"><a href="ChapGcomp.html#cb29-71" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-72"><a href="ChapGcomp.html#cb29-72" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># should be TRUE for g-computation</span></span>
+<span id="cb29-73"><a href="ChapGcomp.html#cb29-73" tabindex="-1"></a>                            <span class="at">iptw.only =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-74"><a href="ChapGcomp.html#cb29-74" tabindex="-1"></a>                            <span class="at">deterministic.Q.function =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-75"><a href="ChapGcomp.html#cb29-75" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>,</span>
+<span id="cb29-76"><a href="ChapGcomp.html#cb29-76" tabindex="-1"></a>                            <span class="at">observation.weights =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-77"><a href="ChapGcomp.html#cb29-77" tabindex="-1"></a>                            <span class="at">id =</span> <span class="cn">NULL</span>)</span>
+<span id="cb29-78"><a href="ChapGcomp.html#cb29-78" tabindex="-1"></a><span class="fu">summary</span>(ltmle.gcomp.CDE.M0)</span>
+<span id="cb29-79"><a href="ChapGcomp.html#cb29-79" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb29-80"><a href="ChapGcomp.html#cb29-80" tabindex="-1"></a><span class="co">#   Parameter Estimate:  0.063428 # same as manual computation</span></span>
+<span id="cb29-81"><a href="ChapGcomp.html#cb29-81" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.018159</span></span>
+<span id="cb29-82"><a href="ChapGcomp.html#cb29-82" tabindex="-1"></a><span class="co">#              p-value:  0.00047789</span></span>
+<span id="cb29-83"><a href="ChapGcomp.html#cb29-83" tabindex="-1"></a><span class="co">#    95% Conf Interval: (0.027836, 0.09902) # those 95%CI should not be used</span></span>
+<span id="cb29-84"><a href="ChapGcomp.html#cb29-84" tabindex="-1"></a><span class="co">#                      =&gt; apply a bootstrap computation instead</span></span>
+<span id="cb29-85"><a href="ChapGcomp.html#cb29-85" tabindex="-1"></a></span>
+<span id="cb29-86"><a href="ChapGcomp.html#cb29-86" tabindex="-1"></a><span class="do">## With a continuous outcome, CDE(M=1) = E(Y_{A=1,M=1}) - E(Y_{A=0,M=1})</span></span>
+<span id="cb29-87"><a href="ChapGcomp.html#cb29-87" tabindex="-1"></a>ltmle.gcomp.CDE.M1 <span class="ot">&lt;-</span> <span class="fu">ltmle</span>(<span class="at">data =</span> df.qol,</span>
+<span id="cb29-88"><a href="ChapGcomp.html#cb29-88" tabindex="-1"></a>                            <span class="at">Anodes =</span> <span class="fu">c</span>(<span class="st">&quot;A0_PM2.5&quot;</span>, <span class="st">&quot;M_diabetes&quot;</span>),</span>
+<span id="cb29-89"><a href="ChapGcomp.html#cb29-89" tabindex="-1"></a>                            <span class="at">Lnodes =</span> <span class="fu">c</span>(<span class="st">&quot;L1&quot;</span>),</span>
+<span id="cb29-90"><a href="ChapGcomp.html#cb29-90" tabindex="-1"></a>                            <span class="at">Ynodes =</span> <span class="fu">c</span>(<span class="st">&quot;Y_qol&quot;</span>), <span class="co"># continous outcome</span></span>
+<span id="cb29-91"><a href="ChapGcomp.html#cb29-91" tabindex="-1"></a>                            <span class="at">survivalOutcome =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-92"><a href="ChapGcomp.html#cb29-92" tabindex="-1"></a>                            <span class="at">Qform =</span> Q_formulas.qol, <span class="co"># Q formulas</span></span>
+<span id="cb29-93"><a href="ChapGcomp.html#cb29-93" tabindex="-1"></a>                            <span class="at">gform =</span> g_formulas, <span class="co"># g formulas</span></span>
+<span id="cb29-94"><a href="ChapGcomp.html#cb29-94" tabindex="-1"></a>                            <span class="at">abar =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>),<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="co"># Y_{A=1,M=1} vs Y_{A=0,M=1}</span></span>
+<span id="cb29-95"><a href="ChapGcomp.html#cb29-95" tabindex="-1"></a>                            <span class="at">rule =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-96"><a href="ChapGcomp.html#cb29-96" tabindex="-1"></a>                            <span class="at">gbounds =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="dv">1</span>), <span class="co"># by default</span></span>
+<span id="cb29-97"><a href="ChapGcomp.html#cb29-97" tabindex="-1"></a>                            <span class="at">Yrange =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-98"><a href="ChapGcomp.html#cb29-98" tabindex="-1"></a>                            <span class="at">deterministic.g.function =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-99"><a href="ChapGcomp.html#cb29-99" tabindex="-1"></a>                            <span class="at">stratify =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-100"><a href="ChapGcomp.html#cb29-100" tabindex="-1"></a>                            <span class="at">SL.library =</span> <span class="st">&quot;glm&quot;</span>,</span>
+<span id="cb29-101"><a href="ChapGcomp.html#cb29-101" tabindex="-1"></a>                            <span class="at">SL.cvControl =</span> <span class="fu">list</span>(),</span>
+<span id="cb29-102"><a href="ChapGcomp.html#cb29-102" tabindex="-1"></a>                            <span class="at">estimate.time =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-103"><a href="ChapGcomp.html#cb29-103" tabindex="-1"></a>                            <span class="at">gcomp =</span> <span class="cn">TRUE</span>, <span class="co"># should be TRUE for g-computation</span></span>
+<span id="cb29-104"><a href="ChapGcomp.html#cb29-104" tabindex="-1"></a>                            <span class="at">iptw.only =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-105"><a href="ChapGcomp.html#cb29-105" tabindex="-1"></a>                            <span class="at">deterministic.Q.function =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-106"><a href="ChapGcomp.html#cb29-106" tabindex="-1"></a>                            <span class="at">variance.method =</span> <span class="st">&quot;ic&quot;</span>,</span>
+<span id="cb29-107"><a href="ChapGcomp.html#cb29-107" tabindex="-1"></a>                            <span class="at">observation.weights =</span> <span class="cn">NULL</span>,</span>
+<span id="cb29-108"><a href="ChapGcomp.html#cb29-108" tabindex="-1"></a>                            <span class="at">id =</span> <span class="cn">NULL</span>)</span>
+<span id="cb29-109"><a href="ChapGcomp.html#cb29-109" tabindex="-1"></a><span class="fu">summary</span>(ltmle.gcomp.CDE.M1)</span>
+<span id="cb29-110"><a href="ChapGcomp.html#cb29-110" tabindex="-1"></a><span class="co"># Additive Treatment Effect:</span></span>
+<span id="cb29-111"><a href="ChapGcomp.html#cb29-111" tabindex="-1"></a><span class="co">#   Parameter Estimate:  -10.432</span></span>
+<span id="cb29-112"><a href="ChapGcomp.html#cb29-112" tabindex="-1"></a><span class="co">#    Estimated Std Err:  0.55975</span></span>
+<span id="cb29-113"><a href="ChapGcomp.html#cb29-113" tabindex="-1"></a><span class="co">#              p-value:  &lt;2e-16</span></span>
+<span id="cb29-114"><a href="ChapGcomp.html#cb29-114" tabindex="-1"></a><span class="co">#    95% Conf Interval: (-11.529, -9.335) those 95%CI should not be used</span></span>
+<span id="cb29-115"><a href="ChapGcomp.html#cb29-115" tabindex="-1"></a><span class="co">#                      =&gt; apply a bootstrap computation instead</span></span>
+<span id="cb29-116"><a href="ChapGcomp.html#cb29-116" tabindex="-1"></a></span>
+<span id="cb29-117"><a href="ChapGcomp.html#cb29-117" tabindex="-1"></a><span class="co"># For quantitative outcomes, the outcome is first transformed into a continuous variable</span></span>
+<span id="cb29-118"><a href="ChapGcomp.html#cb29-118" tabindex="-1"></a><span class="co"># with [0;1] range: Y&#39; = (Y - min(Y)) / (max(Y) - min(Y)) to run a quasi-binomial</span></span>
+<span id="cb29-119"><a href="ChapGcomp.html#cb29-119" tabindex="-1"></a><span class="co"># regression, and then estimations are back-transformed on the original scale.</span></span></code></pre></div>
 </div>
 </div>
 <div id="sequential-g-estimator" class="section level3 hasAnchor" number="6.2.3">
@@ -1610,9 +1611,9 @@ RIE &amp;= \left[\mathbb{E}\left(Y_{A=1,G_{A=0\mid L(0)}} \right) - \mathbb{E}\l
 <span id="cb40-10"><a href="ChapGcomp.html#cb40-10" tabindex="-1"></a><span class="co"># rPNIE = -1.40641</span></span>
 <span id="cb40-11"><a href="ChapGcomp.html#cb40-11" tabindex="-1"></a></span>
 <span id="cb40-12"><a href="ChapGcomp.html#cb40-12" tabindex="-1"></a><span class="do">## Check that MI = rTNIE - rPNIE = rTNDE - rPNDE</span></span>
-<span id="cb40-13"><a href="ChapGcomp.html#cb40-13" tabindex="-1"></a>(res_gformula_Qol<span class="sc">$</span>effect.pe[<span class="st">&quot;rtnie&quot;</span>] <span class="sc">-</span> res_gformula_Qol<span class="sc">$</span>effect.pe[<span class="st">&quot;rpnie&quot;</span>])</span>
+<span id="cb40-13"><a href="ChapGcomp.html#cb40-13" tabindex="-1"></a>(res_gformula_Qol_M0<span class="sc">$</span>effect.pe[<span class="st">&quot;rtnie&quot;</span>] <span class="sc">-</span> res_gformula_Qol_M0<span class="sc">$</span>effect.pe[<span class="st">&quot;rpnie&quot;</span>])</span>
 <span id="cb40-14"><a href="ChapGcomp.html#cb40-14" tabindex="-1"></a><span class="co"># -0.897894</span></span>
-<span id="cb40-15"><a href="ChapGcomp.html#cb40-15" tabindex="-1"></a>(res_gformula_Qol<span class="sc">$</span>effect.pe[<span class="st">&quot;rtnde&quot;</span>] <span class="sc">-</span> res_gformula_Qol<span class="sc">$</span>effect.pe[<span class="st">&quot;rpnde&quot;</span>])</span>
+<span id="cb40-15"><a href="ChapGcomp.html#cb40-15" tabindex="-1"></a>(res_gformula_Qol_M0<span class="sc">$</span>effect.pe[<span class="st">&quot;rtnde&quot;</span>] <span class="sc">-</span> res_gformula_Qol_M0<span class="sc">$</span>effect.pe[<span class="st">&quot;rpnde&quot;</span>])</span>
 <span id="cb40-16"><a href="ChapGcomp.html#cb40-16" tabindex="-1"></a><span class="co"># -0.897894</span></span>
 <span id="cb40-17"><a href="ChapGcomp.html#cb40-17" tabindex="-1"></a>res_gformula_Qol_M0<span class="sc">$</span>effect.pe[<span class="st">&quot;rintmed&quot;</span>]</span>
 <span id="cb40-18"><a href="ChapGcomp.html#cb40-18" tabindex="-1"></a><span class="co"># -0.897894 # we have MI = rTNIE - rPNIE = rTNDE - rPNDE</span></span>

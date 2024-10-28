@@ -151,7 +151,7 @@
 
 \title{Mediation Workshop}
 \author{Benoît Lepage}
-\date{2024-10-27}
+\date{2024-10-28}
 
 \begin{document}
 \maketitle
@@ -2137,7 +2137,7 @@ For continuous outcomes, \(\overline{Q}_Y(A,L(1),M)\) functions can be estimated
 \NormalTok{Y.death.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_death }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+} 
 \NormalTok{                       M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes, }
                      \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
-\NormalTok{                      family }\OtherTok{=} \StringTok{"binomial"}\NormalTok{, data }\OtherTok{=}\NormalTok{ df2\_int}\ErrorTok{)}
+
 \NormalTok{Y.qol.model }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(Y\_qol }\SpecialCharTok{\textasciitilde{}}\NormalTok{ L0\_male }\SpecialCharTok{+}\NormalTok{ L0\_soc\_env }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5} \SpecialCharTok{+}\NormalTok{ L1 }\SpecialCharTok{+} 
 \NormalTok{                     M\_diabetes }\SpecialCharTok{+}\NormalTok{ A0\_PM2}\FloatTok{.5}\SpecialCharTok{:}\NormalTok{M\_diabetes, }
                    \AttributeTok{family =} \StringTok{"gaussian"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ df2\_int)}
@@ -2330,7 +2330,8 @@ An application is shown below.
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(ltmle)}
-\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"df2\_int.csv"}\NormalTok{)}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list=}\FunctionTok{ls}\NormalTok{())}
+\NormalTok{df2\_int }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \StringTok{"./data/df2\_int.csv"}\NormalTok{)}
 
 \CommentTok{\# the data set should be composed of continuous or binary variables,}
 \CommentTok{\# ordered following the cause{-}effect sequence of each variables.}
@@ -3457,9 +3458,9 @@ Using the \texttt{CMAverse} package,
 \CommentTok{\# rPNIE = {-}1.40641}
 
 \DocumentationTok{\#\# Check that MI = rTNIE {-} rPNIE = rTNDE {-} rPNDE}
-\NormalTok{(res\_gformula\_Qol}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rtnie"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ res\_gformula\_Qol}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rpnie"}\NormalTok{])}
+\NormalTok{(res\_gformula\_Qol\_M0}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rtnie"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ res\_gformula\_Qol\_M0}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rpnie"}\NormalTok{])}
 \CommentTok{\# {-}0.897894}
-\NormalTok{(res\_gformula\_Qol}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rtnde"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ res\_gformula\_Qol}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rpnde"}\NormalTok{])}
+\NormalTok{(res\_gformula\_Qol\_M0}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rtnde"}\NormalTok{] }\SpecialCharTok{{-}}\NormalTok{ res\_gformula\_Qol\_M0}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rpnde"}\NormalTok{])}
 \CommentTok{\# {-}0.897894}
 \NormalTok{res\_gformula\_Qol\_M0}\SpecialCharTok{$}\NormalTok{effect.pe[}\StringTok{"rintmed"}\NormalTok{]}
 \CommentTok{\# {-}0.897894 \# we have MI = rTNIE {-} rPNIE = rTNDE {-} rPNDE}
