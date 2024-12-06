@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 9 Targeted Maximum Likelihood Estimation (TMLE) | Mediation Workshop</title>
   <meta name="description" content="Expanse project - Mediation workshop. Online complementary document with practical examples in R." />
-  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.41 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 9 Targeted Maximum Likelihood Estimation (TMLE) | Mediation Workshop" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Benoît Lepage" />
 
 
-<meta name="date" content="2024-10-28" />
+<meta name="date" content="2024-12-06" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -359,7 +359,7 @@ The parametric fluctuation model is chosen so that the derivative of its log-lik
 \end{equation*}\]</span></p></li>
 <li><p>Estimate the efficient influence curve <span class="math inline">\(D^*(Q_0,g_0)\)</span> :
 <span class="math display">\[\begin{equation*}
-D^*(Q_0,g_0) = \frac{I(A=1)}{g_0(A=1 \mid L(0))}(Y - \bar{Q}_0(A,L(O))) + \bar{Q}_0(A=1,L(0))  + \Psi(A=1)
+D^*(Q_0,g_0) = \frac{I(A=1)}{g_0(A=1 \mid L(0))}(Y - \bar{Q}_0(A,L(O))) + \bar{Q}_0(A=1,L(0))  - \Psi(A=1)
 \end{equation*}\]</span></p></li>
 </ol>
 <p>The variance of the target parameter can then be calculated using the variance of the efficient influence curve:
